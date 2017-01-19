@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="cordova-plugin-foxitpdf" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>cordova-plugin-foxitpdf</name>
+    <description>cordova pdf preview plugin with Foxit Pdf sdk</description>
+    <author>huang niu</author>
+    <keywords>pdf,perview,foxit</keywords>
+    <license>Apache 2.0 License</license>
+    <js-module name="FoxitPdf" src="www/FoxitPdf.js">
+        <clobbers target="window.FoxitPdf"/>
+    </js-module>
+    <platform name="ios">
+        <config-file parent="/*" target="config.xml">
+            <feature name="FoxitPdf">
+                <param name="ios-package" value="FoxitPdf"/>
+            </feature>
+        </config-file>
+        <source-file src="src/ios/getting_started_ios.pdf"/>
+        <source-file src="src/ios/FoxitPdf.m"/>
+        <header-file src="src/ios/UIExtensionsSharedHeader.h"/>
+        <source-file compiler-flags="-fno-objc-arc" framework="true" src="src/ios/libFoxitRDKUIExtensions.a"/>
+        <framework custom="true" src="src/ios/FoxitRDK.framework"/>
+        <source-file src="src/ios/FoxitSource"/>
+        <source-file src="src/ios/uiextensions"/>
+    </platform>
+    <platform name="android">
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="FoxitPdf">
+                <param name="android-package" value="FoxitPdf.FoxitPdf"/>
+            </feature>
+        </config-file>
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+        </config-file>
+        <config-file parent="/*" target="AndroidManifest.xml"/>
+        <source-file src="src/android/FoxitPdf.java" target-dir="src/FoxitPdf"/>
+        <source-file src="src/android/libs/armeabi-v7a/librdk.so" target-dir="libs/armeabi-v7a"/>
+
+        <framework src="com.android.support:appcompat-v7:23.4.0" />
+        <framework src="src/android/libs/FoxitRDKUIExtensions.gradle" custom="true" type="gradleReference" />
+        <resource-file src="src/android/libs/FoxitRDKUIExtensions.aar" target="libs/FoxitRDKUIExtensions.aar"/>
+    </platform>
+</plugin>

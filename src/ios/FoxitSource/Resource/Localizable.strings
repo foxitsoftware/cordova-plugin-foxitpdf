@@ -1,0 +1,203 @@
+
+//Common
+"kWarning" = "Warning";
+"kConfirm" = "Confirm";
+"kOK" = "OK";
+"kCancel" = "Cancel";
+"kYes" = "Yes";
+"kNo" = "No";
+"kAdd" = "Add";
+"kRename" = "Rename";
+"kDelete" = "Delete";
+"kDone" = "Done";
+"kSave" = "Save";
+"kLoading" = "Loading...";
+"kShare" = "Share";
+"kReplace" = "Replace";
+"kSkip" = "Skip";
+"kZip" = "Zip";
+"kEdit" = "Edit";
+"kBack" = "Back";
+
+
+
+
+//Error
+"kWrongPageNumber" = "Wrong page number. The number should be";
+"kDocPasswordError" = "Invalid password.\nPlease try again.";
+"kNoFileInDisk" = "Cannot find the file %@ in disk. Remove it from file list.";
+"kFailOpenFile" = "Failed to open %@.";
+"kInvalidSecurityHandler" = "Invalid security handler.";
+"kErrorCode" = "Error code (%d).";
+"kUnfoundOrCannotOpen" = "Cannot find or open the file.";
+"kInvalidFormat" = "Invalid format.";
+"kHandlerError" = "Invalid handler.";
+"kWrongCertificate" = "Invalid certificate.";
+"kUnknownError" = "Unknown error.";
+"kInvalidLibraryLicense" = "Invalid library license.";
+"kInvalidParameter" = "Invalid parameter.";
+"kUnsupportedType" = "Unsupported type.";
+"kOutOfMemory" = "Out of memory.";
+"kNoAppropriateApplication" = "No appropriate application exists.";
+"kInvalidUrl" = "Invalid url.";
+
+//File management
+"kDocuments" = "Documents";
+"kSearchPlaceholder" = "Search PDF";
+"kByFileName" = "By name";
+"kItems" = "%lld items";
+"kSelectFile" = "Select";
+"kIllegalNameWarning" = "You have entered an illegal name";
+
+"kFileInformation" = "File information";
+"kName" = "Name";
+"kAdd" = "Added";
+"kModify" = "Updated";
+"kDeleted" = "Deleted";
+"kReply" = "Reply";
+"kOKHelp" = "Select \"OK\" to save the document here.";
+"kInputNewFileName" = "Please input a new file name";
+"kFileAlreadyExists" = "File already exists";
+"kCloudUploadFile" = "Upload";
+"kCopyToFolder" = "Copy To";
+"kMoveToFolder" = "Move To Folder";
+"kMove" = "Move";
+"kCopyHelp" = "Select \"Copy\" to copy the document here.";
+"kMoveHelp" = "Select \"Move\" to move the document here.";
+
+
+//EGOTableViewPullRefresh
+"kLastUpdated" = "Last Updated";
+"kReleaseToRefresh" = "Release to refresh...";
+"kPullDownToRefresh" = "Pull down to refresh...";
+
+//Document
+"kDocNeedPassword" = "This file is password protected.\nPlease input the password.";
+"kViewModeSingle" = "Single";
+"kViewModeContinuous" = "Continuous";
+"kViewModeTwo" = "Facing";
+"kViewModeThumbnail" = "Thumbnail";
+
+//Form
+"kForm" = "Form";
+"kResetFormFields" = "Reset Form Fields";
+"kImportForm" = "Import Form Data";
+"kExportForm" = "Export Form Data";
+"kSureToResetFormFields" = "Are you sure you want to reset all form fields?";
+"kNoFormAvailable" = "This document has no form data";
+"kImportFormSucess" = "Successfully imported data to the current document.";
+"kImportFormFailed" = "Couldn't import or access data. Please check the form data file status and retry.";
+"kExportFormSucess" = "Form data was successfully exported.";
+"kExportFormFailed" = "Form exporting failed.";
+
+//Annotation
+"kAnnotation" = "Annotations";
+"kNote" = "Comment";
+"kReply" = "Reply";
+"kCopyText" = "Copy Text";
+"kIcon" = "Icon";
+"kFont" = "Font";
+"kOpacity" = "Opacity";
+"kHighlight" = "Highlight";
+"kSquiggly" = "Squiggly";
+"kStrikeout" = "Strikeout";
+"kUnderline" = "Underline";
+"kLine" = "Line";
+"kArrowLine" = "Arrow";
+"kPencil" = "Pencil";
+"kRectangle" = "Rectangle";
+"kCircle" = "Oval";
+"kErase" = "Eraser";
+"kInsertText" = "Insert Text";
+"kReplaceText" = "Replace Text";
+
+"kTypewriter" = "Typewriter";
+"kHintTitleTypewriter" = "Tap screen to add Typewriter";
+"kHintDetailTypewriter" = "Touch and hold Typewriter icon to set option";
+
+//Bookmark
+"kBookmark" = "Reading Bookmarks";
+"kRenameBookmark" = "Rename Bookmark";
+"kClearBookmark" = "Clear all bookmarks?";
+"kInputBookmarkName" = "Please input a new bookmark name";
+
+//Outline
+"kOutline" = "Outline";
+
+//Search
+"kSearch" = "Search";
+"kTotalFound" = "Totally found";
+"kSearchGoogle" = "Search in Google";
+"kSearchWiki" = "Search in Wikipedia";
+"kPage" = "Page";
+
+//Selection
+"kColor" = "Color";
+"kSize" = "Size";
+"kThickness" = "Thickness";
+"kFontName" = "Font Name";
+"kFontSize" = "Font Size";
+"kIconCheck" = "Check";
+"kIconCircle" = "Circle";
+"kIconComment" = "Comment";
+"kIconCross" = "Cross";
+"kIconHelp" = "Help";
+"kIconInsert" = "Insert";
+"kIconKey" = "Key";
+"kIconNewParagraph" = "New Paragraph";
+"kIconNote" = "Note";
+"kIconParagraph" = "Paragraph";
+"kIconRightArrow" = "Right Arrow";
+"kIconRightPointer" = "Right Pointer";
+"kIconStar" = "Star";
+"kIconUpArrow" = "Up Arrow";
+"kIconUpLeftArrow" = "UpLeft Arrow";
+
+//ACN
+"kDiscardChange" = "Discard Changes";
+
+//RMS rights
+"kRMSFILLFORM" = "Fill in a form";
+"kRMSANNOTATE" = "Comment in the document";
+"kRMSASSEMBLE" = "Manage pages and bookmarks";
+"kRMSEDIT" = "Modify document";
+"kRMSEXTRACTACCESS" = "Content copying for accessibility";
+"kRMSEXTRACT" = "Extract the contents of the document";
+
+"kRMSNoAccess" = "This document is protected, please check your permission.";
+
+//Permission
+"kPermission" = "Permission";
+"kPermissionPrint" = "Printing";
+"kEnable" = "Allowed";
+"kDisable" = "Disallow";
+
+//others
+"kDocinfo" = "File Information";
+"kFilePath" = "Path";
+"kFileAuthor" = "Author";
+"kFileSubject" = "Subject";
+"kCreateDate" = "Created";
+"kModifyDate" = "Last Modified";
+"kSecurity" = "Security";
+"kPasswordEncryption" = "Password Protection";
+"kNoEncryption" = "No Protection";
+"kMoreTextMarkup" = "Text Markup";
+"kMoreDrawing" = "Drawing";
+"kMoreOthers" = "Others";
+"kReadList" = "List";
+"kReadView" = "View";
+"kReadComment" = "Comment";
+"kPropertyFill" = "Fill";
+"kPropertyStamps" = "Stamp";
+"kMore" = "More";
+"kStyle" = "Appearance";
+"kAnnotContinue" = "Keep tool selected";
+"kAnnotSingle" = "Single Comment";
+"kScreenLock" = "Screen Lock";
+"kAutoBrightness" = "Auto-Brightness";
+"kClear" = "Clear";
+"kClearAnnotations" = "Clear all annotations?";
+"kTimeSort" = "Time";
+"kOpen" = "Open";
+"kOtherDocumentsFile" =  "File";
