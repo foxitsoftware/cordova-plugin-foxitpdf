@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-foxitpdf",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "cordova pdf preview plugin with Foxit Pdf sdk",
   "cordova": {
     "id": "cordova-plugin-foxitpdf",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/niuemperor/FoxitPdfPreiview-Cordova-iOS.git"
+    "url": "git+https://github.com/foxitsoftware/cordova-plugin-foxitpdf.git"
   },
   "keywords": [
     "pdf",
@@ -23,7 +23,7 @@
   "author": "huang niu",
   "license": "Apache 2.0 License",
   "bugs": {
-    "url": "https://github.com/niuemperor/FoxitPdfPreiview-Cordova-iOS/issues"
+    "url": "https://github.com/foxitsoftware/cordova-plugin-foxitpdf/issues"
   },
-  "homepage": "https://github.com/niuemperor/FoxitPdfPreiview-Cordova-iOS#readme"
+  "homepage": "https://github.com/foxitsoftware/cordova-plugin-foxitpdf#readme"
 }
