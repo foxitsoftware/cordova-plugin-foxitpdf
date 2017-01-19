@@ -145,7 +145,7 @@ function preview(){
 
 ## Feedback or contribution code
 
-您可以在[这里](https://github.com/niuemperor/cordova-plugin-foxitpdf/issues)给我们提出在使用中碰到的问题或Bug。
+您可以在[这里](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/issues)给我们提出在使用中碰到的问题或Bug。
 
 你也可以发送邮件**huang_niu@foxitsoftware.com**说明您的问题。
 
@@ -282,7 +282,7 @@ The product is still in the early stage of development. Later will focus on the 
 
 ## Feedback or contribution code
 
-You can ask us questions or bugs in [here](https://github.com/niuemperor/cordova-plugin-foxitpdf/issues).
+You can ask us questions or bugs in [here](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/issues).
 
 You can also send email **huang_niu@foxitsoftware.com** to explain your problem.
 
