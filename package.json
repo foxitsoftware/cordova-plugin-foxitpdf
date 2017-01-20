@@ -18,9 +18,10 @@
     "perview",
     "foxit",
     "ecosystem:cordova",
-    "cordova-ios"
+    "cordova-ios",
+    "cordova-android"
   ],
-  "author": "huang niu",
+  "author": "foxit software",
   "license": "Apache 2.0 License",
   "bugs": {
     "url": "https://github.com/foxitsoftware/cordova-plugin-foxitpdf/issues"
