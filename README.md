@@ -157,6 +157,10 @@ function preview(){
 http://www.foxitsdk.com/products/mobile-pdf-sdk/request-quote/?from=cordova-plugin-foxitpdf
 
 
+## More Support
+
+http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf
+
 ## 
 
 
@@ -293,3 +297,7 @@ If you have a better code implementation, please fork this project and launch yo
 If you encounter “Invalid license” tips, please go to the following URL for official key
 
 http://www.foxitsdk.com/products/mobile-pdf-sdk/request-quote/?from=cordova-plugin-foxitpdf
+
+## More Support
+
+http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf
