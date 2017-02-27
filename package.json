@@ -15,8 +15,8 @@
   },
   "keywords": [
     "pdf",
-    "perview",
-    "foxit",
+    'foxit',
+    "preview",
     "ecosystem:cordova",
     "cordova-ios",
     "cordova-android"
