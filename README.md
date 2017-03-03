@@ -18,7 +18,7 @@
 -->
 
 # cordova-plugin-foxitpdf
-This plugin provides the ability to preview pdf files with Foxit RDK on a device.
+This plugin provides the ability to preview PDF files with Foxit MobilePDF SDK (aka Foxit RDK) on a mobile device using Apache Cordova.
 
 
 ## iOS Screen Shot
@@ -29,11 +29,11 @@ This plugin provides the ability to preview pdf files with Foxit RDK on a device
 ![](https://raw.githubusercontent.com/niuemperor/cordova-plugin-foxitpdf/master/images/cordova-plugin-foxitodf-android.png)
 
 
-## What change
+## What's changed
 
-1. Integrated Foxit RDK UI section, add jump page, full text search, thumbnail preview and other functions
-2. Adjust the plug-in integration, so that integration easier and more convenient
-3. Added support for android platform
+1. Integrated Foxit RDK UI section, added jump page, full text search, thumbnail preview and other functions
+2. Adjusted the plug-in integration, so that integration is easier and more convenient
+3. Added support for the Android platform
 
 
 ## Installation
@@ -44,7 +44,7 @@ cordova plugin add cordova-plugin-foxitpdf
 
 ## iOS How To Use
 
-1. Remove references to FoxitSource, uitextensions. Create the FoxitSource group. (Because cordova plug-in can not create ios group)
+1. Remove references to FoxitSource and UI Extensions. Create the FoxitSource group (because Cordova plug-in can not create iOS group).
 2. Turn off arc mode, Build Settings -> Objective-C Automatic Reference Counting to NO
 3. Insert the following code into the AppDelegate.h file
 
@@ -66,7 +66,7 @@ cordova plugin add cordova-plugin-foxitpdf
 	Portrait , Landscape Left , Landscape Right
 
 
-Use this ,in everywhere in your project
+Use this everywhere in your project
 
 ```js
 var success = function(data){
@@ -106,7 +106,7 @@ window.FoxitPdf.preview(filePath,success,error);
 
 ## IOS Quirks
 
-The first argument to the preiview method, currently only supports absolute paths to incoming files.
+The first argument in the preview method currently only supports absolute paths for incoming files.
 
 You can obtain the absolute path to the file using the method provided by the [cordova-plugin-file] (https://github.com/apache/cordova-plugin-file) plugin.
 
@@ -120,12 +120,12 @@ cordova plugin add cordova-plugin-file
 ## Android Quirks
 NOTE: Since the functionality associated with Reply in UIExtension is using FragmentActivity, the current plugin does not handle it, so there is a problem with using it. Will do further processing.
 
-In addition: the current plug-ins already contains armeabi-v7a library, if you want to support other platforms, you need to refer to the Foxit RDK library to other projects can be introduced into the project.
+In addition: the current plug-ins already contain armeabi-v7a library, if you want to support other platforms, you need to refer to the Foxit RDK library for other libraries which can be introduced into the project.
 
 
 ### Quick Example
 
-The pdf file needs to be placed in the project beforehand. The location is placed in the project root by default
+The PDF file needs to be placed in the project beforehand. The location is in the project root by default
 
 ```js
 var success = function(data){
@@ -143,20 +143,19 @@ function preview(){
 
 ## Attention
 
-The product is still in the early stage of development. Later will focus on the function of refinement and refinement.
-
+The product is still in the early stage of development. We will continue to focus on refining and improving this project.
 
 ## Feedback or contribution code
 
-You can ask us questions or bugs in [here](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/issues).
+You can ask us questions or report bugs in [here](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/issues).
 
 You can also send email **huang_niu@foxitsoftware.com** to explain your problem.
 
-If you have a better code implementation, please fork this project and launch your Pull-Request, we will promptly deal with. thank!
+If you have a better code implementation, please fork this project and launch your Pull-Request, we will promptly deal with. Thanks!
 
 
 ## Request a Quote
-If you encounter “Invalid license” tips, please go to the following URL for official key
+If you encounter “Invalid license” tips, please go to the following URL for official trial license key:
 
 http://www.foxitsdk.com/products/mobile-pdf-sdk/request-quote/?from=cordova-plugin-foxitpdf
 
