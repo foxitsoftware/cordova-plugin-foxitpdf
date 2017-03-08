@@ -21,26 +21,10 @@
 This plugin provides the ability to preview PDF files with Foxit MobilePDF SDK (aka Foxit RDK) on a mobile device using Apache Cordova.
 
 
-## iOS Screen Shot
-![](https://raw.githubusercontent.com/niuemperor/cordova-plugin-foxitpdf/master/images/cordova-plugin-foxitpdf2.gif)
-
-
-## Android Screen Shot
-![](https://raw.githubusercontent.com/niuemperor/cordova-plugin-foxitpdf/master/images/cordova-plugin-foxitodf-android.png)
-
-
-## What's changed
-
-1. Integrated Foxit RDK UI section, added jump page, full text search, thumbnail preview and other functions
-2. Adjusted the plug-in integration, so that integration is easier and more convenient
-3. Added support for the Android platform
-
-
 ## Installation
 ```bash
 cordova plugin add cordova-plugin-foxitpdf
 ```
-
 
 ## iOS How To Use
 
@@ -92,6 +76,14 @@ var filePath = 'file://path/to/your/file';
 // var filePath = "/mnt/sdcard/getting_started_ios.pdf";
 window.FoxitPdf.preview(filePath,success,error);
 ```
+
+
+## iOS Screen Shot
+![](https://raw.githubusercontent.com/niuemperor/cordova-plugin-foxitpdf/master/images/cordova-plugin-foxitpdf2.gif)
+
+
+## Android Screen Shot
+![](https://raw.githubusercontent.com/niuemperor/cordova-plugin-foxitpdf/master/images/cordova-plugin-foxitodf-android.png)
 
 
 ## Supported Platforms
