@@ -30,7 +30,8 @@ cordova plugin add cordova-plugin-foxitpdf
 
 1. Remove references to FoxitSource and UI Extensions. Create the FoxitSource group (because Cordova plug-in can not create iOS group).
 2. Turn off arc mode, Build Settings -> Objective-C Automatic Reference Counting to NO
-3. Insert the following code into the AppDelegate.h file
+3. Embed Foxit RDK.framework General -> Embed Frameworks -> + -> FoxitRDK.framework
+4. Insert the following code into the AppDelegate.h file
 
 	```objective-c
 	#import "UIExtensionsSharedHeader.h"
@@ -42,8 +43,6 @@ cordova plugin add cordova-plugin-foxitpdf
 	@property (nonatomic, copy) NSString* filePath;
 	@property (nonatomic, assign) BOOL isScreenLocked;
 	```
-4. Embed Foxit RDK.framework
-	General -> Embed Frameworks -> + -> FoxitRDK.framework
 
 5. In the project configuration to increase the direction of support
 	General -> Deployment info -> Device Orientation ,   Check
@@ -59,7 +58,9 @@ var success = function(data){
 var error = function(data){
     console.log(data);
 }
+
 var filePath = 'file://path/to/your/file';
+//var filePath = cordova.file.applicationDirectory + 'Sample.pdf';
 window.FoxitPdf.preview(filePath,success,error);
 ```
 
