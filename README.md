@@ -79,6 +79,10 @@ window.FoxitPdf.preview(filePath,success,error);
 ```
 
 
+## YOUTUBE
+https://youtu.be/3stdbwcm68k
+[![How to use cordova-plugin-foxitpdf](http://img.youtube.com/vi/3stdbwcm68k/maxresdefault.jpg)](https://youtu.be/3stdbwcm68k)
+
 ## iOS Screen Shot
 ![](https://raw.githubusercontent.com/niuemperor/cordova-plugin-foxitpdf/master/images/cordova-plugin-foxitpdf2.gif)
 
