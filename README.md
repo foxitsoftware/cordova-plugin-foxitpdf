@@ -103,8 +103,6 @@ Want to see more details, see forums.
 
 - Android
 
-----
-
 
 
 ## IOS Quirks
