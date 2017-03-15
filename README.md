@@ -18,7 +18,7 @@
 -->
 
 # cordova-plugin-foxitpdf
-This plugin provides the ability to preview PDF files with Foxit MobilePDF SDK (aka Foxit RDK) on a mobile device using Apache Cordova.
+This plugin adds the ability to easily preview any PDF file in your Cordova application
 
 
 ## Installation
@@ -26,9 +26,9 @@ This plugin provides the ability to preview PDF files with Foxit MobilePDF SDK (
 cordova plugin add cordova-plugin-foxitpdf
 ```
 
-## iOS How To Use
+## Usage Instructions for iOS
 
-1. Remove references to FoxitSource and UI Extensions. Create the FoxitSource group (because Cordova plug-in can not create iOS group).
+1. In your Xcode project, find the FoxitSource folder and  "UI Extension" folder(in blue), right click and delete it, confirm "Remove Reference" when prompted. Create the FoxitSource group (in yellow) (because Cordova plug-in can not create iOS group).
 2. Turn off arc mode, Build Settings -> Objective-C Automatic Reference Counting to NO
 3. Embed Foxit RDK.framework General -> Embed Frameworks -> + -> FoxitRDK.framework
 4. Insert the following code into the AppDelegate.h file
@@ -49,39 +49,46 @@ cordova plugin add cordova-plugin-foxitpdf
 	Portrait , Landscape Left , Landscape Right
 
 
-Use this everywhere in your project
+6. The preparatory work has been completed，Now,you can use this code everywhere in your project
 
-```js
-var success = function(data){
-    console.log(data);
-}
-var error = function(data){
-    console.log(data);
-}
+    ```js
+    var success = function(data){
+        console.log(data);
+    }
+    var error = function(data){
+        console.log(data);
+    }
+    
+    var filePath = 'file://path/to/your/file';
+    //var filePath = cordova.file.applicationDirectory + 'Sample.pdf';
+    window.FoxitPdf.preview(filePath,success,error);
+    ```
 
-var filePath = 'file://path/to/your/file';
-//var filePath = cordova.file.applicationDirectory + 'Sample.pdf';
-window.FoxitPdf.preview(filePath,success,error);
-```
+
+## Usage Instructions for Android
+Android do not have to make any changes, you can directly use
+
+    ```js
+    var success = function(data){
+        console.log(data);
+    }
+    var error = function(data){
+        console.log(data);
+    }
+    var filePath = 'file://path/to/your/file';
+    // var filePath = "/mnt/sdcard/getting_started_ios.pdf";
+    window.FoxitPdf.preview(filePath,success,error);
+    ```
 
 
-## Android How to use
-```js
-var success = function(data){
-    console.log(data);
-}
-var error = function(data){
-    console.log(data);
-}
-var filePath = 'file://path/to/your/file';
-// var filePath = "/mnt/sdcard/getting_started_ios.pdf";
-window.FoxitPdf.preview(filePath,success,error);
-```
+## PPT
+Want to see more details, see forums.
 
+[PPTX - How to use cordova-plugin-foxitpdf](http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf/162972-ppt-how-to-use-cordova-plugin-foxitpdf)
 
 ## YOUTUBE
-https://youtu.be/3stdbwcm68k
 [![How to use cordova-plugin-foxitpdf](http://img.youtube.com/vi/3stdbwcm68k/maxresdefault.jpg)](https://youtu.be/3stdbwcm68k)
+
 
 ## iOS Screen Shot
 ![](https://raw.githubusercontent.com/niuemperor/cordova-plugin-foxitpdf/master/images/cordova-plugin-foxitpdf2.gif)
