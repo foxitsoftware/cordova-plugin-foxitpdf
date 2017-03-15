@@ -68,18 +68,17 @@ cordova plugin add cordova-plugin-foxitpdf
 ## Usage Instructions for Android
 Android do not have to make any changes, you can directly use
 
-    ```js
-    var success = function(data){
-        console.log(data);
-    }
-    var error = function(data){
-        console.log(data);
-    }
-    var filePath = 'file://path/to/your/file';
-    // var filePath = "/mnt/sdcard/getting_started_ios.pdf";
-    window.FoxitPdf.preview(filePath,success,error);
-    ```
-
+```js
+var success = function(data){
+    console.log(data);
+}
+var error = function(data){
+    console.log(data);
+}
+var filePath = 'file://path/to/your/file';
+// var filePath = "/mnt/sdcard/getting_started_ios.pdf";
+window.FoxitPdf.preview(filePath,success,error);
+```
 
 ## PPT
 Want to see more details, see forums.
