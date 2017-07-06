@@ -17,11 +17,14 @@
         </config-file>
         <source-file src="src/ios/getting_started_ios.pdf"/>
         <source-file src="src/ios/FoxitPdf.m"/>
-        <header-file src="src/ios/UIExtensionsSharedHeader.h"/>
         <source-file compiler-flags="-fno-objc-arc" framework="true" src="src/ios/libFoxitRDKUIExtensions.a"/>
         <framework custom="true" src="src/ios/FoxitRDK.framework"/>
-        <source-file src="src/ios/FoxitSource"/>
         <source-file src="src/ios/uiextensions"/>
+        <source-file src="src/ios/uiextensions_config.json"/>
+        <source-file src="src/ios/FSShowViewController.h"/>
+        <source-file src="src/ios/FSShowViewController.m"/>
+        <source-file src="src/ios/FSStackBottomViewController.h"/>
+        <source-file src="src/ios/FSStackBottomViewController.m"/>
     </platform>
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
@@ -36,8 +39,9 @@
         <config-file parent="/*" target="AndroidManifest.xml"/>
         <source-file src="src/android/FoxitPdf.java" target-dir="src/FoxitPdf"/>
         <source-file src="src/android/libs/armeabi-v7a/librdk.so" target-dir="libs/armeabi-v7a"/>
+		<source-file src="src/android/libs/x86/librdk.so" target-dir="libs/x86"/>
 
-        <framework src="com.android.support:appcompat-v7:23.4.0" />
+
         <framework src="src/android/libs/FoxitRDKUIExtensions.gradle" custom="true" type="gradleReference" />
         <resource-file src="src/android/libs/FoxitRDKUIExtensions.aar" target="libs/FoxitRDKUIExtensions.aar"/>
     </platform>
