@@ -1,0 +1,16 @@
+{
+    "defaultReader": true,
+    "modules": {
+        "thumbnail": true,
+        "readingBookmark": true,
+        "outline": true,
+        "annotations": true,
+        "attachment": true,
+        "signature": true,
+        "search": true,
+        "pageNavigation": true,
+        "form": true,
+        "selection": true,
+        "encryption": true
+    }
+}

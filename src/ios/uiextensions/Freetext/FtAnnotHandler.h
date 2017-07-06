@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -9,6 +9,7 @@
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
  */
+
 #import <FoxitRDK/FSPDFViewControl.h>
 #import "UIExtensionsManager.h"
 #import "UIExtensionsManager+Private.h"
@@ -21,8 +22,8 @@
     CGRect _originalRect;
 }
 
-@property (nonatomic, retain) NSObject *currentVC;
-@property (nonatomic, retain) FSFreeText *editAnnot;
+@property (nonatomic, strong) NSObject *currentVC;
+@property (nonatomic, strong) FSFreeText *editAnnot;
 
 - (id)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
 

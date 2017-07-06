@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "PanelHost.h"
 #import "UIExtensionsManager+Private.h"
 #import "IPanelSpec.h"
@@ -23,49 +23,78 @@
 
 -(instancetype)init
 {
+    return [self initWithModuleConfig:nil];
+}
+
+-(instancetype)initWithModuleConfig:(UIExtensionsModulesConfig*)config
+{
     self = [super init];
     if (self)
     {
         self.spaces = [[NSMutableArray alloc] init];
         if (DEVICE_iPHONE) {
-            self.contentView = [[[UIView alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)] autorelease];
+            self.contentView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
         }
         else
         {
-            self.contentView = [[[UIView alloc]initWithFrame:CGRectMake(0, 0, 300, [UIScreen mainScreen].bounds.size.height)] autorelease];
+            self.contentView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 300, [UIScreen mainScreen].bounds.size.height)];
         }
         
         UIImage *normalImg = nil;
         UIImage *selImg = nil;
 
-        SegmentItem *bookmark = [[[SegmentItem alloc] init] autorelease];
-        bookmark.tag = 10;
-        bookmark.image = [UIImage imageNamed:@"panel_top_bookmak_normal"];
-        bookmark.selectImage = [UIImage imageNamed:@"panel_top_bookmak_selected"];
+        int itemCount = 0;
+        NSMutableArray* array = [[NSMutableArray alloc] init];
+        if(config.loadReadingBookmark)
+        {
+            SegmentItem *bookmark = [[SegmentItem alloc] init];
+            bookmark.tag = 10;
+            bookmark.image = [UIImage imageNamed:@"panel_top_bookmak_normal"];
+            bookmark.selectImage = [UIImage imageNamed:@"panel_top_bookmak_selected"];
+            itemCount++;
+            [array addObject:bookmark];
+        }
+        if(config.loadOutline)
+        {
+            SegmentItem *outline = [[SegmentItem alloc] init];
+            outline.tag = 20;
+            normalImg = [UIImage imageNamed:@"panel_top_outline_normal"];
+            selImg = [UIImage imageNamed:@"panel_top_outline_selected"];
+            outline.image = normalImg;
+            outline.selectImage = selImg;
+            itemCount++;
+            [array addObject:outline];
+        }
         
-        SegmentItem *outline = [[[SegmentItem alloc] init] autorelease];
-        outline.tag = 20;
-        normalImg = [UIImage imageNamed:@"panel_top_outline_normal"];
-        selImg = [UIImage imageNamed:@"panel_top_outline_selected"];
-        outline.image = normalImg;
-        outline.selectImage = selImg;
+        if(config.loadAnnotations) {
+            SegmentItem *annotation = [[SegmentItem alloc] init];
+            annotation.tag = 30;
+            normalImg = [UIImage imageNamed:@"panel_top_annot_normal"];
+            selImg = [UIImage imageNamed:@"panel_top_annot_selected"];
+            annotation.image = normalImg;
+            annotation.selectImage = selImg;
+            itemCount++;
+            [array addObject:annotation];
+        }
         
-        SegmentItem *annotation = [[[SegmentItem alloc] init] autorelease];
-        annotation.tag = 30;
-        normalImg = [UIImage imageNamed:@"panel_top_annot_normal"];
-        selImg = [UIImage imageNamed:@"panel_top_annot_selected"];
-        annotation.image = normalImg;
-        annotation.selectImage = selImg;
+        if(config.loadAttachment) {
+            SegmentItem *attachment = [[SegmentItem alloc] init];
+            attachment.tag = 40;
+            attachment.image = [UIImage imageNamed:@"panel_top_attach_normal"];
+            attachment.selectImage = [UIImage imageNamed:@"panel_top_attach_selected"];
+            itemCount++;
+            [array addObject:attachment];
+        }
         
-        int itemCount = 3;
         NSInteger width = (self.contentView.bounds.size.width-20)/itemCount;
-        segmentView = [[SegmentView alloc] initWithFrame:CGRectMake(10, 60, width*itemCount, 40) segmentItems:[NSArray arrayWithObjects:bookmark,outline, annotation, nil]];
+        segmentView = [[SegmentView alloc] initWithFrame:CGRectMake(10, 60, width*itemCount, 40) segmentItems:array];
         segmentView.delegate = self;
         segmentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [self.contentView addSubview:segmentView];
         self.contentView.autoresizesSubviews = YES;
         self.contentView.backgroundColor = [UIColor whiteColor];
-        [segmentView setSelectItem:bookmark];
+        if(array.count > 0)
+            [segmentView setSelectItem:[array objectAtIndex:0]];
     }
     return self;
 }
@@ -106,6 +135,15 @@
             }
         }
     }
+    else if (item.tag == 40)
+    {
+        for (id<IPanelSpec> spec in self.spaces) {
+            if ([spec getTag] == 4) {
+                [self setCurrentSpace:spec];
+                break;
+            }
+        }
+    }
 
 }
 
@@ -137,7 +175,6 @@
     [[spec getContentView] setHidden:YES];
 }
 
-
 -(void)removeSpec:(id<IPanelSpec>)spec{
 
 }
@@ -161,6 +198,5 @@
 {
     return _contentView;
 }
-
 
 @end

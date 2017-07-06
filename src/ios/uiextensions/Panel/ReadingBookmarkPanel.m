@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -8,8 +8,8 @@
  * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
- 
  */
+
 #import "ReadingBookmarkPanel.h"
 #import "PanelHost.h"
 #import "IPanelSpec.h"
@@ -18,6 +18,8 @@
 #import "TbBaseBar.h"
 #import "AlertView.h"
 #import "UniversalEditViewController.h"
+#import "UIButton+EnlargeEdge.h"
+#import "ColorUtility.h"
 
 
 @interface ReadingBookmarkPanel ()
@@ -27,7 +29,6 @@
     PanelController* _panelController;
 }
 
-@property (nonatomic, retain) TbBaseItem *bookmarkItem;
 @property (nonatomic, strong) UIView* toolbar;
 @property (nonatomic, strong) UIView* contentView;
 @property (nonatomic, strong) PanelButton* button;
@@ -46,8 +47,8 @@
         UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(0, 25, 180, 25)];
         title.backgroundColor = [UIColor clearColor];
         title.textAlignment = NSTextAlignmentCenter;
-        title.autoresizingMask =UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        title.text = NSLocalizedString(@"kBookmark", nil);
+        title.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        title.text = NSLocalizedStringFromTable(@"kBookmark", @"FoxitLocalizable", nil);
         title.textColor = [UIColor blackColor];
         self.toolbar = [[UIView alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 64)];
         self.toolbar.backgroundColor = [UIColor whiteColor];
@@ -79,7 +80,7 @@
         self.editButton = [[UIButton alloc] initWithFrame:CGRectMake(self.toolbar.frame.size.width -65, 20, 55, 35)];
         [_editButton addTarget:self action:@selector(clearBookmark:) forControlEvents:UIControlEventTouchUpInside];
         [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
-        [_editButton setTitle:NSLocalizedString(@"kClear", nil) forState:UIControlStateNormal];
+        [_editButton setTitle:NSLocalizedStringFromTable(@"kClear", @"FoxitLocalizable", nil) forState:UIControlStateNormal];
         _editButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [_editButton setEnlargedEdge:ENLARGE_EDGE];
 
@@ -95,7 +96,6 @@
         [cancelButton setBackgroundImage:[UIImage imageNamed:@"panel_cancel.png"] forState:UIControlStateNormal];
         
         _bookmarkCtrl.view.frame = self.contentView.bounds;
-        CGRect bounds = self.contentView.bounds;
         [self.contentView addSubview:_bookmarkCtrl.view];
         title.center = CGPointMake(self.toolbar.bounds.size.width/2, title.center.y);
         
@@ -122,40 +122,24 @@
 {
     if ([_bookmarkCtrl getBookmarkCount] >0)
     {
-        AlertView *alertView = [[[AlertView alloc] initWithTitle:@"kConfirm" message:@"kClearBookmark" buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm" message:@"kClearBookmark" buttonClickHandler:^(UIView *alertView, int buttonIndex) {
             if (buttonIndex == 1) { // no
             } else if (buttonIndex == 0) { // yes
                 [_bookmarkCtrl clearData:YES];
                 [[NSNotificationCenter defaultCenter]postNotificationName:UPDATEBOOKMARK object:nil];
             }
-        } cancelButtonTitle:@"kYes" otherButtonTitles:@"kNo", nil] autorelease];
+        } cancelButtonTitle:@"kYes" otherButtonTitles:@"kNo", nil];
         [alertView show];
     }
 }
 
-
--(NSString*)getName
-{
-    return @"Module_Bookmark";
-}
-
 -(void)load
 {
-    
-    __block ReadingBookmarkPanel *ReadingBookmarkPanel = self;
     [_pdfViewControl registerDocEventListener:self];
     [_pdfViewControl registerPageEventListener:self];
-    self.bookmarkItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"readview_bookmark.png"] imageSelected:[UIImage imageNamed:@"readview_bookmarkselect.png"] imageDisable:nil];
-    self.bookmarkItem.tag = 100;
-    self.bookmarkItem.onTapClick = ^(TbBaseItem *item){
-        if ([_extensionsManager currentAnnot]) {
-            [_extensionsManager setCurrentAnnot:nil];
-        }
-    };
     [_panelController.panel addSpec:self];
     _panelController.panel.currentSpace = self;
 }
-
 
 -(void)unload
 {
@@ -171,56 +155,21 @@
     [_bookmarkCtrl loadData];
 }
 
-#pragma  mark --- DocReloadEventListener
-- (void)onDocumentWillReload:(FSPDFDoc*)document
-{
-    
-}
-- (void)onDocumentReloaded:(FSPDFDoc*)document
-{
-    if (0 /*[[APPDELEGATE.app.read getDocMgr].currentDoc isReviewDoc] || ![document canAssemble]*/) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.editButton.enabled = NO;
-            [_editButton setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
-            self.bookmarkItem.button.userInteractionEnabled = NO;
-            self.bookmarkItem.button.alpha = 0.5;
-        });
-    }else{
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.bookmarkItem.button.userInteractionEnabled = YES;
-            self.bookmarkItem.button.alpha = 1;
-            self.editButton.enabled = YES;
-            [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
-        });
-    }
-    [_bookmarkCtrl clearData:NO];
-    [_bookmarkCtrl loadData];
-}
-
-
-
-- (void)onDocWillOpen
-{
-    
-    
-}
+#pragma  mark --- IDocEventListener
 
 - (void)onDocOpened:(FSPDFDoc* )document error:(int)error
 {
     [_bookmarkCtrl clearData:NO];
     [_bookmarkCtrl loadData];
-    if (0 /*[[APPDELEGATE.app.read getDocMgr].currentDoc isReviewDoc] || ![document canAssemble]*/) {
+    if (![Utility canAssembleDocument:document]) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.bookmarkItem.button.userInteractionEnabled = NO;
-            self.bookmarkItem.button.alpha = 0.5;
             self.editButton.enabled = NO;
-            [_editButton setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
+            self.editButton.hidden = YES;
         });
     }else{
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.bookmarkItem.button.userInteractionEnabled = YES;
-            self.bookmarkItem.button.alpha = 1;
             self.editButton.enabled = YES;
+            self.editButton.hidden = NO;
             [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
         });
     }
@@ -230,12 +179,12 @@
 {
     if (self.bookmarkCtrl.currentVC) {
         if ([self.bookmarkCtrl.currentVC isKindOfClass:[UINavigationController class]]) {
-            [self.bookmarkCtrl.currentVC dismissViewControllerAnimated:NO completion:nil];
+            [(UINavigationController*)self.bookmarkCtrl.currentVC dismissViewControllerAnimated:NO completion:nil];
         }
 
         else if ([self.bookmarkCtrl.currentVC isKindOfClass:[UniversalEditViewController class]])
         {
-            [(UniversalEditViewController *)self.bookmarkCtrl.currentVC dismissModalViewControllerAnimated:NO];
+            [(UniversalEditViewController *)self.bookmarkCtrl.currentVC dismissViewControllerAnimated:NO completion:nil];
         }
 
         else if([self.bookmarkCtrl.currentVC isKindOfClass:[AlertView class]])
@@ -252,8 +201,6 @@
 - (void)onDocClosed:(FSPDFDoc* )document error:(int)error
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.bookmarkItem.button.userInteractionEnabled = YES;
-        self.bookmarkItem.button.alpha = 1;
         self.editButton.enabled = YES;
         [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
     });
@@ -261,7 +208,55 @@
 
 - (void)onDocWillSave:(FSPDFDoc* )document
 {
+}
+
+#pragma mark IPageEventListener
+- (void)onPagesWillRemove:(NSArray<NSNumber*>*)indexes
+{
+}
+
+- (void)onPagesWillMove:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex
+{
+}
+
+- (void)onPagesWillRotate:(NSArray<NSNumber*>*)indexes rotation:(int)rotation
+{
+}
+
+- (void)onPagesRemoved:(NSArray<NSNumber*>*)indexes
+{
+    FSPDFDoc* doc = _pdfViewControl.currentDoc;
+    int count = [doc getReadingBookmarkCount];
+    for (int i = count - 1 ; i > -1; i--) {
+        FSReadingBookmark* rb = [doc getReadingBookmark:i];
+        int index = [rb getPageIndex];
+        if (-1 == index) {
+            [doc removeReadingBookmark:rb];
+        }
+    }
     
+    [_bookmarkCtrl clearData:NO];
+    [_bookmarkCtrl loadData];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.editButton.enabled = YES;
+        [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
+    });
+}
+
+- (void)onPagesMoved:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex
+{
+    [_bookmarkCtrl clearData:NO];
+    [_bookmarkCtrl loadData];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.editButton.enabled = YES;
+        [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
+    });
+}
+
+- (void)onPagesRotated:(NSArray<NSNumber*>*)indexes rotation:(int)rotation
+{
 }
 
 -(int)getTag
@@ -278,6 +273,7 @@
 {
     return self.toolbar;
 }
+
 -(UIView*)getContentView
 {
     return self.contentView;
@@ -285,14 +281,11 @@
 
 -(void)onActivated
 {
-    
 }
 
 -(void)onDeactivated
 {
-    
 }
-
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -302,37 +295,26 @@
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
-    
-    
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
-    
-    
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
-    
-    
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
-    
-    
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
-    
-    
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
 {
-    
 }
 
 @end

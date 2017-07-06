@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import <QuartzCore/QuartzCore.h>
 #import <UIKit/UIKit.h>
 #import "AnnotationListMore.h"
@@ -25,133 +25,16 @@
 #import "AnnotationListCell.h"
 #import "PanelController.h"
 #import "PanelHost.h"
+#import "FSUndo.h"
 
-
-static AnnotationUpdateTip* updateTip=nil;
-
-@implementation AnnotationUpdateTip
-
--(void)dealloc
-{
-    [_updateTotalDic release];
-    [super dealloc];
-}
-
-+(AnnotationUpdateTip*)getUpdateTip{
-    if (updateTip == nil) {
-        updateTip=[[AnnotationUpdateTip alloc]init];
-    }
-    return updateTip;
-}
-
--(id)init{
-    if (self=[super init]) {
-        _updateTotalDic=[[NSMutableDictionary alloc]init];
-        [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(UpdateDeleteAnnotationsTotal:) name:ANNOLIST_UPDADELETETOTAL object:nil];
-    }
-    return self;
-}
-
--(void)resetUpdateData{
-    [_updateTotalDic release];
-    _updateTotalDic=[[NSMutableDictionary alloc]init];
-    
-}
-
-static int deletetotals=0;
-
--(void)UpdateDeleteAnnotationsTotal:(NSNotification*)noti{
-    NSUInteger addanos=0;
-    if (noti) {
-        deletetotals=[[noti object]intValue];
-    }
-    NSUInteger modifyannos=0;
-    for (NSString*selectkey in self.updateTotalDic) {
-        
-        NSUInteger annoadd=[[[self.updateTotalDic objectForKey:selectkey] objectForKey:@"AnnotationOperationAdd"]intValue];
-        NSUInteger annomodify=[[[self.updateTotalDic objectForKey:selectkey] objectForKey:@"AnnotationOperationModify"]intValue];
-        addanos=addanos+annoadd;
-        modifyannos=modifyannos+annomodify;
-    }
-    
-    NSMutableString*updatetotal=[NSMutableString string];
-    if (addanos) {
-        [updatetotal appendFormat:@"%@ %d  ",NSLocalizedString(@"kAdd", nil),(int)addanos];
-    }
-    if (modifyannos) {
-        [updatetotal appendFormat:@"%@ %d  ",NSLocalizedString(@"kModify", nil),(int)modifyannos];
-    }
-    if (deletetotals) {
-        [updatetotal appendFormat:@"%@ %d",NSLocalizedString(@"kDeleted", nil),(int)deletetotals];
-    }
-    
-    [[NSNotificationCenter defaultCenter]postNotificationName:ANNOLIST_UPDATETOTAL object:updatetotal];
-    [[NSNotificationCenter defaultCenter]postNotificationName:ANNOTATION_UNREAD_TOTALCOUNT object:[NSNumber numberWithLong:(addanos+deletetotals+modifyannos)]];
-    
-    AnnotationListViewController* listviewcon=(AnnotationListViewController*)_annotationList;
-    [listviewcon checkUpdateAnnotations];
-}
-
--(NSString*)UpdateTotalsWithCommand:(BOOL)command operationType:(NSInteger)operation annotationUuid:(NSString *)annotationuuid{
-    if ([_updateTotalDic objectForKey:annotationuuid]==nil&&command==YES) {
-        NSMutableDictionary* annodic=[NSMutableDictionary dictionary];
-        [annodic setObject:[NSNumber numberWithInt:operation==AnnotationOperation_Add?1:0] forKey:@"AnnotationOperationAdd"];
-        [annodic setObject:[NSNumber numberWithInt:operation==AnnotationOperation_Delete?1:0] forKey:@"AnnotationOperationDelete"];
-        [annodic setObject:[NSNumber numberWithInt:operation==AnnotationOperation_Modify?1:0] forKey:@"AnnotationOperationModify"];
-        [_updateTotalDic setObject:annodic forKey:annotationuuid];
-        
-    }else if([_updateTotalDic objectForKey:annotationuuid]!=nil&&command==YES){
-        
-        NSMutableDictionary* annotationdic=[_updateTotalDic objectForKey:annotationuuid];
-        
-        NSString*savekey=nil;
-        
-        if (operation==AnnotationOperation_Add) {
-            
-            savekey= @"AnnotationOperationAdd";
-            
-        }else if(operation==AnnotationOperation_Delete){
-            
-            savekey= @"AnnotationOperationDelete";
-            
-        }else if(operation==AnnotationOperation_Modify){
-            
-            savekey= @"AnnotationOperationModify";
-        }
-        
-        NSUInteger annototal=[[annotationdic objectForKey:savekey]intValue];
-        
-        annototal++;
-        if(!savekey) return nil;
-        [annotationdic setObject:[NSNumber numberWithLong:annototal] forKey:savekey];
-        
-        [_updateTotalDic setObject:annotationdic forKey:annotationuuid];
-        
-    }else if([_updateTotalDic objectForKey:annotationuuid]!=nil&&command==NO){
-        
-        if ([self.updateTotalDic objectForKey:annotationuuid]) {
-            
-            [self.updateTotalDic removeObjectForKey:annotationuuid];
-        }
-        
-        [self UpdateDeleteAnnotationsTotal:nil];
-        
-    }
-    
-    return nil;
-}
-
-
-@end
-
-static BOOL direction=NO;
-static BOOL isShowViewList=NO;
-static NSMutableArray*undoannostruct;
-static NSMutableArray*redoannostruct;
+static BOOL isShowViewList = NO;
 static NSMutableDictionary*pointerannostruct;
 
 @interface AnnotationListViewController()<IAnnotEventListener>
+
 @property(nonatomic, assign) BOOL isKeyboardShow;
+@property (nonatomic, strong) NSOperationQueue *loadAnnotsQueue;
+
 - (void)refreshInterface;
 - (void)setProgressInformationHidden:(NSNumber *)isHidden;
 - (void)handleOOM;
@@ -180,24 +63,24 @@ static NSMutableDictionary*pointerannostruct;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         _panelController = annotPanel.panelController;
         _annotPanel = annotPanel;
-        self.selectannos= [[NSMutableArray alloc]init];
-        self.annostructdic= [[[NSMutableDictionary alloc]init] autorelease];
-        pointerannostruct= _annostructdic;
-        self.allpageannos= [[[NSMutableArray alloc]init] autorelease];
-        self.totalnodes= [[[NSMutableDictionary alloc]init] autorelease];
-        self.nodekeys= [[[NSMutableArray alloc]init] autorelease];
-        self.allannotations= [[[NSMutableArray alloc]init] autorelease];
-        self.updateAnnotations= [[[NSMutableArray alloc]init] autorelease];
-        self.cellProgress = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cellProgress"] autorelease];
+        self.selectannos = [[NSMutableArray alloc]init];
+        self.annostructdic = [[NSMutableDictionary alloc]init];
+        pointerannostruct = _annostructdic;
+        self.allpageannos = [[NSMutableArray alloc]init];
+        self.totalnodes = [[NSMutableDictionary alloc]init];
+        self.nodekeys = [[NSMutableArray alloc]init];
+        self.allannotations = [[NSMutableArray alloc]init];
+        self.updateAnnotations = [[NSMutableArray alloc]init];
+        self.cellProgress = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cellProgress"];
         _cellProgress.backgroundColor = [UIColor clearColor];
-        self.cellProgress.backgroundView = [[[UIView alloc] init] autorelease];
+        self.cellProgress.backgroundView = [[UIView alloc] init];
         _cellProgress.selectionStyle = UITableViewCellSelectionStyleNone;
-        self.cellProgressLabel = [[[UILabel alloc] init] autorelease];
+        self.cellProgressLabel = [[UILabel alloc] init];
         _cellProgressLabel.backgroundColor = [UIColor clearColor];
         _cellProgressLabel.frame = CGRectMake(0, 0, 200, 20);
         _cellProgressLabel.font = [UIFont systemFontOfSize:17.0];
         _cellProgressLabel.textColor = DEVICE_iPHONE?[UIColor whiteColor]:[UIColor darkTextColor];
-        self.cellProgressIndicator = [[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray] autorelease];
+        self.cellProgressIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         _cellProgressIndicator.frame = CGRectMake(0, 0, 20, 20);
         [_cellProgress.contentView addSubview:_cellProgressIndicator];
         [_cellProgress.contentView addSubview:_cellProgressLabel];
@@ -206,25 +89,13 @@ static NSMutableDictionary*pointerannostruct;
         _annotationGotoPageHandler = nil;
         _annotationSelectionHandler = nil;
         
-        if (undoannostruct == nil) {
-            undoannostruct= [[NSMutableArray alloc]init];
-        }
-        if (redoannostruct == nil) {
-            redoannostruct= [[NSMutableArray alloc]init];
-        }
-        
-        if (UIDeviceOrientationIsLandscape([[UIDevice currentDevice] orientation])) {
-            [AnnotationListViewController setDirection:YES];
-        }else{
-            [AnnotationListViewController setDirection:NO];
-        }
-        
-        [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(clearData) name:CLEAN_ANNOTATIONLIST object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationChange) name:UIDeviceOrientationDidChangeNotification object:nil];
         [_extensionsManager registerAnnotEventListener:self];
         [annotPanel.panelController registerPanelChangedListener:self];
         [_pdfViewCtrl registerDocEventListener:self];
         self.moreIndexPath = nil;
+        self.loadAnnotsQueue = nil;
+        self.isClearingAllAnnots = NO;
         
     }
     return self;
@@ -233,23 +104,33 @@ static NSMutableDictionary*pointerannostruct;
 #pragma mark - IDocEventListener
 - (void)onDocOpened:(FSPDFDoc* )document error:(int)error
 {
-    
 }
+
 - (void)onDocWillClose:(FSPDFDoc* )document
 {
     self.isShowMore = NO;
+    
+    [self.loadAnnotsQueue cancelAllOperations];
+    [self.loadAnnotsQueue waitUntilAllOperationsAreFinished];    
+    [_annostructdic removeAllObjects];
+    [_allpageannos removeAllObjects];
+    [_totalnodes removeAllObjects];
+    [_nodekeys removeAllObjects];
+    [self.selectannos removeAllObjects];
+    [self.allannotations removeAllObjects];
+
 }
+
 - (void)onDocClosed:(FSPDFDoc* )document error:(int)error
 {
-    
 }
+
 - (void)onDocWillSave:(FSPDFDoc* )document
 {
-    
 }
+
 - (void)onDocSaved:(FSPDFDoc* )document error:(int)error
 {
-    
 }
 
 #pragma mark - IPanelChangedListener
@@ -265,33 +146,29 @@ static NSMutableDictionary*pointerannostruct;
     
     if (isHidden) {
         AnnotationListCell *cell = (AnnotationListCell*)[self.tableView cellForRowAtIndexPath:self.indexPath];
-        UITextView* edittextview=(UITextView*)[cell.contentView viewWithTag:107];
+        UITextView* edittextview = (UITextView*)[cell.contentView viewWithTag:107];
         [edittextview resignFirstResponder];
     }
     
-    if (self.editAnnoItem || (_replyanno && _replyanno.isReply==YES)) {
+    if (self.editAnnoItem || (_replyanno && _replyanno.isReply == YES)) {
         AnnotationListCell *cell = (AnnotationListCell*)[self.tableView cellForRowAtIndexPath:self.indexPath];
-        UITextView* edittextview=(UITextView*)[cell.contentView viewWithTag:107];
-        UILabel* labelContents=(UILabel*)[cell.contentView viewWithTag:104];
-        NSDate *now = [NSDate date];
+        UITextView* edittextview = (UITextView*)[cell.contentView viewWithTag:107];
+        UILabel* labelContents = (UILabel*)[cell.contentView viewWithTag:104];
         if (self.editAnnoItem) {
-            self.editAnnoItem.annot.contents = edittextview.text;
-            self.editAnnoItem.annot.modifiedDate = now;
-            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.editAnnoItem.annot.type];
-            [annotHandler modifyAnnot:self.editAnnoItem.annot];
+            [self modifyAnnot:self.editAnnoItem.annot withContents:edittextview.text];
             self.editAnnoItem = nil;
         }
         if ( _replyanno && _replyanno.isReply == YES) {
             
             _replyanno.annot.contents = edittextview.text;
             _replyanno.isReply = NO;
-            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:_replyanno.annot.type];
+            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:_replyanno.annot];
             [annotHandler addAnnot:_replyanno.annot];
-            _replyanno=nil;
+            _replyanno = nil;
             
         }
         edittextview.hidden = YES;
-        labelContents.hidden=NO;
+        labelContents.hidden = NO;
         dispatch_async(dispatch_get_main_queue(), ^{
             
             [self.tableView reloadData];
@@ -307,17 +184,6 @@ static NSMutableDictionary*pointerannostruct;
     [[NSNotificationCenter defaultCenter]removeObserver:self];
     Block_release(_annotationGotoPageHandler);
     Block_release(_annotationSelectionHandler);
-    [_cellProgress release];
-    [_cellProgressIndicator release];
-    [_cellProgressLabel release];
-    [_allannotations release];
-    [_annostructdic release];
-    [_allannotations release];
-    [_allpageannos release];
-    [_totalnodes release];
-    [_selectannos release];
-    [_annoupdatetipLB release];
-    [super dealloc];
 }
 
 - (void)viewDidLoad
@@ -325,6 +191,7 @@ static NSMutableDictionary*pointerannostruct;
     [super viewDidLoad];
     [self refreshInterface];
 }
+
 - (void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
@@ -334,8 +201,9 @@ static NSMutableDictionary*pointerannostruct;
     [super viewWillDisappear:animated];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidShowNotification object:nil];
 }
+
 - (void)UpdateAnnotationsTotal:(NSNotification *)notification{
-    NSString *updatetip=[notification object];
+    NSString *updatetip = [notification object];
     if (updatetip.length != 0) {
         self.annoupdatetipLB.hidden = NO;
         self.annoupdatetipLB.text =  updatetip;
@@ -357,6 +225,7 @@ static NSMutableDictionary*pointerannostruct;
         }];
     }
 }
+
 -(void)deviceOrientationChange{
     
     UIDeviceOrientation currentOri= [[UIDevice currentDevice] orientation];
@@ -375,94 +244,34 @@ static NSMutableDictionary*pointerannostruct;
     [NSObject cancelPreviousPerformRequestsWithTarget:self.tableView selector:@selector(reloadData) object:nil];
 }
 
-+(void)setDirection:(BOOL)direction{
-    direction=direction;
-}
-
-+(BOOL)getDirection{
-    return direction;
-}
-
-
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return (UIDeviceOrientationIsValidInterfaceOrientation(interfaceOrientation));
 }
 
-+(NSMutableArray*)getRedoAnnotationDic{
-    return redoannostruct;
-}
-
-+(NSMutableArray*)getUndoAnnotationDic{
-    
-    return undoannostruct;
-}
-
-+(void)setUndoAnnotationDicRootAnnotation:(AnnotationItem *)rootanno ChildsAnnotations:(NSArray *)childs{
-    
-    NSString* annotationtag=nil;
-    if (rootanno.annoIdentifierTag==nil) {
-        
-        annotationtag=[Utility getUUID];
-    }else{
-        
-        annotationtag=rootanno.annoIdentifierTag;
-    }
-    
-    NSMutableDictionary* undoydic=[NSMutableDictionary dictionary];
-    [undoydic setObject:rootanno forKey:rootanno.annot.NM];
-    [undoydic setObject:annotationtag forKey:@"ANNOTAG"];
-    if (childs) {
-        
-        [undoydic setObject:childs forKey:[rootanno description]];
-        
-    }else{
-        
-        [undoydic setObject:[[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:rootanno andAnnoStruct:pointerannostruct] forKey:[rootanno description]];
-    }
-    
-    [undoannostruct addObject:undoydic];
-    
-}
-
-+(void)setRedoAnnotationDicRootAnnotation:(AnnotationItem*)rootanno ChildsAnnotations:(NSArray*)childs{
-    
-    NSMutableDictionary* undoydic=[NSMutableDictionary dictionary];
-    [undoydic setObject:rootanno forKey:rootanno.annot.NM];
-    [undoydic setObject:rootanno.annoIdentifierTag forKey:@"ANNOTAG"];
-    if (childs) {
-        [undoydic setObject:childs forKey:[rootanno description]];
-    }else{
-        [undoydic setObject:[[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:rootanno andAnnoStruct:pointerannostruct] forKey:[rootanno description]];
-    }
-    
-    [redoannostruct addObject:undoydic];
-    
-}
-
 -(void)checkAnnotationIsUpdate:(AnnotationItem *)rootannotation{
     
-    BOOL searchupdate=NO;
+    BOOL searchupdate = NO;
     
-    NSArray*childannotations=[[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:rootannotation andAnnoStruct:self.annostructdic];
+    NSArray*childannotations = [[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:rootannotation andAnnoStruct:self.annostructdic];
     
     for (AnnotationItem *checkupdateanno in childannotations) {
         if (checkupdateanno.isUpdate) {
-            searchupdate=YES;
+            searchupdate = YES;
             break;
         }
     }
     
-    if (!searchupdate&&!rootannotation.isUpdate) {
-        rootannotation.isShowUpdateTip=NO;
+    if (!searchupdate && !rootannotation.isUpdate) {
+        rootannotation.isShowUpdateTip = NO;
     }
 }
 
 -(void)checkUpdateAnnotations{
     for (int i=0; i<_updateAnnotations.count; i++) {
         
-        AnnotationItem* annotation=[_updateAnnotations objectAtIndex:i];
-        AnnotationItem*rootanno=nil;
+        AnnotationItem* annotation = [_updateAnnotations objectAtIndex:i];
+        AnnotationItem*rootanno = nil;
         [[AnnotationStruct getSingle]getRootAnnotation:annotation TargetAnnotation:&rootanno AnnoArray:_updateAnnotations];
         if (rootanno) {
             [self performSelector:@selector(addAnnotation:) withObject:rootanno afterDelay:0.1];
@@ -490,8 +299,6 @@ static NSMutableDictionary*pointerannostruct;
     [_nodekeys removeAllObjects];
     [self.selectannos removeAllObjects];
     [self.allannotations removeAllObjects];
-    [undoannostruct removeAllObjects];
-    [redoannostruct removeAllObjects];
     dispatch_async(dispatch_get_main_queue(), ^{
         
         [self.tableView reloadData];
@@ -506,7 +313,7 @@ static NSMutableDictionary*pointerannostruct;
     if (annot.type == e_annotStrikeOut && [Utility isReplaceText:(FSStrikeOut*)annot]) {
         return;
     }
-    AnnotationItem *annoItem = [[[AnnotationItem alloc] init] autorelease];
+    AnnotationItem *annoItem = [[AnnotationItem alloc] init];
     annoItem.annot = annot;
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
                           annoItem,@"Annotation",
@@ -514,12 +321,16 @@ static NSMutableDictionary*pointerannostruct;
                           nil];
     [self reloadAnnotationForAnnotation:dict];
 }
+
 - (void)onAnnotDeleted:(FSPDFPage* )page annot:(FSAnnot*)annot
 {
+    //If currently is clearing all the annotations, then we don't reload the data here for better performance.
+    if(_isClearingAllAnnots)
+        return;
     if (annot.type == e_annotStrikeOut && [Utility isReplaceText:(FSStrikeOut*)annot]) {
         return;
     }
-    AnnotationItem *annoItem = [[[AnnotationItem alloc] init] autorelease];
+    AnnotationItem *annoItem = [[AnnotationItem alloc] init];
     annoItem.annot = annot;
     if (!annot.canModify) {
         self.allCanModify = YES;
@@ -528,12 +339,13 @@ static NSMutableDictionary*pointerannostruct;
     [self reloadAnnotationsForPages:[NSMutableArray arrayWithObjects:annoItem, nil]];
     
 }
+
 - (void)onAnnotModified:(FSPDFPage* )page annot:(FSAnnot*)annot
 {
     if (annot.type == e_annotStrikeOut && [Utility isReplaceText:(FSStrikeOut*)annot]) {
         return;
     }
-    AnnotationItem *annoItem = [[[AnnotationItem alloc] init] autorelease];
+    AnnotationItem *annoItem = [[AnnotationItem alloc] init];
     annoItem.annot = annot;
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
                           annoItem,@"Annotation",
@@ -541,10 +353,9 @@ static NSMutableDictionary*pointerannostruct;
                           nil];
     [self reloadAnnotationForAnnotation:dict];
 }
+
 - (void)onCurrentAnnotChanged:(FSAnnot*)lastAnnot currentAnnot:(FSAnnot*)currentAnnot
 {
-    
-    
 }
 
 #pragma mark - Table view data source
@@ -555,14 +366,13 @@ static NSMutableDictionary*pointerannostruct;
     return self.allpageannos.count;
 }
 
-
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    int rowtotals=0;
-    NSArray* nodearray=[self.allpageannos objectAtIndex:section];
+    int rowtotals = 0;
+    NSArray* nodearray = [self.allpageannos objectAtIndex:section];
     for (AnnotationItem *tempnodeanno in nodearray) {
         
-        rowtotals += (int)[[self.totalnodes objectForKey:[tempnodeanno.annot NM]]count];
+        rowtotals += (int)[[self.totalnodes objectForKey:tempnodeanno.annot.uuidWithPageIndex] count];
         
     }
     return rowtotals;
@@ -571,7 +381,7 @@ static NSMutableDictionary*pointerannostruct;
 
 - (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{
     
-    UIView*view=[[[UIView alloc]init]autorelease];
+    UIView*view = [[UIView alloc]init];
     return view;
 }
 
@@ -579,25 +389,25 @@ static NSMutableDictionary*pointerannostruct;
 {
     
     if (self.allpageannos.count == 0 || !self.allpageannos) {
-        UIView *view = [[[UIView alloc] init] autorelease];
+        UIView *view = [[UIView alloc] init];
         return view;
     }
-        AnnotationItem* annotation=[[self.allpageannos objectAtIndex:section]objectAtIndex:0];
-        UIView* subView = [[[UIView alloc] init] autorelease];
+        AnnotationItem* annotation = [[self.allpageannos objectAtIndex:section]objectAtIndex:0];
+        UIView* subView = [[UIView alloc] init];
         subView.backgroundColor = [UIColor colorWithRed:204.f/255.f green:204.f/255.f blue:204.f/255.f alpha:1];
-        UILabel* labelSection = [[[UILabel alloc] initWithFrame:CGRectMake(5, 0, tableView.bounds.size.width-20, 25)] autorelease];
+        UILabel* labelSection = [[UILabel alloc] initWithFrame:CGRectMake(5, 0, tableView.bounds.size.width-20, 25)];
         labelSection.font = [UIFont systemFontOfSize:13];
         labelSection.backgroundColor = [UIColor clearColor];
         labelSection.textColor = [UIColor blackColor];
         
-        UILabel* labelTotal = [[[UILabel alloc] initWithFrame:CGRectMake(tableView.bounds.size.width-120, 0, 100, 25)] autorelease];
+        UILabel* labelTotal = [[UILabel alloc] initWithFrame:CGRectMake(tableView.bounds.size.width-120, 0, 100, 25)];
         labelTotal.font = [UIFont systemFontOfSize:13];
         labelTotal.textAlignment = NSTextAlignmentRight;
         labelTotal.backgroundColor = [UIColor clearColor];
         labelTotal.textColor = [UIColor colorWithRed:37.f/255.f green:157.f/255.f blue:214.f/255.f alpha:1];
         labelTotal.text = [NSString stringWithFormat:@"%d",(int)[[self.allpageannos objectAtIndex:section] count]];
         
-        NSString* sectionTitle = [NSString stringWithFormat:@"%@ %d", NSLocalizedString(@"kPage", nil), annotation.annot.pageIndex+1];
+        NSString* sectionTitle = [NSString stringWithFormat:@"%@ %d", NSLocalizedStringFromTable(@"kPage", @"FoxitLocalizable", nil), annotation.annot.pageIndex+1];
         
         labelSection.text = sectionTitle;
         [subView addSubview:labelSection];
@@ -609,7 +419,6 @@ static NSMutableDictionary*pointerannostruct;
 {
     return 25;
 }
-
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section{
     
@@ -625,23 +434,23 @@ static NSMutableDictionary*pointerannostruct;
 {
     static NSString* cellIdentifier = @"annotationCellIdentifier";
    
-    AnnotationItem* annoItem=nil;
-    if (self.allpageannos.count == 0 || !self.allpageannos) {
-         AnnotationListCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    AnnotationItem* annoItem = nil;
+    if (self.allpageannos.count == 0 || !self.allpageannos || indexPath.section >= self.allpageannos.count) {
+        AnnotationListCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier];
         if (cell == nil) {
-            cell = [[[AnnotationListCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier isMenu:NO superView:_panelController.panel.contentView typeOf:0] autorelease];
+            cell = [[AnnotationListCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier isMenu:NO superView:_panelController.panel.contentView typeOf:0];
         }
         return cell;
     }
-        NSArray* nodearray=[self.allpageannos objectAtIndex:[indexPath section]];
+        NSArray* nodearray = [self.allpageannos objectAtIndex:[indexPath section]];
         
-        NSUInteger annotationindex=0;
+        NSUInteger annotationindex = 0;
         
         for (AnnotationItem* tempnodeanno in nodearray) {
             if (annoItem)
                 break;
             
-            for (AnnotationItem*selectanno in [self.totalnodes objectForKey:[tempnodeanno.annot NM]]) {
+            for (AnnotationItem*selectanno in [self.totalnodes objectForKey:tempnodeanno.annot.uuidWithPageIndex]) {
                 
                 if (annotationindex == [indexPath row]) {
                     
@@ -654,6 +463,14 @@ static NSMutableDictionary*pointerannostruct;
             }
             
         }
+    
+    if (!annoItem) {
+        AnnotationListCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+        if (cell == nil) {
+            cell = [[AnnotationListCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier isMenu:NO superView:_panelController.panel.contentView typeOf:0];
+        }
+        return cell;
+    }
         
         if (!annoItem.annot.canModify) {
             if (self.allCanModify) {
@@ -662,72 +479,72 @@ static NSMutableDictionary*pointerannostruct;
         }
          AnnotationListCell* cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier];
         if (cell == nil) {
-            cell = [[[AnnotationListCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier isMenu:NO superView:_panelController.panel.contentView typeOf:0] autorelease];
-            cell.delegate=self;
+            cell = [[AnnotationListCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier isMenu:NO superView:_panelController.panel.contentView typeOf:0];
+            cell.delegate = self;
         }
-        cell.delegate=self;
+        cell.delegate = self;
         cell.belowView.deleteButton.hidden = NO;
         cell.belowView.noteButton.hidden = NO;
         cell.belowView.replyButton.hidden = NO;
-        UIImageView* annoimageView=(UIImageView*)[cell.contentView viewWithTag:99];
-        AnnotationButton* annolevelimageView=(AnnotationButton*)[cell.contentView viewWithTag:100];
-        UILabel* labelAuthor=(UILabel*)[cell.contentView viewWithTag:102];
-        UILabel* labelDate=(UILabel*)[cell.contentView viewWithTag:103];
-        UILabel* labelContents=(UILabel*)[cell.contentView viewWithTag:104];
+        UIImageView* annoimageView = (UIImageView*)[cell.contentView viewWithTag:99];
+        AnnotationButton* annolevelimageView = (AnnotationButton*)[cell.contentView viewWithTag:100];
+        UILabel* labelAuthor = (UILabel*)[cell.contentView viewWithTag:102];
+        UILabel* labelDate = (UILabel*)[cell.contentView viewWithTag:103];
+        UILabel* labelContents = (UILabel*)[cell.contentView viewWithTag:104];
         labelContents.hidden = NO;
         labelContents.text = @"";
-        UITextView* edittextview=(UITextView*)[cell.contentView viewWithTag:107];
+        UITextView* edittextview = (UITextView*)[cell.contentView viewWithTag:107];
         edittextview.returnKeyType = UIReturnKeyDone;
-        UIImageView* annoupdatetip=(UIImageView*)[cell.contentView viewWithTag:108];
-        UIImageView* annouprepltip=(UIImageView*)[cell.contentView viewWithTag:109];
+        UIImageView* annoupdatetip = (UIImageView*)[cell.contentView viewWithTag:108];
+        UIImageView* annouprepltip = (UIImageView*)[cell.contentView viewWithTag:109];
         cell.indexPath = indexPath;
         cell.item = annoItem;
         annoimageView.image = [UIImage imageNamed:[[AnnotationStruct getSingle]annotationImageName:annoItem]];
         annoItem.currentlevelbutton = annolevelimageView;
-        annoItem.annosection=indexPath.section;
+        annoItem.annosection = indexPath.section;
         annoItem.annorow = indexPath.row;
         if (annoItem.isSecondLevel) {
-            annolevelimageView.hidden=[self isContentEditing]?YES:NO;
-            if ([[self.annostructdic objectForKey:annoItem.annot.NM] count]>0) {
-                annolevelimageView.hidden=NO;
+            annolevelimageView.hidden = [self isContentEditing]?YES:NO;
+            if ([[self.annostructdic objectForKey:annoItem.annot.uuidWithPageIndex] count]>0) {
+                annolevelimageView.hidden = NO;
                 if (annoItem.currentlevelshow) {
-                    annolevelimageView.selected=YES;
+                    annolevelimageView.selected = YES;
                 }else{
-                    annolevelimageView.selected=NO;
+                    annolevelimageView.selected = NO;
                 }
             }else{
-                annolevelimageView.hidden=YES;
-                annolevelimageView.selected=YES;
+                annolevelimageView.hidden = YES;
+                annolevelimageView.selected = YES;
             }
             
-            if (annoItem.annot.replyTo==nil) {
+            if (annoItem.annot.replyTo == nil) {
                 
-                annolevelimageView.hidden=YES;
+                annolevelimageView.hidden = YES;
                 
             }
             
         }else{
             
-            annolevelimageView.hidden=YES;
+            annolevelimageView.hidden = YES;
         }
         
-        annolevelimageView.buttonannotag=annoItem;
-        annolevelimageView.currentsection=indexPath.section;
-        annolevelimageView.currentrow=indexPath.row;
+        annolevelimageView.buttonannotag = annoItem;
+        annolevelimageView.currentsection = indexPath.section;
+        annolevelimageView.currentrow = indexPath.row;
         
         [annolevelimageView addTarget:self action:@selector(getDetailButton:) forControlEvents:UIControlEventTouchUpInside];
         
-        labelAuthor.text=annoItem.annot.author;
+        labelAuthor.text = annoItem.annot.author;
         
         if (annoItem.annot.replyTo != nil) {
             
-            labelAuthor.text=[NSString stringWithFormat:@"%@ to %@", annoItem.annot.author ? annoItem.annot.author : @"",annoItem.replytoauthor ? annoItem.replytoauthor : @""];
+            labelAuthor.text = [NSString stringWithFormat:@"%@ to %@", annoItem.annot.author ? annoItem.annot.author : @"",annoItem.replytoauthor ? annoItem.replytoauthor : @""];
             
         }
-        labelDate.text=[Utility displayDateInYMDHM:annoItem.annot.modifiedDate];
+        labelDate.text = [Utility displayDateInYMDHM:annoItem.annot.modifiedDate];
         
         NSString* contents = [annoItem.annot.contents stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        
+    
         if (contents == nil || contents.length == 0)
         {
             
@@ -738,8 +555,8 @@ static NSMutableDictionary*pointerannostruct;
             labelContents.hidden = NO;
             
             labelContents.text = contents;
-            CGSize contentSize= CGSizeZero;
-            labelContents.numberOfLines =0;
+            CGSize contentSize = CGSizeZero;
+            labelContents.numberOfLines = 0;
             
             
             if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
@@ -774,59 +591,12 @@ static NSMutableDictionary*pointerannostruct;
                 }];
             }
         }
-        
-        NSString* selectedText = [annoItem.annot.selectedText stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        
-        if ((selectedText == nil || selectedText.length == 0) && contents.length == 0)
-        {
-            labelContents.hidden = YES;
-            
-        }else if(labelContents.hidden == YES){
-            labelContents.hidden = NO;
-            labelContents.text = selectedText;
-            CGSize contentSize= CGSizeZero;
-            labelContents.numberOfLines =0;
-            
-            if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
-                contentSize = [Utility getTextSize:selectedText fontSize:13.0 maxSize:CGSizeMake(DEVICE_iPHONE? SCREENHEIGHT - 40 : 300 - 40, 2000)];
-                
-                [labelContents mas_remakeConstraints:^(MASConstraintMaker *make) {
-                    make.top.equalTo(labelContents.superview.mas_top).offset(69);
-                    make.left.equalTo(labelContents.superview.mas_left).offset(20);
-                    make.right.equalTo(labelContents.superview.mas_right).offset(-20);
-                }];
-                [edittextview mas_remakeConstraints:^(MASConstraintMaker *make) {
-                    make.top.equalTo(labelContents.superview.mas_top).offset(69);
-                    make.left.equalTo(labelContents.superview.mas_left).offset(20);
-                    make.right.equalTo(labelContents.superview.mas_right).offset(-20);
-                    make.height.mas_equalTo(contentSize.height);
-                }];
-            }
-            else
-            {
-                contentSize = [Utility getTextSize:selectedText fontSize:13.0 maxSize:CGSizeMake(DEVICE_iPHONE? SCREENWIDTH - 40 : 300 - 40, 2000)];
-                
-                [labelContents mas_remakeConstraints:^(MASConstraintMaker *make) {
-                    make.top.equalTo(labelContents.superview.mas_top).offset(69);
-                    make.left.equalTo(labelContents.superview.mas_left).offset(20);
-                    make.right.equalTo(labelContents.superview.mas_right).offset(-20);
-                }];
-                [edittextview mas_remakeConstraints:^(MASConstraintMaker *make) {
-                    make.top.equalTo(labelContents.superview.mas_top).offset(69);
-                    make.left.equalTo(labelContents.superview.mas_left).offset(20);
-                    make.right.equalTo(labelContents.superview.mas_right).offset(-20);
-                    make.height.mas_equalTo(contentSize.height);
-                }];
-                
-            }
-            
-        }
-        
+    
         if (annolevelimageView.buttonannotag.annot.replyTo != nil) {
-            annoimageView.hidden=YES;
-            annoupdatetip.hidden=YES;
-            annouprepltip.hidden=NO;
-            CGSize contentSize= CGSizeZero;
+            annoimageView.hidden = YES;
+            annoupdatetip.hidden = YES;
+            annouprepltip.hidden = NO;
+            CGSize contentSize = CGSizeZero;
             if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
                 contentSize = [Utility getTextSize:contents fontSize:13.0 maxSize:CGSizeMake(DEVICE_iPHONE? SCREENHEIGHT - 40 : 300 - 40, 2000)];
             }
@@ -847,19 +617,19 @@ static NSMutableDictionary*pointerannostruct;
             
         }else{
             
-            annoimageView.hidden=NO;
+            annoimageView.hidden = NO;
             [labelAuthor setTextAlignment:NSTextAlignmentLeft];
             if (annolevelimageView.buttonannotag.isShowUpdateTip) {
-                annoupdatetip.hidden=NO;
+                annoupdatetip.hidden = NO;
             }else{
-                annoupdatetip.hidden=YES;
+                annoupdatetip.hidden = YES;
             }
-            annouprepltip.hidden=YES;
+            annouprepltip.hidden = YES;
             
         }
         
         if (annolevelimageView.buttonannotag.isUpdate) {
-            labelContents.textColor=[UIColor colorWithRed:252/255.0f green:130/255.0f blue:0/255.0f alpha:1.0];
+            labelContents.textColor = [UIColor colorWithRed:252/255.0f green:130/255.0f blue:0/255.0f alpha:1.0];
         }else{
             [labelContents setTextColor:[UIColor darkGrayColor]];
         }
@@ -870,7 +640,7 @@ static NSMutableDictionary*pointerannostruct;
         else
         {
             edittextview.hidden = YES;
-            if ((contents == nil || contents.length == 0) && ((selectedText == nil || selectedText.length == 0) && contents.length == 0)) {
+            if ((contents == nil || contents.length == 0)) {
                 labelContents.hidden = YES;
             }else{
                 labelContents.hidden = NO;
@@ -974,29 +744,29 @@ static NSMutableDictionary*pointerannostruct;
 {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
     
-    NSMutableArray* nodeannos=[NSMutableArray array];
+    NSMutableArray* nodeannos = [NSMutableArray array];
     
-    NSArray* nodes=[self.allpageannos objectAtIndex:indexPath.section];
+    NSArray* nodes = [self.allpageannos objectAtIndex:indexPath.section];
     
     for (AnnotationItem *annotation in nodes) {
         
-        [nodeannos addObjectsFromArray:[self.totalnodes objectForKey:annotation.annot.NM]];
+        [nodeannos addObjectsFromArray:[self.totalnodes objectForKey:annotation.annot.uuidWithPageIndex]];
         
     }
     
-    AnnotationItem* annotationItem =[nodeannos objectAtIndex:indexPath.row];
+    AnnotationItem* annotationItem = [nodeannos objectAtIndex:indexPath.row];
     
     if (self.isContentEditing)
     {
         
         annotationItem.isSelected = !annotationItem.isSelected;
         
-        if (![self.selectannos containsObject:annotationItem]&&annotationItem.isSelected==YES) {
+        if (![self.selectannos containsObject:annotationItem] && annotationItem.isSelected == YES) {
             
             [self.selectannos addObject:annotationItem];
             
         }
-        if (annotationItem.isSelected==NO&&[self.selectannos containsObject:annotationItem]) {
+        if (annotationItem.isSelected == NO && [self.selectannos containsObject:annotationItem]) {
             
             [self.selectannos removeObject:annotationItem];
             
@@ -1007,14 +777,14 @@ static NSMutableDictionary*pointerannostruct;
             self.annotationSelectionHandler();
         }
         
-        UITableViewCell* selectcell=(UITableViewCell*)[tableView cellForRowAtIndexPath:indexPath];
-        UIImageView* selectimageview=(UIImageView*)[selectcell.contentView viewWithTag:101];
-        selectimageview.image=annotationItem.isSelected ? [UIImage imageNamed:@"common_redio_selected"] : [UIImage imageNamed:@"common_redio_blank"];
+        UITableViewCell* selectcell = (UITableViewCell*)[tableView cellForRowAtIndexPath:indexPath];
+        UIImageView* selectimageview = (UIImageView*)[selectcell.contentView viewWithTag:101];
+        selectimageview.image = annotationItem.isSelected ? [UIImage imageNamed:@"common_redio_selected"] : [UIImage imageNamed:@"common_redio_blank"];
         
     }
     else
     {
-        if (self.annotationGotoPageHandler&&annotationItem.annot.replyTo==nil)
+        if (self.annotationGotoPageHandler && annotationItem.annot.replyTo == nil)
         {
             
             [self performSelector:@selector(afterDelayGotoPage:) withObject:annotationItem afterDelay:0.2];
@@ -1022,19 +792,17 @@ static NSMutableDictionary*pointerannostruct;
         }
     }
     
-    [[AnnotationUpdateTip getUpdateTip]UpdateTotalsWithCommand:NO operationType:0 annotationUuid:annotationItem.annot.NM];
-    
     if (annotationItem.isUpdate) {
         
-        annotationItem.isUpdate=NO;
+        annotationItem.isUpdate = NO;
         
         [self checkAnnotationIsUpdate:annotationItem.rootannotation];
         
-        UITableViewCell* selectcell=(UITableViewCell*)[tableView cellForRowAtIndexPath:indexPath];
+        UITableViewCell* selectcell = (UITableViewCell*)[tableView cellForRowAtIndexPath:indexPath];
         
-        UILabel* labelContents=(UILabel*)[selectcell.contentView viewWithTag:104];
+        UILabel* labelContents = (UILabel*)[selectcell.contentView viewWithTag:104];
         
-        labelContents.textColor=[UIColor colorWithHexString:@"333333"];
+        labelContents.textColor = [UIColor colorWithHexString:@"333333"];
         
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:UITableViewRowAnimationNone];
         
@@ -1051,8 +819,7 @@ static NSMutableDictionary*pointerannostruct;
 
 - (void)setCurrentAnnotionItem:(AnnotationItem*)annotationItem
 {
-    unsigned long allPermission = [_pdfViewCtrl.currentDoc getUserPermissions];
-    BOOL canAddAnnot = (allPermission & e_permAnnotForm);
+    BOOL canAddAnnot = [Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc];
     if (canAddAnnot && [_pdfViewCtrl getPageLayoutMode] != PDF_LAYOUT_MODE_REFLOW) {
         [_extensionsManager setCurrentAnnot:annotationItem.annot];
     }
@@ -1060,47 +827,45 @@ static NSMutableDictionary*pointerannostruct;
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    AnnotationItem* annotationItem=nil;
+    AnnotationItem* annotationItem = nil;
     if (self.allpageannos.count == 0 || !self.allpageannos) {
         return 0;
     }
-        NSArray* nodearray=[self.allpageannos objectAtIndex:[indexPath section]];
+        NSArray* nodearray = [self.allpageannos objectAtIndex:[indexPath section]];
         
-        NSUInteger annotationindex=0;
+        NSUInteger annotationindex = 0;
         
         for (AnnotationItem* tempnodeanno in nodearray) {
             
             if (annotationItem)
                 break;
             
-            for (AnnotationItem*selectanno in [self.totalnodes objectForKey:[tempnodeanno.annot NM]]) {
-                
-                if (annotationindex == [indexPath row]) {
+            if (self.totalnodes[tempnodeanno.annot.uuidWithPageIndex] != nil){
+                for (AnnotationItem*selectanno in self.totalnodes[tempnodeanno.annot.uuidWithPageIndex]) {
                     
-                    annotationItem=selectanno;
+                    if (annotationindex == [indexPath row]) {
+                        
+                        annotationItem = selectanno;
+                        
+                        break;
+                    }
                     
-                    break;
+                    annotationindex++;
                 }
-                
-                annotationindex++;
             }
-            
         }
         
         float cellHeight = 68;
         
-        CGSize contentSize=CGSizeMake(0, 0);
-        NSString* contents=nil;
+        CGSize contentSize = CGSizeMake(0, 0);
+        NSString* contents = nil;
         
-        if ([annotationItem.annot.contents stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length!=0) {
-            contents=[annotationItem.annot.contents stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if ([annotationItem.annot.contents stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length != 0) {
+            contents = [annotationItem.annot.contents stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
             
-            
-        }else{
-            contents=[annotationItem.annot.selectedText stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
             
         }
-        
+    
         if (contents == nil || contents.length == 0)
         {
             if (self.indexPath && self.indexPath.section == indexPath.section && self.indexPath.row == indexPath.row ) {
@@ -1129,7 +894,7 @@ static NSMutableDictionary*pointerannostruct;
         return cellHeight + contentSize.height;
 }
 
-static  AnnotationItem* annotationItem=nil;
+static  AnnotationItem* annotationItem = nil;
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex{
     
@@ -1143,43 +908,42 @@ static  AnnotationItem* annotationItem=nil;
 -(void)getDetailButton:(AnnotationButton *)button{
     
     [self getDetailReply:nil ClickAnnotation:button.buttonannotag];
-    button.selected=!button.selected;
+    button.selected = !button.selected;
 }
-
 
 - (void)getDetailReply:(AnnotationButton *)button ClickAnnotation:(AnnotationItem*)clickanno{
     
     
-    NSUInteger currentsection=0;
-    NSUInteger currentrow=0;
-    AnnotationItem* currentanno=nil;
+    NSUInteger currentsection = 0;
+    NSUInteger currentrow = 0;
+    AnnotationItem* currentanno = nil;
     if (button) {
-        currentanno= button.buttonannotag;
+        currentanno = button.buttonannotag;
         
     }else{
-        currentanno= clickanno;
+        currentanno = clickanno;
         
     }
     
-    currentsection= clickanno.rootannotation.annosection;
+    currentsection = clickanno.rootannotation.annosection;
     
-    NSArray* currentpagenode= [self.allpageannos objectAtIndex:currentsection];
+    NSArray* currentpagenode = [self.allpageannos objectAtIndex:currentsection];
     
-    NSMutableArray*currentlevel= [NSMutableArray array];
+    NSMutableArray*currentlevel = [NSMutableArray array];
     
     for (AnnotationItem*rootnode in currentpagenode) {
         
-        [currentlevel addObjectsFromArray:[self.totalnodes objectForKey:rootnode.annot.NM]];
+        [currentlevel addObjectsFromArray:[self.totalnodes objectForKey:rootnode.annot.uuidWithPageIndex]];
         
     }
     
-    currentrow=[currentlevel indexOfObject:clickanno];
+    currentrow = [currentlevel indexOfObject:clickanno];
     
-    NSMutableArray* currentarray= [self checkIndexFromAnnotation:currentanno.rootannotation Annoarray:currentpagenode];
+    NSMutableArray* currentarray = [self checkIndexFromAnnotation:currentanno.rootannotation Annoarray:currentpagenode];
     
-    NSMutableArray* addannoarray= [self.annostructdic objectForKey:currentanno.annot.NM];
+    NSMutableArray* addannoarray = [self.annostructdic objectForKey:currentanno.annot.uuidWithPageIndex];
     
-    [addannoarray makeObjectsPerformSelector:@selector(addCurrentlevel:) withObject:[NSNumber numberWithInteger:(currentanno.annot.replyTo==nil?(currentanno.currentlevel+1):(currentanno.currentlevel))]];
+    [addannoarray makeObjectsPerformSelector:@selector(addCurrentlevel:) withObject:[NSNumber numberWithInteger:(currentanno.annot.replyTo == nil?(currentanno.currentlevel+1):(currentanno.currentlevel))]];
     
     [addannoarray makeObjectsPerformSelector:@selector(setReplytoauthor:) withObject:currentanno.annot.author];
     
@@ -1202,22 +966,23 @@ static  AnnotationItem* annotationItem=nil;
     if (!currentanno.currentlevelshow) {
         
         
-        NSUInteger insertrowindex= [currentarray indexOfObject:currentanno];
+        NSUInteger insertrowindex = [currentarray indexOfObject:currentanno];
         
         [currentarray insertObjects:addannoarray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(insertrowindex+1, addannoarray.count)]];
         
         if (isShowViewList) {
             
-            NSMutableArray* arCells= [NSMutableArray array];
+            NSMutableArray* arCells = [NSMutableArray array];
             
-            for (int i= 0; i < addannoarray.count; i++) {
+            for (int i=0; i < addannoarray.count; i++) {
                 
-                currentrow=currentrow+1;
+                currentrow = currentrow+1;
                 [arCells addObject:[NSIndexPath indexPathForRow:currentrow inSection:currentsection]];
                 
             }
             
-            [self.tableView insertRowsAtIndexPaths:arCells withRowAnimation:UITableViewRowAnimationNone];
+            if (arCells.count > 0)
+                [self.tableView insertRowsAtIndexPaths:arCells withRowAnimation:UITableViewRowAnimationNone];
         }
         
         if (currentanno.annot.replyTo != nil) {
@@ -1231,26 +996,26 @@ static  AnnotationItem* annotationItem=nil;
         }
         if (currentanno.isSecondLevel) {
             
-            currentanno.currentlevelshow=YES;
+            currentanno.currentlevelshow = YES;
         }
         
     }else{
         
-        currentanno.currentlevelshow=NO;
+        currentanno.currentlevelshow = NO;
         
-        NSMutableArray* deletearray=[NSMutableArray array];
+        NSMutableArray* deletearray = [NSMutableArray array];
         
         [self getAboutAnnotatios:currentanno Annoarray:currentarray deleteArray:deletearray];
         
-        NSArray* removeannos=deletearray;
+        NSArray* removeannos = deletearray;
         
-        NSUInteger insertrowindex=[currentarray indexOfObject:currentanno];
+        NSUInteger insertrowindex = [currentarray indexOfObject:currentanno];
         
-        NSMutableArray* arCells=[NSMutableArray array];
+        NSMutableArray* arCells = [NSMutableArray array];
         
         for (int i=0; i< removeannos.count; i++) {
             
-            currentrow= currentrow+1;
+            currentrow = currentrow+1;
             [arCells addObject:[NSIndexPath indexPathForRow:currentrow inSection:currentsection]];
             
         }
@@ -1262,20 +1027,19 @@ static  AnnotationItem* annotationItem=nil;
     
 }
 
-
 -(NSMutableArray*)checkIndexFromAnnotation:(AnnotationItem *)searchanno Annoarray:(NSArray*)annoarray{
     
-    NSMutableArray* nodearray=nil;
+    NSMutableArray* nodearray = nil;
     
-    BOOL searchannoFromNode=NO;
+    BOOL searchannoFromNode = NO;
     
     for (int i=0; i< annoarray.count; i++) {
         
-        nodearray= [self.totalnodes objectForKey:[[[annoarray objectAtIndex:i] annot] NM]];
+        nodearray = [self.totalnodes objectForKey:[[annoarray objectAtIndex:i] annot].uuidWithPageIndex];
         
         if ([nodearray containsObject:searchanno]) {
             
-            searchannoFromNode=YES;
+            searchannoFromNode = YES;
             break;
             
         }
@@ -1288,11 +1052,10 @@ static  AnnotationItem* annotationItem=nil;
     return nil;
 }
 
-
 -(void)getAboutAnnotatios:(AnnotationItem*)searchanno Annoarray:(NSArray*)annoarray deleteArray:(NSMutableArray*)deletearray{
     
     
-    NSArray* searcharray= [[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:searchanno andAnnoStruct:self.annostructdic];
+    NSArray* searcharray = [[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:searchanno andAnnoStruct:self.annostructdic];
     
     for (AnnotationItem* annannotationo in searcharray) {
         
@@ -1307,18 +1070,17 @@ static  AnnotationItem* annotationItem=nil;
 -(void)GetStructFromAnnotationArray:(NSArray*)annoarray WithIndex:(NSUInteger)index{
     
     
-    NSMutableArray* temppageannnos=[NSMutableArray array];
+    NSMutableArray* temppageannnos = [NSMutableArray array];
     
-    NSMutableArray* noteannos=[NSMutableArray array];
+    NSMutableArray* noteannos = [NSMutableArray array];
     
     for (AnnotationItem* annotation in annoarray) {
         
         if (annotation.annot.replyTo == nil) {
-            
-            annotation.currentlevel= 1;
-            annotation.annosection= [self.allpageannos count];
-            annotation.isSecondLevel= YES;
-            annotation.rootannotation= annotation;
+            annotation.currentlevel = 1;
+            annotation.annosection = [self.allpageannos count];
+            annotation.isSecondLevel = YES;
+            annotation.rootannotation = annotation;
             [temppageannnos addObject:annotation];
         }else{
             
@@ -1332,11 +1094,11 @@ static  AnnotationItem* annotationItem=nil;
     
     for (AnnotationItem* annotation in temppageannnos) {
         
-        NSMutableArray* nodearray= [NSMutableArray array];
+        NSMutableArray* nodearray = [NSMutableArray array];
         
         [nodearray addObject:annotation];
         
-        [self.totalnodes setObject:nodearray forKey:annotation.annot.NM];
+        [self.totalnodes setObject:nodearray forKey:annotation.annot.uuidWithPageIndex];
         
         [self.nodekeys addObject:[annotation description]];
         
@@ -1345,7 +1107,7 @@ static  AnnotationItem* annotationItem=nil;
     for (AnnotationItem*rootnodeanno in temppageannnos) {
         
         for (AnnotationItem*childannotation in [[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:rootnodeanno andAnnoStruct:self.annostructdic]) {
-            childannotation.rootannotation= rootnodeanno;
+            childannotation.rootannotation = rootnodeanno;
         }
     }
 }
@@ -1356,7 +1118,7 @@ static  AnnotationItem* annotationItem=nil;
 {
     if (_isContentEditing != isContentEditing)
     {
-        self.targetbutton= targetbutton;
+        self.targetbutton = targetbutton;
         
         _isContentEditing = isContentEditing;
         if (!_isContentEditing)
@@ -1377,62 +1139,126 @@ static  AnnotationItem* annotationItem=nil;
     }
 }
 
-
 -(void)getallPageAnnos{
     
     [self.selectannos removeAllObjects];
     [self.selectannos addObjectsFromArray:self.allannotations];
 }
 
-
 - (void)handleOOM{}
+
+- (NSArray<AnnotationItem *> *)getAnnotationItemsForPageAtIndex:(int)pageIndex {
+    FSPDFPage* page =  nil;
+    @try {
+        page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+    }
+    @catch(NSException* exception)
+    {
+        return nil;
+    }
+    NSArray *array = [Utility getAnnotsInPage:page predicateBlock:^BOOL(FSAnnot * _Nonnull annot) {
+        enum FS_ANNOTTYPE type = [annot getType];
+        if (!(e_annotNote == type ||
+              e_annotHighlight == type ||
+              e_annotUnderline == type ||
+              e_annotSquiggly == type ||
+              e_annotStrikeOut == type ||
+              e_annotSquare == type ||
+              e_annotCircle == type ||
+              e_annotFreeText == type ||
+              e_annotStamp == type ||
+              e_annotInk == type ||
+              e_annotCaret == type ||
+              e_annotLine == type ||
+              e_annotFileAttachment == type)) {
+            return NO;
+        }
+        // 'replace text' consist of caret and strikeout annotation, add former only
+        if ((type == e_annotStrikeOut && [Utility isReplaceText:(FSStrikeOut*)annot])) {
+            return NO;
+        }
+        //State annot is not supported.
+        if(type == e_annotNote && [(FSNote*)annot getState] != 0)
+            return NO;
+        
+        if (type == e_annotFreeText) {
+            NSString* intent = [((FSMarkup*)annot) getIntent];
+            if(!intent || [intent caseInsensitiveCompare:@"FreeTextTypeWriter"] != NSOrderedSame){
+                return NO;
+            }
+        }
+        if (annot.flags & e_annotFlagHidden != 0)
+            return NO;
+        return YES;
+    }];
+    NSMutableArray<AnnotationItem *> *itemsArray = [NSMutableArray<AnnotationItem *> arrayWithCapacity:array.count];
+    for (FSAnnot* annot in array) {
+        AnnotationItem *annoItem = [[AnnotationItem alloc] init];
+        annoItem.annot = annot;
+        [itemsArray addObject:annoItem];
+    }
+    return itemsArray;
+}
+
+- (void)loadAnnotationsForPageAtIndex:(int)pageIndex {
+    NSMutableArray<AnnotationItem *> *itemsArray = [self getAnnotationItemsForPageAtIndex:pageIndex];
+    if (itemsArray.count == 0) {
+        return;
+    }
+    [_allannotations addObjectsFromArray:itemsArray];
+    [self GetStructFromAnnotationArray:itemsArray WithIndex:pageIndex];
+}
+
+- (void)cancelLoadAnnotations {
+    [self.loadAnnotsQueue cancelAllOperations];
+    typeof(self) __weak weakSelf = self;
+    [self.loadAnnotsQueue addOperationWithBlock:^{
+        [weakSelf ResetAnnotationArray];
+    }];
+    [self.loadAnnotsQueue waitUntilAllOperationsAreFinished];
+}
 
 - (void)loadData:(BOOL)animated
 {
-    
-    [self clearData];
-    [[NSNotificationCenter defaultCenter]postNotificationName:ANNOLIST_UPDATETOTAL object:@""];
-    
-    [AnnotationUpdateTip getUpdateTip];
-    [AnnotationUpdateTip getUpdateTip].annotationList=self;
-    [[AnnotationUpdateTip getUpdateTip]resetUpdateData];
-    
-    [self setProgressInformationHidden:nil];
-    [self performSelector:@selector(setProgressInformationHidden:) withObject:[NSNumber numberWithBool:NO] afterDelay:1.0];
-    
-    isShowViewList=NO;
-    __block  dispatch_queue_t serialQueue =dispatch_queue_create("com.SerialQueue", NULL);
-    dispatch_async(serialQueue, ^{
+    @synchronized (self) {
+        [_annostructdic removeAllObjects];
+        [_allpageannos removeAllObjects];
+        [_totalnodes removeAllObjects];
+        [_nodekeys removeAllObjects];
+        [self.selectannos removeAllObjects];
+        [self.allannotations removeAllObjects];
+        [self refreshInterface];
         
-        __block NSUInteger pageindex=0;
-        [AnnotationStruct getAnnotation:^(NSArray *array, int currentPageIndex, int totalPageIndex) {
-            
-            if (pageindex == currentPageIndex) {
-                [_allannotations addObjectsFromArray:array];
-                if (totalPageIndex > 0 && array.count>0)
-                {
-                    [self GetStructFromAnnotationArray:array WithIndex:currentPageIndex];
+        [[NSNotificationCenter defaultCenter] postNotificationName:ANNOLIST_UPDATETOTAL object:@""];
+        
+        [self setProgressInformationHidden:nil];
+        [self performSelector:@selector(setProgressInformationHidden:) withObject:[NSNumber numberWithBool:NO] afterDelay:1.0];
+        
+        isShowViewList = NO;
+        if (!self.loadAnnotsQueue) {
+            self.loadAnnotsQueue = [[NSOperationQueue alloc] init];
+            self.loadAnnotsQueue.name = @"load annotations";
+            self.loadAnnotsQueue.maxConcurrentOperationCount = 1;
+        } else {
+            [self cancelLoadAnnotations];
+        }
+        NSBlockOperation *op = [[NSBlockOperation alloc] init];
+        NSBlockOperation * __weak weakOp = op;
+        typeof(self) __weak weakSelf = self;
+        [op addExecutionBlock:^{
+            for (int i = 0; i < [_pdfViewCtrl.currentDoc getPageCount]; i ++) {
+                if (weakOp.isCancelled) {
+                    return;
                 }
-                if (currentPageIndex == (totalPageIndex-1)) {
-                    
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        
-                        [self reloadTableView];
-                        
-                    });
-                }
+                [weakSelf loadAnnotationsForPageAtIndex:i];
             }
-            pageindex++;
-            
-        } CleanupIfFailed:^(void)
-         {
-             [self ResetAnnotationArray];
-         }];
-        
-    });
-    
-    dispatch_release(serialQueue);
-    
+            if (weakOp.isCancelled) {
+                return;
+            }
+            [weakSelf reloadTableView];
+        }];
+        [self.loadAnnotsQueue addOperation:op];
+    }
 }
 
 -(void)reloadTableView{
@@ -1442,34 +1268,23 @@ static  AnnotationItem* annotationItem=nil;
         return;
     }
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            for (NSArray* pageannos in self.allpageannos) {
-                
-                for (AnnotationItem* selectanno in pageannos) {
-                    
-                    if (!selectanno.currentlevelshow && selectanno.annot.replyTo == nil) {
-                        
-                        [self getDetailReply:nil ClickAnnotation:selectanno];
-                        
-                    }
-                    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        for (NSArray* pageannos in self.allpageannos) {
+            for (AnnotationItem* selectanno in pageannos) {
+                if (!selectanno.currentlevelshow && selectanno.annot.replyTo == nil) {
+                    [self getDetailReply:nil ClickAnnotation:selectanno];
                 }
             }
-            
-            [self.tableView reloadData];
-            isShowViewList=YES;
-            
-        });
+        }
+        
+        [self.tableView reloadData];
+        isShowViewList = YES;
         
     });
 }
 
 - (void)clearData
 {
-    
     [self ResetAnnotationArray];
     [self refreshInterface];
 }
@@ -1480,19 +1295,24 @@ static  AnnotationItem* annotationItem=nil;
         AnnotationListCell *cell = [self.tableView cellForRowAtIndexPath:self.moreIndexPath];
         [cell.belowView tapGuest:nil];
     }
+    
+    [self.loadAnnotsQueue waitUntilAllOperationsAreFinished];
     NSMutableArray *tempAnnotations = [NSMutableArray arrayWithArray:self.allannotations];
+    
+    _isClearingAllAnnots = YES;
     for (int i = 0; i < [tempAnnotations count]; i++)
     {
         AnnotationItem *item = [tempAnnotations objectAtIndex:i];
         [self deleteAnnotation:item];
     }
+    _isClearingAllAnnots = NO;
+    [self clearData];
 }
 
 - (void)resetNeedLoad
 {
     _isLoading = NO;
 }
-
 
 -(void)selectChildsWithRootAnnotations:(NSArray *)rootannos{
     
@@ -1501,7 +1321,7 @@ static  AnnotationItem* annotationItem=nil;
         
         for (AnnotationItem*childanno in [[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:rootannotation andAnnoStruct:self.annostructdic]) {
             
-            childanno.isSelected=YES;
+            childanno.isSelected = YES;
             
         }
     }
@@ -1514,7 +1334,6 @@ static  AnnotationItem* annotationItem=nil;
         
     });
 }
-
 
 - (void)switchSelectAll:(BOOL)isSelect
 {
@@ -1529,7 +1348,7 @@ static  AnnotationItem* annotationItem=nil;
     
     for (AnnotationItem *selectanno in self.allannotations) {
         
-        selectanno.isSelected=isSelect;
+        selectanno.isSelected = isSelect;
         
     }
     [self.selectannos addObjectsFromArray:self.allannotations];
@@ -1540,7 +1359,6 @@ static  AnnotationItem* annotationItem=nil;
     }
 }
 
-
 #pragma mark AddAnnotationAndUpdteAnnotation
 
 -(void)updateAnnotationTotals:(NSArray *)annotations{
@@ -1550,19 +1368,16 @@ static  AnnotationItem* annotationItem=nil;
         
         if (updateanno.isUpdate) {
             
-            updateanno.isUpdate=NO;
+            updateanno.isUpdate = NO;
         }
         
-        [[AnnotationUpdateTip getUpdateTip]UpdateTotalsWithCommand:NO operationType:0 annotationUuid:updateanno.annot.NM];
-        
-        NSArray* childsanno=[[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:updateanno andAnnoStruct:self.annostructdic];
+        NSArray* childsanno = [[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:updateanno andAnnoStruct:self.annostructdic];
         
         for (AnnotationItem* childanno in childsanno) {
             
             if (childanno.isUpdate) {
                 
-                [[AnnotationUpdateTip getUpdateTip]UpdateTotalsWithCommand:NO operationType:0 annotationUuid:updateanno.annot.NM];
-                childanno.isUpdate=NO;
+                childanno.isUpdate = NO;
             }
             
         }
@@ -1576,7 +1391,7 @@ static  AnnotationItem* annotationItem=nil;
     
     [self updateAnnotationTotals:annotations];
     
-    NSMutableSet*deletetotal=[NSMutableSet set];
+    NSMutableSet*deletetotal = [NSMutableSet set];
     
     for (AnnotationItem* selection in annotations) {
         
@@ -1585,9 +1400,9 @@ static  AnnotationItem* annotationItem=nil;
         
     }
     
-    NSMutableSet* readydelete=[NSMutableSet set];
+    NSMutableSet* readydelete = [NSMutableSet set];
     
-    NSMutableArray* allnodes=[NSMutableArray array];
+    NSMutableArray* allnodes = [NSMutableArray array];
     
     [allnodes addObjectsFromArray:annotations];
     
@@ -1600,51 +1415,47 @@ static  AnnotationItem* annotationItem=nil;
     
     for (AnnotationItem* deleteanno in readydelete) {
         
-        AnnotationItem* replytoanno=nil;
+        AnnotationItem* replytoanno = nil;
         
-        AnnotationItem* readydeleteannotation=nil;
+        AnnotationItem* readydeleteannotation = nil;
         
         for (AnnotationItem* annotation in self.allannotations) {
             
-            if (replytoanno&&readydeleteannotation) {
+            if (replytoanno && readydeleteannotation) {
                 
                 break;
             }
             
-            if ([deleteanno.annot.replyTo isEqualToString:annotation.annot.NM] || deleteanno.annot.replyTo==nil) {
+            if (deleteanno.annot.replyTo == nil || [deleteanno.annot isReplyToAnnot:annotation.annot]) {
                 
-                replytoanno=annotation;
+                replytoanno = annotation;
                 
             }
             
-            if ([deleteanno.annot.NM isEqualToString:annotation.annot.NM]) {
+            if ([deleteanno.annot isEqualToAnnot:annotation.annot]) {
                 
-                readydeleteannotation=annotation;
+                readydeleteannotation = annotation;
                 
             }
             
         }
         
-        if ([[self.totalnodes objectForKey:replytoanno.rootannotation.annot.NM] containsObject:readydeleteannotation]) {
+        if ([[self.totalnodes objectForKey:replytoanno.rootannotation.annot.uuidWithPageIndex] containsObject:readydeleteannotation]) {
             
-            [[self.totalnodes objectForKey:replytoanno.rootannotation.annot.NM]  removeObject:readydeleteannotation];
+            [[self.totalnodes objectForKey:replytoanno.rootannotation.annot.uuidWithPageIndex]  removeObject:readydeleteannotation];
         }
         
-        if (![self.annostructdic objectForKey:replytoanno.annot.NM] || replytoanno.rootannotation == nil) {
+        if (![self.annostructdic objectForKey:replytoanno.annot.uuidWithPageIndex] || replytoanno.rootannotation == nil) {
             
-            if (NSString* NM = deleteanno.annot.NM) { // sometimes this is nil somehow
-                [self.annostructdic removeObjectForKey:NM];
-            }
+            [self.annostructdic removeObjectForKey:deleteanno.annot.uuidWithPageIndex];
             
         }else{
             
             
-            BOOL deleteresult= [[AnnotationStruct getSingle]deleteAnnotationFromAnnoStruct:self.annostructdic deleteAnnotation:readydeleteannotation rootAnnotation:replytoanno.rootannotation];
+            BOOL deleteresult = [[AnnotationStruct getSingle]deleteAnnotationFromAnnoStruct:self.annostructdic deleteAnnotation:readydeleteannotation rootAnnotation:replytoanno.rootannotation];
             
             if (! deleteresult) {
-                if (NSString* NM = deleteanno.annot.NM) {
-                    [self.annostructdic removeObjectForKey:NM];
-                }
+                [self.annostructdic removeObjectForKey:deleteanno.annot.uuidWithPageIndex];
             }
             
         }
@@ -1669,11 +1480,11 @@ static  AnnotationItem* annotationItem=nil;
     [self deleteSelectannos:[deletetotal allObjects]];
     
     
-    NSMutableSet* temparrays= [NSMutableSet set];
+    NSMutableSet* temparrays = [NSMutableSet set];
     
     for (AnnotationItem* annotation in [deletetotal allObjects]) {
         
-        AnnotationItem* rootanno=nil;
+        AnnotationItem* rootanno = nil;
         
         [[AnnotationStruct getSingle] getRootAnnotation:annotation TargetAnnotation:&rootanno AnnoArray:[deletetotal allObjects]];
         
@@ -1696,8 +1507,12 @@ static  AnnotationItem* annotationItem=nil;
     }
     
     for (AnnotationItem* deleteanno in readydelete) {
-        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:deleteanno.annot.type];
-        [annotHandler removeAnnot:deleteanno.annot];
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:deleteanno.annot];
+        if ([annotHandler respondsToSelector:@selector(removeAnnot:addUndo:)]) {
+            [annotHandler removeAnnot:deleteanno.annot addUndo:NO];
+        } else {
+            [annotHandler removeAnnot:deleteanno.annot];
+        }
         if (_extensionsManager.currentAnnot) {
             [_extensionsManager setCurrentAnnot:nil];
         }
@@ -1721,9 +1536,9 @@ static  AnnotationItem* annotationItem=nil;
     
     for (AnnotationItem* readyexist in self.allannotations) {
         
-        if ([annotation.annot.NM isEqualToString:readyexist.annot.NM]) {
+        if ([annotation.annot isEqualToAnnot:readyexist.annot]) {
             
-            annotation= readyexist;
+            annotation = readyexist;
             
             break;
         }
@@ -1732,62 +1547,62 @@ static  AnnotationItem* annotationItem=nil;
     
     [self updateAnnotationTotals:[NSArray arrayWithObject:annotation]];
     
-    NSMutableArray* deletetotal=[NSMutableArray arrayWithArray:[[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:annotation andAnnoStruct:self.annostructdic]];
+    NSMutableArray* deletetotal = [NSMutableArray arrayWithArray:[[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:annotation andAnnoStruct:self.annostructdic]];
     [deletetotal addObject:annotation];
     
-    NSMutableArray* childannos=[NSMutableArray arrayWithArray:[[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:annotation andAnnoStruct:self.annostructdic]];
+    NSMutableArray* childannos = [NSMutableArray arrayWithArray:[[AnnotationStruct getSingle]getAllChildNodesWithSuperAnnotation:annotation andAnnoStruct:self.annostructdic]];
     [childannos addObject:annotation];
     
     for (AnnotationItem* deleteanno in childannos) {
         
-        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:deleteanno.annot.type];
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:deleteanno.annot];
         [annotHandler removeAnnot:deleteanno.annot];
         if (_extensionsManager.currentAnnot) {
             [_extensionsManager setCurrentAnnot:nil];
         }
         
-        AnnotationItem* replytoanno=nil;
+        AnnotationItem* replytoanno = nil;
         
-        AnnotationItem*readydeleteannotation=nil;
+        AnnotationItem*readydeleteannotation = nil;
         
         for (AnnotationItem* annotation in self.allannotations) {
             
-            if (replytoanno&&readydeleteannotation) {
+            if (replytoanno && readydeleteannotation) {
                 
                 break;
             }
             
-            if ([deleteanno.annot.replyTo isEqualToString:annotation.annot.NM] || deleteanno.annot.replyTo==nil) {
+            if (deleteanno.annot.replyTo == nil || [deleteanno.annot isReplyToAnnot:annotation.annot]) {
                 
-                replytoanno=annotation;
+                replytoanno = annotation;
                 
             }
             
-            if ([deleteanno.annot.NM isEqualToString:annotation.annot.NM]) {
+            if ([deleteanno.annot isEqualToAnnot:annotation.annot]) {
                 
-                readydeleteannotation=annotation;
+                readydeleteannotation = annotation;
                 
             }
             
         }
         
-        if ([[self.totalnodes objectForKey:replytoanno.rootannotation.annot.NM] containsObject:readydeleteannotation]) {
+        if ([[self.totalnodes objectForKey:replytoanno.rootannotation.annot.uuidWithPageIndex] containsObject:readydeleteannotation]) {
             
-            [[self.totalnodes objectForKey:replytoanno.rootannotation.annot.NM]  removeObject:readydeleteannotation];
+            [[self.totalnodes objectForKey:replytoanno.rootannotation.annot.uuidWithPageIndex]  removeObject:readydeleteannotation];
         }
         
-        if (![self.annostructdic objectForKey:replytoanno.annot.NM] || replytoanno.rootannotation == nil) {
+        if (![self.annostructdic objectForKey:replytoanno.annot.uuidWithPageIndex] || replytoanno.rootannotation == nil) {
             
-            [self.annostructdic removeObjectForKey:deleteanno.annot.NM];
+            [self.annostructdic removeObjectForKey:deleteanno.annot.uuidWithPageIndex];
             
             
         }else{
             
-            BOOL deleteresult=[[AnnotationStruct getSingle]deleteAnnotationFromAnnoStruct:self.annostructdic deleteAnnotation:readydeleteannotation rootAnnotation:replytoanno.rootannotation];
+            BOOL deleteresult = [[AnnotationStruct getSingle]deleteAnnotationFromAnnoStruct:self.annostructdic deleteAnnotation:readydeleteannotation rootAnnotation:replytoanno.rootannotation];
             
             if (!deleteresult) {
                 
-                [self.annostructdic removeObjectForKey:deleteanno.annot.NM];
+                [self.annostructdic removeObjectForKey:deleteanno.annot.uuidWithPageIndex];
                 
             }
             
@@ -1816,11 +1631,11 @@ static  AnnotationItem* annotationItem=nil;
     NSMutableArray* toDelete = [NSMutableArray array];
     for (AnnotationItem *selectanno in selectannos) {
         
-        selectanno.isSelected=NO;
-        selectanno.isUpdate=NO;
+        selectanno.isSelected = NO;
+        selectanno.isUpdate = NO;
         
         for (AnnotationItem* annotItem in self.allannotations) {
-            if ([annotItem.annot.NM isEqualToString:selectanno.annot.NM])
+            if ([annotItem.annot isEqualToAnnot:selectanno.annot])
                 [toDelete addObject:annotItem];
         }
     }
@@ -1834,49 +1649,33 @@ static  AnnotationItem* annotationItem=nil;
 //add|modify annotation
 - (void)reloadAnnotationForAnnotation:(NSDictionary *)annotdic
 {
-    
-    AnnotationItem* annot=[annotdic objectForKey:@"Annotation"];
-    
-    if (![annot.annot canModify]) {
-        
-        if (annot.isMyAnnotation) {
-            
-            return;
-        }
-        
-        annot.isUpdate=YES;
-        
-        annot.isShowUpdateTip=YES;
-        
-        [[AnnotationUpdateTip getUpdateTip]UpdateTotalsWithCommand:YES operationType:[[annotdic objectForKey:@"Operation"] intValue] annotationUuid:annot.annot.NM];
-        
-    }
+    AnnotationItem* annot = [annotdic objectForKey:@"Annotation"];
     
     if (![self checkAnnotationWithuuid:annot isremove:NO] && annot.annot.replyTo == nil) {
         
-        annot.isSecondLevel=YES;
+        annot.isSecondLevel = YES;
         if (annot.isUpdate && !annot.isMyAnnotation) {
-            annot.isShowUpdateTip=YES;
+            annot.isShowUpdateTip = YES;
         }
         
-        NSMutableArray* pagearray= [self checkAddAnnotation:annot];
+        NSMutableArray* pagearray = [self checkAddAnnotation:annot];
         if (pagearray) {
             
             [pagearray addObject:annot];
-            annot.annosection= [self.allpageannos indexOfObject:pagearray];
+            annot.annosection = [self.allpageannos indexOfObject:pagearray];
             
         }else{
             
-            BOOL searchtag=YES;
-            NSUInteger insertindex=0;
+            BOOL searchtag = YES;
+            NSUInteger insertindex = 0;
             for (NSArray*annoarray in self.allpageannos) {
                 
-                AnnotationItem* annotation= [annoarray objectAtIndex:0];
+                AnnotationItem* annotation = [annoarray objectAtIndex:0];
                 
                 if (annot.annot.pageIndex < annotation.annot.pageIndex) {
                     
-                    insertindex=[self.allpageannos indexOfObject:annoarray];
-                    searchtag=NO;
+                    insertindex = [self.allpageannos indexOfObject:annoarray];
+                    searchtag = NO;
                     break;
                 }
             }
@@ -1885,26 +1684,26 @@ static  AnnotationItem* annotationItem=nil;
                 
                 [self.allpageannos addObject:[NSMutableArray array]];
                 
-                NSMutableArray* sectionarray=[self.allpageannos lastObject];
+                NSMutableArray* sectionarray = [self.allpageannos lastObject];
                 [sectionarray addObject:annot];
                 
-                annot.annosection=([self.allpageannos count]-1);
+                annot.annosection = ([self.allpageannos count]-1);
                 
             }else{
                 
                 [self.allpageannos insertObject:[NSMutableArray array] atIndex:insertindex];
                 
-                NSMutableArray* sectionarray=[self.allpageannos objectAtIndex:insertindex];
+                NSMutableArray* sectionarray = [self.allpageannos objectAtIndex:insertindex];
                 [sectionarray addObject:annot];
                 
-                annot.annosection=insertindex;
+                annot.annosection = insertindex;
                 
                 
-                for (long i=(insertindex+1); i <self.allpageannos.count; i++) {
+                for (long i= (insertindex+1); i <self.allpageannos.count; i++) {
                     
                     if ([[self.allpageannos objectAtIndex:i] count] > 0) {
                         
-                        AnnotationItem* oldannotation=[[self.allpageannos objectAtIndex:i] firstObject];
+                        AnnotationItem* oldannotation = [[self.allpageannos objectAtIndex:i] firstObject];
                         
                         [[self.allpageannos objectAtIndex:i]makeObjectsPerformSelector:@selector(setAnnotationSection:) withObject:[NSNumber numberWithLong:(oldannotation.annosection+1)]];
                         
@@ -1916,32 +1715,32 @@ static  AnnotationItem* annotationItem=nil;
 
         }
         
-        NSMutableArray* temparray=[NSMutableArray array];
+        NSMutableArray* temparray = [NSMutableArray array];
         
         [temparray addObject:annot];
         
-        [self.totalnodes setObject:temparray forKey:annot.annot.NM];
+        [self.totalnodes setObject:temparray forKey:annot.annot.uuidWithPageIndex];
         
-        [self.annostructdic setObject:[NSMutableArray array] forKey:annot.annot.NM];
+        [self.annostructdic setObject:[NSMutableArray array] forKey:annot.annot.uuidWithPageIndex];
         
-        annot.rootannotation=annot;
+        annot.rootannotation = annot;
         
         [self.allannotations addObject:annot];
         
         
     }else if (annot.annot.replyTo == nil){
         
-        annot.isSecondLevel=YES;
-        NSMutableArray*pagearray= [self checkAddAnnotation:annot];
+        annot.isSecondLevel = YES;
+        NSMutableArray*pagearray = [self checkAddAnnotation:annot];
         
         for (AnnotationItem*annotation in pagearray) {
             
-            if ([annotation.annot.NM isEqualToString:annot.annot.NM]) {
+            if ([annotation.annot isEqualToAnnot:annot.annot]) {
                 
                 if (![annot.annot canModify]) {
                     
-                    annotation.isUpdate=YES;
-                    annotation.isShowUpdateTip=YES;
+                    annotation.isUpdate = YES;
+                    annotation.isShowUpdateTip = YES;
                 }
             }
         }
@@ -1961,18 +1760,18 @@ static  AnnotationItem* annotationItem=nil;
         });
     }
     
-    annot.isMyAnnotation=YES;
+    annot.isMyAnnotation = YES;
     
 }
 
 -(BOOL)checkAnnotationWithuuid:(AnnotationItem *)targetannotation isremove:(BOOL)remoetag{
     
     
-    BOOL searchtag=NO;
+    BOOL searchtag = NO;
     
-    for (int i=0;i<self.allpageannos.count;i++) {
+    for (int i=0; i<self.allpageannos.count; i++) {
         
-        NSMutableArray* pageannos=[self.allpageannos objectAtIndex:i];
+        NSMutableArray* pageannos = [self.allpageannos objectAtIndex:i];
         if (searchtag) {
             
             break;
@@ -1981,25 +1780,25 @@ static  AnnotationItem* annotationItem=nil;
         
         for (AnnotationItem* annotation in pageannos) {
             
-            if ([annotation.annot.NM isEqualToString:targetannotation.annot.NM]) {
+            if ([annotation.annot isEqualToAnnot:targetannotation.annot]) {
                 
                 if (remoetag) {
                     
-                    [self.totalnodes removeObjectForKey:annotation.annot.NM];
-                    [self.annostructdic removeObjectForKey:annotation.annot.NM];
+                    [self.totalnodes removeObjectForKey:annotation.annot.uuidWithPageIndex];
+                    [self.annostructdic removeObjectForKey:annotation.annot.uuidWithPageIndex];
                     [pageannos removeObject:annotation];
                 }
                 if (pageannos.count == 0) {
                     
-                    NSInteger oldindex=[self.allpageannos indexOfObject:pageannos];
+                    NSInteger oldindex = [self.allpageannos indexOfObject:pageannos];
                     
                     [self.allpageannos removeObject:pageannos];
                     
-                    for (long i=oldindex; i<self.allpageannos.count; i++) {
+                    for (long i= oldindex; i<self.allpageannos.count; i++) {
                         
                         if ([[self.allpageannos objectAtIndex:i] count] > 0) {
                             
-                            AnnotationItem* oldannotation=[[self.allpageannos objectAtIndex:i] firstObject];
+                            AnnotationItem* oldannotation = [[self.allpageannos objectAtIndex:i] firstObject];
                             
                             [[self.allpageannos objectAtIndex:i]makeObjectsPerformSelector:@selector(setAnnotationSection:) withObject:[NSNumber numberWithLong:(oldannotation.annosection-1)]];
                             
@@ -2008,7 +1807,7 @@ static  AnnotationItem* annotationItem=nil;
                     }
                     
                 }
-                searchtag=YES;
+                searchtag = YES;
                 
                 break;
             }
@@ -2023,14 +1822,13 @@ static  AnnotationItem* annotationItem=nil;
 -(NSMutableArray*)checkAddAnnotation:(AnnotationItem *)annotation{
     
     
-    NSMutableArray *searchindex=nil;
+    NSMutableArray *searchindex = nil;
     
     for (NSMutableArray*pageannotations in self.allpageannos) {
         
-        BOOL tag=[self searchannoWithArray:pageannotations Annotation:annotation];
-        if (tag==YES) {
-            
-            searchindex=pageannotations;
+        BOOL tag = [self searchannoWithArray:pageannotations Annotation:annotation];
+        if (tag == YES) {
+            searchindex = pageannotations;
             break;
         }
         
@@ -2043,21 +1841,21 @@ static  AnnotationItem* annotationItem=nil;
 -(BOOL)searchannoWithArray:(NSArray*)array Annotation:(AnnotationItem*)annotation {
     
     
-    static BOOL searchtag=NO;
+    static BOOL searchtag = NO;
     
     if (array.count > 0) {
         
         for (AnnotationItem *anno in array) {
             
-            if (annotation.annot.pageIndex==anno.annot.pageIndex) {
+            if (annotation.annot.pageIndex == anno.annot.pageIndex) {
                 
-                searchtag=YES;
+                searchtag = YES;
                 break;
                 
             }else{
                 
-                searchtag=NO;
-                [self searchannoWithArray:[self.annostructdic objectForKey:anno.annot.NM] Annotation:annotation];
+                searchtag = NO;
+                [self searchannoWithArray:[self.annostructdic objectForKey:anno.annot.uuidWithPageIndex] Annotation:annotation];
                 
             }
             
@@ -2071,20 +1869,20 @@ static  AnnotationItem* annotationItem=nil;
 -(void)addNoteAnnotation:(AnnotationItem*)annot{
     
     
-    if ([self.annostructdic objectForKey:annot.annot.NM]) {
+    if ([self.annostructdic objectForKey:annot.annot.uuidWithPageIndex]) {
         
         for (AnnotationItem*annotation in self.allannotations) {
             
-            if ([annot.annot.NM isEqualToString:annotation.annot.NM]) {
+            if ([annot.annot isEqualToAnnot:annotation.annot]) {
                 
                 if (annot.isUpdate) {
                     
-                    annotation.isUpdate=YES;
-                    annotation.rootannotation.isShowUpdateTip=YES;
+                    annotation.isUpdate = YES;
+                    annotation.rootannotation.isShowUpdateTip = YES;
                 }
                 
-                annotation.annot.modifiedDate=annot.annot.modifiedDate;
-                annotation.annot.contents=annot.annot.contents;
+                annotation.annot.modifiedDate = annot.annot.modifiedDate;
+                annotation.annot.contents = annot.annot.contents;
                 break;
             }
             
@@ -2092,15 +1890,15 @@ static  AnnotationItem* annotationItem=nil;
         return;
     }
     
-    AnnotationItem* replytoanno=nil;
+    AnnotationItem* replytoanno = nil;
     
     for (AnnotationItem* annotation in self.allannotations) {
         
-        if ([annot.annot.replyTo isEqualToString:annotation.annot.NM]) {
+        if ([annot.annot isReplyToAnnot:annotation.annot]) {
             
-            replytoanno=annotation;
-            if (annot.isUpdate&&!annot.isMyAnnotation) {
-                replytoanno.rootannotation.isShowUpdateTip=YES;
+            replytoanno = annotation;
+            if (annot.isUpdate && !annot.isMyAnnotation) {
+                replytoanno.rootannotation.isShowUpdateTip = YES;
             }
             
             break;
@@ -2129,13 +1927,13 @@ static  AnnotationItem* annotationItem=nil;
     }
     
     
-    BOOL searchtag=NO;
+    BOOL searchtag = NO;
     
     for (NSString*pageannokey in [self.totalnodes allKeys]) {
         
         if ([[self.totalnodes objectForKey:pageannokey] containsObject:replytoanno]) {
             
-            searchtag=YES;
+            searchtag = YES;
             break;
         }
         
@@ -2144,11 +1942,11 @@ static  AnnotationItem* annotationItem=nil;
     if (replytoanno.currentlevelshow == NO && (replytoanno.isSecondLevel || replytoanno.annot.replyTo == nil)) {
         
         [self getDetailReply:nil ClickAnnotation:replytoanno];
-        searchtag=YES;
+        searchtag = YES;
         
     }
     
-    if (searchtag==NO) {
+    if (searchtag == NO) {
         
         [[AnnotationStruct getSingle]insertAnnotationToAnnoStruct:self.annostructdic insertAnnotation:annot SuperAnnotation:replytoanno];
         
@@ -2160,60 +1958,60 @@ static  AnnotationItem* annotationItem=nil;
         
     }
     
-    NSArray* currentpagenode=[self.allpageannos objectAtIndex:replytoanno.annosection];
+    NSArray* currentpagenode = [self.allpageannos objectAtIndex:replytoanno.annosection];
     
-    NSMutableArray* currentarray=[self checkIndexFromAnnotation:replytoanno.rootannotation Annoarray:currentpagenode];
+    NSMutableArray* currentarray = [self checkIndexFromAnnotation:replytoanno.rootannotation Annoarray:currentpagenode];
     
     if (replytoanno.annot.replyTo == nil) {
         
-        annot.isSecondLevel=YES;
+        annot.isSecondLevel = YES;
     }
     
-    annot.rootannotation=replytoanno.rootannotation;
-    annot.annosection=replytoanno.annosection;
+    annot.rootannotation = replytoanno.rootannotation;
+    annot.annosection = replytoanno.annosection;
     
     [[AnnotationStruct getSingle]insertAnnotationToAnnoStruct:self.annostructdic insertAnnotation:annot SuperAnnotation:replytoanno];
     
-    NSMutableArray* addannoarray= [NSMutableArray arrayWithObject:annot];
+    NSMutableArray* addannoarray = [NSMutableArray arrayWithObject:annot];
     
-    [addannoarray makeObjectsPerformSelector:@selector(addCurrentlevel:) withObject:[NSNumber numberWithLong:(replytoanno.annot.replyTo==nil?(replytoanno.currentlevel+1):(replytoanno.currentlevel))]];
+    [addannoarray makeObjectsPerformSelector:@selector(addCurrentlevel:) withObject:[NSNumber numberWithLong:(replytoanno.annot.replyTo == nil?(replytoanno.currentlevel+1):(replytoanno.currentlevel))]];
     
     [addannoarray makeObjectsPerformSelector:@selector(setReplytoauthor:) withObject:replytoanno.annot.author];
     
-    NSUInteger insertrowindex= [currentarray indexOfObject:replytoanno];
+    NSUInteger insertrowindex = [currentarray indexOfObject:replytoanno];
     
-    NSMutableArray *arCells= [NSMutableArray array];
+    NSMutableArray *arCells = [NSMutableArray array];
     
-    NSUInteger currentrow=0;
+    NSUInteger currentrow = 0;
     
-    NSUInteger cuurentsection= replytoanno.annosection;
+    NSUInteger cuurentsection = replytoanno.annosection;
     
     
-    NSMutableArray*currentlevel=[NSMutableArray array];
+    NSMutableArray*currentlevel = [NSMutableArray array];
     
     for (AnnotationItem*rootnode in currentpagenode) {
         
-        [currentlevel addObjectsFromArray:[self.totalnodes objectForKey:rootnode.annot.NM]];
+        [currentlevel addObjectsFromArray:[self.totalnodes objectForKey:rootnode.annot.uuidWithPageIndex]];
         
     }
     
-    currentrow=[currentlevel indexOfObject:replytoanno];
+    currentrow = [currentlevel indexOfObject:replytoanno];
     
     if (replytoanno.annot.replyTo == nil) {
         
-        currentrow= currentrow+[[self.totalnodes objectForKey:replytoanno.annot.NM]count];
+        currentrow = currentrow+[[self.totalnodes objectForKey:replytoanno.annot.uuidWithPageIndex] count];
         
         [arCells addObject:[NSIndexPath indexPathForRow:currentrow inSection:cuurentsection]];
         
-        [currentarray insertObjects:addannoarray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange([[self.totalnodes objectForKey:replytoanno.annot.NM]count], addannoarray.count)]];
+        [currentarray insertObjects:addannoarray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange([[self.totalnodes objectForKey:replytoanno.annot.uuidWithPageIndex]count], addannoarray.count)]];
         
     }else{
         
-        currentrow= currentrow+[[self.annostructdic objectForKey:replytoanno.annot.NM]count];
+        currentrow = currentrow+[[self.annostructdic objectForKey:replytoanno.annot.uuidWithPageIndex]count];
         
         [arCells addObject:[NSIndexPath indexPathForRow:currentrow inSection:cuurentsection]];
         
-        [currentarray insertObjects:addannoarray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(insertrowindex+[[self.annostructdic objectForKey:replytoanno.annot.NM]count], addannoarray.count)]];
+        [currentarray insertObjects:addannoarray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(insertrowindex+[[self.annostructdic objectForKey:replytoanno.annot.uuidWithPageIndex]count], addannoarray.count)]];
     }
     // this is error    crash on some special pdf
     [self.tableView insertRowsAtIndexPaths:arCells withRowAnimation:UITableViewRowAnimationNone];
@@ -2227,33 +2025,30 @@ static  AnnotationItem* annotationItem=nil;
     });
     
 }
+
 - (void)deleteAnnotation:(AnnotationItem *)item
 {
-    if (self.editAnnoItem || (_replyanno && _replyanno.isReply==YES)) {
+    if (self.editAnnoItem || (_replyanno && _replyanno.isReply == YES)) {
         AnnotationListCell *cell = (AnnotationListCell*)[self.tableView cellForRowAtIndexPath:self.indexPath];
-        UITextView* edittextview=(UITextView*)[cell.contentView viewWithTag:107];
-        UILabel* labelContents=(UILabel*)[cell.contentView viewWithTag:104];
+        UITextView* edittextview = (UITextView*)[cell.contentView viewWithTag:107];
+        UILabel* labelContents = (UILabel*)[cell.contentView viewWithTag:104];
         
-        NSDate *now = [NSDate date];
         if (self.editAnnoItem) {
-            self.editAnnoItem.annot.contents = edittextview.text;
-            self.editAnnoItem.annot.modifiedDate = now;
-            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.editAnnoItem.annot.type];
-            [annotHandler modifyAnnot:self.editAnnoItem.annot];
+            [self modifyAnnot:self.editAnnoItem.annot withContents:edittextview.text];
             self.editAnnoItem = nil;
         }
         if ( _replyanno && _replyanno.isReply == YES) {
             
             _replyanno.annot.contents = edittextview.text;
             _replyanno.isReply = NO;
-            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:_replyanno.annot.type];
+            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:_replyanno.annot];
             [annotHandler addAnnot:_replyanno.annot];
-            _replyanno=nil;
+            _replyanno = nil;
             
         }
         
         edittextview.hidden = YES;
-        labelContents.hidden=NO;
+        labelContents.hidden = NO;
         dispatch_async(dispatch_get_main_queue(), ^{
             
             [self.tableView reloadData];
@@ -2264,8 +2059,12 @@ static  AnnotationItem* annotationItem=nil;
     }
 
     if (!item.isDeleted) {
-        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:item.annot.type];
-        [annotHandler removeAnnot:item.annot];
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:item.annot];
+        if(item.replytoauthor)
+            [annotHandler removeAnnot:item.annot addUndo:NO];
+        else
+            [annotHandler removeAnnot:item.annot];
+        item.isDeleted = YES;
     }
     if (_extensionsManager.currentAnnot) {
         [_extensionsManager setCurrentAnnot:nil];
@@ -2277,31 +2076,27 @@ static  AnnotationItem* annotationItem=nil;
 {
     
     
-    if (self.editAnnoItem || (_replyanno && _replyanno.isReply==YES)) {
+    if (self.editAnnoItem || (_replyanno && _replyanno.isReply == YES)) {
         AnnotationListCell *cell = (AnnotationListCell*)[self.tableView cellForRowAtIndexPath:self.indexPath];
-        UITextView* edittextview=(UITextView*)[cell.contentView viewWithTag:107];
-        UILabel* labelContents=(UILabel*)[cell.contentView viewWithTag:104];
+        UITextView* edittextview = (UITextView*)[cell.contentView viewWithTag:107];
+        UILabel* labelContents = (UILabel*)[cell.contentView viewWithTag:104];
         
-        NSDate *now = [NSDate date];
         if (self.editAnnoItem) {
-            self.editAnnoItem.annot.contents = edittextview.text;
-            self.editAnnoItem.annot.modifiedDate = now;
-            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.editAnnoItem.annot.type];
-            [annotHandler modifyAnnot:self.editAnnoItem.annot];
+            [self modifyAnnot:self.editAnnoItem.annot withContents:edittextview.text];
             self.editAnnoItem = nil;
         }
         if ( _replyanno && _replyanno.isReply == YES) {
             
             _replyanno.annot.contents = edittextview.text;
             _replyanno.isReply = NO;
-            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:_replyanno.annot.type];
+            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:_replyanno.annot];
             [annotHandler addAnnot:_replyanno.annot];
-            _replyanno=nil;
+            _replyanno = nil;
             
         }
         
         edittextview.hidden = YES;
-        labelContents.hidden=NO;
+        labelContents.hidden = NO;
         dispatch_async(dispatch_get_main_queue(), ^{
             
             [self.tableView reloadData];
@@ -2312,24 +2107,22 @@ static  AnnotationItem* annotationItem=nil;
     }
     
     AnnotationItem* replytoanno = item;
-    if (replytoanno==nil)
+    if (replytoanno == nil)
     {
         return;
     }
-    if (replytoanno.currentlevelshow==NO && (replytoanno.isSecondLevel || replytoanno.annot.replyTo == nil)) {
+    if (replytoanno.currentlevelshow == NO && (replytoanno.isSecondLevel || replytoanno.annot.replyTo == nil)) {
         
         [self getDetailReply:nil ClickAnnotation:replytoanno];
         
     }
     //Nodes of the current page
-    NSArray* currentpagenode= [self.allpageannos objectAtIndex:replytoanno.annosection];
+    NSArray* currentpagenode = [self.allpageannos objectAtIndex:replytoanno.annosection];
     
     //array of the current nodes
-    NSMutableArray* currentarray= [self checkIndexFromAnnotation:replytoanno Annoarray:currentpagenode];
+    NSMutableArray* currentarray = [self checkIndexFromAnnotation:replytoanno Annoarray:currentpagenode];
     
     //creat a new antationitem
-    FSRectF *rect = [[[FSRectF alloc] init] autorelease];
-    [rect set:0 bottom:0 right:0 top:0];
     _replyanno = [[AnnotationItem alloc] init];
     FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:item.annot.pageIndex];
     
@@ -2337,7 +2130,7 @@ static  AnnotationItem* annotationItem=nil;
         return;
     FSNote *note =  [(FSMarkup*)replytoanno.annot addReply];
     note.NM = [Utility getUUID];
-    note.fsrect = rect;
+    note.fsrect = replytoanno.annot.fsrect;
     note.author = [SettingPreference getAnnotationAuthor];
     note.contents = @"";
     note.color = 0;
@@ -2346,41 +2139,41 @@ static  AnnotationItem* annotationItem=nil;
     note.icon = 0;
     _replyanno.annot = note;
     NSDate* now = [NSDate date];
-    _replyanno.annot.modifiedDate=now;
-    _replyanno.annot.createDate=now;
-    _replyanno.rootannotation=replytoanno.rootannotation;
-    _replyanno.isReply=YES;
+    _replyanno.annot.modifiedDate = now;
+    _replyanno.annot.createDate = now;
+    _replyanno.rootannotation = replytoanno.rootannotation;
+    _replyanno.isReply = YES;
     if (replytoanno.annot.replyTo == nil) {
         
-        _replyanno.isSecondLevel=YES;
+        _replyanno.isSecondLevel = YES;
         
     }else{
         
-        _replyanno.isSecondLevel=NO;
+        _replyanno.isSecondLevel = NO;
     }
     
     //add to dictionary
     [[AnnotationStruct getSingle]insertAnnotationToAnnoStruct:self.annostructdic insertAnnotation:_replyanno SuperAnnotation:replytoanno];
     
-    NSMutableArray* addannoarray=[NSMutableArray arrayWithObject:_replyanno];
+    NSMutableArray* addannoarray = [NSMutableArray arrayWithObject:_replyanno];
     
     //level
-    [addannoarray makeObjectsPerformSelector:@selector(addCurrentlevel:) withObject:[NSNumber numberWithLong:(replytoanno.annot.replyTo==nil?(replytoanno.currentlevel+1):(replytoanno.currentlevel))]];
+    [addannoarray makeObjectsPerformSelector:@selector(addCurrentlevel:) withObject:[NSNumber numberWithLong:(replytoanno.annot.replyTo == nil?(replytoanno.currentlevel+1):(replytoanno.currentlevel))]];
     
     //reply to author
     [addannoarray makeObjectsPerformSelector:@selector(setReplytoauthor:) withObject:replytoanno.annot.author];
     
     //Reply to the comments in the subscript in the current node
-    NSUInteger insertrowindex=[currentarray indexOfObject:replytoanno];
+    NSUInteger insertrowindex = [currentarray indexOfObject:replytoanno];
     
-    __block NSIndexPath *indexpath = [[[NSIndexPath alloc] init] autorelease];
+    __block NSIndexPath *indexpath = [[NSIndexPath alloc] init];
     
     //Reply to the comments of the current page rows
-    NSUInteger currentrow=replytoanno.annorow;
+    NSUInteger currentrow = replytoanno.annorow;
     
     if (replytoanno.annot.replyTo == nil) {
         //Reply to the comments of the current page rows + The number of the current node in the all comments
-        currentrow += [[self.totalnodes objectForKey:replytoanno.annot.NM]count];
+        currentrow += [[self.totalnodes objectForKey:replytoanno.annot.uuidWithPageIndex]count];
         
         //The indexpath add to the arCells
         indexpath = [NSIndexPath indexPathForRow:currentrow inSection:replytoanno.annosection];
@@ -2388,14 +2181,14 @@ static  AnnotationItem* annotationItem=nil;
         
         //The addannoarray insert to currentarray
         //Insert data source
-        [currentarray insertObjects:addannoarray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange([[self.totalnodes objectForKey:replytoanno.annot.NM]count], addannoarray.count)]];
+        [currentarray insertObjects:addannoarray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange([[self.totalnodes objectForKey:replytoanno.annot.uuidWithPageIndex]count], addannoarray.count)]];
         
     }else{
         
-        currentrow=currentrow+[[self.annostructdic objectForKey:replytoanno.annot.NM]count];
+        currentrow = currentrow+[[self.annostructdic objectForKey:replytoanno.annot.uuidWithPageIndex]count];
         indexpath = [NSIndexPath indexPathForRow:currentrow inSection:replytoanno.annosection];
         
-        [currentarray insertObjects:addannoarray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(insertrowindex+[[self.annostructdic objectForKey:replytoanno.annot.NM]count], addannoarray.count)]];
+        [currentarray insertObjects:addannoarray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(insertrowindex+[[self.annostructdic objectForKey:replytoanno.annot.uuidWithPageIndex]count], addannoarray.count)]];
     }
     self.indexPath = indexpath;
     
@@ -2416,14 +2209,14 @@ static  AnnotationItem* annotationItem=nil;
         AnnotationListCell* selectcell = (AnnotationListCell*)[self.tableView cellForRowAtIndexPath:indexpath]; // returns nil if cell is not visible or index path is out of range
         selectcell.isInputText = YES;
         
-        UITextView* edittextview=(UITextView*)[selectcell.contentView viewWithTag:107];
-        edittextview.delegate=self;
-        edittextview.hidden=NO;
+        UITextView* edittextview = (UITextView*)[selectcell.contentView viewWithTag:107];
+        edittextview.delegate = self;
+        edittextview.hidden = NO;
         
-        UILabel* labelContents=(UILabel*)[selectcell.contentView viewWithTag:104];
-        labelContents.hidden=YES;
+        UILabel* labelContents = (UILabel*)[selectcell.contentView viewWithTag:104];
+        labelContents.hidden = YES;
         
-        edittextview.text=labelContents.text;
+        edittextview.text = labelContents.text;
         [edittextview becomeFirstResponder];
     });
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -2436,31 +2229,27 @@ static  AnnotationItem* annotationItem=nil;
 - (void)addNoteToAnnotation:(AnnotationItem *)item withIndexPath:(NSIndexPath *)indexPath
 {
     
-    if (self.editAnnoItem || (_replyanno && _replyanno.isReply==YES)) {
+    if (self.editAnnoItem || (_replyanno && _replyanno.isReply == YES)) {
         AnnotationListCell *cell = (AnnotationListCell*)[self.tableView cellForRowAtIndexPath:self.indexPath];
-        UITextView* edittextview=(UITextView*)[cell.contentView viewWithTag:107];
-        UILabel* labelContents=(UILabel*)[cell.contentView viewWithTag:104];
+        UITextView* edittextview = (UITextView*)[cell.contentView viewWithTag:107];
+        UILabel* labelContents = (UILabel*)[cell.contentView viewWithTag:104];
         
-        NSDate *now = [NSDate date];
         if (self.editAnnoItem) {
-            self.editAnnoItem.annot.contents = edittextview.text;
-            self.editAnnoItem.annot.modifiedDate = now;
-            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.editAnnoItem.annot.type];
-            [annotHandler modifyAnnot:self.editAnnoItem.annot];
+            [self modifyAnnot:self.editAnnoItem.annot withContents:edittextview.text];
             self.editAnnoItem = nil;
         }
         if ( _replyanno && _replyanno.isReply == YES) {
             
             _replyanno.annot.contents = edittextview.text;
             _replyanno.isReply = NO;
-            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:_replyanno.annot.type];
+            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:_replyanno.annot];
             [annotHandler addAnnot:_replyanno.annot];
-            _replyanno=nil;
+            _replyanno = nil;
             
         }
         
         edittextview.hidden = YES;
-        labelContents.hidden=NO;
+        labelContents.hidden = NO;
         dispatch_async(dispatch_get_main_queue(), ^{
             
             [self.tableView reloadData];
@@ -2474,14 +2263,14 @@ static  AnnotationItem* annotationItem=nil;
     self.indexPath = indexPath;
     AnnotationListCell* selectcell = (AnnotationListCell*)[self.tableView cellForRowAtIndexPath:indexPath];
     selectcell.isInputText = YES;
-    UITextView* edittextview=(UITextView*)[selectcell.contentView viewWithTag:107];
-    edittextview.delegate=self;
-    edittextview.hidden=NO;
+    UITextView* edittextview = (UITextView*)[selectcell.contentView viewWithTag:107];
+    edittextview.delegate = self;
+    edittextview.hidden = NO;
  
-    UILabel* labelContents=(UILabel*)[selectcell.contentView viewWithTag:104];
-    labelContents.hidden=YES;
+    UILabel* labelContents = (UILabel*)[selectcell.contentView viewWithTag:104];
+    labelContents.hidden = YES;
     
-    edittextview.text=labelContents.text;
+    edittextview.text = labelContents.text;
     [edittextview scrollsToTop];
     dispatch_async(dispatch_get_main_queue(), ^{
         
@@ -2491,28 +2280,26 @@ static  AnnotationItem* annotationItem=nil;
     [edittextview performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.3];
     
 }
+
 - (BOOL)textViewShouldBeginEditing:(UITextView *)textView{
     
     return YES;
 }
+
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text{
     
     if ([text isEqualToString:@"\n"]) {
         
         if (self.editAnnoItem) {
-            NSDate *now = [NSDate date];
-            self.editAnnoItem.annot.contents=textView.text;
-            self.editAnnoItem.annot.modifiedDate=now;
-            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.editAnnoItem.annot.type];
-            [annotHandler modifyAnnot:self.editAnnoItem.annot];
+            [self modifyAnnot:self.editAnnoItem.annot withContents:textView.text];
             self.editAnnoItem = nil;
         }
         
-        UITableViewCell* selectcell=[self.tableView cellForRowAtIndexPath:self.indexPath];
-        UITextView* edittextview=(UITextView*)[selectcell.contentView viewWithTag:107];
+        UITableViewCell* selectcell = [self.tableView cellForRowAtIndexPath:self.indexPath];
+        UITextView* edittextview = (UITextView*)[selectcell.contentView viewWithTag:107];
         edittextview.hidden = YES;
-        UILabel* labelContents=(UILabel*)[selectcell.contentView viewWithTag:104];
-        labelContents.hidden=NO;
+        UILabel* labelContents = (UILabel*)[selectcell.contentView viewWithTag:104];
+        labelContents.hidden = NO;
         dispatch_async(dispatch_get_main_queue(), ^{
             
             [self.tableView reloadData];
@@ -2525,28 +2312,24 @@ static  AnnotationItem* annotationItem=nil;
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView{
-    NSDate *now = [NSDate date];
     if (self.editAnnoItem) {
-        self.editAnnoItem.annot.contents=textView.text;
-        self.editAnnoItem.annot.modifiedDate=now;
-        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.editAnnoItem.annot.type];
-        [annotHandler modifyAnnot:self.editAnnoItem.annot];
+        [self modifyAnnot:self.editAnnoItem.annot withContents:textView.text];
         self.editAnnoItem = nil;
     }
-    if ( _replyanno && _replyanno.isReply==YES) {
-        _replyanno.annot.contents=textView.text;
-        _replyanno.isReply=NO;
-        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:_replyanno.annot.type];
+    if ( _replyanno && _replyanno.isReply) {
+        _replyanno.annot.contents = textView.text;
+        _replyanno.isReply = NO;
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:_replyanno.annot];
         [annotHandler addAnnot:_replyanno.annot];
-        _replyanno=nil;
+        _replyanno = nil;
         
     }
     
     AnnotationListCell* selectcell = (AnnotationListCell*)[self.tableView cellForRowAtIndexPath:self.indexPath];
-    UITextView* edittextview=(UITextView*)[selectcell.contentView viewWithTag:107];
+    UITextView* edittextview = (UITextView*)[selectcell.contentView viewWithTag:107];
     edittextview.hidden = YES;
-    UILabel* labelContents=(UILabel*)[selectcell.contentView viewWithTag:104];
-    labelContents.hidden=NO;
+    UILabel* labelContents = (UILabel*)[selectcell.contentView viewWithTag:104];
+    labelContents.hidden = NO;
     self.indexPath = nil;
     dispatch_async(dispatch_get_main_queue(), ^{
         
@@ -2575,24 +2358,24 @@ static  AnnotationItem* annotationItem=nil;
 {
     return self.allpageannos;
 }
+
 - (NSInteger)getAnnotationsCount
 {
     return self.allpageannos.count;
 }
 
-
 - (void)refreshInterface
 {
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
     self.tableView.backgroundColor = [UIColor clearColor];
-    self.tableView.backgroundView = [[[UIView alloc] init] autorelease];
+    self.tableView.backgroundView = [[UIView alloc] init];
     self.tableView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     ((UIScrollView*)self.tableView).delegate = self;
     self.tableView.clipsToBounds = YES;
     
     CGRect tableViewFrame = self.tableView.frame;
     
-    self.annoupdatetipLB = [[[UILabel alloc] initWithFrame:CGRectMake(5, 0, tableViewFrame.size.width, 20)] autorelease];
+    self.annoupdatetipLB = [[UILabel alloc] initWithFrame:CGRectMake(5, 0, tableViewFrame.size.width, 20)];
     [_annoupdatetipLB setFont:[UIFont systemFontOfSize:13]];
     _annoupdatetipLB.backgroundColor = [UIColor clearColor];
     _annoupdatetipLB.textColor = [UIColor colorWithRed:23.f/255.f green:156.f/255.f blue:216.f/255.f alpha:1];
@@ -2610,10 +2393,8 @@ static  AnnotationItem* annotationItem=nil;
     UIView *view = [[UIView alloc]init];
     view.backgroundColor = [UIColor clearColor];
     [self.tableView setTableFooterView:view];
-    [view release];
-    
+        
 }
-
 
 - (void)setProgressInformationHidden:(NSNumber *)isHidden
 {
@@ -2631,6 +2412,47 @@ static  AnnotationItem* annotationItem=nil;
             _cellProgressIndicator.hidden = isHidden.boolValue;
             _cellProgressLabel.hidden = isHidden.boolValue;
         }
+    }
+}
+
+- (void)modifyAnnot:(FSAnnot*)annot withContents:(NSString*)contents
+{
+    NSString* oldContents = annot.contents;
+    if ([oldContents isEqualToString:contents]) {
+        return;
+    }
+    
+    NSDate* oldDate = annot.modifiedDate;
+    NSDate* now = [NSDate date];
+    NSString* NM = annot.NM;
+    FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:annot.pageIndex];
+    id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:annot];
+    [_extensionsManager addUndoItem:[UndoItem itemWithUndo:^(UndoItem* item){
+        FSAnnot* annot = [Utility getAnnotByNM:NM inPage:page];
+        annot.contents = oldContents;
+        annot.modifiedDate = oldDate;
+        if ([annotHandler respondsToSelector:@selector(modifyAnnot:addUndo:)]) {
+            [annotHandler modifyAnnot:annot addUndo:NO];
+        } else {
+            [annotHandler modifyAnnot:annot];
+        }
+    } redo:^(UndoItem* item){
+        FSAnnot* annot = [Utility getAnnotByNM:NM inPage:page];
+        annot.contents = contents;
+        annot.modifiedDate = now;
+        if ([annotHandler respondsToSelector:@selector(modifyAnnot:addUndo:)]) {
+            [annotHandler modifyAnnot:annot addUndo:NO];
+        } else {
+            [annotHandler modifyAnnot:annot];
+        }
+    } pageIndex:annot.pageIndex]];
+    
+    annot.contents = contents;
+    annot.modifiedDate = now;
+    if ([annotHandler respondsToSelector:@selector(modifyAnnot:addUndo:)]) {
+        [annotHandler modifyAnnot:self.editAnnoItem.annot addUndo:NO];
+    } else {
+        [annotHandler modifyAnnot:self.editAnnoItem.annot];
     }
 }
 

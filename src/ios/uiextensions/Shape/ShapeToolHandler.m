@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -16,9 +16,9 @@
 
 @interface ShapeToolHandler ()
 
-@property (nonatomic, retain) FSPointF* startPoint;
-@property (nonatomic, retain) FSPointF* endPoint;
-@property (nonatomic, retain) FSAnnot *annot;
+@property (nonatomic, strong) FSPointF* startPoint;
+@property (nonatomic, strong) FSPointF* endPoint;
+@property (nonatomic, strong) FSAnnot *annot;
 
 @end
 
@@ -41,14 +41,6 @@
     return self;
 }
 
--(void)dealloc
-{
-    [_startPoint release];
-    [_endPoint release];
-    [_annot release];
-    [super dealloc];
-}
-
 -(NSString*)getName
 {
     return Tool_Shape;
@@ -61,14 +53,11 @@
 
 -(void)onActivate
 {
-    
 }
 
 -(void)onDeactivate
 {
-    
 }
-
 
 // PageView Gesture+Touch
 - (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer
@@ -120,14 +109,15 @@
         return YES;
     }
     [annot resetAppearanceStream];
-    Task *task = [[[Task alloc] init] autorelease];
-    task.run = ^(){
-        [_extensionsManager onAnnotAdded:page annot:annot];
-        CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:dibRect pageIndex:pageIndex];
-        rect = CGRectInset(rect, -20, -20);
-        [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
-    };
-    [_extensionsManager.taskServer executeSync:task];
+
+    id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.type];
+    @try {
+        [annotHandler addAnnot:annot addUndo:YES];
+    } @catch (NSException *exception) {
+        
+    } @finally {
+        
+    }
     
     return YES;
 }
@@ -138,7 +128,7 @@
     UIView* pageView = [_pdfViewCtrl getPageView:pageIndex];
     CGRect rect = [pageView frame];
     CGSize size = rect.size;
-    if(point.x > size.width || point.y > size.height ||point.x < 0 ||point.y < 0)
+    if(point.x > size.width || point.y > size.height || point.x < 0 || point.y < 0)
         return NO;
     
     FSPointF* dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
@@ -146,7 +136,7 @@
     if (self.startPoint && self.endPoint) {
         dibRect = [Utility convertToFSRect:self.startPoint p2:self.endPoint];
     } else {
-        dibRect = [[[FSRectF alloc] init] autorelease];
+        dibRect = [[FSRectF alloc] init];
         [dibRect set:dibPoint.x bottom:dibPoint.y right:dibPoint.x+0.1 top:dibPoint.y+0.1];
     }
     if (recognizer.state == UIGestureRecognizerStateBegan)
@@ -183,7 +173,14 @@
     {
         if (self.annot) {
             [self.annot resetAppearanceStream];
-            [_extensionsManager onAnnotAdded:[self.annot getPage] annot:self.annot];
+            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.type];
+            @try {
+                [annotHandler addAnnot:self.annot addUndo:YES];
+            } @catch (NSException *exception) {
+                
+            } @finally {
+            }
+            
         }
         return YES;
     }
@@ -196,7 +193,6 @@
     }
     return YES;
 }
-
 
 - (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet*)touches withEvent:(UIEvent*)event
 {
@@ -231,7 +227,14 @@
     FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
     if (!page) return nil;
     
-    FSAnnot* annot = [page addAnnot:self.type rect:rect];
+    FSAnnot* annot = nil;
+    @try {
+        annot = [page addAnnot:self.type rect:rect];
+    } @catch (NSException *exception) {
+        
+    } @finally {
+        
+    }
     annot.NM = [Utility getUUID];
     annot.author = [SettingPreference getAnnotationAuthor];
     annot.color = [_extensionsManager getPropertyBarSettingColor:self.type];

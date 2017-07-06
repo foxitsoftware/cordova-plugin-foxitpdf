@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import <UIKit/UIKit.h>
 #import "AnnotationListMore.h"
 #import "UIExtensionsManager+Private.h"
@@ -23,6 +23,7 @@
 #import "MASConstraintMaker.h"
 #import "View+MASAdditions.h"
 #import "ColorUtility.h"
+#import "AttachmentViewController.h"
 
 @interface AnnotationListMore() <UIGestureRecognizerDelegate>
 @property (nonatomic, assign)CGRect annotDetailBtRect;
@@ -43,7 +44,11 @@
     return _gestureView;
 }
 
-- (id)initWithFrame:(CGRect)frame superView:(UIView*)superView delegate:(id)delegate isBookMark:(BOOL)enable isMenu:(BOOL)isMenu
+- (id)initWithFrame:(CGRect)frame superView:(UIView*)superView delegate:(id)delegate isBookMark:(BOOL)enable isMenu:(BOOL)isMenu {
+    return [self initWithFrame:frame superView:superView delegate:delegate isBookMark:enable isMenu:isMenu isAttachment:NO];
+}
+
+- (id)initWithFrame:(CGRect)frame superView:(UIView*)superView delegate:(id)delegate isBookMark:(BOOL)enable isMenu:(BOOL)isMenu isAttachment:(BOOL)isAttachment
 {
     if ([super initWithFrame:frame])
     {
@@ -73,14 +78,13 @@
 
         if (enable)
         {
-            
             self.bottomView = [[UIView alloc] initWithFrame:CGRectMake(frame.size.width - 100, 0, 100, 50)];
             self.bottomView.backgroundColor = [UIColor colorWithRed:231.f/255.f green:231.f/255.f blue:231.f/255.f alpha:1];
-            self.renameButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedString(@"kRename", NULL)
+            self.renameButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedStringFromTable(@"kRename", @"FoxitLocalizable", nil)
                                                                     imageNormal:[UIImage imageNamed:@"document_edit_small_rename"]
                                                                   imageSelected:[UIImage imageNamed:@"document_edit_small_rename"]                                                         imageDisable:[UIImage imageNamed:@"document_edit_small_rename"]];
             
-            self.deleteButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedString(@"kDelete", NULL)
+            self.deleteButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedStringFromTable(@"kDelete", @"FoxitLocalizable", nil)
                                                                     imageNormal:[UIImage imageNamed:@"panel_more_delete"]
                                                                   imageSelected:[UIImage imageNamed:@"panel_more_delete"]                                                         imageDisable:[UIImage imageNamed:@"panel_more_delete"]];
             
@@ -103,11 +107,11 @@
             
             self.bottomView = [[UIView alloc] initWithFrame:CGRectMake(frame.size.width - 100, 0, 100, 68)];
             self.bottomView.backgroundColor = [UIColor colorWithRed:231.f/255.f green:231.f/255.f blue:231.f/255.f alpha:1];
-            self.replyButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedString(@"kReply", NULL)
+            self.replyButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedStringFromTable(@"kReply", @"FoxitLocalizable", nil)
                                                                    imageNormal:[UIImage imageNamed:@"panel_more_reply"]
                                                                  imageSelected:[UIImage imageNamed:@"panel_more_reply"]                                                         imageDisable:[UIImage imageNamed:@"panel_more_reply"]];
             
-            self.deleteButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedString(@"kDelete", NULL)
+            self.deleteButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedStringFromTable(@"kDelete", @"FoxitLocalizable", nil)
                                                                     imageNormal:[UIImage imageNamed:@"panel_more_delete"]
                                                                   imageSelected:[UIImage imageNamed:@"panel_more_delete"]                                                         imageDisable:[UIImage imageNamed:@"panel_more_delete"]];
             
@@ -126,20 +130,20 @@
             [self.deleteButton addTarget:self.delegate action:@selector(deleteAnnotation) forControlEvents:UIControlEventTouchUpInside];
             [self.replyButton addTarget:self.delegate action:@selector(replyToAnnotation) forControlEvents:UIControlEventTouchUpInside];
         }
-        else
+        else if (!isAttachment) // CELL_TYPE_PANEL_ANNOTATION
         {
             
             self.bottomView = [[UIView alloc] initWithFrame:CGRectMake(frame.size.width - 150, 0, 150, 68)];
             self.bottomView.backgroundColor = [UIColor colorWithRed:231.f/255.f green:231.f/255.f blue:231.f/255.f alpha:1];
-            self.replyButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedString(@"kReply", NULL)
+            self.replyButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedStringFromTable(@"kReply", @"FoxitLocalizable", nil)
                                                                    imageNormal:[UIImage imageNamed:@"panel_more_reply"]
                                                                  imageSelected:[UIImage imageNamed:@"panel_more_reply"]                                                         imageDisable:[UIImage imageNamed:@"panel_more_reply"]];
             
-            self.noteButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedString(@"kIconNote", NULL)
+            self.noteButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedStringFromTable(@"kIconNote", @"FoxitLocalizable", nil)
                                                                   imageNormal:[UIImage imageNamed:@"panel_more_note"]
                                                                 imageSelected:[UIImage imageNamed:@"panel_more_note"]                                                         imageDisable:[UIImage imageNamed:@"panel_more_note"]];
             
-            self.deleteButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedString(@"kDelete", NULL)
+            self.deleteButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedStringFromTable(@"kDelete", @"FoxitLocalizable", nil)
                                                                     imageNormal:[UIImage imageNamed:@"panel_more_delete"]
                                                                   imageSelected:[UIImage imageNamed:@"panel_more_delete"]                                                         imageDisable:[UIImage imageNamed:@"panel_more_delete"]];
             
@@ -161,6 +165,41 @@
             [self addSubview:self.deleteButton];
             [self.deleteButton addTarget:self.delegate action:@selector(deleteAnnotation) forControlEvents:UIControlEventTouchUpInside];
             [self.replyButton addTarget:self.delegate action:@selector(replyToAnnotation) forControlEvents:UIControlEventTouchUpInside];
+            [self.noteButton addTarget:self.delegate action:@selector(addNoteToAnnotation) forControlEvents:UIControlEventTouchUpInside];
+            
+        } else if (isAttachment) { // CELL_TYPE_PANEL_ATTACHMENT
+            self.bottomView = [[UIView alloc] initWithFrame:CGRectMake(frame.size.width - 150, 0, 150, 68)];
+            self.bottomView.backgroundColor = [UIColor colorWithRed:231.f/255.f green:231.f/255.f blue:231.f/255.f alpha:1];
+            self.saveButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedStringFromTable(@"kSave", @"FoxitLocalizable", nil)
+                                                                  imageNormal:[UIImage imageNamed:@"panel_more_save"]
+                                                                imageSelected:[UIImage imageNamed:@"panel_more_save"]                                                         imageDisable:[UIImage imageNamed:@"panel_more_save"]];
+            
+            self.noteButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedStringFromTable(@"kDescription", @"FoxitLocalizable", nil)
+                                                                  imageNormal:[UIImage imageNamed:@"panel_more_note"]
+                                                                imageSelected:[UIImage imageNamed:@"panel_more_note"]                                                         imageDisable:[UIImage imageNamed:@"panel_more_note"]];
+            
+            self.deleteButton = [AnnotationListMore createItemWithImageAndTitle:NSLocalizedStringFromTable(@"kDelete", @"FoxitLocalizable", nil)
+                                                                    imageNormal:[UIImage imageNamed:@"panel_more_delete"]
+                                                                  imageSelected:[UIImage imageNamed:@"panel_more_delete"]                                                         imageDisable:[UIImage imageNamed:@"panel_more_delete"]];
+            
+            self.saveButton.frame = CGRectMake(20, 10, self.saveButton.frame.size.width + 20, self.saveButton.frame.size.height + 20);
+            self.saveButton.center = CGPointMake(frame.size.width - 150 + 25, 34);
+            self.noteButton.frame = CGRectMake(60, 10, self.noteButton.frame.size.width + 20, self.noteButton.frame.size.height + 20);
+            self.noteButton.center = CGPointMake(frame.size.width - 150 + 75, 34);
+            self.deleteButton.frame = CGRectMake(90, 10, self.deleteButton.frame.size.width + 20, self.deleteButton.frame.size.height + 20);
+            self.deleteButton.center = CGPointMake(frame.size.width - 150 + 125, 34);
+            
+            self.bottomView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+            self.saveButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+            self.noteButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+            self.deleteButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+            
+            [self addSubview:self.bottomView];
+            [self addSubview:self.saveButton];
+            [self addSubview:self.noteButton];
+            [self addSubview:self.deleteButton];
+            [self.deleteButton addTarget:self.delegate action:@selector(deleteAnnotation) forControlEvents:UIControlEventTouchUpInside];
+            [self.saveButton addTarget:self.delegate action:@selector(saveAttachment) forControlEvents:UIControlEventTouchUpInside];
             [self.noteButton addTarget:self.delegate action:@selector(addNoteToAnnotation) forControlEvents:UIControlEventTouchUpInside];
             
         }
@@ -242,6 +281,13 @@
                 self.replyBtRect = [replyCell convertRect:replyCell.detailButton.frame toView:replyCtr.view];
                 if (CGRectContainsPoint(_replyBtRect,point)) {
                     replyCtr.isShowMore = NO;
+                    //Already hidden.
+                    if(fabs(self.frame.origin.x - self.frame.size.width) <= 0.001)
+                    {
+                        [replyCell setEditViewHiden];
+                        return NO;
+                    }
+                    
                     [UIView animateWithDuration:0.3 animations:^{
                         self.frame = CGRectMake(self.frame.origin.x + self.frame.size.width, 0, self.frame.size.width, self.frame.size.height);
                         
@@ -270,6 +316,60 @@
                     [replyCell setEditViewHiden];
                     return NO;
                     
+                }
+            }
+        }
+        else if ([viewList.delegate isKindOfClass:[AttachmentViewController class]])
+        {
+            AttachmentViewController *annotCtr = (AttachmentViewController *)viewList.delegate;
+            CGPoint annotCtrPoint = [touch locationInView:annotCtr.view];
+            NSArray *cellArrs = annotCtr.tableView.visibleCells;
+            CGPoint point = [touch locationInView:_superView];
+            CGRect saveRect = [self.saveButton.superview convertRect:self.saveButton.frame toView:_superView];
+            CGRect noteRect = [self.saveButton.superview convertRect:self.noteButton.frame toView:_superView];
+            CGRect deleteRect = [self.saveButton.superview convertRect:self.deleteButton.frame toView:_superView];
+            
+            if (CGRectContainsPoint(saveRect, point) && !self.saveButton.hidden) {
+                [viewList saveAttachment];
+                return NO;
+            } else if (CGRectContainsPoint(noteRect, point) && !self.noteButton.hidden)
+            {
+                [viewList addNoteToAnnotation];
+                return NO;
+            }
+            else if (CGRectContainsPoint(deleteRect, point))
+            {
+                [viewList deleteAnnotation];
+                return NO;
+            }
+            
+            for (AnnotationListCell *annotCell in cellArrs) {
+                self.annotDetailBtRect = [annotCell convertRect:annotCell.detailButton.frame toView:annotCtr.view];
+                if (CGRectContainsPoint(self.annotDetailBtRect, annotCtrPoint))
+                {
+                    
+                    annotCtr.isShowMore = NO;
+                    [UIView animateWithDuration:0.3 animations:^{
+                        self.frame = CGRectMake(self.frame.origin.x + self.frame.size.width, 0, self.frame.size.width, self.frame.size.height);
+                        
+                        [self.gestureView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                            make.left.equalTo(self.gestureView.superview.mas_right).offset(0);
+                            make.top.equalTo(self.gestureView.superview.mas_top).offset(0);
+                            make.bottom.equalTo(self.gestureView.superview.mas_bottom).offset(0);
+                            float width;
+                            
+                            if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
+                                width = DEVICE_iPHONE || SIZECLASS == UIUserInterfaceSizeClassCompact ? SCREENHEIGHT : 300;
+                            }else{
+                                width = DEVICE_iPHONE || SIZECLASS == UIUserInterfaceSizeClassCompact ? SCREENWIDTH : 300;
+                                
+                            }
+                            make.width.mas_equalTo(width);
+                        }];
+                    }];
+                    
+                    [annotCell setEditViewHiden];
+                    return NO;
                 }
             }
         }
@@ -303,6 +403,12 @@
                 {
                     
                     annotCtr.isShowMore = NO;
+                    //Already hidden.
+                    if(fabs(self.frame.origin.x - self.frame.size.width) <= 0.001)
+                    {
+                        [annotCell setEditViewHiden];
+                        return NO;
+                    }
                     [UIView animateWithDuration:0.3 animations:^{
                         self.frame = CGRectMake(self.frame.origin.x + self.frame.size.width, 0, self.frame.size.width, self.frame.size.height);
                         
@@ -333,7 +439,7 @@
         ReadingBookmarkListCell *viewList = (ReadingBookmarkListCell *)self.delegate;
         ReadingBookmarkViewController *bookmarkCtr = (ReadingBookmarkViewController *)viewList.delegate;
         CGPoint bookmarkCtrPoint = [touch locationInView:bookmarkCtr.view];
-        NSMutableArray *cellArrs = bookmarkCtr.tableView.visibleCells;
+        NSArray *cellArrs = bookmarkCtr.tableView.visibleCells;
         CGPoint point = [touch locationInView:_superView];
         CGRect renameRect = [self.renameButton.superview convertRect:self.renameButton.frame toView:_superView];
         CGRect deleteRect = [self.deleteButton.superview convertRect:self.deleteButton.frame toView:_superView];
@@ -392,16 +498,18 @@
     if ([annotationCell.delegate isKindOfClass:[AnnotationListViewController class]])
     {
         AnnotationListViewController *viewList = (AnnotationListViewController *)annotationCell.delegate;
-        if(!viewList.isShowMore)
-            return;
         viewList.isShowMore = NO;
     }else if ([annotationCell.delegate isKindOfClass:[ReplyTableViewController class]])
     {
         ReplyTableViewController *replyCtr = (ReplyTableViewController *)annotationCell.delegate;
-        if(!replyCtr.isShowMore)
-            return;
         replyCtr.isShowMore = NO;
+    }else  if ([annotationCell.delegate isKindOfClass:[AttachmentViewController class]]) {
+        AttachmentViewController *attachList = (AttachmentViewController*)annotationCell.delegate;
+        attachList.isShowMore = NO;
     }
+    //Already hidden, do nothing.
+    if(fabs(self.frame.origin.x - self.frame.size.width) <= 0.001)
+        return;
     [UIView animateWithDuration:0.3 animations:^{
         self.frame = CGRectMake(self.frame.origin.x + self.frame.size.width, 0, self.frame.size.width, self.frame.size.height);
         
@@ -426,6 +534,10 @@
 {
     if (hidden)
     {
+        //Already hidden, do nothing.
+        if(fabs(self.frame.origin.x - self.frame.size.width) <= 0.001)
+            return;
+        
         if (menu) {
             [UIView animateWithDuration:0.3 animations:^{
                 self.frame = CGRectMake(self.frame.origin.x + self.frame.size.width, 0, self.frame.size.width, self.frame.size.height);
@@ -476,6 +588,10 @@
         }
     } else
     {
+        //Already visible, do nothing.
+        if(fabs(self.frame.origin.x) <= 0.001)
+            return;
+        
         if (menu) {
             [UIView animateWithDuration:0.3 animations:^{
                 self.frame = CGRectMake(self.frame.origin.x - self.frame.size.width, 0, self.frame.size.width, self.frame.size.height);

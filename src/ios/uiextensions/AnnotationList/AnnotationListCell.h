@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import <Foundation/Foundation.h>
 #import "UIExtensionsManager+Private.h"
 #import <FoxitRDK/FSPDFViewControl.h>
@@ -37,6 +37,8 @@
 
 #define  CELL_ANNOTATIONDATE  CGRectMake(50,35, DEVICE_iPHONE?(STYLE_CELLWIDTH_IPHONE-50):250, 20) //date
 
+#define  CELL_ATTACHMENTSIZE  CGRectMake(130,35, 80, 20) //size
+
 #define  CELL_ANNOTATIONCONTENTS  CGRectMake(20, 69, DEVICE_iPHONE? STYLE_CELLWIDTH_IPHONE - 40 : 260, 20) //content
 
 #define  CELL_REPLYCONTENTS  CGRectMake(20, 69, DEVICE_iPHONE? STYLE_CELLWIDTH_IPHONE - 40 : 500, 20) //content
@@ -55,13 +57,13 @@
 /**@brief A cell on the annotation list. */
 @interface AnnotationListCell : UITableViewCell
 
-@property (nonatomic, retain) id delegate;
-@property (nonatomic, assign) AnnotationItem *item;
+@property (nonatomic, strong) id delegate;
+@property (nonatomic, weak) AnnotationItem *item;
 @property (nonatomic, assign) NSUInteger currentlevel;
-@property (nonatomic, retain) NSIndexPath *indexPath;
+@property (nonatomic, strong) NSIndexPath *indexPath;
 @property (nonatomic, assign) BOOL isInputText;
-@property (nonatomic, retain) UIButton *detailButton;;
-@property (nonatomic, retain) AnnotationListMore *belowView;
+@property (nonatomic, strong) UIButton *detailButton;;
+@property (nonatomic, strong) AnnotationListMore *belowView;
 @property (nonatomic, assign) id<AnnotationListCellDelegate>cellDelegate;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier isMenu:(BOOL)isMenu superView:superView typeOf:(int)annotType;
@@ -71,4 +73,5 @@
 - (void)addNoteToAnnotation;
 - (void)replyToAnnotation;
 - (void)deleteAnnotation;
+- (void)saveAttachment;
 @end

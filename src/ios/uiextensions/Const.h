@@ -1,18 +1,14 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
-
-/** Whether it is iphone. */
-#define DEVICE_iPHONE ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone)
 
 //iOS version
 #define OS_VERSION [NSString stringWithFormat:@"%@", [[UIDevice currentDevice] systemVersion]]
@@ -21,9 +17,15 @@
 #define OS_ISVERSION8 (BOOL)(OS_VERSION.integerValue >= 8)
 #define OS_ISVERSION9 (BOOL)(OS_VERSION.integerValue >= 9)
 
+/** Whether it is iphone. */
+#define DEVICE_iPHONE ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone)
+
 //Screen frame
 #define SCREENWIDTH  [UIScreen mainScreen].bounds.size.width
 #define SCREENHEIGHT [UIScreen mainScreen].bounds.size.height
+
+
+#define SIZECLASS (OS_ISVERSION8?[[UIApplication sharedApplication] delegate].window.traitCollection.horizontalSizeClass:UIUserInterfaceSizeClassCompact)
 
 /** Define notification center observer messages for annotation events. */
 #define ANNOLIST_UPDADELETETOTAL     @"AnnoList_UpdateDeleteTotal"
@@ -34,6 +36,11 @@
 
 //Define the internal used paths
 #define TEMP_PATH NSTemporaryDirectory()
+#define LIBRARY_PATH [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0]
+#define SIGNATURE_FOLDER_NAME @"Signature"
+#define DATA_FOLDER_NAME @"Data"
+#define DATA_PATH [LIBRARY_PATH stringByAppendingPathComponent:DATA_FOLDER_NAME]
+#define SIGNATURE_PATH [DATA_PATH stringByAppendingPathComponent:SIGNATURE_FOLDER_NAME]
 
 //post Notification name
 #define NOTIFICATION_NAME_APP_HANDLE_OPEN_URL @"app_handle_open_url"
@@ -69,4 +76,7 @@ typedef enum
 } EDIT_ANNOT_RECT_TYPE;
 
 #define APPLICATION_ISFULLSCREEN [UIApplication sharedApplication].statusBarHidden
+#define Annot_Signature 11
+#define Module_Signature @"Module_Signature"
+
 

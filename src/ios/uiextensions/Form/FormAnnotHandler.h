@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -8,37 +8,44 @@
  * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
- 
  */
+
 #import <FoxitRDK/FSPDFViewControl.h>
 #import "UIExtensionsManager+Private.h"
+#import "TbBaseBar.h"
 
 @protocol IGestureEventListener;
 
 
-@interface FormAnnotHandler : FSFormFillerAssist<UITextViewDelegate,IAnnotHandler,IDocEventListener>
+@interface FormAnnotHandler : FSFormFillerAssist<UITextViewDelegate,IAnnotHandler,IDocEventListener,IRotationEventListener>
 {
     BOOL _isOver;
     
     BOOL _keyboardShown;
     CGRect _originalRect;
+    float _keyboardHeight;
 }
 
-@property (nonatomic,assign) NSTimer *formTimer;
-@property (nonatomic,assign) FS_CALLBACK_TIMER formTimerCallback;
+@property (nonatomic,strong) FSPDFViewCtrl* pdfViewCtrl;
+@property (nonatomic,weak) UIExtensionsManager* extensionsManager;
+@property (nonatomic,strong) NSTimer *formTimer;
+@property (nonatomic,retain) FSTimer* formTimerCallback;
 @property (nonatomic,assign) BOOL hasFormChanged;
-@property (nonatomic,assign) FSFormControl* editFormControl;
 @property (nonatomic,assign) int editFormControlNeedTextInput;
-@property (nonatomic,assign) int editFormControlNeedSetCursor;
-@property (nonatomic,retain) UITextView *hiddenTextField;
+@property (nonatomic,assign) BOOL editFormControlNeedSetCursor;
+@property (nonatomic,strong) UITextView *hiddenTextField;
 @property (nonatomic,assign) CGRect currentEditRect;
 @property (nonatomic,copy) NSString *lastText;
+@property (nonatomic,strong) TbBaseBar *formNaviBar;
+@property (nonatomic,strong) TbBaseBar *textFormNaviBar;
+@property (nonatomic,retain) FSFormFiller* formFiller;
 
 - (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (TbBaseBar*)buildFormNaviBar;
 - (void)endTextInput;
 
 -(void)refresh: (FSPDFPage*)page pdfRect: (FSRectF*)pdfRect;
--(BOOL)setTimer: (int)elapse timerFunc: (FS_CALLBACK_TIMER)timerFunc timerID: (int *)timerID;
+-(BOOL)setTimer: (int)elapse timerFunc: (FSTimer*)timerFunc timerID: (int *)timerID;
 -(BOOL)killTimer: (int)timerID;
 -(void)focusGotOnControl: (FSFormControl*)control fieldValue: (NSString *)fieldValue;
 -(void)focusLostFromControl: (FSFormControl*)control fieldValue: (NSString *)fieldValue;

@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "PropertyBar.h"
 #import "Const.h"
 #import "Utility.h"
@@ -17,11 +17,11 @@
 
 @interface ColorLayout ()
 
-@property (nonatomic, retain) UILabel *title;
-@property (nonatomic, retain) NSArray *colors;
-@property (nonatomic, retain) NSMutableArray *items;
+@property (nonatomic, strong) UILabel *title;
+@property (nonatomic, strong) NSArray *colors;
+@property (nonatomic, strong) NSMutableArray *items;
 @property (nonatomic, assign) int currentColor;
-@property (nonatomic, retain) id<IPropertyValueChangedListener> currentListener;
+@property (nonatomic, strong) id<IPropertyValueChangedListener> currentListener;
 
 @end
 
@@ -35,7 +35,7 @@
     if (self) {
         _propertyBar = propertyBar;
         self.title = [[UILabel alloc] initWithFrame:CGRectMake(20, 3, frame.size.width, LAYOUTTITLEHEIGHT)];
-        self.title.text = NSLocalizedString(@"kColor", nil);
+        self.title.text = NSLocalizedStringFromTable(@"kColor", @"FoxitLocalizable", nil);
         self.title.textColor = [UIColor colorWithRGBHex:0x5c5c5c];
         self.title.font = [UIFont systemFontOfSize:11.0f];
         self.items = [NSMutableArray array];
@@ -80,7 +80,7 @@
 - (void)addColorItem
 {
     CGRect layoutFrame = self.frame;
-    if (([UIApplication sharedApplication].statusBarOrientation ==UIInterfaceOrientationLandscapeLeft||[UIApplication sharedApplication].statusBarOrientation ==UIInterfaceOrientationLandscapeRight) && DEVICE_iPHONE)
+    if (([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeLeft || [UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeRight) && DEVICE_iPHONE)
     {
         int itemWidth = (layoutFrame.size.width - 11*ITEMLRSPACE)/10;
         for (int i = 0; i < _colors.count; i++) {
@@ -90,7 +90,7 @@
             item.color = color.intValue;
             [item setSelected:NO];
             item.callback = ^(long property,int value){
-                [_currentListener onIntValueChanged:property value:value];
+                [_currentListener onProperty:property changedFrom:[NSNumber numberWithInt:_currentColor] to:[NSNumber numberWithInt:value]];
                 [self setCurrentColor:value];
             };
             [self addSubview:item];
@@ -115,7 +115,7 @@
             item.color = color.intValue;
             [item setSelected:NO];
             item.callback = ^(long property,int value){
-                [_currentListener onIntValueChanged:property value:value];
+                [_currentListener onProperty:property changedFrom:[NSNumber numberWithInt:_currentColor] to:[NSNumber numberWithInt:value]];
                 [self setCurrentColor:value];
             };
             [self addSubview:item];
@@ -133,7 +133,7 @@
             [view removeFromSuperview];
         }
     }
-    UIView *divide = [[[UIView alloc] initWithFrame:CGRectMake(20, self.frame.size.height - 1, self.frame.size.width - 40, [Utility realPX:1.0f])] autorelease];
+    UIView *divide = [[UIView alloc] initWithFrame:CGRectMake(20, self.frame.size.height - 1, self.frame.size.width - 40, [Utility realPX:1.0f])];
     divide.tag = 1000;
     divide.backgroundColor = [UIColor colorWithRGBHex:0x5c5c5c];
     divide.alpha = 0.2f;
@@ -148,7 +148,7 @@
     }
     [self.items removeAllObjects];
     self.title = [[UILabel alloc] initWithFrame:CGRectMake(20, 3, self.frame.size.width, LAYOUTTITLEHEIGHT)];
-    self.title.text = NSLocalizedString(@"kColor", nil);
+    self.title.text = NSLocalizedStringFromTable(@"kColor", @"FoxitLocalizable", nil);
     self.title.textColor = [UIColor colorWithRGBHex:0x5c5c5c];
     self.title.font = [UIFont systemFontOfSize:11.0f];
     [self addSubview:self.title];

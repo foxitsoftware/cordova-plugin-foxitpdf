@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9060" systemVersion="15B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9051"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ReflowModule">
+            <connections>
+                <outlet property="bigger" destination="03y-KZ-aPQ" id="jlQ-Hp-RwF"/>
+                <outlet property="bookmark" destination="kjH-yI-pel" id="7w7-Ke-6rq"/>
+                <outlet property="nextPage" destination="yvv-V7-nLs" id="sbA-mJ-KFM"/>
+                <outlet property="previousPage" destination="6d3-ir-mPA" id="HF6-cr-OXg"/>
+                <outlet property="showGraph" destination="3Xk-iS-5Rg" id="xaD-lH-TX6"/>
+                <outlet property="smaller" destination="8he-re-udT" id="Ops-fG-Yiq"/>
+                <outlet property="toolBarBottomReflow" destination="EU7-rw-OUf" id="dru-am-cg1"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="EU7-rw-OUf">
+            <rect key="frame" x="0.0" y="0.0" width="431" height="44"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+            <animations/>
+            <items>
+                <barButtonItem style="plain" systemItem="flexibleSpace" id="KI1-SH-NdU"/>
+                <barButtonItem style="plain" id="Atw-wz-0U3">
+                    <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="kjH-yI-pel">
+                        <rect key="frame" x="29" y="7" width="46" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <animations/>
+                        <state key="normal">
+                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                        </state>
+                        <connections>
+                            <action selector="bookmarkClicked:" destination="-1" eventType="touchUpInside" id="6mQ-Yg-mZ1"/>
+                        </connections>
+                    </button>
+                </barButtonItem>
+                <barButtonItem style="plain" systemItem="flexibleSpace" id="NnB-qZ-g40"/>
+                <barButtonItem style="plain" id="wER-TH-A0x">
+                    <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="03y-KZ-aPQ">
+                        <rect key="frame" x="95" y="7" width="46" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <animations/>
+                        <state key="normal">
+                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                        </state>
+                        <connections>
+                            <action selector="biggerClicked:" destination="-1" eventType="touchUpInside" id="82s-Uh-vNo"/>
+                        </connections>
+                    </button>
+                </barButtonItem>
+                <barButtonItem style="plain" systemItem="flexibleSpace" id="Qid-FA-GeR"/>
+                <barButtonItem style="plain" id="9VK-0l-ex8">
+                    <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="8he-re-udT">
+                        <rect key="frame" x="160" y="7" width="46" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <animations/>
+                        <state key="normal">
+                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                        </state>
+                        <connections>
+                            <action selector="smallerClicked:" destination="-1" eventType="touchUpInside" id="B9i-Ag-DRF"/>
+                        </connections>
+                    </button>
+                </barButtonItem>
+                <barButtonItem style="plain" systemItem="flexibleSpace" id="4UP-eB-Xma"/>
+                <barButtonItem style="plain" id="bzG-SF-5Rv">
+                    <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="3Xk-iS-5Rg">
+                        <rect key="frame" x="225" y="7" width="46" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <animations/>
+                        <state key="normal">
+                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                        </state>
+                        <connections>
+                            <action selector="showGraphClicked:" destination="-1" eventType="touchUpInside" id="ZRS-8f-yKK"/>
+                        </connections>
+                    </button>
+                </barButtonItem>
+                <barButtonItem style="plain" systemItem="flexibleSpace" id="ByL-SB-86t"/>
+                <barButtonItem style="plain" id="F4k-dl-Cxh">
+                    <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="6d3-ir-mPA">
+                        <rect key="frame" x="290" y="7" width="46" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <animations/>
+                        <state key="normal">
+                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                        </state>
+                        <connections>
+                            <action selector="previousPageClicked:" destination="-1" eventType="touchUpInside" id="gvD-Iy-zav"/>
+                        </connections>
+                    </button>
+                </barButtonItem>
+                <barButtonItem style="plain" systemItem="flexibleSpace" id="Yvq-OR-EsM"/>
+                <barButtonItem style="plain" id="aem-9I-Osj">
+                    <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="yvv-V7-nLs">
+                        <rect key="frame" x="356" y="7" width="46" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <animations/>
+                        <state key="normal">
+                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                        </state>
+                        <connections>
+                            <action selector="nextPageClicked:" destination="-1" eventType="touchUpInside" id="hYf-tM-3Rv"/>
+                        </connections>
+                    </button>
+                </barButtonItem>
+                <barButtonItem style="plain" systemItem="flexibleSpace" id="CCc-AC-aVc"/>
+            </items>
+            <point key="canvasLocation" x="493.5" y="352"/>
+        </toolbar>
+    </objects>
+</document>

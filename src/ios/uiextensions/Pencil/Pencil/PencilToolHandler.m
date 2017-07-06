@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -8,16 +8,18 @@
  * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
- 
  */
+
 #import "PencilToolHandler.h"
 #import "PencilAnnotHandler.h"
 #import "UIExtensionsManager+Private.h"
 #import "FSAnnotExtent.h"
+#import "FSUndo.h"
+#import "FSAnnotAttributes.h"
 
 @interface PencilToolHandler ()
 
-@property (nonatomic, retain) FSInk *annot;
+@property (nonatomic, strong) FSInk *annot;
 @property (nonatomic, assign) BOOL isMoving;
 @property (nonatomic, assign) BOOL isZooming;
 @property (nonatomic, assign) CGPoint lastPoint;
@@ -38,7 +40,7 @@
     if (self) {
         _extensionsManager = extensionsManager;
         [_extensionsManager registerToolHandler:self];
-        [_extensionsManager registerPropertyBarListener:self];
+        [_extensionsManager registerAnnotPropertyListener:self];
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         _taskServer = _extensionsManager.taskServer;
         _type = e_annotInk;
@@ -62,6 +64,10 @@
 
 -(void)onDeactivate
 {
+    if (self.annot) {
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:e_annotInk];
+        [annotHandler addAnnot:self.annot addUndo:YES];
+    }
     self.annot = nil;
 }
 
@@ -126,7 +132,6 @@
     if (self.annot == nil)  //this is the first line
     {
         self.annot = [self createInkAnnotationInPage:pageIndex atPos:dibPoint];
-        [_extensionsManager onAnnotAdded:[_pdfViewCtrl.currentDoc getPage:self.annot.pageIndex] annot:self.annot];
     }
     else
     {
@@ -159,16 +164,15 @@
 
         if (self.annot == nil)  //this is the first line
         {
-            //annotation cannot cross page
             FSPointF* dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
             self.annot = [self createInkAnnotationInPage:pageIndex atPos:dibPoint];
-            [_extensionsManager onAnnotAdded:[_pdfViewCtrl.currentDoc getPage:pageIndex] annot:self.annot];
             CGRect cgRect = [_pdfViewCtrl convertPdfRectToPageViewRect:self.annot.fsrect pageIndex:pageIndex];
             [_pdfViewCtrl refresh:cgRect pageIndex:pageIndex];
             _lastPoint = point;
             return YES;
         } else {
             if (pageIndex != self.annot.pageIndex) {
+                //annotation cannot cross page
                 return NO;
             } else {
                 FSPointF* dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
@@ -208,9 +212,6 @@
 
 - (BOOL)onPageViewTouchesEnded:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    if (_isMoving && self.annot) {
-        [_extensionsManager onAnnotModified:[_pdfViewCtrl.currentDoc getPage:pageIndex] annot:self.annot];
-    }
     _isBegin = NO;
     _isMoving = NO;
     return YES;
@@ -230,21 +231,33 @@
 - (void)onAnnotColorChanged:(unsigned int)color annotType:(enum FS_ANNOTTYPE)annotType
 {
     if (annotType == e_annotInk) {
-        self.annot = nil;
+        if (self.annot) {
+            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.annot.type];
+            [annotHandler addAnnot:self.annot addUndo:YES];
+            self.annot = nil;
+        }
     }
 }
 
 - (void)onAnnotLineWidthChanged:(unsigned int)lineWidth annotType:(enum FS_ANNOTTYPE)annotType
 {
     if (annotType == e_annotInk) {
-        self.annot = nil;
+        if (self.annot) {
+            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.annot.type];
+            [annotHandler addAnnot:self.annot addUndo:YES];
+            self.annot = nil;
+        }
     }
 }
 
 - (void)onAnnotOpacityChanged:(unsigned int)opacity annotType:(enum FS_ANNOTTYPE)annotType
 {
     if (annotType == e_annotInk) {
-        self.annot = nil;
+        if (self.annot) {
+            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.annot.type];
+            [annotHandler addAnnot:self.annot addUndo:YES];
+            self.annot = nil;
+        }
     }
 }
 

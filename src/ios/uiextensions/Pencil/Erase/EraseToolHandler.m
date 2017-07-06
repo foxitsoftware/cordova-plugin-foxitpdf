@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -8,8 +8,8 @@
  * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
- 
  */
+
 #import "EraseToolHandler.h"
 #import "ReplyTableViewController.h"
 #import "ReplyUtil.h"
@@ -20,13 +20,16 @@
 #import "PropertyBar.h"
 #import "ColorUtility.h"
 #import "FSAnnotExtent.h"
+#import "FSUndo.h"
+#import "FSAnnotAttributes.h"
 
 @interface EraseToolHandler ()
 
-@property (nonatomic, retain) NSMutableArray *pencilAnnotationArray;
-@property (nonatomic, retain) NSMutableArray *affectedPencilAnnotationArray;
+@property (nonatomic, strong) NSMutableArray *pencilAnnotationArray;
+@property (nonatomic, strong) NSMutableArray *affectedPencilAnnotationArray;
 @property (nonatomic, assign) int annotationEditPageIndex;
 @property (nonatomic, assign) CGRect currentEditRect;
+@property (nonatomic, strong) NSMutableArray<FSAnnotAttributes*> *originalAttributesArray;
 
 @end
 
@@ -76,7 +79,6 @@
 
 -(void)onDeactivate
 {
-    
 }
 
 // PageView Gesture+Touch
@@ -185,8 +187,7 @@
         centerPoint.y = (p1.y + p2.y) / 2;
         
         [array addObject:centerPoint];
-        [centerPoint release];
-        
+                
         [self addCenterPoint:p1 p2:centerPoint array:array];
         [self addCenterPoint:p2 p2:centerPoint array:array];
     }
@@ -224,13 +225,6 @@
     return arrayLines;
 }
 
-static FSPointF* makePoint(float x, float y)
-{
-    FSPointF* pt = [[[FSPointF alloc] init] autorelease];
-    [pt set:x y:y];
-    return pt;
-}
-
 - (NSMutableArray<FSPointF*>*)updatePencil:(FSPointF*)point
 {
     NSMutableArray<FSPointF*> *arrayAffectedPoints = [NSMutableArray<FSPointF*> array];
@@ -242,7 +236,7 @@ static FSPointF* makePoint(float x, float y)
             continue;
         }
         if (_isBegin) {
-            [[_extensionsManager getAnnotHandlerByType:e_annotInk] onAnnotSelected:inkAnnot];
+            [[_extensionsManager getAnnotHandlerByAnnot:inkAnnot] onAnnotSelected:inkAnnot];
             _isBegin = NO;
         }
         
@@ -301,7 +295,7 @@ static FSPointF* makePoint(float x, float y)
                                 u = u2;
                             }
                             
-                            FSPointF* pointCross = [[[FSPointF alloc] init] autorelease];
+                            FSPointF* pointCross = [[FSPointF alloc] init];
                             pointCross.x = point1.x + u * (point2.x - point1.x);
                             pointCross.y = point1.y + u * (point2.y - point1.y);
                             
@@ -320,7 +314,7 @@ static FSPointF* makePoint(float x, float y)
                             }
                             else //leave circle
                             {
-                                if (j==0)
+                                if (j == 0)
                                 {
                                     isLineChanged = YES;
                                     [arrayAffectedPoints addObject:pointArray[j]];
@@ -335,10 +329,10 @@ static FSPointF* makePoint(float x, float y)
                         {
                             isLineChanged = YES;
                             
-                            FSPointF* pointCross1 = [[[FSPointF alloc] init] autorelease];
+                            FSPointF* pointCross1 = [[FSPointF alloc] init];
                             pointCross1.x = point1.x + u1 * (point2.x - point1.x);
                             pointCross1.y = point1.y + u1 * (point2.y - point1.y);
-                            FSPointF* pointCross2 = [[[FSPointF alloc] init] autorelease];
+                            FSPointF* pointCross2 = [[FSPointF alloc] init];
                             pointCross2.x = point1.x + u2 * (point2.x - point1.x);
                             pointCross2.y = point1.y + u2 * (point2.y - point1.y);
                             
@@ -348,7 +342,7 @@ static FSPointF* makePoint(float x, float y)
                             FSPointF *pointCrossStart;
                             FSPointF *pointCrossEnd;
                             
-                            if ((au1 >=0 && au1 <= 1) && (au2 >=0 && au2 <= 1))
+                            if ((au1 >= 0 && au1 <= 1) && (au2 >= 0 && au2 <= 1))
                             {
                                 pointCrossStart = pointCross2;
                                 pointCrossEnd = pointCross1;
@@ -417,7 +411,10 @@ static FSPointF* makePoint(float x, float y)
             }
             // let setInkList work
             if ([newPath getPointCount] == 0) {
-                [newPath moveTo:makePoint(0, 0)];
+                [newPath moveTo:[Utility makeFSPointWithX:0 y:0]];
+            }
+            if (![self.affectedPencilAnnotationArray containsObject:inkAnnot]) {
+                [self.originalAttributesArray addObject:[FSAnnotAttributes attributesWithAnnot:inkAnnot]];
             }
             [inkAnnot setInkList:newPath];
             [inkAnnot resetAppearanceStream];
@@ -452,11 +449,9 @@ static FSPointF* makePoint(float x, float y)
     CGPoint point = [[touches anyObject] locationInView:pageView];
     
     if (_isBegin) {
-        self.lastBeginValue = [NSValue valueWithCGPoint:point];
         return NO;
     }
     _isBegin = YES;
-    self.lastBeginValue = nil;
     
     _isChanged = NO;
     
@@ -471,6 +466,7 @@ static FSPointF* makePoint(float x, float y)
     _radius = _extensionsManager.eraserLineWidth;
     
     self.affectedPencilAnnotationArray = [NSMutableArray array];
+    self.originalAttributesArray = [NSMutableArray<FSAnnotAttributes*> array];
     
     //make overylay always draw background with rect
     _allRect = [self getRectFromPencilAnnotation];
@@ -570,29 +566,83 @@ static FSPointF* makePoint(float x, float y)
         return NO;
     }
     
+    NSArray<FSAnnotAttributes*>* originalAttributesArray = [NSArray<FSAnnotAttributes*> arrayWithArray:self.originalAttributesArray];
+    self.originalAttributesArray = nil;
+    NSMutableArray<NSString*>* removedAnnotNMArray = [NSMutableArray<NSString*> array];
+    NSMutableArray<FSAnnotAttributes*>* changedAttributesArray = [NSMutableArray<FSAnnotAttributes*> arrayWithCapacity:self.affectedPencilAnnotationArray.count];
+    
     if (_isChanged)
     {
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:e_annotInk];
         for (int i = 0; i < self.affectedPencilAnnotationArray.count; i++)
         {
             FSInk *annot = self.affectedPencilAnnotationArray[i];
-            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:e_annotInk];
-
-            if ([[annot getInkList] getPointCount] == 1) // just 'moveTo'
+            
+            if ([[annot getInkList] getPointCount] == 1) // remove if not visibale
             {
-                FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
-                [_extensionsManager onAnnotDeleted:page annot:annot];
-                [page removeAnnot:annot];
+                [removedAnnotNMArray addObject:annot.NM];
+                [annotHandler removeAnnot:annot addUndo:NO];
             }
             else
             {
-                if ([annot canModify]) {
-                    [annotHandler modifyAnnot:annot];
-                }
+                [changedAttributesArray addObject:[FSAnnotAttributes attributesWithAnnot:annot]];
+                [annotHandler modifyAnnot:annot addUndo:NO];
             }
         }
+        
+        FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+        [_extensionsManager addUndoItem:[UndoItem itemWithUndo:^(UndoItem* item){
+            NSMutableArray<FSAnnot*>* reAddedAnnotArray = [NSMutableArray<FSAnnot*> arrayWithCapacity:[removedAnnotNMArray count]];
+            FSRectF* tmpRect = [Utility makeFSRectWithLeft:0 top:0 right:10 bottom:10]; // casual value, we will reset rect later
+            CGRect unionRect = CGRectZero;
+            for (NSString* NM in removedAnnotNMArray) {
+                FSAnnot* annot = [page addAnnot:e_annotInk rect:tmpRect];
+                annot.NM = NM;
+                [reAddedAnnotArray addObject:annot];
+            }
+            for (FSAnnotAttributes* attributes in originalAttributesArray) {
+                FSAnnot* annot = [Utility getAnnotByNM:attributes.NM inPage:page];
+                if (annot) {
+                    [attributes resetAnnot:annot];
+                    
+                    CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
+                    unionRect = CGRectIsEmpty(unionRect) ? rect : CGRectUnion(unionRect, rect);
+                }
+            }
+            for (FSAnnot* annot in reAddedAnnotArray) {
+                [annotHandler addAnnot:annot addUndo:NO];
+            }
+            if (!CGRectIsEmpty(unionRect)) {
+                [_pdfViewCtrl refresh:unionRect pageIndex:pageIndex];
+            }
+        } redo:^(UndoItem* item){
+            CGRect unionRect = CGRectZero;
+            for (NSString* NM in removedAnnotNMArray) {
+                FSAnnot* annot = [Utility getAnnotByNM:NM inPage:page];
+                if (annot) {
+                    CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
+                    unionRect = CGRectIsEmpty(unionRect) ? rect : CGRectUnion(unionRect, rect);
+                    
+                    [annotHandler removeAnnot:annot addUndo:NO];
+                }
+            }
+            for (FSAnnotAttributes* attributes in changedAttributesArray) {
+                FSAnnot* annot = [Utility getAnnotByNM:attributes.NM inPage:page];
+                if (annot) {
+                    [attributes resetAnnot:annot];
+                    
+                    CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
+                    unionRect = CGRectIsEmpty(unionRect) ? rect : CGRectUnion(unionRect, rect);
+                }
+            }
+            if (!CGRectIsEmpty(unionRect)) {
+                [_pdfViewCtrl refresh:unionRect pageIndex:pageIndex];
+            }
+        } pageIndex:pageIndex]];
     }
     
     self.affectedPencilAnnotationArray = nil;
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         [_pdfViewCtrl refresh:pageIndex needRender:NO];
     });

@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "AnnotationPanel.h"
 #import "UIExtensionsManager+Private.h"
 #import "PanelHost.h"
@@ -32,7 +32,6 @@
 @property (nonatomic, strong) UIView* contentView;
 @property (nonatomic, strong) PanelButton* button;
 
-
 @end
 
 @implementation AnnotationPanel
@@ -50,7 +49,7 @@
         title.backgroundColor = [UIColor clearColor];
         title.textAlignment = NSTextAlignmentCenter;
         title.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        title.text = NSLocalizedString(@"kAnnotation", nil);
+        title.text = NSLocalizedStringFromTable(@"kAnnotation", @"FoxitLocalizable", nil);
         title.textColor = [UIColor blackColor];
         
        
@@ -89,7 +88,7 @@
         [_editButton addTarget:self action:@selector(clearAnnotations) forControlEvents:UIControlEventTouchUpInside];
         [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
         [_editButton setTitleColor:[UIColor grayColor] forState:UIControlStateDisabled];
-        [_editButton setTitle:NSLocalizedString(@"kClear", nil) forState:UIControlStateNormal];
+        [_editButton setTitle:NSLocalizedStringFromTable(@"kClear", @"FoxitLocalizable", nil) forState:UIControlStateNormal];
         _editButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [_editButton setEnlargedEdge:ENLARGE_EDGE];
        [self.contentView addSubview:_annotationCtrl.view];
@@ -114,6 +113,7 @@
     [_pdfViewControl registerDocEventListener:self];
     [_pdfViewControl registerPageEventListener:self];
     [_panelController.panel addSpec:self];
+    _panelController.panel.currentSpace = self;
 }
 
 - (void)cancelBookmark
@@ -137,10 +137,9 @@
 {
     if ([_annotationCtrl getAnnotationsCount] > 0)
     {
-        UIAlertView* alert=[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"kConfirm",nil) message:NSLocalizedString(@"kClearAnnotations",nil) delegate:self cancelButtonTitle:NSLocalizedString(@"kYes",nil) otherButtonTitles:NSLocalizedString(@"kNo",nil),nil];
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTable(@"kConfirm", @"FoxitLocalizable", nil) message:NSLocalizedStringFromTable(@"kClearAnnotations", @"FoxitLocalizable", nil) delegate:self cancelButtonTitle:NSLocalizedStringFromTable(@"kYes", @"FoxitLocalizable", nil) otherButtonTitles:NSLocalizedStringFromTable(@"kNo", @"FoxitLocalizable", nil),nil];
         [alert show];
-        [alert release];
-    }
+            }
 }
 
 - (void)onDocWillOpen
@@ -159,14 +158,20 @@
         _annotationCtrl.indexPath = nil;
         [_annotationCtrl clearData];
         [_annotationCtrl loadData:YES];
+        
+        //update clear button state
+        if (![Utility canAddAnnotToDocument:document]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                _editButton.enabled = NO;
+                [_editButton setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
+            });
+        }else{
+            dispatch_async(dispatch_get_main_queue(), ^{
+                _editButton.enabled = YES;
+                [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
+            });
+        }
     });
-}
-
-- (void)onDocWillClose:(FSPDFDoc* )document
-{
-    if([AnnotationStruct isThreadRunning])
-        [AnnotationStruct setStopThreadFlag];
-    [_annotationCtrl ResetAnnotationArray];
 }
 
 - (void)onDocClosed:(FSPDFDoc* )document error:(int)error
@@ -179,10 +184,8 @@
     
 }
 
-
 - (void)onDocWillSave:(FSPDFDoc* )document
 {
-    
 }
 
 -(int)getTag
@@ -194,10 +197,12 @@
 {
     return self.button;
 }
+
 -(UIView*)getTopToolbar
 {
     return self.toolbar;
 }
+
 -(UIView*)getContentView
 {
     return self.contentView;
@@ -205,12 +210,47 @@
 
 -(void)onActivated
 {
-    
 }
 
 -(void)onDeactivated
 {
-    
+}
+
+#pragma mark IPageEventListener
+- (void)onPagesWillRemove:(NSArray<NSNumber*>*)indexes
+{
+}
+
+- (void)onPagesWillMove:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex
+{
+}
+
+- (void)onPagesWillRotate:(NSArray<NSNumber*>*)indexes rotation:(int)rotation
+{
+}
+
+- (void)onPagesRemoved:(NSArray<NSNumber*>*)indexes
+{
+    [self reloadData];
+}
+
+- (void)onPagesMoved:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex
+{
+    [self reloadData];
+}
+
+- (void)onPagesInsertedAtRange:(NSRange)range
+{
+    [self reloadData];
+}
+
+# pragma mark private
+
+- (void)reloadData
+{
+    _annotationCtrl.allCanModify = YES;
+    _annotationCtrl.indexPath = nil;
+    [_annotationCtrl loadData:YES];
 }
 
 @end

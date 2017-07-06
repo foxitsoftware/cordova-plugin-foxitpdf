@@ -219,6 +219,7 @@ const CGFloat kTSAlertView_ColumnMargin = 10.0;
 	[_messageLabel release];
 	[_messageTextView release];
 	[_messageTextViewMaskImageView release];
+    [_inputTextField release];
 	
 	[[NSNotificationCenter defaultCenter] removeObserver: self ];
 	
@@ -641,8 +642,6 @@ const CGFloat kTSAlertView_ColumnMargin = 10.0;
 		[self layoutSubviews];
 		[self.inputTextField becomeFirstResponder];
 	}
-    //todo
-//    [DEMO_APPDELEGATE.app registerAppPasswordEvent:self];
 }
 
 - (void) pulse
@@ -799,7 +798,9 @@ const CGFloat kTSAlertView_ColumnMargin = 10.0;
     const CGFloat leftMargin = _isiOS7 ? kTSAlertView_LeftMarginiOS7 : kTSAlertView_LeftMargin;
     
 	CGFloat maxWidth = self.width - (leftMargin * 2);
-	CGSize s = [self.titleLabel.text sizeWithFont: self.titleLabel.font constrainedToSize: CGSizeMake(maxWidth, 1000) lineBreakMode: self.titleLabel.lineBreakMode];
+    NSMutableParagraphStyle* paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    paragraphStyle.lineBreakMode = self.titleLabel.lineBreakMode;
+	CGSize s = [self.titleLabel.text boundingRectWithSize:CGSizeMake(maxWidth, 1000) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:self.titleLabel.font, NSParagraphStyleAttributeName:paragraphStyle} context:nil].size;
 	if ( s.width < maxWidth )
 		s.width = maxWidth;
 	
@@ -811,7 +812,9 @@ const CGFloat kTSAlertView_ColumnMargin = 10.0;
     const CGFloat leftMargin = _isiOS7 ? kTSAlertView_LeftMarginiOS7 : kTSAlertView_LeftMargin;
     
 	CGFloat maxWidth = self.width - (leftMargin * 2);
-	CGSize s = [self.messageLabel.text sizeWithFont: self.messageLabel.font constrainedToSize: CGSizeMake(maxWidth, 1000) lineBreakMode: self.messageLabel.lineBreakMode];
+    NSMutableParagraphStyle* paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    paragraphStyle.lineBreakMode = self.messageLabel.lineBreakMode;
+    CGSize s = [self.messageLabel.text boundingRectWithSize:CGSizeMake(maxWidth, 1000) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:self.messageLabel.font, NSParagraphStyleAttributeName:paragraphStyle} context:nil].size;
 	if ( s.width < maxWidth )
 		s.width = maxWidth;
 	
@@ -869,33 +872,6 @@ const CGFloat kTSAlertView_ColumnMargin = 10.0;
 	}
     [self dismissWithClickedButtonIndex:0 animated:YES];
     return YES;
-}
-
--(void)onAppPasswordShow
-{
-    double delayInSeconds = .1;
-    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        
-        if ( [self.delegate respondsToSelector: @selector(alertView:clickedButtonAtIndex:)] )
-        {
-            [self.delegate alertView: self clickedButtonAtIndex:0 ];
-        }
-        
-        if ( [self.delegate respondsToSelector: @selector(alertViewCancel:)] )
-        {
-            [self.delegate alertViewCancel: self ];
-        }
-        
-        [self dismissWithClickedButtonIndex:0 animated:NO];
-    });
-    
-    
-}
-
--(void)onAppPasswordDismiss
-{
-    
 }
 
 @end

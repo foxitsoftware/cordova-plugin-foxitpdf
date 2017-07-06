@@ -1,20 +1,27 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #ifndef UIExtensionsManager_h
 #define UIExtensionsManager_h
+
+//to disable nullability warnings
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnullability-completeness"
+
 #import <UIKit/UIKit.h>
 #import <FoxitRDK/FSPDFViewControl.h>
 #import <FoxitRDK/FSPDFObjC.h>
+
+@class FSPDFReader;
 
 /** @brief Customized annotation type on application level. */
 #define e_annotArrowLine    99
@@ -32,9 +39,15 @@
 #define Tool_Stamp @"Tool_Stamp"
 #define Tool_Insert @"Tool_Insert"
 #define Tool_Replace @"Tool_Replace"
+#define Tool_Attachment @"Tool_Attachment"
+#define Tool_Signature @"Tool_Signature"
 
 /** @brief Nofitication center messeage, will notify when reading bookmark is updated from panel.*/
 #define UPDATEBOOKMARK @"UpdateBookmark"
+
+@protocol IModule <NSObject>
+-(NSString*)getName;
+@end
 
 /** @brief Annotation event listener. */
 @protocol IAnnotEventListener <NSObject>
@@ -126,12 +139,18 @@
 -(void)onAnnotSelected:(FSAnnot*)annot;
 /** brief When the annotation is deselected. */
 -(void)onAnnotDeselected:(FSAnnot*)annot;
-/** brief Add a new annotation to a specified page, undo/redo will be supported later. */
+/** brief Add a new annotation to a specified page. It's equal to the following one with the param addUndo YES. */
 -(void)addAnnot:(FSAnnot*)annot;
-/** brief Modify an annotation, undo/redo will be supported later. */
+/** brief Add a new annotation to a specified page, undo/redo will be supported if the param addUndo is YES. */
+-(void)addAnnot:(FSAnnot*)annot addUndo:(BOOL)addUndo;
+/** brief Modify an annotation. It's equal to the following one with the param addUndo YES. */
 -(void)modifyAnnot:(FSAnnot*)annot;
-/** brief Remove an annotation, undo/redo will be supported later. */
+/** brief Modify an annotation, undo/redo will be supported if the param addUndo is YES. */
+-(void)modifyAnnot:(FSAnnot*)annot addUndo:(BOOL)addUndo;
+/** brief Remove an annotation. It's equal to the following one with the param addUndo YES. */
 -(void)removeAnnot:(FSAnnot*)annot;
+/** brief Remove an annotation, undo/redo will be supported if the param addUndo is YES. */
+-(void)removeAnnot:(FSAnnot*)annot addUndo:(BOOL)addUndo;
 
 #pragma mark - PageView Gesture+Touch
 /** @brief Long press gesture on the specified page. */
@@ -153,22 +172,56 @@
 @optional
 /** @brief Drawing event on the specified page. */
 -(void)onDraw:(int)pageIndex inContext:(CGContextRef)context annot:(FSAnnot*)annot;
+/** @brief Changed property event on the specified annot. */
+-(void)onAnnot:(FSAnnot*)annot property:(long)property changedFrom:(NSValue*)oldValue to:(NSValue*)newValue;
+@end
+
+/** @brief The undo/redo listener. */
+@protocol IFSUndoEventListener <NSObject>
+/** @brief Triggered after the state of undo or redo changed. */
+-(void)onUndoChanged;
+@end
+
+/** @brief The undo/redo handler,it should handle the operations about undo/redo. */
+@interface FSUndo : NSObject
+/** @brief Check whether can undo or not. */
+-(BOOL)canUndo;
+/** @brief Check whether can redo or not. */
+-(BOOL)canRedo;
+/** @brief Undo the previous operation. */
+-(void)undo;
+/** @brief Redo the previous operation. */
+-(void)redo;
+/** @brief Clear all the recorded undo/redo operations. */
+-(void)clearUndoRedo;
 @end
 
 /** @brief The UI extensions mangager which has included the default implementation of text selection tool, annotation tools... and so on. */
-@interface UIExtensionsManager : NSObject<FSPDFUIExtensionsManager,
-                                            IRotationEventListener, IAnnotEventListener,IRecoveryEventListener>
-
+@interface UIExtensionsManager : FSUndo<FSPDFUIExtensionsManager, IDocEventListener, IPageEventListener, IRotationEventListener, IAnnotEventListener,IRecoveryEventListener>
 /** @brief The PDF view control. */
-@property (nonatomic, retain) FSPDFViewCtrl* pdfViewCtrl;
+@property (nonatomic, strong, readonly) FSPDFViewCtrl* pdfViewCtrl;
 /** @brief The Current selected annotation. */
-@property (nonatomic, retain) FSAnnot*  currentAnnot;
-/** @brief Whether to allow to jump to link address when tap on the link annatation */
-@property (nonatomic, assign) BOOL enablelinks;
-/** @brief Get/Set the hightlight color for text selection */
-@property (nonatomic, retain) UIColor* selectionHighlightColor;
+@property (nonatomic, strong) FSAnnot*  currentAnnot;
+/** @brief Whether to allow to jump to link address when tap on the link annatation. */
+@property (nonatomic, assign) BOOL enableLinks;
+/** @brief Whether to allow to highlight links. */
+@property (nonatomic, assign) BOOL enableHighlightLinks;
+/** @brief Get/Set the hightlight color for links. */
+@property (nonatomic, strong) UIColor* linksHighlightColor;
+/** @brief Get/Set the hightlight color for text selection. */
+@property (nonatomic, strong) UIColor* selectionHighlightColor;
+/** @brief UIExtensionsManager had implemented a complete PDF reader with the default toolbars, navigation controller, ...etc. This is a quick way to get the complete pdf reader.
+ *
+ *  @note To get a complete reader, UIExtensionsManager must be initialized with configuration of "defaultReader" set to true.If it's not, nil will be returned.
+ */
+@property (nonatomic, strong, readonly) FSPDFReader* pdfReader;
+
 /** @brief Intialize extensions manager with the pdf view control. */
 -(id)initWithPDFViewControl:(FSPDFViewCtrl*)viewctrl;
+/** @brief Intialize extensions manager with the pdf view control and specified configuration. 
+ *  See uiextensions_config.json for an example.
+ */
+-(id)initWithPDFViewControl:(FSPDFViewCtrl*)viewctrl configuration:(NSData*)jsonConfigData;
 
 #pragma mark - Toolhandler and AnnotHandler registration.
 /** @brief Get the current tool handler by name, which is defined above Tool_XXX. */
@@ -198,6 +251,12 @@
 /** @brief Unregister the tool event listener. */
 - (void)unregisterToolEventListener:(id<IToolEventListener>)listener;
 
+#pragma mark - Undo/redo event listeners.
+/** @brief Register the undo/redo event listener. */
+-(void)registerUndoEventListener:(id<IFSUndoEventListener>)listener;
+/** @brief Unregister the undo/redo event listener. */
+-(void)unregisterUndoEventListener:(id<IFSUndoEventListener>)listener;
+
 #pragma mark - Property bar of annoatation for setting/getting annotation color and opacity.
 /** @brief Show the property bar to set annotation color and opacity. */
 -(void)showProperty:(enum FS_ANNOTTYPE)annotType rect:(CGRect)rect inView:(UIView*)view;
@@ -205,10 +264,10 @@
 -(unsigned int)getPropertyBarSettingColor:(enum FS_ANNOTTYPE)annotType;
 /** @brief Get current setting annotation opacity from property bar. */
 -(unsigned int)getPropertyBarSettingOpacity:(enum FS_ANNOTTYPE)annotType;
-/** @brief Register the annotation color change event listener. */
--(void)registerPropertyBarListener:(id<IAnnotPropertyListener>)listener;
-/** @brief Unregister the annotation color change event listener. */
--(void)unregisterPropertyBarListener:(id<IAnnotPropertyListener>)listener;
+/** @brief Register annotation property change event listener. */
+-(void)registerAnnotPropertyListener:(id<IAnnotPropertyListener>)listener;
+/** @brief Unregister annotation property change event listener. */
+-(void)unregisterAnnotPropertyListener:(id<IAnnotPropertyListener>)listener;
 /** @brief Show or hide the text searching bar on the UI main screen. It will appeare on the top of main screen. */
 - (void)showSearchBar:(BOOL)show;
 /** @brief Register the tool event listener. */
@@ -218,7 +277,15 @@
 
 /** @brief Get current selected text. */
 -(NSString*)getCurrentSelectedText;
+
+/** @brief End form filling. */
+-(void)stopFormFilling;
+-(void)exitFormFilling;
+
+- (void)showThumbnailView;
+
 @end
 
+#pragma clang diagnostic pop
 
 #endif /* UIExtensionsManager_h */

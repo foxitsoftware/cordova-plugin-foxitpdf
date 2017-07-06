@@ -1,24 +1,24 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import <UIKit/UIKit.h>
-#import "FoxitRDK/FSPDFObjC.h"
+#import <FoxitRDK/FSPDFObjC.h>
 #import "../Panel/PanelController.h"
 
 typedef void (^GetBookmarkFinishHandler)(NSMutableArray* bookmark);
 
 @interface OutlineButton : UIButton
 
-@property(nonatomic,retain)NSIndexPath *indexPath;
+@property(nonatomic,strong)NSIndexPath *indexPath;
 
 @end
 
@@ -30,7 +30,7 @@ static NSInteger numberofPush = 0;
 /** @brief The view controller for bookmarks. */
 @interface OutlineViewController : UITableViewController
 
-@property (nonatomic, retain) NSMutableArray *arrayOutlines;
+@property (nonatomic, strong) NSMutableArray *arrayOutlines;
 @property (copy, nonatomic) OutlineGotoPageHandler outlineGotoPageHandler;
 @property (assign, nonatomic) BOOL hasParentOutline;
 

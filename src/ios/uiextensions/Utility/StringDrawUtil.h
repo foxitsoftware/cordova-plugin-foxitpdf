@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import <Foundation/Foundation.h>
 #import <UIKit/UIFont.h>
 #import <UIKit/UIStringDrawing.h>
@@ -36,8 +36,8 @@
 @property (nonatomic, readonly, assign) float singleLineHeight; //cache for single line height
 
 //cache for getReturnRefinedString, in most case if no new line happen, no need to reculcuate
-@property (nonatomic, retain) NSString *previousStr;
-@property (nonatomic, retain) NSString *previousRetStr;
+@property (nonatomic, strong) NSString *previousStr;
+@property (nonatomic, strong) NSString *previousRetStr;
 @property (nonatomic, assign) float previousHeight;
 
 //is this string seperatable? not seperate for example, English word, symbol

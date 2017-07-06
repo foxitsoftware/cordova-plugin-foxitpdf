@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -8,8 +8,8 @@
  * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
- 
  */
+
 #import <UIKit/UIKit.h>
 #import "AnnotationListMore.h"
 #import "Const.h"
@@ -19,15 +19,16 @@
 
 @protocol ReadingBookmarkListCellDelegate <NSObject>
 
-- (void)setEditViewHiden:(ReadingBookmarkButton *)button;
+- (void)setViewHidden:(ReadingBookmarkButton *)button;
 
 @end
 
 
 @interface ReadingBookmarkListCell : UITableViewCell
-@property (nonatomic, retain) ReadingBookmarkButton *detailButton;
-@property (nonatomic, retain) UILabel *pageLabel;
-@property (nonatomic, retain) AnnotationListMore *editView;
-@property (nonatomic, retain)NSIndexPath *indexPath;
+@property (nonatomic, strong) ReadingBookmarkButton *detailButton;
+@property (nonatomic, strong) UILabel *pageLabel;
+@property (nonatomic, strong) AnnotationListMore *editView;
+@property (nonatomic, strong)NSIndexPath *indexPath;
 @property (nonatomic, assign)id<ReadingBookmarkListCellDelegate>delegate;
+- (void)setEditViewHiden:(ReadingBookmarkButton *)sender;
 @end

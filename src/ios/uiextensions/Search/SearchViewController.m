@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "SearchViewController.h"
 @implementation SearchbyViewController
 
@@ -21,8 +21,8 @@
     if (self)
     {
         _titles = [[NSArray alloc] initWithObjects:
-                      NSLocalizedString(@"kSearchGoogle", nil),
-                      NSLocalizedString(@"kSearchWiki", nil),
+                      NSLocalizedStringFromTable(@"kSearchGoogle", @"FoxitLocalizable", nil),
+                      NSLocalizedStringFromTable(@"kSearchWiki", @"FoxitLocalizable", nil),
                       nil];
     }
     return self;
@@ -42,7 +42,7 @@
 {
     [super viewDidLoad];
     self.tableView.scrollEnabled = NO;
-    self.navigationItem.title = NSLocalizedString(@"kSearch", nil);
+    self.navigationItem.title = NSLocalizedStringFromTable(@"kSearch", @"FoxitLocalizable", nil);
 }
 
 - (void)viewDidUnload
@@ -54,10 +54,7 @@
 
 - (void)dealloc
 {
-    [_titles release];
-    [_searchbyClickedHandler release];
-    _searchbyClickedHandler= nil;
-    [super dealloc];
+    _searchbyClickedHandler = nil;
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -86,7 +83,7 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     if (cell == nil) 
     {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier] autorelease];        
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];        
     }
     cell.textLabel.text = [_titles objectAtIndex:indexPath.row];
     return cell;

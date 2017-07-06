@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import <UIKit/UIKit.h>
 #import "UIExtensionsManager+Private.h"
 #import "PanelController.h"
@@ -19,6 +19,7 @@
 #import "AnnotationPanel.h"
 #import "OutlinePanel.h"
 #import "ReadingBookmarkPanel.h"
+#import "AttachmentPanel.h"
 
 static PanelController* currentPanelController = nil;
 
@@ -35,12 +36,7 @@ PanelController* getCurrentPanelController()
     AnnotationPanel* annotationPanel;
     OutlinePanel* outlinePanel;
     ReadingBookmarkPanel* bookmarkPanel;
-}
-
--(void)dealloc
-{
-    [_panel release];
-    [super dealloc];
+    AttachmentPanel* attachmentPanel;
 }
 
 -(instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager
@@ -51,7 +47,7 @@ PanelController* getCurrentPanelController()
         _superView = extensionsManager.pdfViewCtrl;
         _pdfViewControl = extensionsManager.pdfViewCtrl;
         _extensionsManager = extensionsManager;
-        self.panel = [[[PanelHost alloc] init] autorelease];
+        self.panel = [[PanelHost alloc] initWithModuleConfig:extensionsManager.modulesConfig];
         self.panel.contentView.backgroundColor = [UIColor whiteColor];
         CGRect screenFrame = [UIScreen mainScreen].bounds;
         if (DEVICE_iPHONE)
@@ -63,7 +59,7 @@ PanelController* getCurrentPanelController()
             self.panel.contentView.frame = CGRectMake(0, 0, 300, screenFrame.size.height);
         }
         
-        self.panelListeners = [[[NSMutableArray alloc] init] autorelease];
+        self.panelListeners = [[NSMutableArray alloc] init];
         
         // mask view
         _maskView = [[UIControl alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -73,19 +69,32 @@ PanelController* getCurrentPanelController()
         self.panel.contentView.translatesAutoresizingMaskIntoConstraints = NO;
         self.isHidden = YES;
         
+        //load attachment panel
+        if(_extensionsManager.modulesConfig.loadAttachment)
+        {
+            attachmentPanel = [[AttachmentPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
+            [attachmentPanel load];
+        }
         
         //Load annotation panel
-        annotationPanel = [[[AnnotationPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self] autorelease];
-        [annotationPanel load];
-
+        if(_extensionsManager.modulesConfig.loadAnnotations)
+        {
+            annotationPanel = [[AnnotationPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
+            [annotationPanel load];
+        }
         //load outline panel
-        outlinePanel = [[[OutlinePanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self] autorelease];
-        [outlinePanel load];
+        if(_extensionsManager.modulesConfig.loadOutline)
+        {
+            outlinePanel = [[OutlinePanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
+            [outlinePanel load];
+        }
         
         //load bookmark panel
-        bookmarkPanel = [[[ReadingBookmarkPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self] autorelease];
-        [bookmarkPanel load];
-
+        if(_extensionsManager.modulesConfig.loadReadingBookmark)
+        {
+            bookmarkPanel = [[ReadingBookmarkPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
+            [bookmarkPanel load];
+        }
     }
     return self;
 }
@@ -188,7 +197,6 @@ PanelController* getCurrentPanelController()
         }
     }
 }
-
 
 -(void)dismiss:(id)sender
 {

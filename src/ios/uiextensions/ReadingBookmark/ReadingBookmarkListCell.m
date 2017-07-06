@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -8,8 +8,8 @@
  * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
- 
  */
+
 #import "ReadingBookmarkListCell.h"
 #import "ReadingBookmarkViewController.h"
 #import "PanelHost.h"
@@ -22,9 +22,9 @@
         
         CGRect contentFrame = CGRectMake(self.frame.size.width-54, (self.frame.size.height - 32) / 2, 32, 32);
         contentFrame = CGRectMake(10, (self.frame.size.height - 30) / 2, 300, 30);
-        self.pageLabel = [[[UILabel alloc] initWithFrame:contentFrame] autorelease];
-        _pageLabel.textAlignment = UITextAlignmentLeft;
-        _pageLabel.lineBreakMode = UILineBreakModeTailTruncation;
+        self.pageLabel = [[UILabel alloc] initWithFrame:contentFrame];
+        _pageLabel.textAlignment = NSTextAlignmentLeft;
+        _pageLabel.lineBreakMode = NSLineBreakByTruncatingTail;
         _pageLabel.font = [UIFont systemFontOfSize:17];
         _pageLabel.textColor = [UIColor blackColor];
         [self.contentView addSubview:_pageLabel];
@@ -44,23 +44,16 @@
             _editView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         }
         [self.contentView addSubview:self.editView];
-        [_editView release];
-    }
+            }
     return self;
 }
+
 - (void)setEditViewHiden:(ReadingBookmarkButton *)sender{
     if (self.delegate && [self.delegate respondsToSelector:@selector(setViewHidden:)]) {
         [self.delegate setViewHidden:sender.object];
     }
 }
 
-- (void)dealloc{
-    [_detailButton release];
-    [_editView release];
-    [_pageLabel release];
-    [_indexPath release];
-    [super dealloc];
-}
 - (void)awakeFromNib {
     // Initialization code
 }

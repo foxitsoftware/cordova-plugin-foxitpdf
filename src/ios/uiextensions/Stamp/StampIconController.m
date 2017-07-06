@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -9,6 +9,7 @@
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
  */
+
 #import "StampIconController.h"
 #import "Utility.h"
 #import "ColorUtility.h"
@@ -24,7 +25,7 @@
 
 -(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
-    if (self=[super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
         float stampWidth = 130;
         
         float divideWidth = (DEVICE_iPHONE ? (SCREENWIDTH - stampWidth*2): (300 - stampWidth*2)) - 20*2;
@@ -57,13 +58,13 @@
 @interface StampIconController ()
 
 @property (nonatomic, assign) CGPDFDocumentRef pdfDocumentRef;
-@property (nonatomic, retain) UIView *toolbar;
-@property (nonatomic, retain) UIButton *backBtn;
-@property (nonatomic, retain) UITableView *stampLayout;
+@property (nonatomic, strong) UIView *toolbar;
+@property (nonatomic, strong) UIButton *backBtn;
+@property (nonatomic, strong) UITableView *stampLayout;
 @property (nonatomic, assign) int currentStampType;
 @property (nonatomic, assign) BOOL isiPhoneLandscape;
-@property (nonatomic, retain) SegmentView *segmengView;
-@property (nonatomic, retain) UILabel *titleLabel;
+@property (nonatomic, strong) SegmentView *segmengView;
+@property (nonatomic, strong) UILabel *titleLabel;
 
 
 @end
@@ -122,7 +123,7 @@
         self.isiPhoneLandscape = YES;
     }
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
-    self.toolbar = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 104)] autorelease];
+    self.toolbar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 104)];
     self.toolbar.backgroundColor = [UIColor colorWithRGBHex:0xF2FAFAFA];
     [self.view addSubview:self.toolbar];
     
@@ -134,25 +135,25 @@
         [self.toolbar addSubview:self.backBtn];
     }
     
-    UILabel *title = [[[UILabel alloc] initWithFrame:CGRectMake(self.toolbar.frame.size.width/2 - 40, DEVICE_iPHONE ? 30 : 10, 80, 30)] autorelease];
-    title.text = NSLocalizedString(@"kPropertyStamps", nil);
+    UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(self.toolbar.frame.size.width/2 - 40, DEVICE_iPHONE ? 30 : 10, 80, 30)];
+    title.text = NSLocalizedStringFromTable(@"kPropertyStamps", @"FoxitLocalizable", nil);
     title.textColor = [UIColor blackColor];
     title.font = [UIFont systemFontOfSize:18.0f];
     title.textAlignment = NSTextAlignmentCenter;
     self.titleLabel = title;
     [self.toolbar addSubview:title];
     
-    SegmentItem *standItem = [[[SegmentItem alloc] init] autorelease];
+    SegmentItem *standItem = [[SegmentItem alloc] init];
     standItem.image = [UIImage imageNamed:@"annot_stamp_standard"];
     standItem.selectImage = [UIImage imageNamed:@"annot_stamp_standard_selected"];
     standItem.tag = 1;
     
-    SegmentItem *signHereItem = [[[SegmentItem alloc] init] autorelease];
+    SegmentItem *signHereItem = [[SegmentItem alloc] init];
     signHereItem.image = [UIImage imageNamed:@"annot_stamp_sign"];
     signHereItem.selectImage = [UIImage imageNamed:@"annot_stamp_sign_selected"];
     signHereItem.tag = 2;
     
-    SegmentItem *dynamicItem = [[[SegmentItem alloc] init] autorelease];
+    SegmentItem *dynamicItem = [[SegmentItem alloc] init];
     dynamicItem.image = [UIImage imageNamed:@"annot_stamp_dynamic"];
     dynamicItem.selectImage = [UIImage imageNamed:@"annot_stamp_dynamic_selected"];
     dynamicItem.tag = 3;
@@ -203,7 +204,6 @@
     [self.view addSubview:self.stampLayout];
 }
 
-
 -(void)backClicked
 {
     [self dismissViewControllerAnimated:YES completion:^{
@@ -218,7 +218,6 @@
     {
         CGPDFDocumentRelease(self.pdfDocumentRef);
     }
-    [super dealloc];
 }
 
 #pragma mark - Properties
@@ -237,7 +236,6 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
 }
-
 
 #pragma mark -  table view datasource handler
 
@@ -272,16 +270,15 @@
     return 3;
 }
 
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString* cellidentifer=@"CellIdentifer";
-    StampCell* cell=[tableView dequeueReusableCellWithIdentifier:cellidentifer];
+    static NSString* cellidentifer = @"CellIdentifer";
+    StampCell* cell = [tableView dequeueReusableCellWithIdentifier:cellidentifer];
     
     if (cell == nil) {
         
-        cell=[[[StampCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellidentifer]autorelease];
-        cell.selectionStyle=UITableViewCellSelectionStyleNone;
+        cell = [[StampCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellidentifer];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     StampButton *left = (StampButton*)[cell.contentView viewWithTag:100];
     StampButton *right = (StampButton*)[cell.contentView viewWithTag:101];
@@ -307,39 +304,39 @@
     if (_currentStampType == STAMP_TYPE_STANDER) {
         index = 20;
         if (self.isiPhoneLandscape) {
-            left.stampIcon = indexPath.row * 3;
-            center.stampIcon = indexPath.row * 3 + 1;
-            right.stampIcon = indexPath.row * 3 + 2;
+            left.stampIcon = (int)indexPath.row * 3;
+            center.stampIcon = (int)indexPath.row * 3 + 1;
+            right.stampIcon = (int)indexPath.row * 3 + 2;
         }else
         {
-            left.stampIcon = indexPath.row * 2;
-            right.stampIcon = indexPath.row * 2 + 1;
+            left.stampIcon = (int)indexPath.row * 2;
+            right.stampIcon = (int)indexPath.row * 2 + 1;
         }
     }
     else if (_currentStampType == STAMP_TYPE_SIGNHERE)
     {
         index = 32;
         if (self.isiPhoneLandscape) {
-            left.stampIcon = 12 + indexPath.row * 3;
-            center.stampIcon = 12 + indexPath.row * 3 + 1;
-            right.stampIcon = 12 + indexPath.row * 3 + 2;
+            left.stampIcon = 12 + (int)indexPath.row * 3;
+            center.stampIcon = 12 + (int)indexPath.row * 3 + 1;
+            right.stampIcon = 12 + (int)indexPath.row * 3 + 2;
         }else
         {
-            left.stampIcon = 12 + indexPath.row * 2;
-            right.stampIcon = 12 + indexPath.row * 2 + 1;
+            left.stampIcon = 12 + (int)indexPath.row * 2;
+            right.stampIcon = 12 + (int)indexPath.row * 2 + 1;
         }
     }
     else if (_currentStampType == STAMP_TYPE_DYNAMIC)
     {
         index = 37;
         if (self.isiPhoneLandscape) {
-            left.stampIcon = 17 + indexPath.row * 3;
-            center.stampIcon = 17 + indexPath.row * 3 + 1;
-            right.stampIcon = 17 + indexPath.row * 3 + 2;
+            left.stampIcon = 17 + (int)indexPath.row * 3;
+            center.stampIcon = 17 + (int)indexPath.row * 3 + 1;
+            right.stampIcon = 17 + (int)indexPath.row * 3 + 2;
         }else
         {
-            left.stampIcon = 17 + indexPath.row * 2;
-            right.stampIcon = 17 + indexPath.row * 2 + 1;
+            left.stampIcon = 17 + (int)indexPath.row * 2;
+            right.stampIcon = 17 + (int)indexPath.row * 2 + 1;
         }
     }
     

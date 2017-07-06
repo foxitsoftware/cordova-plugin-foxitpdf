@@ -1,21 +1,21 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "OpacityItem.h"
 #import "PropertyBar.h"
 
 @interface OpacityItem ()
 
-@property (nonatomic, retain) UIButton *button;
+@property (nonatomic, strong) UIButton *button;
 
 @end
 
@@ -71,7 +71,6 @@
     self.button.imageEdgeInsets = UIEdgeInsetsMake(-10, 0, 0, -10);
     self.button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
 }
-
 
 -(void)onClick
 {

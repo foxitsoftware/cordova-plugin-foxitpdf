@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -8,8 +8,8 @@
  * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
- 
  */
+
 #import <UIKit/UIKit.h>
 #import <FoxitRDK/FSPDFViewControl.h>
 #import "../Panel/PanelController.h"
@@ -34,13 +34,14 @@ typedef void (^ReadingBookmarkDeleteHandler)();
 
 //a common way to do for bookmark and annotation
 
-@property (nonatomic, retain) NSMutableArray *arrayBookmarks;
+@property (nonatomic, strong) NSMutableArray *arrayBookmarks;
 @property (nonatomic, assign) BOOL isContentEditing;
 @property (nonatomic, assign) BOOL isShowMore;
-@property (nonatomic, retain) NSIndexPath *moreIndexPath;
-@property (nonatomic, retain) NSObject *currentVC;
-@property (nonatomic, retain) PanelController* panelController;
+@property (nonatomic, strong) NSIndexPath *moreIndexPath;
+@property (nonatomic, strong) NSObject *currentVC;
+@property (nonatomic, strong) PanelController* panelController;
 
+- (id)initWithStyle:(UITableViewStyle)style pdfViewCtrl:(FSPDFViewCtrl*)pdfViewCtrl panelController:(PanelController*)panelController;
 - (void)loadData;
 - (void)clearData:(BOOL)fromPDF;
 - (NSUInteger)getBookmarkCount;

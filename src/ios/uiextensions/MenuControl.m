@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "MenuControl.h"
 #import <UIKit/UIKit.h>
 #import "MenuItem.h"
@@ -28,21 +28,6 @@
 
 }
 
--(void)dealloc
-{
-    [_menuItems release];
-    [_menuControl release];
-    [super dealloc];
-}
-
-- (void)handleTapGesture:(UITapGestureRecognizer *)gestureRecognizer
-{
-    [_extensionsManager onTap:gestureRecognizer];
-}
-
-- (void)handleLongPressGesture:(UILongPressGestureRecognizer *)recognizer {
-    [_extensionsManager onLongPress:recognizer];
-}
 
 - (void)handlePanGesture:(UIPanGestureRecognizer *)recognizer {
     [_extensionsManager onPan:recognizer];
@@ -58,6 +43,10 @@
     return [super gestureRecognizerShouldBegin:recognizer];
 }
 
+- (void)willHideMenu {
+
+}
+
 - (id)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager
 {
     self = [super init];
@@ -66,12 +55,14 @@
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = _extensionsManager.pdfViewCtrl;
         self.menuControl = [UIMenuController sharedMenuController];
-        _longpressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
-        [self addGestureRecognizer:_longpressGesture];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(willHideMenu)
+                                                     name:UIMenuControllerWillHideMenuNotification
+                                                   object:nil];
+
         _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
         [self addGestureRecognizer:_panGesture];
-        _tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapGesture:)];
-        [self addGestureRecognizer:_tapGesture];
     }
     return self;
 }
@@ -110,7 +101,7 @@
 - (void)setRect:(CGRect)rect margin:(float)margin
 {
     self.frame = CGRectInset(rect, -35, -35);
-    [[_pdfViewCtrl getDisplayView] addSubview:self];
+    [[_pdfViewCtrl getDisplayView] insertSubview:self atIndex:0];
     [self.menuControl setTargetRect:CGRectInset(self.bounds, 35-margin, 35-margin) inView:self];
 }
 
@@ -132,15 +123,15 @@
     {
         [self becomeFirstResponder];
         
-        NSMutableArray* menuArray = [[[NSMutableArray alloc] init] autorelease];
+        NSMutableArray* menuArray = [[NSMutableArray alloc] init];
         for (int i = 0; i < self.menuItems.count; i ++) {
             MenuItem* mcItem = [self.menuItems objectAtIndex:i];
             UIMenuItem* menuItem = [[UIMenuItem alloc] initWithTitle:mcItem.title action:NSSelectorFromString([NSString stringWithFormat:@"magic_clicked_%i", i])];
             [menuArray addObject:menuItem];
-            [menuItem release];
-        }
+                    }
         [self.menuControl setMenuItems:menuArray];
         [self.menuControl setMenuVisible:YES animated:YES];
+        
     }
 }
 

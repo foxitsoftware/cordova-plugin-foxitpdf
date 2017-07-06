@@ -1,24 +1,24 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "NoteDialog.h"
 #import "ColorUtility.h"
 #import "UINavigationItem+IOS7PaddingAdditions.h"
 
 @interface NoteDialog ()
 
-@property (nonatomic, retain) UITextView *textViewNote;
-@property (nonatomic, retain) FSAnnot *rootAnnot;
-@property (nonatomic, retain) UIButton *buttonDone;
+@property (nonatomic, strong) UITextView *textViewNote;
+@property (nonatomic, strong) FSAnnot *rootAnnot;
+@property (nonatomic, strong) UIButton *buttonDone;
 @property (nonatomic, assign) CGFloat difference;
 @end
 
@@ -54,7 +54,7 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
         self.automaticallyAdjustsScrollViewInsets = NO;
     }
     
-    self.textViewNote = [[[UITextView alloc] init] autorelease];
+    self.textViewNote = [[UITextView alloc] init];
     self.textViewNote.font = [UIFont systemFontOfSize:15.0f];
     self.textViewNote.translatesAutoresizingMaskIntoConstraints = NO;
     [NSTimer scheduledTimerWithTimeInterval:0.3 target:self selector:@selector(setFrame) userInfo:nil repeats:NO];
@@ -68,6 +68,7 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
     
     [self.textViewNote becomeFirstResponder];
 }
+
 - (void)setFrame{
     self.textViewNote.backgroundColor = [UIColor clearColor];
    
@@ -107,6 +108,7 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
 {
     [self adjustTextFrame];
 }
+
 -(void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
 {
     navigationController.navigationBar.tag = 1;
@@ -119,7 +121,7 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
             UILabel *titleLabel = (UILabel*)[titleView viewWithTag:2];
             if (titleLabel)
             {
-                titleLabel.text = NSLocalizedString(@"kNote", nil);
+                titleLabel.text = NSLocalizedStringFromTable(@"kNote", @"FoxitLocalizable", nil);
             }
         }
     }
@@ -130,24 +132,24 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
 {
     UIButton *buttonCancel = [UIButton buttonWithType:UIButtonTypeCustom];
     buttonCancel.frame = CGRectMake(0.0f, 0.0f, 55.0f, 32.0f);
-    [buttonCancel setTitle:NSLocalizedString(@"kCancel", nil) forState:UIControlStateNormal];
+    [buttonCancel setTitle:NSLocalizedStringFromTable(@"kCancel", @"FoxitLocalizable", nil) forState:UIControlStateNormal];
     buttonCancel.titleLabel.font = [UIFont boldSystemFontOfSize:15.0f];
     buttonCancel.titleLabel.textAlignment = NSTextAlignmentLeft;
     [buttonCancel setTitleColor:[UIColor colorWithRed:0.15 green:0.62 blue:0.84 alpha:1] forState:UIControlStateNormal];
     [buttonCancel setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
     [buttonCancel addTarget:self action:@selector(cancelAction:) forControlEvents:UIControlEventTouchUpInside];
-    [self.navigationItem addLeftBarButtonItem:[[[UIBarButtonItem alloc] initWithCustomView:buttonCancel] autorelease]];
+    [self.navigationItem addLeftBarButtonItem:[[UIBarButtonItem alloc] initWithCustomView:buttonCancel]];
     
     self.buttonDone = [UIButton buttonWithType:UIButtonTypeCustom];
     self.buttonDone.frame = CGRectMake(0.0f, 0.0f, 55.0f, 32.0f);
-    [self.buttonDone setTitle:NSLocalizedString(@"kSave", nil) forState:UIControlStateNormal];
+    [self.buttonDone setTitle:NSLocalizedStringFromTable(@"kSave", @"FoxitLocalizable", nil) forState:UIControlStateNormal];
     self.buttonDone.titleLabel.font = [UIFont boldSystemFontOfSize:15.0f];
     [self.buttonDone setTitleColor:[UIColor colorWithRed:0.15 green:0.62 blue:0.84 alpha:1] forState:UIControlStateNormal];
     self.buttonDone.titleLabel.textAlignment = NSTextAlignmentRight;
     [self.buttonDone setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
     [self.buttonDone setTitleColor:[UIColor grayColor] forState:UIControlStateDisabled];
     [self.buttonDone addTarget:self action:@selector(doneAction:) forControlEvents:UIControlEventTouchUpInside];
-    UIBarButtonItem *barDone = [[[UIBarButtonItem alloc] initWithCustomView:self.buttonDone] autorelease];
+    UIBarButtonItem *barDone = [[UIBarButtonItem alloc] initWithCustomView:self.buttonDone];
     [self.navigationItem addRightBarButtonItem:barDone];
     
     if (!self.navigationItem.titleView)
@@ -162,34 +164,31 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
             titleFrame = CGRectMake(0.0f, 0.0f, 160.0f, 44.0f);
             titleFont = [UIFont boldSystemFontOfSize:15.0f];
         }
-        UIView *titleView= [[UIView alloc] initWithFrame:titleViewFrame];
-        UIActivityIndicatorView *actIndicatorView=[[UIActivityIndicatorView alloc] initWithFrame:indicatorFrame];
-        actIndicatorView.tag= 1;
+        UIView *titleView = [[UIView alloc] initWithFrame:titleViewFrame];
+        UIActivityIndicatorView *actIndicatorView = [[UIActivityIndicatorView alloc] initWithFrame:indicatorFrame];
+        actIndicatorView.tag = 1;
         [actIndicatorView setHidden:YES];
-        UILabel *titleLabel= [[UILabel alloc] init];
-        titleLabel.frame= titleFrame;
-        titleLabel.text= self.title;
-        titleLabel.textAlignment= NSTextAlignmentCenter;
-        titleLabel.autoresizesSubviews= YES;
-        titleLabel.backgroundColor= [UIColor clearColor];
-        titleLabel.textColor= [UIColor colorWithRGBHex:0x3F3F3F];
-        titleLabel.font= titleFont;
-        titleLabel.tag =2;
+        UILabel *titleLabel = [[UILabel alloc] init];
+        titleLabel.frame = titleFrame;
+        titleLabel.text = self.title;
+        titleLabel.textAlignment = NSTextAlignmentCenter;
+        titleLabel.autoresizesSubviews = YES;
+        titleLabel.backgroundColor = [UIColor clearColor];
+        titleLabel.textColor = [UIColor colorWithRGBHex:0x3F3F3F];
+        titleLabel.font = titleFont;
+        titleLabel.tag = 2;
         [titleView addSubview:titleLabel];
         [titleView addSubview:actIndicatorView];
-        self.navigationItem.titleView= titleView;
-        [titleView release];
-        [titleLabel release];
-        [actIndicatorView release];
-    }
+        self.navigationItem.titleView = titleView;
+                            }
     
     if (self.navigationItem.titleView != nil)
     {
-        UIView *titleView=(UIView *)self.navigationItem.titleView;
-        UILabel *titleLabel= (UILabel *)[titleView viewWithTag:2];
+        UIView *titleView = (UIView *)self.navigationItem.titleView;
+        UILabel *titleLabel = (UILabel *)[titleView viewWithTag:2];
         if (titleLabel)
         {
-            titleLabel.text= NSLocalizedString(@"kNote", nil);
+            titleLabel.text = NSLocalizedStringFromTable(@"kNote", @"FoxitLocalizable", nil);
         }
     }
 }
@@ -205,7 +204,7 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
     _textViewNote.text = @"";
     [self.textViewNote becomeFirstResponder];
     
-    UINavigationController *fileInfoNavCtr = [[[UINavigationController alloc] initWithRootViewController:self] autorelease];
+    UINavigationController *fileInfoNavCtr = [[UINavigationController alloc] initWithRootViewController:self];
     fileInfoNavCtr.delegate = self;
     fileInfoNavCtr.modalPresentationStyle = UIModalPresentationFormSheet;
     fileInfoNavCtr.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
@@ -278,7 +277,7 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
           textViewFrame.origin.y = 40 + (OS_ISVERSION7 ? -40 : 0);
         textViewFrame.size.height = self.view.bounds.size.height;
         
-        if ([UIApplication sharedApplication].statusBarOrientation ==UIInterfaceOrientationLandscapeLeft||[UIApplication sharedApplication].statusBarOrientation ==UIInterfaceOrientationLandscapeRight) {
+        if ([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeLeft || [UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeRight) {
             textViewFrame.size.height = self.view.bounds.size.height;
              _textViewNote.frame = textViewFrame;
         }
@@ -311,7 +310,7 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
 -(void)textViewDidBeginEditing:(UITextView *)textView
 {
     _oldRect = [self.textViewNote caretRectForPosition:self.textViewNote.selectedTextRange.end];
-    _caretVisibilityTimer = [[NSTimer scheduledTimerWithTimeInterval:0.3 target:self selector:@selector(scrollCaretToVisible) userInfo:nil repeats:YES] retain];
+    _caretVisibilityTimer = [NSTimer scheduledTimerWithTimeInterval:0.3 target:self selector:@selector(scrollCaretToVisible) userInfo:nil repeats:YES];
 }
 
 -(void)textViewDidChange:(UITextView *)textView
@@ -332,8 +331,7 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
 -(void)textViewDidEndEditing:(UITextView *)textView
 {
     [_caretVisibilityTimer invalidate];
-    [_caretVisibilityTimer release];
-    _caretVisibilityTimer = nil;
+        _caretVisibilityTimer = nil;
 }
 
 #pragma mark - keyboard notification
@@ -367,13 +365,14 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
         CGFloat ySet = keyboardFrame.size.height - bottom;
         textViewFrame.size.height  = self.view.frame.size.height - ySet - 50;
         textViewFrame.size.width = self.view.frame.size.width;
-        if ([UIApplication sharedApplication].statusBarOrientation ==UIInterfaceOrientationLandscapeLeft||[UIApplication sharedApplication].statusBarOrientation ==UIInterfaceOrientationLandscapeRight) {
+        if ([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeLeft || [UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeRight) {
             textViewFrame.size.height  = self.view.frame.size.height - ySet;
         }
     }
 
     _textViewNote.frame = textViewFrame;
 }
+
 - (void)keyboardWasHidden:(NSNotification*)aNotification
 {
     CGRect textViewFrame = _textViewNote.frame;
@@ -401,7 +400,6 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
 {
     self.textViewNote = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [super dealloc];
 }
 
 @end

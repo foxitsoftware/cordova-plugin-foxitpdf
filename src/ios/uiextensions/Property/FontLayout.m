@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "FontLayout.h"
 #import "PropertyBar.h"
 #import "ColorUtility.h"
@@ -20,20 +20,20 @@
 
 @interface FontLayout ()
 
-@property (nonatomic, retain) UILabel *title;
-@property (nonatomic, retain) NSString *currentFontName;
+@property (nonatomic, strong) UILabel *title;
+@property (nonatomic, strong) NSString *currentFontName;
 @property (nonatomic, assign) int currentFontSize;
-@property (nonatomic, retain) id<IPropertyValueChangedListener> currentListener;
+@property (nonatomic, strong) id<IPropertyValueChangedListener> currentListener;
 
-@property (nonatomic, retain) UIButton *backBtn;
-@property (nonatomic, retain) UILabel *titleLabel;
-@property (nonatomic, retain) UIView *titleBar;
-@property (nonatomic, retain) UITableView *tableView;
-@property (nonatomic, retain) UIButton *fontNameBtn;
-@property (nonatomic, retain) UIButton *fontSizeBtn;
-@property (nonatomic, retain) NSMutableArray *arrayFontNames;
-@property (nonatomic, retain) NSDictionary *dictFontSizes;
-@property (nonatomic, retain) NSArray *arrayFontSizes;
+@property (nonatomic, strong) UIButton *backBtn;
+@property (nonatomic, strong) UILabel *titleLabel;
+@property (nonatomic, strong) UIView *titleBar;
+@property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) UIButton *fontNameBtn;
+@property (nonatomic, strong) UIButton *fontSizeBtn;
+@property (nonatomic, strong) NSMutableArray *arrayFontNames;
+@property (nonatomic, strong) NSDictionary *dictFontSizes;
+@property (nonatomic, strong) NSArray *arrayFontSizes;
 @property (nonatomic, assign) int currentFontType;
 
 @end
@@ -44,8 +44,8 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.title = [[[UILabel alloc] initWithFrame:CGRectMake(20, 3, frame.size.width, LAYOUTTITLEHEIGHT)] autorelease];
-        self.title.text = NSLocalizedString(@"kFont", nil);
+        self.title = [[UILabel alloc] initWithFrame:CGRectMake(20, 3, frame.size.width, LAYOUTTITLEHEIGHT)];
+        self.title.text = NSLocalizedStringFromTable(@"kFont", @"FoxitLocalizable", nil);
         self.title.textColor = [UIColor colorWithRGBHex:0x5c5c5c];
         self.title.font = [UIFont systemFontOfSize:11.0f];
         [self addSubview:self.title];
@@ -92,15 +92,15 @@
         [self.backBtn setImage:[UIImage imageNamed:@"common_back_black"] forState:UIControlStateNormal];
         [self.backBtn addTarget:self action:@selector(backPrivLayout) forControlEvents:UIControlEventTouchUpInside];
         
-        self.titleLabel = [[[UILabel alloc] initWithFrame:CGRectMake(frame.size.width/2 - 40, 3, 100, 40)] autorelease];
+        self.titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(frame.size.width/2 - 40, 3, 100, 40)];
         self.titleLabel.text = @"";
         self.titleLabel.textColor = [UIColor blackColor];
         self.titleLabel.font = [UIFont systemFontOfSize:15];
         
-        self.titleBar = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, 40)] autorelease];
+        self.titleBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, 40)];
         self.titleBar.backgroundColor = [UIColor whiteColor];
         
-        self.arrayFontNames =[[[NSMutableArray alloc] initWithObjects:@"Courier",
+        self.arrayFontNames = [[NSMutableArray alloc] initWithObjects:@"Courier",
                               @"Courier-Bold",
                               @"Courier-BoldOblique",
                               @"Courier-Oblique",
@@ -112,8 +112,8 @@
                               @"Times-Bold",
                               @"Times-Italic",
                               @"Times-BoldItalic",
-                              nil] autorelease];
-        self.dictFontSizes = [[[NSMutableDictionary alloc]
+                              nil];
+        self.dictFontSizes = [[NSMutableDictionary alloc]
                                initWithObjectsAndKeys:[NSNumber numberWithInteger:6], @"6 pt",
                                [NSNumber numberWithInteger:8], @"8 pt",
                                [NSNumber numberWithInteger:10], @"10 pt",
@@ -127,8 +127,8 @@
                                [NSNumber numberWithInteger:72], @"72 pt",
                                [NSNumber numberWithInteger:96], @"96 pt",
                                [NSNumber numberWithInteger:144], @"144 pt",
-                               nil] autorelease];
-        self.arrayFontSizes =[[[NSMutableArray alloc] initWithObjects: @"6 pt",
+                               nil];
+        self.arrayFontSizes = [[NSMutableArray alloc] initWithObjects: @"6 pt",
                               @"8 pt",
                               @"10 pt",
                               @"12 pt",
@@ -141,8 +141,8 @@
                               @"72 pt",
                               @"96 pt",
                               @"144 pt",
-                              nil] autorelease];
-        self.tableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, 100) style:UITableViewStylePlain] autorelease];
+                              nil];
+        self.tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, 100) style:UITableViewStylePlain];
         if ([self.tableView respondsToSelector:@selector(setSeparatorInset:)]) {
             [self.tableView setSeparatorInset:UIEdgeInsetsMake(0,10,0,10)];
         }
@@ -188,7 +188,7 @@
     [self addSubview:self.backBtn];
     [self addSubview:self.titleLabel];
     self.tableView.frame = CGRectMake(0, 40, self.frame.size.width, self.mainLayoutHeight - 40);
-    [self.titleLabel setText:NSLocalizedString(@"kFontName", nil)];
+    [self.titleLabel setText:NSLocalizedStringFromTable(@"kFontName", @"FoxitLocalizable", nil)];
     self.frame = CGRectMake(0, 0, self.frame.size.width, self.mainLayoutHeight);
     [self.tableView reloadData];
 }
@@ -201,7 +201,7 @@
     [self addSubview:self.backBtn];
     [self addSubview:self.titleLabel];
     self.tableView.frame = CGRectMake(0, 40, self.frame.size.width, self.mainLayoutHeight - 40);
-    [self.titleLabel setText:NSLocalizedString(@"kFontSize", nil)];
+    [self.titleLabel setText:NSLocalizedStringFromTable(@"kFontSize", @"FoxitLocalizable", nil)];
     self.frame = CGRectMake(0, 0, self.frame.size.width, self.mainLayoutHeight);
     [self.tableView reloadData];
 }
@@ -222,7 +222,7 @@
             [view removeFromSuperview];
         }
     }
-    UIView *divide = [[[UIView alloc] initWithFrame:CGRectMake(20, self.frame.size.height - 1, self.frame.size.width - 40, [Utility realPX:1.0f])] autorelease];
+    UIView *divide = [[UIView alloc] initWithFrame:CGRectMake(20, self.frame.size.height - 1, self.frame.size.width - 40, [Utility realPX:1.0f])];
     divide.tag = 1000;
     divide.backgroundColor = [UIColor colorWithRGBHex:0x5c5c5c];
     divide.alpha = 0.2f;
@@ -236,8 +236,8 @@
         [view removeFromSuperview];
     }
     
-    self.title = [[[UILabel alloc] initWithFrame:CGRectMake(20, 3, self.frame.size.width, LAYOUTTITLEHEIGHT)] autorelease];
-    self.title.text = NSLocalizedString(@"kFont", nil);
+    self.title = [[UILabel alloc] initWithFrame:CGRectMake(20, 3, self.frame.size.width, LAYOUTTITLEHEIGHT)];
+    self.title.text = NSLocalizedStringFromTable(@"kFont", @"FoxitLocalizable", nil);
     self.title.textColor = [UIColor colorWithRGBHex:0x5c5c5c];
     self.title.font = [UIFont systemFontOfSize:11.0f];
     [self addSubview:self.title];
@@ -284,15 +284,15 @@
     [self.backBtn setImage:[UIImage imageNamed:@"common_back_black"] forState:UIControlStateNormal];
     [self.backBtn addTarget:self action:@selector(backPrivLayout) forControlEvents:UIControlEventTouchUpInside];
     
-    self.titleLabel = [[[UILabel alloc] initWithFrame:CGRectMake(self.frame.size.width/2 - 40, 3, 100, 40)] autorelease];
+    self.titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(self.frame.size.width/2 - 40, 3, 100, 40)];
     self.titleLabel.text = @"";
     self.titleLabel.textColor = [UIColor blackColor];
     self.titleLabel.font = [UIFont systemFontOfSize:15];
     
-    self.titleBar = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, 40)] autorelease];
+    self.titleBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, 40)];
     self.titleBar.backgroundColor = [UIColor whiteColor];
     
-    self.arrayFontNames =[[[NSMutableArray alloc] initWithObjects:@"Courier",
+    self.arrayFontNames = [[NSMutableArray alloc] initWithObjects:@"Courier",
                           @"Courier-Bold",
                           @"Courier-BoldOblique",
                           @"Courier-Oblique",
@@ -304,8 +304,8 @@
                           @"Times-Bold",
                           @"Times-Italic",
                           @"Times-BoldItalic",
-                          nil] autorelease];
-    self.dictFontSizes = [[[NSMutableDictionary alloc]
+                          nil];
+    self.dictFontSizes = [[NSMutableDictionary alloc]
                           initWithObjectsAndKeys:[NSNumber numberWithInteger:6], @"6 pt",
                           [NSNumber numberWithInteger:8], @"8 pt",
                           [NSNumber numberWithInteger:10], @"10 pt",
@@ -319,8 +319,8 @@
                           [NSNumber numberWithInteger:72], @"72 pt",
                           [NSNumber numberWithInteger:96], @"96 pt",
                           [NSNumber numberWithInteger:144], @"144 pt",
-                          nil] autorelease];
-    self.arrayFontSizes =[[[NSMutableArray alloc] initWithObjects: @"6 pt",
+                          nil];
+    self.arrayFontSizes = [[NSMutableArray alloc] initWithObjects: @"6 pt",
                           @"8 pt",
                           @"10 pt",
                           @"12 pt",
@@ -333,8 +333,8 @@
                           @"72 pt",
                           @"96 pt",
                           @"144 pt",
-                          nil] autorelease];
-    self.tableView = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, 100) style:UITableViewStylePlain] autorelease];
+                          nil];
+    self.tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, 100) style:UITableViewStylePlain];
     if ([self.tableView respondsToSelector:@selector(setSeparatorInset:)]) {
         [self.tableView setSeparatorInset:UIEdgeInsetsMake(0,10,0,10)];
     }
@@ -355,16 +355,16 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (_currentFontType == FontNameType) {
-        [_currentListener onStringValueChanged:PROPERTY_FONTNAME value:[self.arrayFontNames objectAtIndex:indexPath.row]];
-         [self setCurrentFontName:[self.arrayFontNames objectAtIndex:indexPath.row]];
+        NSString* newFontName = [self.arrayFontNames objectAtIndex:indexPath.row];
+        [_currentListener onProperty:PROPERTY_FONTNAME changedFrom:[NSValue valueWithNonretainedObject:_currentFontName] to:[NSValue valueWithNonretainedObject:newFontName]];
+         [self setCurrentFontName:newFontName];
     }
     if (_currentFontType == FontSizeType) {
         if (_currentListener) {
             NSString *stSize = [self.arrayFontSizes objectAtIndex:indexPath.row];
             int value = [[self.dictFontSizes objectForKey:stSize] intValue];
-            [_currentListener onFloatValueChanged:PROPERTY_FONTSIZE value:value];
-            _currentFontSize = value;
-            [self setCurrentFontSize:_currentFontSize];
+            [_currentListener onProperty:PROPERTY_FONTSIZE changedFrom:[NSNumber numberWithInt:_currentFontSize] to:[NSNumber numberWithInt:value]];
+            [self setCurrentFontSize:value];
         }
     }
     
@@ -392,8 +392,8 @@
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil)
         {
-            cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
-            UILabel *labelIconName = [[[UILabel alloc] initWithFrame:CGRectMake(ITEMLRSPACE, 0, cell.frame.size.width, cell.frame.size.height)] autorelease];
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+            UILabel *labelIconName = [[UILabel alloc] initWithFrame:CGRectMake(ITEMLRSPACE, 0, cell.frame.size.width, cell.frame.size.height)];
             labelIconName.textAlignment = NSTextAlignmentLeft;
             labelIconName.font = [UIFont systemFontOfSize:15];
             [cell.contentView addSubview:labelIconName];
@@ -418,8 +418,8 @@
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil)
         {
-            cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
-            UILabel *labelIconName = [[[UILabel alloc] initWithFrame:CGRectMake(ITEMLRSPACE, 0, cell.frame.size.width, cell.frame.size.height)] autorelease];
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+            UILabel *labelIconName = [[UILabel alloc] initWithFrame:CGRectMake(ITEMLRSPACE, 0, cell.frame.size.width, cell.frame.size.height)];
             labelIconName.textAlignment = NSTextAlignmentLeft;
             labelIconName.font = [UIFont systemFontOfSize:15];
             [cell.contentView addSubview:labelIconName];

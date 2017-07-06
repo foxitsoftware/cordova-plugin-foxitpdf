@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -8,20 +8,19 @@
  * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
- 
  */
 
 #import "LineToolHandler.h"
-
+#import "UIExtensionsManager+Private.h"
 #import "Utility.h"
 #import "FSAnnotExtent.h"
 #define DEFAULT_RECT_WIDTH 200
 
 @interface LineToolHandler ()
 
-@property (nonatomic, retain) FSPointF* startPoint;
-@property (nonatomic, retain) FSPointF* endPoint;
-@property (nonatomic, retain) FSLine *annot;
+@property (nonatomic, strong) FSPointF* startPoint;
+@property (nonatomic, strong) FSPointF* endPoint;
+@property (nonatomic, strong) FSLine *annot;
 
 @end
 
@@ -46,19 +45,9 @@
     return self;
 }
 
--(void)dealloc
-{
-    [_startPoint release];
-    [_endPoint release];
-    [_annot release];
-    [super dealloc];
-}
-
 - (void)setStartPoint:(FSPointF*)startPoint
 {
-    [startPoint retain];
-    [_startPoint release];
-    _startPoint = startPoint;
+        _startPoint = startPoint;
 }
 
 -(NSString*)getName
@@ -73,12 +62,10 @@
 
 -(void)onActivate
 {
-    
 }
 
 -(void)onDeactivate
 {
-    
 }
 
 #pragma mark PageView Gesture+Touch
@@ -153,14 +140,11 @@
     [annot setStartPoint:self.startPoint];
     [annot setEndPoint:self.endPoint];
     [annot resetAppearanceStream];
-    Task *task = [[[Task alloc] init] autorelease];
-    task.run = ^(){
-        [_extensionsManager onAnnotAdded:page annot:annot];
-        CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:dibRect pageIndex:pageIndex];
-        rect = CGRectInset(rect, -20, -20);
-        [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
-    };
-    [_extensionsManager.taskServer executeSync:task];
+    self.annot = annot;
+
+    id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:annot];
+    [annotHandler addAnnot:annot addUndo:YES];
+
     return YES;
 }
 
@@ -173,10 +157,10 @@
     UIView* pageView = [_pdfViewCtrl getPageView:pageIndex];
     CGRect rect = [pageView frame];
     CGSize size = rect.size;
-    if(point.x > size.width || point.y > size.height ||point.x < 0 ||point.y < 0)
+    if(point.x > size.width || point.y > size.height || point.x < 0 || point.y < 0)
         return NO;
     FSPointF* dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
-    FSRectF* dibRect = [[[FSRectF alloc] init] autorelease];
+    FSRectF* dibRect = [[FSRectF alloc] init];
     if (self.startPoint && self.endPoint) {
         dibRect = [Utility convertToFSRect:self.startPoint p2:self.endPoint];
     } else {
@@ -184,7 +168,7 @@
     }
     if (recognizer.state == UIGestureRecognizerStateBegan)
     {
-        FSAnnot* annot = [self addAnnotToPage:pageIndex withRect:dibRect];
+        FSLine* annot = [self addAnnotToPage:pageIndex withRect:dibRect];
         if (!annot) {
             return YES;
         }
@@ -215,8 +199,7 @@
             return NO;
         }
         self.endPoint = dibPoint;
-        FSLine* line = (FSLine*) self.annot;
-        [line setEndPoint:dibPoint];
+        [self.annot setEndPoint:dibPoint];
         [self.annot resetAppearanceStream];
         FSRectF* dibRect = [Utility convertToFSRect:self.startPoint p2:self.endPoint];
         self.annot.fsrect = dibRect;
@@ -228,33 +211,20 @@
     }
     else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled)
     {
+        if ([Utility pointEqualToPoint:self.startPoint point:self.endPoint]) {
+            return;
+        }
         FSLine* annot1 = (FSLine*)self.annot;
         [annot1 setStartPoint:self.startPoint];
         [annot1 setEndPoint:self.endPoint];
         [annot1 setFsrect:[Utility convertToFSRect:self.startPoint p2:self.endPoint]];
         
-        Task *task = [[[Task alloc] init] autorelease];
-        task.run = ^(){
-            [_extensionsManager onAnnotAdded:[self.annot getPage] annot:annot1];
-            FSRectF* dibRect = [Utility convertToFSRect:self.startPoint p2:self.endPoint];
-            CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:dibRect pageIndex:pageIndex];
-            rect = CGRectInset(rect, -20, -20);
-            self.startPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:CGPointZero pageIndex:pageIndex];
-            self.endPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:CGPointZero pageIndex:pageIndex];
-            
-           [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
-            double delayInSeconds = .1;
-            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-            dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-                [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
-            });
-       };
-        [_extensionsManager.taskServer executeSync:task];
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:self.annot];
+        [annotHandler addAnnot:self.annot addUndo:YES];
     }
 }
 
-
-- (FSAnnot*)addAnnotToPage:(int)pageIndex withRect:(FSRectF*)rect
+- (FSLine*)addAnnotToPage:(int)pageIndex withRect:(FSRectF*)rect
 {
     FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
     if (!page) return nil;
@@ -279,7 +249,6 @@
     annot.flags = e_annotFlagPrint;
     return annot;
 }
-
 
 - (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer
 {

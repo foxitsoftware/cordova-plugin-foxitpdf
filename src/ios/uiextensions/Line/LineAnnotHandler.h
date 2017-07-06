@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -9,6 +9,7 @@
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
  */
+
 #import <FoxitRDK/FSPDFViewControl.h>
 #import "UIExtensionsManager.h"
 #import "UIExtensionsManager+Private.h"
@@ -27,10 +28,10 @@ typedef enum
     EDITANNOT_LINE_TYPE _editType;
 }
 
-@property (nonatomic, retain) FSAnnot *editAnnot;
-@property (nonatomic, retain) FSPointF* startPoint;
-@property (nonatomic, retain) FSPointF* endPoint;
-@property (nonatomic, retain) UIViewController *replyVC;
+@property (nonatomic, strong) FSAnnot *editAnnot;
+@property (nonatomic, strong) FSPointF* startPoint;
+@property (nonatomic, strong) FSPointF* endPoint;
+@property (nonatomic, strong) UIViewController *replyVC;
 
 - (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
 

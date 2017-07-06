@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "PropertyBar.h"
 #import "PropertyMainView.h"
 #import "ColorLayout.h"
@@ -24,21 +24,24 @@
 #import "FSAnnotExtent.h"
 #import "ColorUtility.h"
 
+#define PDFVIEWCTRLWIDTH  _pdfViewCtrl.bounds.size.width
+#define PDFVIEWCTRLHEIGHT _pdfViewCtrl.bounds.size.height
+
 @interface PropertyBar ()
 
-@property (nonatomic, retain) NSMutableArray *propertyBarListeners;
-@property (nonatomic, retain) id<IPropertyValueChangedListener> currentListener;
+@property (nonatomic, strong) NSMutableArray *propertyBarListeners;
+@property (nonatomic, strong) id<IPropertyValueChangedListener> currentListener;
 @property (nonatomic, assign) long currentItems;
-@property (nonatomic, retain) NSArray *currentColors;
+@property (nonatomic, strong) NSArray *currentColors;
 @property (nonatomic, assign) int currentColor;
-@property (nonatomic, retain) PropertyMainView *mainView;
-@property (nonatomic, retain) ColorLayout *colorLayout;
-@property (nonatomic, retain) OpacityLayout *opacityLayout;
-@property (nonatomic, retain) FontLayout *fontLayout;
-@property (nonatomic, retain) IconLayout *typeLayout;
-@property (nonatomic, retain) UIControl *maskView;
-@property (nonatomic, retain) UIPopoverController *popoverCtr;
-@property (nonatomic, retain) UIViewController *popViewCtr;
+@property (nonatomic, strong) PropertyMainView *mainView;
+@property (nonatomic, strong) ColorLayout *colorLayout;
+@property (nonatomic, strong) OpacityLayout *opacityLayout;
+@property (nonatomic, strong) FontLayout *fontLayout;
+@property (nonatomic, strong) IconLayout *typeLayout;
+@property (nonatomic, strong) UIControl *maskView;
+@property (nonatomic, strong) UIPopoverController *popoverCtr;
+@property (nonatomic, strong) UIViewController *popViewCtr;
 @property (nonatomic, assign) CGRect tempFrame;
 @end
 
@@ -47,31 +50,13 @@
     UIExtensionsManager* _extensionsManager;
 }
 
--(void)dealloc
-{
-    [_lineWidthLayout release];
-    [_colorLayout release];
-    [_currentColors release];
-    [_currentListener release];
-    [_fontLayout release];
-    [_mainView release];
-    [_mainView release];
-    [_opacityLayout release];
-    [_popoverCtr release];
-    [_popViewCtr release];
-    [_propertyBarListeners release];
-    [_typeLayout release];
-    [_mainView release];
-    [super dealloc];
-}
-
 - (instancetype)initWithPDFViewController:(FSPDFViewCtrl*)pdfViewCtrl extensionsManager:(UIExtensionsManager*)extensionsManager
 {
     self = [super init];
     if (self) {
         _pdfViewCtrl = pdfViewCtrl;
         _extensionsManager = extensionsManager;
-        self.maskView = [[[UIControl alloc] initWithFrame:_pdfViewCtrl.bounds] autorelease];
+        self.maskView = [[UIControl alloc] initWithFrame:_pdfViewCtrl.bounds];
         self.maskView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleHeight;
         self.propertyBarListeners = [NSMutableArray array];
         [_extensionsManager registerRotateChangedListener:self];
@@ -79,34 +64,41 @@
     return self;
 }
 
-- (void)resetBySupportedItems:(long)items
+- (void)resetBySupportedItems:(long)items frame:(CGRect)frame
 {
     self.currentItems = items;
-    self.mainView = [[[PropertyMainView alloc] init] autorelease];
+    self.mainView = [[PropertyMainView alloc] init];
     self.mainView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleHeight;
     CGRect mainFrame;
     if (DEVICE_iPHONE) {
-        if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
-            
-            mainFrame = CGRectMake(0,_pdfViewCtrl.bounds.size.width, _pdfViewCtrl.bounds.size.height, 500);
-            
-        }
+        if(!CGRectIsEmpty(frame))
+            mainFrame = frame;
         else
         {
-            mainFrame = CGRectMake(0,_pdfViewCtrl.bounds.size.height, _pdfViewCtrl.bounds.size.width, 500);
-            
+            if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
+                
+                mainFrame = CGRectMake(0,_pdfViewCtrl.bounds.size.width, _pdfViewCtrl.bounds.size.height, 500);
+                
+            }
+            else
+            {
+                
+                mainFrame = CGRectMake(0,_pdfViewCtrl.bounds.size.height, _pdfViewCtrl.bounds.size.width, 500);
+                
+            }
         }
     }
     else
     {
         mainFrame = CGRectMake(0, 0, 300, 300);
     }
+
     self.mainView.frame = mainFrame;
     self.mainView.backgroundColor = [UIColor whiteColor];
     if (items & PROPERTY_COLOR)
     {
         CGRect colorFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
-        self.colorLayout = [[[ColorLayout alloc] initWithFrame:colorFrame propertyBar:self] autorelease];
+        self.colorLayout = [[ColorLayout alloc] initWithFrame:colorFrame propertyBar:self];
         [self.colorLayout setColors:self.currentColors];
         self.colorLayout.tag = PROPERTY_COLOR;
         [self.mainView addLayoutAtTab:self.colorLayout tab:TAB_FILL];
@@ -114,19 +106,19 @@
     if (items & PROPERTY_OPACITY)
     {
         CGRect opacityFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
-        self.opacityLayout = [[[OpacityLayout alloc] initWithFrame:opacityFrame] autorelease];
+        self.opacityLayout = [[OpacityLayout alloc] initWithFrame:opacityFrame];
         self.opacityLayout.tag = PROPERTY_OPACITY;
         [self.mainView addLayoutAtTab:self.opacityLayout tab:TAB_FILL];
     }
     if (items & PROPERTY_LINEWIDTH)
     {
-        self.lineWidthLayout = [[[LineWidthLayout alloc] initWithFrame:CGRectMake(0, 0, self.mainView.frame.size.width, 40)] autorelease];
+        self.lineWidthLayout = [[LineWidthLayout alloc] initWithFrame:CGRectMake(0, 0, self.mainView.frame.size.width, 40)];
         self.lineWidthLayout.tag = PROPERTY_LINEWIDTH;
         [self.mainView addLayoutAtTab:self.lineWidthLayout tab:TAB_BORDER];
     }
     if (items & PROPERTY_FONTNAME)
     {
-        self.fontLayout = [[[FontLayout alloc] initWithFrame:CGRectMake(0, 0, self.mainView.frame.size.width, 100)] autorelease];
+        self.fontLayout = [[FontLayout alloc] initWithFrame:CGRectMake(0, 0, self.mainView.frame.size.width, 100)];
         self.fontLayout.tag = PROPERTY_FONTNAME;
         [self.mainView addLayoutAtTab:self.fontLayout tab:TAB_FONT];
         
@@ -137,8 +129,13 @@
     }
     if (items & PROPERTY_ICONTYPE)
     {
-        self.typeLayout = [[[IconLayout alloc] initWithFrame:CGRectMake(0, 0, self.mainView.frame.size.width, 100)] autorelease];
+        self.typeLayout = [[IconLayout alloc] initWithFrame:CGRectMake(0, 0, self.mainView.frame.size.width, 100) iconType:PROPERTY_ICONTYPE];
         self.typeLayout.tag = PROPERTY_ICONTYPE;
+        [self.mainView addLayoutAtTab:self.typeLayout tab:TAB_TYPE];
+    }
+    if (items & PROPERTY_ATTACHMENT_ICONTYPE) {
+        self.typeLayout = [[IconLayout alloc] initWithFrame:CGRectMake(0, 0, self.mainView.frame.size.width, 100) iconType:PROPERTY_ATTACHMENT_ICONTYPE];
+        self.typeLayout.tag = PROPERTY_ATTACHMENT_ICONTYPE;
         [self.mainView addLayoutAtTab:self.typeLayout tab:TAB_TYPE];
     }
     if (self.mainView.segmentItems.count > 0) {
@@ -157,7 +154,6 @@
     }
     self.tempFrame = self.mainView.frame;
 }
-
 
 - (void)setColors:(NSArray*)array
 {
@@ -178,6 +174,10 @@
         [self.lineWidthLayout setCurrentLineWidth:value];
     }
     if (property & PROPERTY_ICONTYPE) {
+        [self.typeLayout setCurrentIconType:value];
+    }
+    if (property & PROPERTY_ATTACHMENT_ICONTYPE)
+    {
         [self.typeLayout setCurrentIconType:value];
     }
 }
@@ -218,25 +218,29 @@
 
 - (void)addTabByTitle:(NSString*)title atIndex:(int)tabIndex
 {
-    
 }
 
 - (void)updatePropertyBar:(CGRect)frame
 {
-    
 }
 
 - (void)showPropertyBar:(CGRect)frame inView:(UIView*)view viewsCanMove:(NSArray*)views
 {
+    float DISPLAYVIEWWIDTH = [_pdfViewCtrl getDisplayView].bounds.size.width;
+    float DISPLAYVIEWHEIGHT = [_pdfViewCtrl getDisplayView].bounds.size.height;
     FSAnnot*  annot = _extensionsManager.currentAnnot;
     if (annot) {
         int pageIndex = annot.pageIndex;
         CGRect pvRect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
         CGRect dvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:pvRect pageIndex:pageIndex];
+        UIDeviceOrientation o = [[UIDevice currentDevice] orientation];
+        float width = DISPLAYVIEWWIDTH;
+        float height = DISPLAYVIEWHEIGHT;;
+
         if ((dvRect.origin.x + dvRect.size.width) <= 0
             || dvRect.origin.y + dvRect.size.height <= 0
-            || dvRect.origin.x > SCREENWIDTH
-            || dvRect.origin.y > SCREENHEIGHT) {
+            || dvRect.origin.x > width
+            || dvRect.origin.y > height) {
             return;
         }
     }
@@ -252,13 +256,13 @@
         [self.maskView addTarget:self action:@selector(dismissPropertyBar) forControlEvents:UIControlEventTouchUpInside];
         CGRect newFrame = self.mainView.frame;
         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
-            newFrame.origin.y = view.bounds.size.width - newFrame.size.height;
-            self.maskView.frame = CGRectMake(0, 0, _pdfViewCtrl.bounds.size.height, _pdfViewCtrl.bounds.size.width);
+            newFrame.origin.y = DISPLAYVIEWWIDTH - newFrame.size.height;
+            self.maskView.frame = CGRectMake(0, 0, DISPLAYVIEWHEIGHT, DISPLAYVIEWWIDTH);
         }
         else
         {
-            newFrame.origin.y = view.bounds.size.height - newFrame.size.height;
-            self.maskView.frame = CGRectMake(0, 0, _pdfViewCtrl.bounds.size.width, _pdfViewCtrl.bounds.size.height);
+            newFrame.origin.y = DISPLAYVIEWHEIGHT - newFrame.size.height;
+            self.maskView.frame = CGRectMake(0, 0, DISPLAYVIEWWIDTH, DISPLAYVIEWHEIGHT);
             
         }
         self.maskView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleHeight;
@@ -299,7 +303,7 @@
                 else if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_CONTINUOUS)
                 {
                     if ([_pdfViewCtrl getCurrentPage] == [_pdfViewCtrl.currentDoc getPageCount] - 1) {
-                        FSRectF *fsRect = [[[FSRectF alloc] init] autorelease];
+                        FSRectF *fsRect = [[FSRectF alloc] init];
                         [fsRect set:0 bottom:pdfOffsetY right:pdfOffsetY top:0];
                         float tmpPvOffset = [_pdfViewCtrl convertPdfRectToPageViewRect:fsRect pageIndex:annot.pageIndex].size.width;
                         CGRect tmpPvRect = CGRectMake(0, 0, 10, tmpPvOffset);
@@ -308,11 +312,27 @@
                     }
                     else
                     {
+                        FSPDFPage* page = [annot getPage];
+                        enum FS_ROTATION rotate = [page getRotation];
+                        int x = oldPdfPoint.x;
+                        int y = oldPdfPoint.y - pdfOffsetY;
+                        switch (rotate) {
+                            case e_rotation180:
+                                y = oldPdfPoint.y + pdfOffsetY;
+                                break;
+                            case e_rotation90:
+                                x = oldPvPoint.x + pdfOffsetY;
+                                y = oldPvPoint.y;
+                            case e_rotation270:
+                                x = oldPvPoint.x - pdfOffsetY;
+                                y = oldPvPoint.y;
+                            default:
+                                break;
+                        }
                         FSPointF* jumpPdfPoint = [[FSPointF alloc] init];
-                        [jumpPdfPoint set:oldPdfPoint.x y:oldPdfPoint.y - pdfOffsetY];
+                        [jumpPdfPoint set:x y:y];
                         [_pdfViewCtrl gotoPage:annot.pageIndex withDocPoint:jumpPdfPoint animated:YES];
-                        [jumpPdfPoint release];
-                    }
+                                            }
                 }
             }
             
@@ -321,7 +341,6 @@
     else
     {
         self.mainView.frame = self.tempFrame;
-//        self.popoverCtr.contentViewController.view = nil;
         self.popoverCtr.contentViewController.view = self.mainView;
         
         self.popoverCtr.delegate = self;
@@ -355,11 +374,11 @@
     {
         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation))
         {
-            mainFrame = CGRectMake(0,SCREENWIDTH, SCREENHEIGHT, 500);
+            mainFrame = CGRectMake(0,PDFVIEWCTRLWIDTH, PDFVIEWCTRLHEIGHT, 500);
         }
         else
         {
-            mainFrame = CGRectMake(0,SCREENHEIGHT, SCREENWIDTH, 500);
+            mainFrame = CGRectMake(0,PDFVIEWCTRLHEIGHT, PDFVIEWCTRLWIDTH, 500);
         }
     }
     else
@@ -399,7 +418,7 @@
     {
         
     }
-    if (self.currentItems & PROPERTY_ICONTYPE)
+    if (self.currentItems & PROPERTY_ICONTYPE || self.currentItems & PROPERTY_ATTACHMENT_ICONTYPE)
     {
         CGRect typeFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
         self.typeLayout.frame = typeFrame;
@@ -425,7 +444,7 @@
         }
     }
     if (DEVICE_iPHONE) {
-        self.mainView.frame = CGRectMake(0, SCREENHEIGHT - self.mainView.frame.size.height, SCREENWIDTH, self.mainView.frame.size.height);
+        self.mainView.frame = CGRectMake(0, PDFVIEWCTRLHEIGHT - self.mainView.frame.size.height, PDFVIEWCTRLWIDTH, self.mainView.frame.size.height);
     }
     self.tempFrame = self.mainView.frame;
 }
@@ -433,8 +452,8 @@
 -(UIPopoverController *)popoverCtr
 {
     if (!_popoverCtr) {
-        self.popViewCtr = [[[UIViewController alloc] init] autorelease];
-        self.popoverCtr = [[[UIPopoverController alloc] initWithContentViewController:self.popViewCtr] autorelease];
+        self.popViewCtr = [[UIViewController alloc] init];
+        self.popoverCtr = [[UIPopoverController alloc] initWithContentViewController:self.popViewCtr];
     }
     return _popoverCtr;
 }
@@ -503,6 +522,7 @@
         }
     }
 }
+
 - (void)registerPropertyBarListener:(id<IPropertyBarListener>)listener
 {
     if (listener) {
@@ -583,7 +603,7 @@
     {
         
     }
-    if (self.currentItems & PROPERTY_ICONTYPE)
+    if (self.currentItems & PROPERTY_ICONTYPE || self.currentItems & PROPERTY_ATTACHMENT_ICONTYPE)
     {
         CGRect typeFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
         self.typeLayout.frame = typeFrame;
@@ -614,6 +634,7 @@
         }
     }
 }
+
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration{
    
 }

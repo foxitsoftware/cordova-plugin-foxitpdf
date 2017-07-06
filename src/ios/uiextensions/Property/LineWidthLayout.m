@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "LineWidthLayout.h"
 #import "PropertyBar.h"
 #import "Utility.h"
@@ -17,14 +17,14 @@
 
 @interface LineWidthLayout ()
 
-@property (nonatomic, retain) UILabel *title;
+@property (nonatomic, strong) UILabel *title;
 @property (nonatomic, assign) int currentColor;
 @property (nonatomic, assign) int currentLineWidth;
-@property (nonatomic, retain) id<IPropertyValueChangedListener> currentListener;
+@property (nonatomic, strong) id<IPropertyValueChangedListener> currentListener;
 
-@property (nonatomic, retain) UIImageView *circleView;
-@property (nonatomic, retain) UILabel *numberView;
-@property (nonatomic, retain) UISlider *silder;
+@property (nonatomic, strong) UIImageView *circleView;
+@property (nonatomic, strong) UILabel *numberView;
+@property (nonatomic, strong) UISlider *silder;
 
 @end
 
@@ -34,22 +34,22 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.title = [[[UILabel alloc] initWithFrame:CGRectMake(20, 3, frame.size.width, LAYOUTTITLEHEIGHT)] autorelease];
-        self.title.text = NSLocalizedString(@"kThickness", nil);
+        self.title = [[UILabel alloc] initWithFrame:CGRectMake(20, 3, frame.size.width, LAYOUTTITLEHEIGHT)];
+        self.title.text = NSLocalizedStringFromTable(@"kThickness", @"FoxitLocalizable", nil);
         self.title.textColor = [UIColor colorWithRGBHex:0x5c5c5c];
         self.title.font = [UIFont systemFontOfSize:11.0f];
         [self addSubview:self.title];
         
-        self.circleView = [[[UIImageView alloc] initWithFrame:CGRectMake(20, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE, 32, 32)] autorelease];
+        self.circleView = [[UIImageView alloc] initWithFrame:CGRectMake(20, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE, 32, 32)];
         self.circleView.layer.cornerRadius = 16.f;
         [self addSubview:self.circleView];
         
-        self.numberView = [[[UILabel alloc] initWithFrame:CGRectMake(70, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE + 6, 50, 20)] autorelease];
+        self.numberView = [[UILabel alloc] initWithFrame:CGRectMake(70, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE + 6, 50, 20)];
         self.numberView.textColor = [UIColor colorWithRGBHex:0x5c5c5c];
         self.numberView.font = [UIFont systemFontOfSize:15];
         [self addSubview:self.numberView];
         
-        self.silder = [[[UISlider alloc] initWithFrame:CGRectMake(120, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE + 6, frame.size.width - 140, 20)] autorelease];
+        self.silder = [[UISlider alloc] initWithFrame:CGRectMake(120, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE + 6, frame.size.width - 140, 20)];
         [self.silder setThumbImage:[UIImage imageNamed:@"property_linewidth_slider.png"] forState:UIControlStateNormal];
         [self.silder setThumbImage:[UIImage imageNamed:@"property_linewidth_slider.png"] forState:UIControlStateHighlighted];
         self.silder.minimumValue = 1.0f;
@@ -96,7 +96,8 @@
     int circleWidth = self.silder.value * 16 / 12;
     self.circleView.layer.cornerRadius = circleWidth;
     self.circleView.frame = CGRectMake(20 + 16 - circleWidth, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE + 16 - circleWidth, circleWidth*2, circleWidth*2);
-    [self.currentListener onIntValueChanged:PROPERTY_LINEWIDTH value:self.silder.value];
+    [self.currentListener onProperty:PROPERTY_LINEWIDTH changedFrom:[NSNumber numberWithInt:_currentLineWidth] to:[NSNumber numberWithInt:self.silder.value]];
+    _currentLineWidth = self.silder.value;
 }
 
 -(void)addDivideView
@@ -106,7 +107,7 @@
             [view removeFromSuperview];
         }
     }
-    UIView *divide = [[[UIView alloc] initWithFrame:CGRectMake(20, self.frame.size.height - 1, self.frame.size.width - 40, [Utility realPX:1.0f])] autorelease];
+    UIView *divide = [[UIView alloc] initWithFrame:CGRectMake(20, self.frame.size.height - 1, self.frame.size.width - 40, [Utility realPX:1.0f])];
     divide.tag = 1000;
     divide.backgroundColor = [UIColor colorWithRGBHex:0x5c5c5c];
     divide.alpha = 0.2f;
@@ -120,22 +121,22 @@
         [view removeFromSuperview];
     }
     
-    self.title = [[[UILabel alloc] initWithFrame:CGRectMake(20, 3, self.frame.size.width, LAYOUTTITLEHEIGHT)] autorelease];
-    self.title.text = NSLocalizedString(@"kThickness", nil);
+    self.title = [[UILabel alloc] initWithFrame:CGRectMake(20, 3, self.frame.size.width, LAYOUTTITLEHEIGHT)];
+    self.title.text = NSLocalizedStringFromTable(@"kThickness", @"FoxitLocalizable", nil);
     self.title.textColor = [UIColor colorWithRGBHex:0x5c5c5c];
     self.title.font = [UIFont systemFontOfSize:11.0f];
     [self addSubview:self.title];
     
-    self.circleView = [[[UIImageView alloc] initWithFrame:CGRectMake(20, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE, 32, 32)] autorelease];
+    self.circleView = [[UIImageView alloc] initWithFrame:CGRectMake(20, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE, 32, 32)];
     self.circleView.layer.cornerRadius = 16.f;
     [self addSubview:self.circleView];
     
-    self.numberView = [[[UILabel alloc] initWithFrame:CGRectMake(70, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE + 6, 50, 20)] autorelease];
+    self.numberView = [[UILabel alloc] initWithFrame:CGRectMake(70, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE + 6, 50, 20)];
     self.numberView.textColor = [UIColor colorWithRGBHex:0x5c5c5c];
     self.numberView.font = [UIFont systemFontOfSize:15];
     [self addSubview:self.numberView];
     
-    self.silder = [[[UISlider alloc] initWithFrame:CGRectMake(120, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE + 6, self.frame.size.width - 140, 20)] autorelease];
+    self.silder = [[UISlider alloc] initWithFrame:CGRectMake(120, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE + 6, self.frame.size.width - 140, 20)];
     [self.silder setThumbImage:[UIImage imageNamed:@"property_linewidth_slider.png"] forState:UIControlStateNormal];
     [self.silder setThumbImage:[UIImage imageNamed:@"property_linewidth_slider.png"] forState:UIControlStateHighlighted];
     self.silder.minimumValue = 1.0f;

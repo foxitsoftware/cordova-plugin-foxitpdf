@@ -2,22 +2,22 @@
 
 #import <Cordova/CDV.h>
 
-#import <FoxitRDK/FSPDFObjC.h>
 #import <FoxitRDK/FSPDFViewControl.h>
-#import "ReadFrame.h"
-#import "UIExtensionsSharedHeader.h"
+
+#import "uiextensions/UIExtensionsManager.h"
+#import "uiextensions/PDFReader/FSPDFReader.h"
+#import "FSStackBottomViewController.h"
+#import "FSShowViewController.h"
 
 
-NSString *SN = @"Xzz20N1dgWxJmz0seWOP54wqzhSKaLTXEje18SSUlZF9DVfYrMvyWQ==";
-NSString *UNLOCK = @"ezKXjt8ntBh39DvoP0WQjYrUrx9qvbxe38QoPVU5LSr/hXt/7xBt01lwdEe+GX1++LZWB6cDWuVs8xYEMRYmjtpTRWVw62b0XvYl93uVSpW4apyWClgUaea8M3ySf8fMjjbmdBHnl5rEw9VPQUZ2jK40naM9DGVpsufKG8MXEV5B1eBiDrNZ1dVz9mgCjy/7ySAo56W/xkgcTI/s4IINvZUOZcqitBHZy409+sR5BmLMd/koMDrf2TmcHDNEcO/j2u5gBGedgX3Re4e6J3sae3nrrPR1obbyJSyQYCp+/JYHXFoUNkkaqn5jR9By9MiZbTn4w0vT927BhSZ4ke0/J96zTwEjweHl1eLRK6+VFilEcYI1DTLSeHV7CnZUgVOI/+TvACcrRKCT2qNZdslyilu5qZDdVWJwHjoY1BMgQkdfGEsWWNgTQjCeicjUFYHh2ujskos+DeQ0TiTpSRKb3ol/7Q18heWYgnMJfeV5ldFTq9kN1+XeashPsSsf8Yf+vHV4UYXJF96y8gj0IvycGUxquG1GHsAnD9YxPP27c5kEn6rKwGnq0ai5Uf/klffe4Fm+Rq7Pp3YE+gNHwFvNsIpKE9uZFwwIPLY5iJ6clQQBLqgforbeYqwkEWP+oxjutfD0YuYHEj5wbrAm2qtotyRMvYC+Lt3UGB2XscPiB79hnGWuF6vHQf+K7lMUiwgXzeiesyHK1x+6HYS4lnVcTU+0D5h6BfO2REQg1U6naA6CO8xWg/UgFdjj3aBB2WriwwgcIaN5rQtFjRvl3oJ5F8RwUtL3PK5St6LpBU6YVCMTGwDraVd8yi0n5JsezPm8A118PyzvEmlyf6G6HRFWS5PrNEkU4BmXJWVzLUANBP7uTpTzRSrWdvwD2ZU2hhVIkTRIgDY1EprylUq9M9UXH7wRvAfK7XrHag8up0ciswM7Dr3NbN7f3uCT2SndAi0+19my5Go4YEzOhMvPAsLhhTNnEyOQKk99Z1m33QF5Zule5OKNpz9B+cbwp8G+3jilSsyekPP6/LlOn2+dY3v0PfcytJR7xnOgpX24qFnQNs6WVygqcws5sV1Qvh0yeyPvZ5dFd1jN6obBMUa7qw6LYcY6V323en1qcYYY+YrYvv4CUk3nWIR5LA/qDXtUU6Iobwa3yNWUiAAYLQquSuJn7ilxyUmqTeKKynz0nLKwaa8WbV1mJq9geqYjhAvU3ymuMfvq4N0=";
+NSString *SN = @"nU4V+cyy5M+IG3djLjKCTZFiXwUdERkohg+6MB1+pm+BDxbMNIPN2g==";
+NSString *UNLOCK = @"ezJvjl3GtG539PsXZqXcIkmEbhuio9ACWf3giDepTwvhp7njD2b+w6Nd/Rr0cOkBP+scVC59Exkp+IOxgP2w42MKnVbnQ/xNfre4UGyTt40QX92XO1hUaeeYALnFXN7tLRqSCt2G6ETeAPGa74kwS4RBgpSdjACC/b9AsdzS9xjqRProhtG98l8Zks4smHGpJB8wC0R6jLWVgZjBOxqTQoRcy47k26HtttlfLh1LkvyD+LgQphwhMR2H5sQzcCbLE3Jzf3HTy/My/44Tm5ql0Ky9RLW2OLK91ryIJOT3yXeepxEgzu260UhAxCRdmNAtaqxk9su+PTbujlYhOX4ZiKXVQfXXA6ZASbVFkDvFOzphoqIfG3M+aWIIaIipdvsMww44peyWg9rqSiu0hZsmzZkQqJhzi90eTTTRxa+/KSaqNnrQl107g9kqiiuYdO6MCgdI+qrsqO66fS08M8fRJ+d5Y89Y/wdydAZwHkmrXBTMx6pt/BgUmvUvIRabH7xyiSOhyPeDfh3uaIcXje4PfXIQS+XzntkUTKhbLcVK3OoKFmPrG/ox8kv2P+3P2Ojju240Lxg6FtPe+Ze2ZYFvDJQ7pzsx+nAA0bzDmq+nPY/sMNHuQwfkb+1oc3OscGPpO4sXvxhmx1cutnT4gNs51Q7eZJiKbnEUymZLVSFk2m+2Y/3cFU4PdrQHSYoi+OBsqcQ8Ve4kWzPO6KFqVJgrRtw9W52Hb7fElbFp9Po4pYEiT+e6HZ4ZSF8m8odCV9W5oy8vVQAVhCULtcaci6yZxh7oMT+jDII5XvqLIYF0eI3FD3Dl1tW+fh7b+Pg2hJrK1lpGgLyknaUuqLWjYpXjVekMkUenBF7OkZ/Cg4y74JOXanzoA71P+qAfHoZes1FPa60NAF20Db6IFMLKrqLiVCmgbpwp2Ko4deHPSNE1CgCZd8P2HLRDvU7yYQVXOz3DgsL5rW23cHuoMnYeWC5ujFl4imEUfjCOutRZwDJvIa0SubCwfBJJO0v2+HEbSTBpw+XtXJ6JJEAsI1pVsP8Op9TFmrznN6BeyY2DPB3KF3Wp3428h274GJSBXzwPJjvspMS/g2pT0LIYb3KfHCW9qDCLjmgn6rgbLxgT8ZjABJqLQsI36QP2ikQPaztDRh56/7vIgurfFpkchWCjhl7mSmt2HgeGzAm/mpEFK5qNbbUn2jn6h2vhGrOAfCRJKxpTeBhlgHMe1EU/FlgzzYHqA4rpfMPN8jko6F2i6SiSCQ==";
 
 @interface FoxitPdf : CDVPlugin {
     // Member variables go here.
 }
 
-@property (nonatomic, strong) ReadFrame* readFrame;
-
-- (void)Preview:(CDVInvokedUrlCommand*)command;
+- (void)Preview:(CDVInvokedUrlCommand *)command;
 @end
 
 @implementation FoxitPdf
@@ -45,7 +45,7 @@ NSString *UNLOCK = @"ezKXjt8ntBh39DvoP0WQjYrUrx9qvbxe38QoPVU5LSr/hXt/7xBt01lwdEe
         tmpCommandCallbackID = command.callbackId;
     } else {
         NSString* errMsg = [NSString stringWithFormat:@"file not find"];
-        UIAlertView* alert = [[[UIAlertView alloc] initWithTitle:@"Error" message:errMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] autorelease];
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:errMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [alert show];
         
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"file not found"];
@@ -61,44 +61,51 @@ NSString *UNLOCK = @"ezKXjt8ntBh39DvoP0WQjYrUrx9qvbxe38QoPVU5LSr/hXt/7xBt01lwdEe
     enum FS_ERRORCODE eRet = [FSLibrary init:SN key:UNLOCK];
     if (e_errSuccess != eRet) {
         NSString* errMsg = [NSString stringWithFormat:@"Invalid license"];
-        UIAlertView* alert = [[[UIAlertView alloc] initWithTitle:@"Check License" message:errMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil] autorelease];
+        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Check License" message:errMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [alert show];
         return;
     }
     
-    DEMO_APPDELEGATE.filePath = filePath;
+    FSPDFViewCtrl *viewcontrol = [[FSPDFViewCtrl alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    
+    NSString *configPath = [[NSBundle mainBundle] pathForResource:@"uiextensions_config" ofType:@"json"];
+    
+    UIExtensionsManager *extensionMgr = [[UIExtensionsManager alloc] initWithPDFViewControl:viewcontrol configuration:[NSData dataWithContentsOfFile:configPath]];
+    
+    viewcontrol.extensionsManager = extensionMgr;
+    [viewcontrol registerDocEventListener:self];
     
     //load doc
     if (filePath == nil) {
         filePath = [[NSBundle mainBundle] pathForResource:@"getting_started_ios" ofType:@"pdf"];
     }
-    
-    FSPDFDoc* doc = [FSPDFDoc createFromFilePath:filePath];
-    
-    if (e_errSuccess!=[doc load:nil]) {
+
+    if (nil == extensionMgr || nil == extensionMgr.pdfReader) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"" message:@"Default reader could not be loaded." delegate:self cancelButtonTitle:@"cancel" otherButtonTitles:nil, nil];
+        [alert show];
+        
         return;
     }
     
-    //init PDFViewerCtrl
-    FSPDFViewCtrl* pdfViewCtrl;
-    pdfViewCtrl = [[FSPDFViewCtrl alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    [pdfViewCtrl setDoc:doc];
+    FSShowViewController *FSShowVC = [[FSShowViewController alloc] init];
+    FSShowVC.extensionMgr = extensionMgr;
+    FSShowVC.pdfReader = extensionMgr.pdfReader;
+    FSShowVC.pdfViewCtrl = viewcontrol;
+
+    [FSShowVC addChildViewController:extensionMgr.pdfReader.rootViewController];
+    [FSShowVC.view addSubview:extensionMgr.pdfReader.rootViewController.view];
     
-    self.readFrame = [[ReadFrame alloc] initWithPdfViewCtrl:pdfViewCtrl];
-    [pdfViewCtrl registerDocEventListener:self.readFrame];
-    
-    UIViewController *navCtr = [[UIViewController alloc] init];
-    [navCtr.view addSubview:pdfViewCtrl];
-    navCtr.view.backgroundColor = [UIColor whiteColor];
-    //    navCtr.modalPresentationStyle = UIModalPresentationFullScreen;
-    
-    pdfViewCtrl.autoresizesSubviews = YES;
-    pdfViewCtrl.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [extensionMgr.pdfReader openPDFAtPath:filePath withPassword:nil];
     
     
-    self.readFrame.CordovaPluginViewController = navCtr;
+    FSStackBottomViewController *FSStackBottomVC = [[FSStackBottomViewController alloc] init];
+    UINavigationController *stackRootVC = [[UINavigationController alloc] initWithRootViewController:FSStackBottomVC];
+
+    FSShowVC.stackRootNavVC = stackRootVC;
     
-    [self.viewController presentViewController:navCtr animated:YES completion:nil];
+    [stackRootVC pushViewController:FSShowVC animated:NO];
+    
+    [self.viewController presentViewController:stackRootVC animated:YES completion:nil];
 }
 
 # pragma mark -- close preview

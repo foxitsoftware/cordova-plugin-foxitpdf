@@ -1,21 +1,19 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "AnnotationStruct.h"
 
-static AnnotationStruct* annostru=nil;
-static FSPDFViewCtrl* _pdfViewControl=nil;
-static BOOL needStopThread = NO;
-static BOOL isThreadRuning = NO;
+static AnnotationStruct* annostru = nil;
+static FSPDFViewCtrl* _pdfViewControl = nil;
 
 @interface AnnotationStruct ()
 - (void)recursionAnnostruct:(AnnotationItem*)currentnode  childnodes:(NSArray*)childs collectarray:(NSMutableArray*)collectarray AnnoStruct:(NSDictionary*)annostruct;
@@ -25,23 +23,13 @@ static BOOL isThreadRuning = NO;
 
 @implementation AnnotationStruct
 
-+ (void)setStopThreadFlag
-{
-    needStopThread = YES;
-}
-
-+ (BOOL)isThreadRunning
-{
-    return isThreadRuning;
-}
-
 + (AnnotationStruct*)getSingle
 {
     @synchronized(self){
     
         if (!annostru) {
             
-            annostru=[[AnnotationStruct alloc]init];
+            annostru = [[AnnotationStruct alloc]init];
         }
     }
     return annostru;
@@ -65,28 +53,24 @@ static BOOL isThreadRuning = NO;
         
         AnnotationItem* searchanno = [annosarray objectAtIndex:i];
         
-        NSString* annotionuuid = searchanno.annot.NM;
+        NSString* annotionuuid = searchanno.annot.uuidWithPageIndex;
         
-        if (!annotionuuid.length) {
-            continue;
-        }
+        NSMutableArray* onenoteannotempary = [NSMutableArray array];
         
-        NSMutableArray* onenoteannotempary=[NSMutableArray array];
-        
-        for (int a=0; a< annosarray.count; a++) {
-            
-            AnnotationItem* tempanno = [annosarray objectAtIndex:a];
-            if(![searchanno.annot isMarkup])
-                break;
+        if([searchanno.annot isMarkup])
+        {
             int countOfReplies = [(FSMarkup*)searchanno.annot getReplyCount];
-            for(int r=0; r<countOfReplies; r++)
+            for(int r = 0; r<countOfReplies; r++)
             {
                 FSNote* note = [(FSMarkup*)searchanno.annot getReply:r];
                 if(!note) continue;
-                if([note.NM isEqualToString:tempanno.annot.NM])
-                {
-                    [onenoteannotempary addObject:tempanno];
-                    break;
+                for (int a = 0; a< annosarray.count; a++) {
+                    AnnotationItem* tempanno = [annosarray objectAtIndex:a];
+                    if([note isEqualToAnnot:tempanno.annot])
+                    {
+                        [onenoteannotempary addObject:tempanno];
+                        break;
+                    }
                 }
             }
         }
@@ -102,8 +86,8 @@ static BOOL isThreadRuning = NO;
     {
         return [NSArray array];
     }
-    NSMutableArray* childsarray=[NSMutableArray array];
-    [self recursionAnnostruct:superanno childnodes:[annostruct objectForKey:superanno.annot.NM] collectarray:childsarray AnnoStruct:annostruct];
+    NSMutableArray* childsarray = [NSMutableArray array];
+    [self recursionAnnostruct:superanno childnodes:[annostruct objectForKey:superanno.annot.uuidWithPageIndex] collectarray:childsarray AnnoStruct:annostruct];
     
     return childsarray;
 }
@@ -119,7 +103,7 @@ static BOOL isThreadRuning = NO;
     
     for (AnnotationItem* annotation in childs) {
         
-        [self recursionAnnostruct:annotation childnodes:[annostruct objectForKey:annotation.annot.NM] collectarray:collectarray AnnoStruct:annostruct];
+        [self recursionAnnostruct:annotation childnodes:[annostruct objectForKey:annotation.annot.uuidWithPageIndex] collectarray:collectarray AnnoStruct:annostruct];
         
     }
     
@@ -127,18 +111,18 @@ static BOOL isThreadRuning = NO;
 
 - (NSInteger)getAnnotationLevel:(AnnotationItem *)annotation AnnoStruct:(NSDictionary*)annostruct rootAnnotation:(AnnotationItem*)rootanno
 {
-    NSUInteger annlevel= 0;
+    NSUInteger annlevel = 0;
     
-    AnnotationItem* superannotation= nil;
+    AnnotationItem* superannotation = nil;
     
-    [self recursionAnnostruct:annotation childnodes:[annostruct objectForKey:rootanno.annot.NM] currentAnnotation:rootanno AnnoStruct:annostruct superAnnotation:&superannotation];
+    [self recursionAnnostruct:annotation childnodes:[annostruct objectForKey:rootanno.annot.uuidWithPageIndex] currentAnnotation:rootanno AnnoStruct:annostruct superAnnotation:&superannotation];
     
     while (superannotation) {
         
         AnnotationItem* tempanno = superannotation;
         superannotation = nil;
         annlevel++;
-        [self recursionAnnostruct:tempanno childnodes:[annostruct objectForKey:rootanno.annot.NM] currentAnnotation:rootanno AnnoStruct:annostruct superAnnotation:&superannotation];
+        [self recursionAnnostruct:tempanno childnodes:[annostruct objectForKey:rootanno.annot.uuidWithPageIndex] currentAnnotation:rootanno AnnoStruct:annostruct superAnnotation:&superannotation];
     }
     return annlevel;
 }
@@ -147,40 +131,36 @@ static BOOL isThreadRuning = NO;
 {
     
     for (AnnotationItem* checkanno in annoarrays) {
-        
-        if (annotation.annot.replyTo != nil && annotation.annot.replyTo.length > 0 && [annotation.annot.replyTo isEqualToString:checkanno.annot.NM]) {
-            
-            *targetanno=checkanno;
+        if ([annotation.annot isReplyToAnnot:checkanno.annot])
+        {
+            *targetanno = checkanno;
             [self getRootAnnotation:checkanno TargetAnnotation:targetanno AnnoArray:annoarrays];
-            
         }
     }
 }
 
-
 - (BOOL)deleteAnnotationFromAnnoStruct:(NSMutableDictionary *)annostruct deleteAnnotation:(AnnotationItem*)deletenode rootAnnotation:(AnnotationItem*)rootanno
 {
     
-    if (deletenode == nil || annostruct== nil || rootanno == nil)
+    if (deletenode == nil || annostruct == nil || rootanno == nil)
     {
         return NO;
     }
     
-    AnnotationItem* superannotation=nil;
+    AnnotationItem* superannotation = nil;
     
-    [self recursionAnnostruct:deletenode childnodes:[annostruct objectForKey:rootanno.annot.NM] currentAnnotation:rootanno AnnoStruct:annostruct superAnnotation:&superannotation];
+    [self recursionAnnostruct:deletenode childnodes:[annostruct objectForKey:rootanno.annot.uuidWithPageIndex] currentAnnotation:rootanno AnnoStruct:annostruct superAnnotation:&superannotation];
     
-    if (superannotation && [annostruct objectForKey:superannotation.annot.NM]) {
+    if (superannotation && [annostruct objectForKey:superannotation.annot.uuidWithPageIndex]) {
         
-        [[annostruct objectForKey:superannotation.annot.NM]removeObject:deletenode];
-        [annostruct removeObjectForKey:deletenode.annot.NM];
+        [[annostruct objectForKey:superannotation.annot.uuidWithPageIndex]removeObject:deletenode];
+        [annostruct removeObjectForKey:deletenode.annot.uuidWithPageIndex];
         
         return YES;
     }
     
     return NO;
 }
-
 
 - (void)recursionAnnostruct:(AnnotationItem*)deleteanno childnodes:(NSArray*)childs  currentAnnotation:(AnnotationItem*)currentanno AnnoStruct:(NSDictionary*)annostruct superAnnotation:(AnnotationItem**)superannotation
 {
@@ -190,19 +170,18 @@ static BOOL isThreadRuning = NO;
     }
     for (AnnotationItem* anno in childs) {
         
-        if ([anno.annot.NM isEqualToString:deleteanno.annot.NM]) {
+        if ([anno.annot.uuidWithPageIndex isEqualToString:deleteanno.annot.uuidWithPageIndex]) {
             
-            *superannotation=currentanno;
+            *superannotation = currentanno;
             
             break;
             
         }else{
             
-            [self recursionAnnostruct:deleteanno childnodes:[annostruct objectForKey:anno.annot.NM] currentAnnotation:anno AnnoStruct:annostruct superAnnotation:superannotation];
+            [self recursionAnnostruct:deleteanno childnodes:[annostruct objectForKey:anno.annot.uuidWithPageIndex] currentAnnotation:anno AnnoStruct:annostruct superAnnotation:superannotation];
         }
     }
 }
-
 
 - (BOOL)insertAnnotationToAnnoStruct:(NSMutableDictionary *)annostruct insertAnnotation:(AnnotationItem *)insertnode SuperAnnotation:(AnnotationItem*)superanno
 {
@@ -211,17 +190,16 @@ static BOOL isThreadRuning = NO;
         return NO;
     }
     
-    NSMutableArray* nodes=[NSMutableArray array];
-    [annostruct setObject:nodes forKey:insertnode.annot.NM];
+    NSMutableArray* nodes = [NSMutableArray array];
+    [annostruct setObject:nodes forKey:insertnode.annot.uuidWithPageIndex];
     
-    if ([annostruct objectForKey:superanno.annot.NM]) {
+    if ([annostruct objectForKey:superanno.annot.uuidWithPageIndex]) {
         
-        [[annostruct objectForKey:superanno.annot.NM]addObject:insertnode];
+        [[annostruct objectForKey:superanno.annot.uuidWithPageIndex]addObject:insertnode];
     }
 
     return NO;
 }
-
 
 - (NSString *)annotationImageName:(AnnotationItem *)annotation
 {
@@ -293,77 +271,14 @@ static BOOL isThreadRuning = NO;
         }
             break;
             
+        case e_annotFileAttachment:
+            resultString = @"panel_annotation_fileattachment.png";
+            break;
+            
         default:
             break;
     }
     return resultString;
 }
-
-+ (void)getAnnotation:(GetAnnotationFoundHandler)getAnnotationFoundHandler CleanupIfFailed:(void (^)())cleanup
-{
-    getAnnotationFoundHandler = [getAnnotationFoundHandler copy];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
-                   {
-                       isThreadRuning = YES;
-                       needStopThread = NO;
-                       
-                       int totalPage = [_pdfViewControl.currentDoc getPageCount];
-                       if (totalPage == 0)
-                       {
-                           if (getAnnotationFoundHandler)
-                           {
-                               dispatch_sync(dispatch_get_main_queue(), ^{
-                                   getAnnotationFoundHandler(nil, 0, 0);
-                               });
-                           }
-                       }
-                       else
-                       {
-                           for (int i = 0; i < totalPage; i++)
-                           {
-                               if(needStopThread)
-                               {
-                                   cleanup();
-                                   break ;
-                               }
-                               
-                               if (getAnnotationFoundHandler)
-                               {
-                                   dispatch_sync(dispatch_get_main_queue(), ^{
-                                       
-                                       if(needStopThread)
-                                           return ;
-                                       
-                                       FSPDFPage* page = [_pdfViewControl.currentDoc getPage:i];
-                                       NSArray *array = [Utility getAnnots:page];
-                                       NSMutableArray *itemArray = [NSMutableArray array];
-                                       for (FSAnnot* annot in array)
-                                       {
-                                           AnnotationItem *annoItem = [[[AnnotationItem alloc] init] autorelease];
-                                           annoItem.annot = annot;
-                                           if (annot.type != e_annotWidget &&
-                                               (!(annot.type == e_annotStrikeOut && [Utility isReplaceText:(FSStrikeOut*)annot]))
-                                               ) {
-                                               //Callout,Textbox will be filtered out.
-                                               if(annot.type == e_annotFreeText)
-                                               {
-                                                   NSString* intent = [((FSMarkup*)annot) getIntent];
-                                                   if(!intent || [intent caseInsensitiveCompare:@"FreeTextTypeWriter"] != NSOrderedSame)
-                                                       continue;
-                                               }
-                                               [itemArray addObject:annoItem];
-                                           }
-                                       }
-                                       getAnnotationFoundHandler(itemArray, i, totalPage);
-                                   });
-                               }
-                           }
-                       }
-                       [getAnnotationFoundHandler release];
-                       needStopThread = NO;
-                       isThreadRuning = NO;
-                   });
-}
-
 
 @end

@@ -4,17 +4,85 @@
 <dict>
 	<key>files</key>
 	<dict>
+		<key>FoxitRDK_emu</key>
+		<data>
+		r/nw8ypxyHyJDfbvALCSwtq+Ek8=
+		</data>
+		<key>Headers/FSAction.h</key>
+		<data>
+		q7/7BPmeAAbDjFysW7X5OQwgNAY=
+		</data>
+		<key>Headers/FSCommon.h</key>
+		<data>
+		o+IR9dllmtmChipeVfFSRm3BVHo=
+		</data>
+		<key>Headers/FSFDF.h</key>
+		<data>
+		p8vPuQjSaOPCUnhnwVM12aGJ3T8=
+		</data>
+		<key>Headers/FSFullTextSearch.h</key>
+		<data>
+		c/qt2msGtoXH0R2XB9lpOdjwzWg=
+		</data>
+		<key>Headers/FSPDFAnnot.h</key>
+		<data>
+		y0VT1Rv7hoWO+J0FnnY3SO6inMk=
+		</data>
+		<key>Headers/FSPDFDoc.h</key>
+		<data>
+		5rvYfsLvvquG0cl7iT6ZcI/3stQ=
+		</data>
+		<key>Headers/FSPDFForm.h</key>
+		<data>
+		ANxeL/SUgkNfe3ng3srolunmXHg=
+		</data>
+		<key>Headers/FSPDFGraphicsObject.h</key>
+		<data>
+		P4ImqL1G+O0eYqwS0dhYhiKEMRU=
+		</data>
+		<key>Headers/FSPDFLayer.h</key>
+		<data>
+		oOpVcG9SXSXW2CO3yjnktlTRSC0=
+		</data>
 		<key>Headers/FSPDFObjC.h</key>
 		<data>
-		NyiN8W6vkRfNa4YcUI4TUnXBryw=
+		EZH/J0/GEsoQyaHZ9NZH3YaLjz4=
+		</data>
+		<key>Headers/FSPDFObject.h</key>
+		<data>
+		PyvcYx6QQcLX4zg715x2JmdlqtU=
+		</data>
+		<key>Headers/FSPDFReflow.h</key>
+		<data>
+		YnTrJcOAhFAcAPW5xt4F2ko/GEs=
+		</data>
+		<key>Headers/FSPDFSecurity.h</key>
+		<data>
+		JlK5rSeE3oqyYFObCauPRnBX3T4=
+		</data>
+		<key>Headers/FSPDFSignature.h</key>
+		<data>
+		WuWcO0S4IijJqv8Mxk31VdSmHmk=
+		</data>
+		<key>Headers/FSPDFText.h</key>
+		<data>
+		JNF42DSNDuAWMIO/ep8v5TRW8ws=
 		</data>
 		<key>Headers/FSPDFViewControl.h</key>
 		<data>
-		5VlTPZqC1QqBlFwNEhX+INMxJlY=
+		hDQMwQcNpW3pcPU2j31YCQBQOKM=
+		</data>
+		<key>Headers/FSPressureSenseInk.h</key>
+		<data>
+		jaondOo4zTDNAb8Reo+d+WNJc5I=
+		</data>
+		<key>Headers/FSRender.h</key>
+		<data>
+		7Aq0Bbp3mXBuIUhXr4UnvbsN4QM=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		7d4hhX61sikHQXr06GfUNSITSSs=
+		IxJ5r+o18ndBG7tNmlZw2nOhe5s=
 		</data>
 		<key>en.lproj/InfoPlist.strings</key>
 		<dict>
@@ -28,26 +96,213 @@
 	</dict>
 	<key>files2</key>
 	<dict>
+		<key>FoxitRDK_emu</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			r/nw8ypxyHyJDfbvALCSwtq+Ek8=
+			</data>
+			<key>hash2</key>
+			<data>
+			5eanBSd02NeoSFSFEcmipeD8fewoUeqH3lheX5Dcs6s=
+			</data>
+		</dict>
+		<key>Headers/FSAction.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			q7/7BPmeAAbDjFysW7X5OQwgNAY=
+			</data>
+			<key>hash2</key>
+			<data>
+			xvwav3Uhpxi78bG8KDs7e03+TIbT8PAfcREyS8AeTxo=
+			</data>
+		</dict>
+		<key>Headers/FSCommon.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			o+IR9dllmtmChipeVfFSRm3BVHo=
+			</data>
+			<key>hash2</key>
+			<data>
+			2EonvQml+y+dXw6CsysYVlZN/UeUGTbjjUerI+c+UMI=
+			</data>
+		</dict>
+		<key>Headers/FSFDF.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			p8vPuQjSaOPCUnhnwVM12aGJ3T8=
+			</data>
+			<key>hash2</key>
+			<data>
+			b3ORggXGzRGpgwnnEsee7mXkcVhPmqD9dYWgSpIMRnA=
+			</data>
+		</dict>
+		<key>Headers/FSFullTextSearch.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			c/qt2msGtoXH0R2XB9lpOdjwzWg=
+			</data>
+			<key>hash2</key>
+			<data>
+			tF80DJVPd+ahfKbsa6UvaTeE6fdSLjeCYXz0rhiYVoE=
+			</data>
+		</dict>
+		<key>Headers/FSPDFAnnot.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			y0VT1Rv7hoWO+J0FnnY3SO6inMk=
+			</data>
+			<key>hash2</key>
+			<data>
+			1N5QU1XLb+w8GwF9z7CSv9RcW4/6TQQ7yMiP2/z+zaA=
+			</data>
+		</dict>
+		<key>Headers/FSPDFDoc.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			5rvYfsLvvquG0cl7iT6ZcI/3stQ=
+			</data>
+			<key>hash2</key>
+			<data>
+			GxUZUQcYv2+72yKmErxEDwq0H4zL6ork+2OPo7rnVNU=
+			</data>
+		</dict>
+		<key>Headers/FSPDFForm.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			ANxeL/SUgkNfe3ng3srolunmXHg=
+			</data>
+			<key>hash2</key>
+			<data>
+			bc49qz2+9OdpPxVT5AgKvW2p0pxUh51OKjqq5SbrRlQ=
+			</data>
+		</dict>
+		<key>Headers/FSPDFGraphicsObject.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			P4ImqL1G+O0eYqwS0dhYhiKEMRU=
+			</data>
+			<key>hash2</key>
+			<data>
+			KUz8wVtvk9F9Ebzmppiu3+SkzRZ6xn3b6ABuqGO+02I=
+			</data>
+		</dict>
+		<key>Headers/FSPDFLayer.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			oOpVcG9SXSXW2CO3yjnktlTRSC0=
+			</data>
+			<key>hash2</key>
+			<data>
+			X6+mEHHkbqOjsTBPZC42MAkSICP2/UePW3R3ckMNoiM=
+			</data>
+		</dict>
 		<key>Headers/FSPDFObjC.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			NyiN8W6vkRfNa4YcUI4TUnXBryw=
+			EZH/J0/GEsoQyaHZ9NZH3YaLjz4=
 			</data>
 			<key>hash2</key>
 			<data>
-			cCkmOjFXjz0OeLwt2l1hIvsOCOjlZPHwmh+9beNVI0g=
+			lbmlUK0JuXe07t5q/R0bpefuBcDOOAZShlRhHn7ZbxM=
+			</data>
+		</dict>
+		<key>Headers/FSPDFObject.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			PyvcYx6QQcLX4zg715x2JmdlqtU=
+			</data>
+			<key>hash2</key>
+			<data>
+			J4SyhdLDo1xAQh8cjcbXzMWljSF9b5anQJ6i7n/AeWU=
+			</data>
+		</dict>
+		<key>Headers/FSPDFReflow.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			YnTrJcOAhFAcAPW5xt4F2ko/GEs=
+			</data>
+			<key>hash2</key>
+			<data>
+			EuJTRA60jmEy+Jv8gidUczw/p+0xyaPW+zSTdugUlTg=
+			</data>
+		</dict>
+		<key>Headers/FSPDFSecurity.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			JlK5rSeE3oqyYFObCauPRnBX3T4=
+			</data>
+			<key>hash2</key>
+			<data>
+			8TKHPpPc9nuH/glo2wynb8rJoCAWtiAuMS9YwIuGsGo=
+			</data>
+		</dict>
+		<key>Headers/FSPDFSignature.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			WuWcO0S4IijJqv8Mxk31VdSmHmk=
+			</data>
+			<key>hash2</key>
+			<data>
+			/JL1Wb5MG1FsXfmnWP96dHosKDf/R19AI3JLNrSK+Q4=
+			</data>
+		</dict>
+		<key>Headers/FSPDFText.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			JNF42DSNDuAWMIO/ep8v5TRW8ws=
+			</data>
+			<key>hash2</key>
+			<data>
+			b47Vy3c3uooH2vAhA8iiHlUejWxp3oboYWpVcC1q/EM=
 			</data>
 		</dict>
 		<key>Headers/FSPDFViewControl.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			5VlTPZqC1QqBlFwNEhX+INMxJlY=
+			hDQMwQcNpW3pcPU2j31YCQBQOKM=
 			</data>
 			<key>hash2</key>
 			<data>
-			hp6qSqfAHL+XsEixWpLPzlgrDs1jwZ8DkqmMmGasK90=
+			PStO9ZUFhwXq1lbQ5VD0VqZje1CnF+eI0m8IY+lHeng=
+			</data>
+		</dict>
+		<key>Headers/FSPressureSenseInk.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			jaondOo4zTDNAb8Reo+d+WNJc5I=
+			</data>
+			<key>hash2</key>
+			<data>
+			9k7ez2MfAQMtN/HecSBKgKAmDXsvqDjfeXov+tprxJI=
+			</data>
+		</dict>
+		<key>Headers/FSRender.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			7Aq0Bbp3mXBuIUhXr4UnvbsN4QM=
+			</data>
+			<key>hash2</key>
+			<data>
+			vsNlAs2zlpJSSqbLQg2vZbBu0L8ALs9saPg/rRkphfo=
 			</data>
 		</dict>
 		<key>en.lproj/InfoPlist.strings</key>

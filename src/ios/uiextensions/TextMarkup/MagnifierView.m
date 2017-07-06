@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "MagnifierView.h"
 #import <QuartzCore/QuartzCore.h>
 
@@ -24,8 +24,7 @@
         UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(-8, -5, 188, 82)];
         imageView.image = [UIImage imageNamed:@"annotation_magnifier"];
         [self addSubview:imageView];
-        [imageView release];
-	}
+        	}
 	return self;
 }
 
@@ -45,11 +44,6 @@
 	CGContextScaleCTM(context, 1.5, 1.5);
 	CGContextTranslateCTM(context,-1*(magnifyPoint.x),-1*(magnifyPoint.y));
 	[self.viewToMagnify.layer renderInContext:context];
-}
-
-- (void)dealloc {
-	[viewToMagnify release];
-	[super dealloc];
 }
 
 @end

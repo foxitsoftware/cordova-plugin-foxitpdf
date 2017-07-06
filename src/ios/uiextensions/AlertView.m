@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import <FoxitRDK/FSPDFViewControl.h>
 
 #import "AlertView.h"
@@ -28,6 +28,7 @@
     return self;
 }
 
+
 -(void)show
 {
     [super show];
@@ -40,11 +41,11 @@
 
 - (id)initWithTitle:(NSString *)title message:(NSString *)message buttonClickHandler:(AlertViewButtonClickedHandler)handler cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ... 
 {
-    if (self = [super initWithTitle:title==nil?nil:NSLocalizedString(title, nil) message:message==nil?nil:NSLocalizedString(message, nil) delegate:self cancelButtonTitle:cancelButtonTitle==nil?nil:NSLocalizedString(cancelButtonTitle, nil) otherButtonTitles:nil])
+    if (self = [super initWithTitle:title==nil?nil:NSLocalizedStringFromTable(title, @"FoxitLocalizable", nil) message:message==nil?nil:NSLocalizedStringFromTable(message, @"FoxitLocalizable", nil) delegate:self cancelButtonTitle:cancelButtonTitle==nil?nil:NSLocalizedStringFromTable(cancelButtonTitle, @"FoxitLocalizable", nil) otherButtonTitles:nil])
     {
         if (otherButtonTitles != nil)
         {
-            [self addButtonWithTitle:NSLocalizedString(otherButtonTitles, nil)];
+            [self addButtonWithTitle:NSLocalizedStringFromTable(otherButtonTitles, @"FoxitLocalizable", nil)];
             va_list args;
             va_start(args, otherButtonTitles);
             NSString *otherButton = va_arg(args, NSString*);
@@ -63,14 +64,14 @@
 
 - (id)initWithTitle:(NSString *)title message:(NSString *)message style:(UIAlertViewStyle)style buttonClickHandler:(AlertViewButtonClickedHandler)handler cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ...
 {
-    if (self = [super initWithTitle:title==nil?nil:NSLocalizedString(title, nil) message:message==nil?nil:NSLocalizedString(message, nil) delegate:self cancelButtonTitle:cancelButtonTitle==nil?nil:NSLocalizedString(cancelButtonTitle, nil) otherButtonTitles:nil])
+    if (self = [super initWithTitle:title==nil?nil:NSLocalizedStringFromTable(title, @"FoxitLocalizable", nil) message:message==nil?nil:NSLocalizedStringFromTable(message, @"FoxitLocalizable", nil) delegate:self cancelButtonTitle:cancelButtonTitle==nil?nil:NSLocalizedStringFromTable(cancelButtonTitle, @"FoxitLocalizable", nil) otherButtonTitles:nil])
     {
-        if (style == UIAlertViewStylePlainTextInput)
+        if (style == UIAlertViewStylePlainTextInput || style == UIAlertViewStyleSecureTextInput)
             [self setAlertViewStyle:style];
         
         if (otherButtonTitles != nil)
         {
-            [self addButtonWithTitle:NSLocalizedString(otherButtonTitles, nil)];
+            [self addButtonWithTitle:NSLocalizedStringFromTable(otherButtonTitles, @"FoxitLocalizable", nil)];
             va_list args;
             va_start(args, otherButtonTitles);
             NSString *otherButton = va_arg(args, NSString*);
@@ -89,11 +90,11 @@
 
 - (id)initWithTitle:(NSString *)title message:(NSString *)message delegate:(id)delegate cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ...
 {
-    if (self = [super initWithTitle:title==nil?nil:NSLocalizedString(title, nil) message:message==nil?nil:NSLocalizedString(message, nil) delegate:self cancelButtonTitle:cancelButtonTitle==nil?nil:NSLocalizedString(cancelButtonTitle, nil) otherButtonTitles:nil])
+    if (self = [super initWithTitle:title==nil?nil:NSLocalizedStringFromTable(title, @"FoxitLocalizable", nil) message:message==nil?nil:NSLocalizedStringFromTable(message, @"FoxitLocalizable", nil) delegate:self cancelButtonTitle:cancelButtonTitle==nil?nil:NSLocalizedStringFromTable(cancelButtonTitle, @"FoxitLocalizable", nil) otherButtonTitles:nil])
     {
         if (otherButtonTitles != nil)
         {
-            [self addButtonWithTitle:NSLocalizedString(otherButtonTitles, nil)];
+            [self addButtonWithTitle:NSLocalizedStringFromTable(otherButtonTitles, @"FoxitLocalizable", nil)];
             va_list args;
             va_start(args, otherButtonTitles);
             NSString *otherButton = va_arg(args, NSString*);
@@ -112,10 +113,8 @@
 
 - (void)dealloc
 {
-    [_buttonClickedHandler release];
-    self.delegate = nil;
+        self.delegate = nil;
     self.outerDelegate = nil;
-    [super dealloc];
 }
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
@@ -132,17 +131,17 @@
 
 - (void)setTitle:(NSString *)title
 {
-    super.title = title==nil?nil:NSLocalizedString(title, nil);
+    super.title = title==nil?nil:NSLocalizedStringFromTable(title, @"FoxitLocalizable", nil);
 }
 
 - (void)setMessage:(NSString *)message
 {
-    super.message = message==nil?nil:NSLocalizedString(message, nil);
+    super.message = message==nil?nil:NSLocalizedStringFromTable(message, @"FoxitLocalizable", nil);
 }
 
 - (NSInteger)addButtonWithTitle:(NSString *)title
 {
-    return [super addButtonWithTitle:title==nil?nil:NSLocalizedString(title, nil)];
+    return [super addButtonWithTitle:title==nil?nil:NSLocalizedStringFromTable(title, @"FoxitLocalizable", nil)];
 }
 
 @end
@@ -162,12 +161,11 @@
 
 - (id)initWithTitle:(NSString *)title message:(NSString *)message buttonClickHandler:(AlertViewButtonClickedHandler)handler cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ...
 {
-    if (self = [super initWithTitle:title==nil?nil:NSLocalizedString(title, nil) message:message==nil?nil:NSLocalizedString(message, nil) delegate:self cancelButtonTitle:cancelButtonTitle==nil?nil:NSLocalizedString(cancelButtonTitle, nil) otherButtonTitles:nil])
+    if (self = [super initWithTitle:title==nil?nil:NSLocalizedStringFromTable(title, @"FoxitLocalizable", nil) message:message==nil?nil:NSLocalizedStringFromTable(message, @"FoxitLocalizable", nil) delegate:self cancelButtonTitle:cancelButtonTitle==nil?nil:NSLocalizedStringFromTable(cancelButtonTitle, @"FoxitLocalizable", nil) otherButtonTitles:nil])
     {
-        //APPDELEGATE.alertveiw = self;
         if (otherButtonTitles != nil)
         {
-            [self addButtonWithTitle:NSLocalizedString(otherButtonTitles, nil)];
+            [self addButtonWithTitle:NSLocalizedStringFromTable(otherButtonTitles, @"FoxitLocalizable", nil)];
             va_list args;
             va_start(args, otherButtonTitles);
             NSString *otherButton = va_arg(args, NSString*);
@@ -192,9 +190,7 @@
 
 - (void)dealloc
 {
-    [_buttonClickedHandler release];
-    self.delegate = nil;
-    [super dealloc];
+        self.delegate = nil;
 }
 
 - (void)alertView:(TSAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
@@ -207,17 +203,17 @@
 
 - (void)setTitle:(NSString *)title
 {
-    super.title = title==nil?nil:NSLocalizedString(title, nil);
+    super.title = title==nil?nil:NSLocalizedStringFromTable(title, @"FoxitLocalizable", nil);
 }
 
 - (void)setMessage:(NSString *)message
 {
-    super.message = message==nil?nil:NSLocalizedString(message, nil);
+    super.message = message==nil?nil:NSLocalizedStringFromTable(message, @"FoxitLocalizable", nil);
 }
 
 - (NSInteger)addButtonWithTitle:(NSString *)title
 {
-    return [super addButtonWithTitle:title==nil?nil:NSLocalizedString(title, nil)];
+    return [super addButtonWithTitle:title==nil?nil:NSLocalizedStringFromTable(title, @"FoxitLocalizable", nil)];
 }
 
 @end

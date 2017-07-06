@@ -1,14 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
  */
+
 #import "TextMKAnnotHandler.h"
 #import "ReplyTableViewController.h"
 #import "ReplyUtil.h"
@@ -17,24 +18,13 @@
 #import "UIExtensionsManager.h"
 #import "PropertyBar.h"
 #import "ColorUtility.h"
+#import "FSUndo.h"
+#import "FSAnnotAttributes.h"
 
 @interface MKAnnotHandler () <IDocEventListener>
 
-@property (nonatomic, retain) FSAnnot *markupAnnot;
-@property (nonatomic, assign) int tmppageIndex;
-@property (nonatomic, strong) FSRectF *tmprect;
-@property (nonatomic, assign) unsigned int tmpcolor;
-@property (nonatomic, assign) int tmpopacity;
-@property (nonatomic, retain) NSArray *tmpQuauds;
-@property (nonatomic, assign) int tmpflags;
-@property (nonatomic, assign) int tmpsubject;
-@property (nonatomic, retain) NSString *tmpauthor;
-@property (nonatomic, retain) NSString *tmpcontents;
-@property (nonatomic, strong) FSAnnot *tmpfsAnnot;
-@property (nonatomic, assign) CGRect oldRect;
-
-
-@property (nonatomic, retain) MenuControl *menuControl;
+@property (nonatomic, strong) FSAnnot *markupAnnot;
+@property (nonatomic, strong) FSAnnotAttributes* attributesBeforeModify; // for undo
 @property (nonatomic, assign) BOOL isShowStyle;
 @property (nonatomic, assign) BOOL shouldShowMenu;
 @property (nonatomic, assign) BOOL shouldShowPropety;
@@ -89,18 +79,21 @@
 -(void)onAnnotSelected:(FSAnnot*)annot
 {
     self.markupAnnot = annot;
-    CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:annot.pageIndex];
+    self.attributesBeforeModify = [FSAnnotAttributes attributesWithAnnot:annot];
     
+    CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:annot.pageIndex];
     NSMutableArray *array = [NSMutableArray array];
     
-    MenuItem *copyTextItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kCopyText", nil) object:self action:@selector(copyText)] autorelease];
-    MenuItem *commentItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kOpen", nil) object:self action:@selector(comment)] autorelease];
-    MenuItem *openItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kOpen", nil) object:self action:@selector(comment)] autorelease];
-    MenuItem *replyItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kReply", nil) object:self action:@selector(reply)] autorelease];
-    MenuItem *styleItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kStyle", nil) object:self action:@selector(showStyle)] autorelease];
-    MenuItem *deleteItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kDelete", nil) object:self action:@selector(deleteAnnot)] autorelease];
-    if (annot.canModify) {
+    MenuItem *copyTextItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kCopyText", @"FoxitLocalizable", nil) object:self action:@selector(copyText)];
+    MenuItem *commentItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kOpen", @"FoxitLocalizable", nil) object:self action:@selector(comment)];
+    MenuItem *openItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kOpen", @"FoxitLocalizable", nil) object:self action:@selector(comment)];
+    MenuItem *replyItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kReply", @"FoxitLocalizable", nil) object:self action:@selector(reply)];
+    MenuItem *styleItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kStyle", @"FoxitLocalizable", nil) object:self action:@selector(showStyle)];
+    MenuItem *deleteItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kDelete", @"FoxitLocalizable", nil) object:self action:@selector(deleteAnnot)];
+    if (annot.canCopyText) {
         [array addObject:copyTextItem];
+    }
+    if (annot.canModify) {
         [array addObject:styleItem];
         if (annot.contents == nil || [annot.contents isEqualToString:@""]) {
             [array addObject:commentItem];
@@ -114,7 +107,6 @@
     }
     else
     {
-        [array addObject:copyTextItem];
         [array addObject:commentItem];
         [array addObject:replyItem];
     }
@@ -130,17 +122,6 @@
     self.shouldShowMenu = YES;
     self.shouldShowPropety = NO;
     
-    FSMarkup *mkAnnot = (FSMarkup*)annot;
-    self.tmppageIndex = mkAnnot.pageIndex;
-    self.tmpauthor = mkAnnot.author;
-    self.tmpcolor = mkAnnot.color;
-    self.tmpcontents = mkAnnot.contents;
-    self.tmpflags = mkAnnot.flags;
-    self.tmpQuauds = mkAnnot.quads;
-    self.tmpopacity = mkAnnot.opacity*100.0;
-    self.tmprect = mkAnnot.fsrect;
-    self.tmpfsAnnot = mkAnnot;
-    
     rect = CGRectInset(rect, -20, -20);
     [_pdfViewCtrl refresh:rect pageIndex:annot.pageIndex];
 }
@@ -153,8 +134,12 @@
         FSQuadPoints *arrayQuad = [annot.quads objectAtIndex:i];
         FSRectF *rect = [Utility convertToFSRect:arrayQuad.getFirst p2:arrayQuad.getFourth];
         NSString* tmp = [[Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:annot.pageIndex] getTextInRect:rect];
-        if(tmp)
+        if (tmp)
+        {
+            if (i != 0)
+                [str appendString:@"\r\n"];
             [str appendString:tmp];
+        }
         
     }
     if (str && ![str isEqualToString:@""]) {
@@ -166,14 +151,14 @@
 
 -(void)comment
 {
-    NSMutableArray *replyAnnots = [[[NSMutableArray alloc] init] autorelease];
+    NSMutableArray *replyAnnots = [[NSMutableArray alloc] init];
     [ReplyUtil getReplysInDocument:_pdfViewCtrl.currentDoc annot:_extensionsManager.currentAnnot replys:replyAnnots];
     ReplyTableViewController *replyCtr = [[ReplyTableViewController alloc] initWithStyle:UITableViewStylePlain extensionsManager:_extensionsManager];
     replyCtr.isNeedReply = NO;
     NSMutableArray *array = [NSMutableArray arrayWithArray:replyAnnots];
     [array addObject:_extensionsManager.currentAnnot];
     [replyCtr setTableViewAnnotations:array];
-    UINavigationController *navCtr= [[UINavigationController alloc] initWithRootViewController:replyCtr];
+    UINavigationController *navCtr = [[UINavigationController alloc] initWithRootViewController:replyCtr];
     self.currentVC = navCtr;
     navCtr.delegate = replyCtr;
     navCtr.modalPresentationStyle = UIModalPresentationFormSheet;
@@ -182,29 +167,25 @@
     [rootViewController presentViewController:navCtr animated:YES completion:nil];
     replyCtr.editingDoneHandler = ^()
     {
-        [navCtr release];
-        [replyCtr release];
-        [_extensionsManager setCurrentAnnot:nil];;
+                        [_extensionsManager setCurrentAnnot:nil];;
     };
     replyCtr.editingCancelHandler = ^()
     {
-        [navCtr release];
-        
-        [replyCtr release];
-        [_extensionsManager setCurrentAnnot:nil];;
+                
+                [_extensionsManager setCurrentAnnot:nil];;
     };
 }
 
 -(void)reply
 {
-    NSMutableArray *replyAnnots = [[[NSMutableArray alloc] init] autorelease];
+    NSMutableArray *replyAnnots = [[NSMutableArray alloc] init];
     [ReplyUtil getReplysInDocument:_pdfViewCtrl.currentDoc annot:_extensionsManager.currentAnnot replys:replyAnnots];
     ReplyTableViewController *replyCtr = [[ReplyTableViewController alloc] initWithStyle:UITableViewStylePlain extensionsManager:_extensionsManager];
     replyCtr.isNeedReply = YES;
     NSMutableArray *array = [NSMutableArray arrayWithArray:replyAnnots];
     [array addObject:_extensionsManager.currentAnnot];
     [replyCtr setTableViewAnnotations:array];
-    UINavigationController *navCtr= [[UINavigationController alloc] initWithRootViewController:replyCtr];
+    UINavigationController *navCtr = [[UINavigationController alloc] initWithRootViewController:replyCtr];
     self.currentVC = navCtr;
     
     navCtr.delegate = replyCtr;
@@ -214,29 +195,25 @@
     [rootViewController presentViewController:navCtr animated:YES completion:nil];
     replyCtr.editingDoneHandler = ^()
     {
-        [navCtr release];
-        
-        [replyCtr release];
-        [_extensionsManager setCurrentAnnot:nil];;
+                
+                [_extensionsManager setCurrentAnnot:nil];;
     };
     replyCtr.editingCancelHandler = ^()
     {
-        [navCtr release];
-        
-        [replyCtr release];
-        [_extensionsManager setCurrentAnnot:nil];;
+                
+                [_extensionsManager setCurrentAnnot:nil];;
     };
 }
 
 -(void)deleteAnnot
 {
     FSAnnot *annot = _extensionsManager.currentAnnot;
-    [_extensionsManager setCurrentAnnot:nil];
-    Task *task = [[[Task alloc] init] autorelease];
+    Task *task = [[Task alloc] init];
     task.run = ^(){
         [self removeAnnot:annot];
     };
     [_taskServer executeSync:task];
+    [_extensionsManager setCurrentAnnot:nil];
 }
 
 -(void)showStyle
@@ -255,7 +232,7 @@
         colors = @[@0xFF3333,@0xFF00FF,@0x9966FF,@0x66CC33,@0x996666,@0xCCCC00,@0xFF9900,@0x00CCFF,@0x00CCCC,@0x000000];
     }
     [_extensionsManager.propertyBar setColors:colors];
-    [_extensionsManager.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY];
+    [_extensionsManager.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY frame:CGRectZero];
    
     [_extensionsManager.propertyBar setProperty:PROPERTY_COLOR intValue:annot.color];
     [_extensionsManager.propertyBar setProperty:PROPERTY_OPACITY intValue:annot.opacity*100.0];
@@ -270,7 +247,6 @@
     self.shouldShowPropety = YES;
 }
 
-
 - (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController
 {
     if (_extensionsManager.currentAnnot) {
@@ -280,6 +256,12 @@
 
 -(void)onAnnotDeselected:(FSAnnot*)annot
 {
+    self.markupAnnot = nil;
+    if (![self.attributesBeforeModify isEqualToAttributes:[FSAnnotAttributes attributesWithAnnot:annot]]) {
+        [self modifyAnnot:annot addUndo:YES];
+    }
+    self.attributesBeforeModify = nil;
+
     MenuControl* annotMenu = _extensionsManager.menuControl;
     if (annotMenu.isMenuVisible) {
         [annotMenu setMenuVisible:NO animated:YES];
@@ -299,74 +281,85 @@
 
 -(void)addAnnot:(FSAnnot*)annot
 {
-    [annot retain];
-    Task *task = [[[Task alloc] init] autorelease];
+    [self addAnnot:annot addUndo:YES];
+}
+
+-(void)addAnnot:(FSAnnot*)annot addUndo:(BOOL)addUndo
+{
+    Task *task = [[Task alloc] init];
     task.run = ^()
     {
-        FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:annot.pageIndex];
-        if (!page)
-        {
-            return;
-        }
-        
-        {
-            FSPDFTextSelect* textPage = [FSPDFTextSelect create:page];
-            if (textPage)
-            {
-                NSString *tmp = @"";
-                NSArray *array = [self getAnnotationQuad:(FSTextMarkup*)annot];
-                for (int i = 0; i < array.count; i++)
-                {
-                    FSQuadPoints *arrayQuad = [array objectAtIndex:i];
-                    FSRectF *rect = [Utility convertToFSRect:arrayQuad.getFirst p2:arrayQuad.getFourth];
-                    tmp = [tmp stringByAppendingString:[textPage getTextInRect:rect]];
-                }
-                [annot setContents:tmp];
+        FSPDFPage* page = [annot getPage];
+        if (page) {
+            
+            int pageIndex = annot.pageIndex;
+            if (addUndo) {
+                FSAnnotAttributes* attributes = [FSAnnotAttributes attributesWithAnnot:annot];
+                [_extensionsManager addUndoItem:[UndoAddAnnot createWithAttributes:attributes page:page annotHandler:self]];
             }
-
-            [annot resetAppearanceStream];
+            
             [_extensionsManager onAnnotAdded:page annot:annot];
 
-            int pageIndex = annot.pageIndex;
             CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
             rect = CGRectInset(rect, -20, -20);
             dispatch_async(dispatch_get_main_queue(), ^{
                 [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
             });
-            [annot release];
-        }
+                    }
     };
     [_taskServer executeSync:task];
 }
 
 -(void)modifyAnnot:(FSAnnot*)annot
 {
-    if ([annot canModify]) {
-        annot.modifiedDate = [NSDate date];
+    [self modifyAnnot:annot addUndo:YES];
+}
+
+-(void)modifyAnnot:(FSAnnot*)annot addUndo:(BOOL)addUndo
+{
+    FSPDFPage* page = [annot getPage];
+    if (!page) {
+        return;
     }
-    // [annot resetAppearanceStream]
-    [_extensionsManager onAnnotModified:[annot getPage] annot:annot];
-    CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:annot.pageIndex];
-    rect =CGRectInset(rect, -20, -20);
+    if ([annot canModify] && addUndo) {
+        annot.modifiedDate = [NSDate date];
+        [_extensionsManager addUndoItem:[UndoModifyAnnot createWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
+    }
+    
+    [_extensionsManager onAnnotModified:page annot:annot];
+    int pageIndex = annot.pageIndex;
+    CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
+    rect = CGRectInset(rect, -20, -20);
     dispatch_async(dispatch_get_main_queue(), ^{
-        [_pdfViewCtrl refresh:rect pageIndex:annot.pageIndex];
+        [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
     });
 }
 
 -(void)removeAnnot:(FSAnnot*)annot
 {
+    [self removeAnnot:annot addUndo:YES];
+}
+
+-(void)removeAnnot:(FSAnnot*)annot addUndo:(BOOL)addUndo
+{
     CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:annot.pageIndex];
     rect = CGRectInset(rect, -20, -20);
     int pageIndex = annot.pageIndex;
+    FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+    
+    if (addUndo) {
+        FSAnnotAttributes* attributes = self.attributesBeforeModify ?: [FSAnnotAttributes attributesWithAnnot:annot];
+        [_extensionsManager addUndoItem:[UndoDeleteAnnot createWithAttributes:attributes page:page annotHandler:self]];
+    }
+    self.attributesBeforeModify = nil;
+    
+    [_extensionsManager onAnnotDeleted:page annot:annot];
+    [page removeAnnot:annot];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [_extensionsManager onAnnotDeleted:[_pdfViewCtrl.currentDoc getPage:pageIndex] annot:annot];
-        [[_pdfViewCtrl.currentDoc getPage:pageIndex] removeAnnot:annot];
         [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
     });
 }
-
-
 
 // PageView Gesture+Touch
 - (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer annot:(FSAnnot*)annot
@@ -376,12 +369,11 @@
 
 - (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer annot:(FSAnnot*)annot
 {
-    unsigned long allPermission = [_pdfViewCtrl.currentDoc getUserPermissions];
-    BOOL canAddAnnot = (allPermission & e_permAnnotForm);
+    BOOL canAddAnnot = [Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc];
     if (!canAddAnnot) {
         return NO;
     }
-//    Read *read = APPDELEGATE.app.read;
+
     CGPoint point = [recognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
     FSPointF* pdfPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
     if (_extensionsManager.currentAnnot == annot)
@@ -413,10 +405,9 @@
 - (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer annot:(FSAnnot*)annot
 {
     
-    if ([_extensionsManager getAnnotHandlerByType:annot.type] == self)
+    if ([_extensionsManager getAnnotHandlerByAnnot:annot] == self)
     {
-        unsigned long allPermission = [_pdfViewCtrl.currentDoc getUserPermissions];
-        BOOL canAddAnnot = (allPermission & e_permAnnotForm);
+       BOOL canAddAnnot = [Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc];
         if (!canAddAnnot) {
             return NO;
         }
@@ -431,7 +422,6 @@
     return NO;
 }
 
-
 - (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet*)touches withEvent:(UIEvent*)event annot:(FSAnnot*)annot
 {
     return NO;
@@ -441,6 +431,7 @@
 {
     return NO;
 }
+
 - (BOOL)onPageViewTouchesEnded:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event annot:(FSAnnot*)anno
 {
     return NO;
@@ -467,7 +458,7 @@
 
 - (NSArray*)getAnnotationQuad:(FSTextMarkup *)annot
 {
-    NSMutableArray *array = [[[NSMutableArray alloc] init] autorelease];
+    NSMutableArray *array = [[NSMutableArray alloc] init];
     int quadCount = [annot getQuadPointsCount];
     if (quadCount <= 0)
     {
@@ -491,7 +482,7 @@ END:
 - (void)onPropertyBarDismiss
 {
     FSAnnot* curAnnot = _extensionsManager.currentAnnot;
-    if (DEVICE_iPHONE && curAnnot == self.markupAnnot && [_extensionsManager getAnnotHandlerByType:curAnnot.type] == self) {
+    if (DEVICE_iPHONE && curAnnot == self.markupAnnot && [_extensionsManager getAnnotHandlerByAnnot:curAnnot] == self) {
         self.isShowStyle = NO;
         self.shouldShowPropety = NO;
         self.shouldShowMenu = YES;
@@ -555,7 +546,7 @@ END:
 - (void)showAnnotMenu
 {
     FSAnnot* curAnnot = _extensionsManager.currentAnnot;
-    if (curAnnot == self.markupAnnot && [_extensionsManager getAnnotHandlerByType:curAnnot.type] == self) {
+    if (curAnnot == self.markupAnnot && [_extensionsManager getAnnotHandlerByAnnot:curAnnot] == self) {
         CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:self.markupAnnot.fsrect pageIndex:_extensionsManager.currentAnnot.pageIndex];
         CGRect showRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:rect pageIndex:self.markupAnnot.pageIndex];
         
@@ -579,7 +570,7 @@ END:
 - (void)dismissAnnotMenu
 {
     FSAnnot* curAnnot = _extensionsManager.currentAnnot;
-    if (curAnnot == self.markupAnnot && [_extensionsManager getAnnotHandlerByType:curAnnot.type] == self) {
+    if (curAnnot == self.markupAnnot && [_extensionsManager getAnnotHandlerByAnnot:curAnnot] == self) {
         MenuControl* annotMenu = _extensionsManager.menuControl;
         if (annotMenu.isMenuVisible) {
             [annotMenu setMenuVisible:NO animated:YES];
@@ -589,18 +580,6 @@ END:
         }
     }
 }
-- (void)dealloc{
-    [_currentVC release];
-    [_tmprect release];
-    [_tmpcontents release];
-    [_tmpfsAnnot release];
-    [_markupAnnot release];
-    [_tmpauthor release];
-    [_menuControl release];
-    [_tmpQuauds release];
-    [super dealloc];
-}
-
 
 #pragma mark IDocEventListener
 
@@ -610,6 +589,5 @@ END:
         [self.currentVC dismissViewControllerAnimated:NO completion:nil];
     }
 }
-
 
 @end

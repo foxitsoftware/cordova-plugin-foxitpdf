@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import <Foundation/Foundation.h>
 
 /** @brief Utility class for user preference. */
@@ -17,5 +17,8 @@
 
 + (int)getIntValue:(NSString*)module type:(NSString*)type defaultValue:(int)defVal;
 + (void)setIntValue:(NSString*)module type:(NSString*)type value:(int)value;
-
++ (float)getFloatValue:(NSString*)module type:(NSString*)type defaultValue:(float)defVal;
++ (void)setFloatValue:(NSString*)module type:(NSString*)type value:(float)value;
++ (BOOL)getBoolValue:(NSString*)module type:(NSString*)type delaultValue:(BOOL)defVal;
++ (void)setBoolValue:(NSString*)module type:(NSString*)type value:(BOOL)value;
 @end

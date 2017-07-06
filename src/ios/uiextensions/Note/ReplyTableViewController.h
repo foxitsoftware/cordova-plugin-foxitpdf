@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import <UIKit/UIKit.h>
 #import "AnnotationStruct.h"
 #import "AnnotationListCell.h"
@@ -26,13 +26,13 @@ typedef void (^NoteEditingCancel)(void);
 @property (nonatomic, copy) NoteEditingDone  editingDoneHandler;
 @property (nonatomic, assign) BOOL isNeedReply;
 
-@property (nonatomic, retain) AnnotationItem *editAnnoItem;
-@property (nonatomic, retain) AnnotationItem* replyanno;
-@property (nonatomic, retain) NSIndexPath *indexPath;
+@property (nonatomic, strong) AnnotationItem *editAnnoItem;
+@property (nonatomic, strong) AnnotationItem* replyanno;
+@property (nonatomic, strong) NSIndexPath *indexPath;
 @property (nonatomic, assign) BOOL isShowMore;
-@property (nonatomic, retain) NSIndexPath *moreIndexPath;
+@property (nonatomic, strong) NSIndexPath *moreIndexPath;
 
-@property (nonatomic, retain)UIButton* buttonLeft;
+@property (nonatomic, strong)UIButton* buttonLeft;
 
 -(id)initWithStyle:(UITableViewStyle)style extensionsManager:(UIExtensionsManager*)extensionsManager;
 - (void)initNavigationBar;

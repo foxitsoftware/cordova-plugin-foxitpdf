@@ -1,20 +1,20 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "LinkAnnotHandler.h"
 #import "UIExtensionsManager+Private.h"
 #import <FoxitRDK/FSPDFViewControl.h>
 
-@interface LinkAnnotHandler () <IDocEventListener>
+@interface LinkAnnotHandler () <IDocEventListener, IPageEventListener>
 
 @property (nonatomic, assign) BOOL isSelected;
 
@@ -38,6 +38,7 @@
         [_extensionsManager registerAnnotHandler:self];
         _pdfViewCtrl = _extensionsManager.pdfViewCtrl;
         [_pdfViewCtrl registerDocEventListener:self];
+        [_pdfViewCtrl registerPageEventListener:self];
         _dictAnnotLink = [[NSMutableDictionary alloc] init];
         _isSelected = NO;
     }
@@ -57,27 +58,34 @@
 
 -(void)onAnnotSelected:(FSAnnot*)annot
 {
-    
 }
 
 -(void)onAnnotDeselected:(FSAnnot*)annot
 {
-    
 }
 
 -(void)addAnnot:(FSAnnot*)annot
 {
-    
+}
+
+-(void)addAnnot:(FSAnnot*)annot addUndo:(BOOL)addUndo
+{
 }
 
 -(void)modifyAnnot:(FSAnnot*)annot
 {
-    
+}
+
+-(void)modifyAnnot:(FSAnnot*)annot addUndo:(BOOL)addUndo
+{
 }
 
 -(void)removeAnnot:(FSAnnot*)annot
 {
-    
+}
+
+-(void)removeAnnot:(FSAnnot*)annot addUndo:(BOOL)addUndo
+{
 }
 
 // PageView Gesture+Touch
@@ -91,7 +99,7 @@
     if (annot) {
         _isSelected = YES;
     }
-    if (!_isSelected || !_extensionsManager.enablelinks) {
+    if (!_isSelected || !_extensionsManager.enableLinks) {
         return NO;
     }
     CGPoint point = [recognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
@@ -100,7 +108,7 @@
     @synchronized(_dictAnnotLink)
     {
         [self reloadAnnotLink:[_pdfViewCtrl.currentDoc getPage:pageIndex]];
-        linkArray = [[_dictAnnotLink objectForKey:[NSNumber numberWithInt:pageIndex]] retain];
+        linkArray = [_dictAnnotLink objectForKey:[NSNumber numberWithInt:pageIndex]];
     }
     if (linkArray && linkArray != [NSNull null])
     {
@@ -115,7 +123,6 @@
                   CGPoint point = CGPointMake(dibPoint.x, dibPoint.y);
                   if ([Utility isPointInPolygon:point polygonPoints:pointsArray])
                   {
-                      _annotLinkPointArray = desAreaArray;
                       [_pdfViewCtrl refresh:CGRectZero pageIndex:pageIndex];
                       int type = [[linkDict objectForKey:LINK_DES_TYPE] intValue];
                       if (type == e_actionTypeGoto)
@@ -131,8 +138,7 @@
                                   point.x = -1;
                                   point.y = desDibRect.top;
                                   [_pdfViewCtrl gotoPage:jumpIndex withDocPoint:point animated:YES];
-                                  [point release];
-                              });
+                                                                });
                           }
                       }
                       if (type == e_actionTypeURI) {
@@ -145,19 +151,19 @@
                               [[UIApplication sharedApplication] openURL:[NSURL URLWithString:uri]];
                           }
                           else if(scheme && scheme.length >0){
-                              UIAlertView* alert = [[[UIAlertView alloc] initWithTitle:nil
-                                                                               message:NSLocalizedString(@"kNoAppropriateApplication", nil)
+                              UIAlertView* alert = [[UIAlertView alloc] initWithTitle:nil
+                                                                               message:NSLocalizedStringFromTable(@"kNoAppropriateApplication", @"FoxitLocalizable", nil)
                                                                               delegate:nil
-                                                                     cancelButtonTitle:NSLocalizedString(@"kOK", nil) otherButtonTitles:nil, nil] autorelease];
+                                                                     cancelButtonTitle:NSLocalizedStringFromTable(@"kOK", @"FoxitLocalizable", nil) otherButtonTitles:nil, nil];
                               [alert show];
                               
                           }
                           else
                           {
-                              UIAlertView* alert = [[[UIAlertView alloc] initWithTitle:nil
-                                                                               message:NSLocalizedString(@"kInvalidUrl", nil)
+                              UIAlertView* alert = [[UIAlertView alloc] initWithTitle:nil
+                                                                               message:NSLocalizedStringFromTable(@"kInvalidUrl", @"FoxitLocalizable", nil)
                                                                               delegate:nil
-                                                                     cancelButtonTitle:NSLocalizedString(@"kOK", nil) otherButtonTitles:nil, nil] autorelease];
+                                                                     cancelButtonTitle:NSLocalizedStringFromTable(@"kOK", @"FoxitLocalizable", nil) otherButtonTitles:nil, nil];
                               [alert show];
                           }
                           
@@ -169,8 +175,7 @@
               }];
          }];
     }
-    [linkArray release];
-    return ret;
+        return ret;
 }
 
 - (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer annot:(FSAnnot*)annot
@@ -186,7 +191,7 @@
     @synchronized(_dictAnnotLink)
     {
         [self reloadAnnotLink:[_pdfViewCtrl.currentDoc getPage:pageIndex]];
-        linkArray = [[_dictAnnotLink objectForKey:[NSNumber numberWithInt:pageIndex]] retain];
+        linkArray = [_dictAnnotLink objectForKey:[NSNumber numberWithInt:pageIndex]];
     }
     if (linkArray && linkArray != [NSNull null])
     {
@@ -201,7 +206,6 @@
                   CGPoint point = CGPointMake(dibPoint.x, dibPoint.y);
                   if ([Utility isPointInPolygon:point polygonPoints:pointsArray])
                   {
-                      _annotLinkPointArray = desAreaArray;
                       [_pdfViewCtrl refresh:CGRectZero pageIndex:pageIndex];
                       ret = YES;
                       _isSelected = YES;
@@ -211,8 +215,7 @@
               }];
          }];
     }
-    [linkArray release];
-    return ret;
+        return ret;
 }
 
 - (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet*)touches withEvent:(UIEvent*)event annot:(FSAnnot*)annot
@@ -245,6 +248,7 @@
 //draw link
 - (void)onRealPageViewDraw:(FSPDFPage*)page inContext:(CGContextRef)context pageIndex:(int)pageIndex
 {
+    if(!_extensionsManager.enableHighlightLinks) return;
     [self loadAnnotLink:page];
     
     NSArray *array = [_dictAnnotLink objectForKey:[NSNumber numberWithInt:[page getIndex]]];
@@ -254,7 +258,9 @@
             return;
         }
         
-        CGContextSetRGBFillColor(context, 1.0, 1.0, 0, .3);
+        CGFloat red, green, blue, alpha;
+        [_extensionsManager.linksHighlightColor getRed:&red green:&green blue:&blue alpha:&alpha];
+        CGContextSetRGBFillColor(context, red, green, blue, alpha);
         [array enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id obj, NSUInteger idx, BOOL *stop)
          {
              NSDictionary *linkDict = obj;
@@ -270,8 +276,7 @@
                        p2.x = p.x;
                        p2.y = p.y;
                        CGPoint pp = [_pdfViewCtrl convertPdfPtToPageViewPt:p2 pageIndex:[page getIndex]];
-                       [p2 release];
-                       p.x = pp.x;
+                                              p.x = pp.x;
                        p.y = pp.y;
                        if (idx3 == 0)
                        {
@@ -323,7 +328,12 @@
             if(e_annotLink != [annot getType])
                 continue;
             FSLink* link = (FSLink*)annot;
-            FSAction* action = [link getAction];
+            FSAction* action = nil;
+            @try {
+                action = [link getAction];
+            } @catch (NSException *exception) {
+                NSLog(@"%@", exception.description);
+            }
             while (action)
             {
                 NSMutableDictionary *dict = [NSMutableDictionary dictionary];
@@ -350,8 +360,7 @@
                             [dict setValue:[NSNumber numberWithInt:desIndex] forKey:LINK_DES_INDEX];
                             [dict setValue:[NSValue valueWithCGRect:desRect] forKey:LINK_DES_RECT];
                             
-                            [rect release];
-                            support = YES;
+                                                        support = YES;
                         }
                     }
                     if ([action getType] == e_actionTypeURI)
@@ -432,18 +441,16 @@
 {
     if([annot getType] != e_annotLink)
         return nil;
-    NSMutableArray *array = [NSMutableArray array];
     int quadCount = [(FSLink*)annot getQuadPointsCount];
-    if (quadCount <= 0)
-    {
+    if (quadCount <= 0) {
         return nil;
     }
     
+    NSMutableArray *array = [NSMutableArray array];
     for (int i = 0; i < quadCount; i++) {
         FSQuadPoints *quadPoints = [(FSLink*)annot getQuadPoints:i];
-        if (!quadPoints)
-        {
-            goto END;
+        if (!quadPoints) {
+            break;
         }
         
         CGPoint point1;
@@ -465,13 +472,45 @@
         NSArray *arrayQuad = [NSArray arrayWithObjects:value1, value2, value3, value4, nil];
         [array addObject:arrayQuad];
     }
-END:
+
     return array;
 }
 
 #pragma mark IDocEventListener
 
 - (void)onDocClosed:(FSPDFDoc* )document error:(int)error
+{
+    [self.dictAnnotLink removeAllObjects];
+}
+
+#pragma mark IPageEventListener
+- (void)onPagesWillRemove:(NSArray<NSNumber*>*)indexes
+{
+}
+
+- (void)onPagesWillMove:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex
+{
+}
+
+- (void)onPagesWillRotate:(NSArray<NSNumber*>*)indexes rotation:(int)rotation
+{
+}
+
+- (void)onPagesRemoved:(NSArray<NSNumber*>*)indexes
+{
+    [self.dictAnnotLink removeAllObjects];
+}
+
+- (void)onPagesMoved:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex
+{
+    [self.dictAnnotLink removeAllObjects];
+}
+
+- (void)onPagesRotated:(NSArray<NSNumber*>*)indexes rotation:(int)rotation
+{
+}
+
+- (void)onPagesInsertedAtRange:(NSRange)range
 {
     [self.dictAnnotLink removeAllObjects];
 }

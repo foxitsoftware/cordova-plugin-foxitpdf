@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "TbBaseItem.h"
 #import "ColorUtility.h"
 #import "Utility.h"
@@ -28,7 +28,7 @@
 
 + (TbBaseItem*)createItemWithTitle:(NSString*)title
 {
-    TbBaseItem *barItem = [[[TbBaseItem alloc] init] autorelease];
+    TbBaseItem *barItem = [[TbBaseItem alloc] init];
     if (barItem) {
         barItem.currentStyle = Item_Title;
         barItem.button = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -50,7 +50,7 @@
         [barItem.button setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
         [barItem.button addTarget:barItem action:@selector(onTapClicked) forControlEvents:UIControlEventTouchUpInside];
         
-        UILongPressGestureRecognizer *longPress = [[[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)] autorelease];
+        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)];
         longPress.minimumPressDuration = 0.8; //press time
         [barItem.button addGestureRecognizer:longPress];
         [barItem.contentView addSubview:barItem.button];
@@ -65,13 +65,13 @@
                     imageSelected:(UIImage*)imageSelected
                      imageDisable:(UIImage*)imageDisabled
 {
-    TbBaseItem *barItem = [[[TbBaseItem alloc] init] autorelease];
+    TbBaseItem *barItem = [[TbBaseItem alloc] init];
     if (barItem) {
         barItem.currentStyle = Item_Image;
         float width = imageNormal.size.width;
         float height = imageNormal.size.height;
         CGRect buttonFrame = CGRectMake(0, 0, width, height);
-        barItem.button = [[[UIButton alloc] initWithFrame:buttonFrame] autorelease];
+        barItem.button = [[UIButton alloc] initWithFrame:buttonFrame];
         barItem.button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
         barItem.button.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
         barItem.button.autoresizingMask = UIViewAutoresizingFlexibleHeight;
@@ -79,10 +79,10 @@
         barItem.imageNormal = imageNormal;
         barItem.imageSelected = imageSelected;
         barItem.imageDisabled = imageDisabled;
-        barItem.contentView = [[[UIView alloc] initWithFrame:buttonFrame] autorelease];
+        barItem.contentView = [[UIView alloc] initWithFrame:buttonFrame];
         [barItem.button addTarget:barItem action:@selector(onTapClicked) forControlEvents:UIControlEventTouchUpInside];
         
-        UILongPressGestureRecognizer *longPress = [[[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)] autorelease];
+        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)];
         longPress.minimumPressDuration = 0.8; //press time
         [barItem.button addGestureRecognizer:longPress];
         [barItem.contentView addSubview:barItem.button];
@@ -99,12 +99,12 @@
                              imageDisable:(UIImage*)imageDisabled
                                  imageTextRelation:(TB_ImageTextRelation)imageTextRelation
 {
-    TbBaseItem *barItem = [[[TbBaseItem alloc] init] autorelease];
+    TbBaseItem *barItem = [[TbBaseItem alloc] init];
     if (barItem) {
         barItem.currentStyle = Item_Title_Image;
         barItem.currentRelation = imageTextRelation;
         
-        barItem.button = [[[UIButton alloc] init] autorelease];
+        barItem.button = [[UIButton alloc] init];
         barItem.button.titleLabel.textAlignment = NSTextAlignmentCenter;
         barItem.text = title;
         barItem.textFont = [UIFont systemFontOfSize:15];
@@ -117,7 +117,7 @@
         float width = imageNormal.size.width;
         float height = imageNormal.size.height;
         CGRect frame = CGRectMake(0, 0, width, height);
-        barItem.contentView = [[[UIView alloc] initWithFrame:frame] autorelease];
+        barItem.contentView = [[UIView alloc] initWithFrame:frame];
         barItem.button.frame = frame;
         barItem.button.contentMode = UIViewContentModeScaleToFill;
         
@@ -172,7 +172,7 @@
         }
         [barItem.button addTarget:barItem action:@selector(onTapClicked) forControlEvents:UIControlEventTouchUpInside];
         
-        UILongPressGestureRecognizer *longPress = [[[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)] autorelease];
+        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)];
         longPress.minimumPressDuration = 0.8; //press time
         [barItem.button addGestureRecognizer:longPress];
         [barItem.contentView addSubview:barItem.button];
@@ -183,7 +183,7 @@
 + (TbBaseItem*)createItemWithTitle:(NSString*)title
                          background:(UIImage*)background
 {
-    TbBaseItem *barItem = [[[TbBaseItem alloc] init] autorelease];
+    TbBaseItem *barItem = [[TbBaseItem alloc] init];
     if (barItem) {
         barItem.currentStyle = Item_Title;
         
@@ -195,12 +195,12 @@
         
         CGRect buttonFrame = CGRectMake(0, 0, titleSize.width, titleSize.height);
         
-        barItem.button = [[[UIButton alloc] initWithFrame:buttonFrame] autorelease];
+        barItem.button = [[UIButton alloc] initWithFrame:buttonFrame];
         barItem.text = title;
         barItem.textFont = [UIFont systemFontOfSize:15];
         barItem.button.titleLabel.textAlignment = NSTextAlignmentCenter;
         
-        barItem.contentView = [[[UIView alloc] initWithFrame:buttonFrame] autorelease];
+        barItem.contentView = [[UIView alloc] initWithFrame:buttonFrame];
         
         barItem.button.contentMode = UIViewContentModeScaleToFill;
         barItem.button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
@@ -214,7 +214,7 @@
         barItem.button.titleLabel.font = [UIFont systemFontOfSize:15];
         [barItem.button addTarget:barItem action:@selector(onTapClicked) forControlEvents:UIControlEventTouchUpInside];
         
-        UILongPressGestureRecognizer *longPress = [[[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)] autorelease];
+        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)];
         longPress.minimumPressDuration = 0.8; //press time
         [barItem.button addGestureRecognizer:longPress];
         [barItem.contentView addSubview:barItem.button];
@@ -230,7 +230,7 @@
                        imageDisable:(UIImage*)imageDisabled
                          background:(UIImage*)background
 {
-    TbBaseItem *barItem = [[[TbBaseItem alloc] init] autorelease];
+    TbBaseItem *barItem = [[TbBaseItem alloc] init];
     if (barItem) {
         barItem.currentStyle = Item_Image;
         
@@ -243,13 +243,13 @@
         }
         barItem.button.titleLabel.textAlignment = NSTextAlignmentCenter;
         CGRect buttonFrame = CGRectMake(0, 0, width, height);
-        barItem.button = [[[UIButton alloc] initWithFrame:buttonFrame] autorelease];
+        barItem.button = [[UIButton alloc] initWithFrame:buttonFrame];
         
         barItem.imageNormal = imageNormal;
         barItem.imageSelected = imageSelected;
         barItem.imageDisabled = imageDisabled;
         
-        barItem.contentView = [[[UIView alloc] initWithFrame:buttonFrame] autorelease];
+        barItem.contentView = [[UIView alloc] initWithFrame:buttonFrame];
         barItem.button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
         barItem.button.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
         barItem.button.autoresizingMask =  UIViewAutoresizingFlexibleHeight;
@@ -260,7 +260,7 @@
         }
         [barItem.button addTarget:barItem action:@selector(onTapClicked) forControlEvents:UIControlEventTouchUpInside];
         
-        UILongPressGestureRecognizer *longPress = [[[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)] autorelease];
+        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)];
         longPress.minimumPressDuration = 0.8; //press time
         [barItem.button addGestureRecognizer:longPress];
         [barItem.contentView addSubview:barItem.button];
@@ -278,7 +278,7 @@
                                  background:(UIImage*)background
                           imageTextRelation:(TB_ImageTextRelation)imageTextRelation
 {
-    TbBaseItem *barItem = [[[TbBaseItem alloc] init] autorelease];
+    TbBaseItem *barItem = [[TbBaseItem alloc] init];
     if (barItem) {
         barItem.currentStyle = Item_Title_Image;
         barItem.currentRelation = imageTextRelation;
@@ -291,8 +291,8 @@
             height = background.size.height;
         }
         CGRect frame = CGRectMake(0, 0, width, height);
-        barItem.contentView = [[[UIView alloc] initWithFrame:frame] autorelease];
-        barItem.button = [[[UIButton alloc] initWithFrame:frame] autorelease];
+        barItem.contentView = [[UIView alloc] initWithFrame:frame];
+        barItem.button = [[UIButton alloc] initWithFrame:frame];
         barItem.text = title;
         barItem.textFont = [UIFont systemFontOfSize:15];
         barItem.imageNormal = imageNormal;
@@ -354,7 +354,7 @@
         }
         [barItem.button addTarget:barItem action:@selector(onTapClicked) forControlEvents:UIControlEventTouchUpInside];
         
-        UILongPressGestureRecognizer *longPress = [[[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)] autorelease];
+        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:barItem action:@selector(onLongPressClicked:)];
         longPress.minimumPressDuration = 0.8; //press time
         [barItem.button addGestureRecognizer:longPress];
         [barItem.contentView addSubview:barItem.button];
@@ -438,7 +438,7 @@
         
         self.button.frame = buttonFrame;
         self.button.titleLabel.font = _textFont;
-        self.button.center =CGPointMake(self.contentView.bounds.size.width/2, self.contentView.bounds.size.height/2);
+        self.button.center = CGPointMake(self.contentView.bounds.size.width/2, self.contentView.bounds.size.height/2);
         [self.contentView setEnlargedEdge:ENLARGE_EDGE];
         [self.button setEnlargedEdge:ENLARGE_EDGE];
     }
@@ -575,7 +575,7 @@
             [view removeFromSuperview];
         }
     }
-    UIView *circleView = [[[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 22, 22)] autorelease];
+    UIView *circleView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 22, 22)];
     circleView.tag = 100;
     circleView.center = CGPointMake(self.button.bounds.size.width/2, self.button.bounds.size.height/2 - 1.5);
     circleView.layer.cornerRadius = 11.f;

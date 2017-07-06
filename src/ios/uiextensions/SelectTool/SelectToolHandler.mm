@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2003-2016, Foxit Software Inc..
+ * Copyright (C) 2003-2017, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
  *
- * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to 
- * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement 
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit Mobile PDF SDK to third party or public without permission unless an agreement
  * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
  * Review legal.txt for additional license and legal information.
-
  */
+
 #import "SelectToolHandler.h"
 #import "NoteDialog.h"
 #import "MenuControl.h"
@@ -18,6 +18,7 @@
 #import "UIExtensionsManager+Private.h"
 #import "MagnifierView.h"
 #import "FtToolHandler.h"
+#import "SignToolHandler.h"
 
 @interface SelectToolHandler () <IDocEventListener>
 
@@ -26,9 +27,9 @@
 @property (nonatomic, strong) FSPointF* currentPoint;
 @property (nonatomic, assign) int startPosIndex;
 @property (nonatomic, assign) int endPosIndex;
-@property (nonatomic, retain) NSArray *arraySelectedRect;
+@property (nonatomic, strong) NSArray *arraySelectedRect;
 @property (nonatomic, strong) FSRectF *currentEditPdfRect;
-@property (nonatomic, retain) NSArray *colors;
+@property (nonatomic, strong) NSArray *colors;
 @end
 
 @implementation SelectToolHandler {
@@ -62,7 +63,7 @@
     start = MIN(start, end);
     __block NSMutableArray *ret = [NSMutableArray array];
     
-    Task *task = [[[Task alloc] init] autorelease];
+    Task *task = [[Task alloc] init];
     task.run = ^(){
         if (fstextPage != nil)
         {
@@ -107,8 +108,7 @@
                             NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:rectResult]],[NSNumber numberWithInt:direction1],nil];
                             [ret replaceObjectAtIndex:i withObject:array];
                             [ret removeObjectAtIndex:j];
-                            [rectResult release];
-                        }
+                                                    }
                         else
                         {
                             j++;
@@ -230,7 +230,6 @@
 
 -(void)onActivate
 {
-    
 }
 
 -(void)onDeactivate
@@ -344,9 +343,7 @@
             else
             {
                 self.isTextSelect = NO;
-                self.isEdit = YES;
-                [self showBlankMenu:pageIndex point:point];
-                [_pdfViewCtrl refresh:pageIndex needRender:NO];
+                return NO;
             }
         }
         else if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]])  //pan start is used to drag the dot
@@ -398,7 +395,7 @@
         //getsture end. if have selection, pop up menu to let user choose; otherwise change to none op.
         if (self.startPosIndex == -1 || self.endPosIndex == -1)
         {
-            return YES;
+            return NO;
         }
         else
         {
@@ -452,23 +449,29 @@
 {
     self.currentPageIndex = pageIndex;
     NSMutableArray *array = [NSMutableArray array];
-    MenuItem *copyTextItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kCopyText", nil) object:self action:@selector(copyText)] autorelease];
-    MenuItem *hightLightItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kHighlight", nil) object:self action:@selector(addHighlight)] autorelease];
-    MenuItem *squigglyItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kSquiggly", nil) object:self action:@selector(addSquiggly)] autorelease];
-    MenuItem *strikeOutItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kStrikeout", nil) object:self action:@selector(addStrikeout)] autorelease];
-    MenuItem *underlineItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kUnderline", nil) object:self action:@selector(addUnderline)] autorelease];
+    MenuItem *copyTextItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kCopyText", @"FoxitLocalizable", nil) object:self action:@selector(copyText)];
+    MenuItem *hightLightItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kHighlight", @"FoxitLocalizable", nil) object:self action:@selector(addHighlight)];
+    MenuItem *squigglyItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kSquiggly", @"FoxitLocalizable", nil) object:self action:@selector(addSquiggly)];
+    MenuItem *strikeOutItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kStrikeout", @"FoxitLocalizable", nil) object:self action:@selector(addStrikeout)];
+    MenuItem *underlineItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kUnderline", @"FoxitLocalizable", nil) object:self action:@selector(addUnderline)];
 
+    enum FS_PASSWORDTYPE passwordType = [_pdfViewCtrl.currentDoc getPasswordType];
+    BOOL isOwner = (passwordType == e_pwdNoPassword || passwordType == e_pwdOwner);
+    
     unsigned long allPermission = [_pdfViewCtrl.currentDoc getUserPermissions];
-    if ((allPermission & e_permExtract)) {
+    if (isOwner || (allPermission & e_permExtract) > 0) {
         [array addObject:copyTextItem];
     }
     
-    if (YES  && (allPermission & e_permAnnotForm))
+    if ([Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc])
     {
-        [array addObject:hightLightItem];
-        [array addObject:underlineItem];
-        [array addObject:strikeOutItem];
-        [array addObject:squigglyItem];
+        if(_extensionsManager.modulesConfig.loadAnnotations)
+        {
+            [array addObject:hightLightItem];
+            [array addObject:underlineItem];
+            [array addObject:strikeOutItem];
+            [array addObject:squigglyItem];
+        }
     }
 
     if (array.count > 0) {
@@ -485,8 +488,11 @@
     self.isEdit = NO;
     NSMutableString *str = [NSMutableString stringWithFormat:@""];
     
-    FSPDFTextSelect* textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:self.currentPageIndex];
-    [str appendString:[textPage getChars:MIN(self.startPosIndex, self.endPosIndex) count:ABS(self.endPosIndex-self.startPosIndex)+1]];
+    FSPDFTextSelect* textSelect = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:self.currentPageIndex];
+    NSString* selStr = [textSelect getChars:MIN(self.startPosIndex, self.endPosIndex) count:ABS(self.endPosIndex-self.startPosIndex)+1];
+    if (selStr && selStr.length > 0) {
+        [str appendString:selStr];
+    }
     if (str && ![str isEqualToString:@""]) {
         UIPasteboard *board = [UIPasteboard generalPasteboard];
         board.string = str;
@@ -607,12 +613,7 @@
         [fsqp setFourth:pt4];
         [arrayQuads addObject:fsqp];
         
-        [pt1 release];
-        [pt2 release];
-        [pt3 release];
-        [pt4 release];
-        [fsqp release];
-    }
+                                            }
     if (0 == arrayQuads.count) return;
     CGRect insetRect = [_pdfViewCtrl convertPdfRectToPageViewRect:self.currentEditPdfRect pageIndex:self.currentPageIndex];
     FSRectF *rect = [_pdfViewCtrl convertPageViewRectToPdfRect:insetRect pageIndex:self.currentPageIndex];
@@ -661,9 +662,25 @@
     }
     annot.opacity = opacity/100.0f;
     
-    Task *task = [[[Task alloc] init] autorelease];
+    if (textPage)
+    {
+        NSString *tmp = @"";
+        for (int i = 0; i < arrayQuads.count; i++)
+        {
+            FSQuadPoints *arrayQuad = [arrayQuads objectAtIndex:i];
+            FSRectF *rect = [Utility convertToFSRect:arrayQuad.getFirst p2:arrayQuad.getFourth];
+            NSString* text = [textPage getTextInRect:rect];
+            if (text.length > 0) {
+                tmp = [tmp stringByAppendingString:[textPage getTextInRect:rect]];
+            }
+        }
+        [annot setContents:tmp];
+    }
+    [annot resetAppearanceStream];
+    
+    Task *task = [[Task alloc] init];
     task.run = ^(){
-        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:annot.type];
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:annot];
         [annotHandler addAnnot:annot];
         
         CGRect cgRect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:self.currentPageIndex];
@@ -680,14 +697,25 @@
     self.currentPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
     self.currentPageIndex = pageIndex;
     NSMutableArray *array = [NSMutableArray array];
-    MenuItem *commentItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kNote", nil) object:self action:@selector(comment)] autorelease];
-    MenuItem *typeWriterItem = [[[MenuItem alloc] initWithTitle:NSLocalizedString(@"kTypewriter", nil) object:self action:@selector(typeWriter)] autorelease];
+    MenuItem *commentItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kNote", @"FoxitLocalizable", nil) object:self action:@selector(comment)];
+    MenuItem *typeWriterItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kTypewriter", @"FoxitLocalizable", nil) object:self action:@selector(typeWriter)];
+    MenuItem *signatureItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kSignAction", @"FoxitLocalizable", nil) object:self action:@selector(signature)];
     
-    unsigned long allPermission = [_pdfViewCtrl.currentDoc getUserPermissions];
-    if ((allPermission & e_permAnnotForm)) {
-        [array addObject:commentItem];
-        [array addObject:typeWriterItem];
+    if ([Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc]) {
+        if(_extensionsManager.modulesConfig.loadAnnotations)
+        {
+            [array addObject:commentItem];
+            [array addObject:typeWriterItem];
+        }
+    }
+    if([Utility canAddSignToDocument:_pdfViewCtrl.currentDoc])
+    {
+        if(_extensionsManager.modulesConfig.loadSignature)
+            [array addObject:signatureItem];
+    }
 
+    if(array.count > 0)
+    {
         CGRect dvRect = CGRectMake(point.x, point.y, 2, 2);
         dvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:dvRect pageIndex:pageIndex];
         MenuControl* annotMenu = _extensionsManager.menuControl;
@@ -713,7 +741,7 @@
     if(pvPoint.y > pageHeight-NOTE_ANNOTATION_WIDTH*scale*2) pvPoint.y = pageHeight-NOTE_ANNOTATION_WIDTH*scale*2;
     
     CGRect rect = CGRectMake(pvPoint.x - NOTE_ANNOTATION_WIDTH*scale/2, pvPoint.y - NOTE_ANNOTATION_WIDTH*scale/2, NOTE_ANNOTATION_WIDTH*scale, NOTE_ANNOTATION_WIDTH*scale);
-    FSRectF *dibRect= [_pdfViewCtrl convertPageViewRectToPdfRect:rect pageIndex:self.currentPageIndex];
+    FSRectF *dibRect = [_pdfViewCtrl convertPageViewRectToPdfRect:rect pageIndex:self.currentPageIndex];
     
     [NoteDialog setViewCtrl: _pdfViewCtrl];
     [[NoteDialog defaultNoteDialog] show:nil replyAnnots:nil];
@@ -732,7 +760,9 @@
         note.contents = [[NoteDialog defaultNoteDialog] getContent];
         note.NM = [Utility getUUID];
         note.lineWidth = 2;
-        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:note.type];
+        note.modifiedDate = [NSDate date];
+        note.createDate = [NSDate date];
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:note];
         [annotHandler addAnnot:note];
     };
     if (_extensionsManager.currentToolHandler == self) {
@@ -743,7 +773,7 @@
 -(void)typeWriter
 {
     self.isEdit = NO;
-    FtToolHandler *toolHandler = [_extensionsManager getToolHandlerByName:Tool_Freetext];
+    FtToolHandler *toolHandler = (FtToolHandler*)[_extensionsManager getToolHandlerByName:Tool_Freetext];
     [_extensionsManager setCurrentToolHandler:toolHandler];
     toolHandler.freeTextStartPoint = [_pdfViewCtrl convertPdfPtToPageViewPt:self.currentPoint pageIndex:self.currentPageIndex];
     [toolHandler onPageViewTap:self.currentPageIndex recognizer:nil];
@@ -751,6 +781,16 @@
     if (_extensionsManager.currentToolHandler == self) {
         [_extensionsManager setCurrentToolHandler:nil];
     }
+}
+
+-(void)signature
+{
+    self.isEdit = NO;
+    SignToolHandler *toolHandler = (SignToolHandler*)[_extensionsManager getToolHandlerByName:Tool_Signature];
+    [_extensionsManager setCurrentToolHandler:toolHandler];
+    toolHandler.isAdded = NO;
+    toolHandler.signatureStartPoint = [_pdfViewCtrl convertPdfPtToPageViewPt:self.currentPoint pageIndex:self.currentPageIndex];
+    [toolHandler onPageViewTap:self.currentPageIndex recognizer:nil];
 }
 
 -(void)onDraw:(int)pageIndex inContext:(CGContextRef)context
@@ -929,7 +969,6 @@
     }
 }
 
-
 - (void)dismissAnnotMenu
 {
     if (self.isEdit) {
@@ -981,8 +1020,7 @@
 - (void)closeMagnifier
 {
     [_magnifierView removeFromSuperview];
-    [_magnifierView release];
-    _magnifierView = nil;
+        _magnifierView = nil;
 }
 
 -(NSString*)getName
