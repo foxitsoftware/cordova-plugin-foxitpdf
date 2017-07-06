@@ -4,11 +4,17 @@ import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.app.Activity;
 
 import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.common.Library;
 import com.foxit.sdk.common.PDFException;
 import com.foxit.uiextensions.UIExtensionsManager;
+import com.foxit.uiextensions.pdfreader.impl.PDFReader;
+
+import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
@@ -21,11 +27,10 @@ import org.json.JSONException;
  */
 public class FoxitPdf extends CordovaPlugin {
 
-    private final static String sn = "Xzz20N1dgWxJmz0seWOP54wqzhSKaLTXEje18SSUlZF9DVfYrMvyWQ==";
-    private final static String key = "ezKXjt8ntBh39DvoP0WQjYrUrx9qvbxe38QoPVU5LSr/hXt/7xBt01lwdEe+GX1++LZWB6cDWuVs8xYEMRYmjtpTRWVw62b0XvYl93uVSpW4apyWClgUaea8M3ySf8fMjjbmdBHnl5rEw9VPQUZ2jK40naM9DGVpsufKG8MXEV5B1eBiDrNZ1dVz9mgCjy/7ySAo56W/xkgcTI/s4IINvZUOZcqitBHZy409+sR5BmLMd/koMDrf2TmcHDNEcO/j2u5gBGedgX3Re4e6J3sae3nrrPR1obbyJSyQYCp+/JYHXFoUNkkaqn5jR9By9MiZbTn4w0vT927BhSZ4ke0/J96zTwEjweHl1eLRK6+VFilEcYI1DTLSeHV7CnZUgVOI/+TvACcrRKCT2qNZdslyilu5qZDdVWJwHjoY1BMgQkdfGEsWWNgTQjCeicjUFYHh2ujskos+DeQ0TiTpSRKb3ol/7Q18heWYgnMJfeV5ldFTq9kN1+XeashPsSsf8Yf+vHV4UYXJF96y8gj0IvycGUxquG1GHsAnD9YxPP27c5kEn6rKwGnq0ai5Uf/klffe4Fm+Rq7Pp3YE+gNHwFvNsIpKE9uZFwwIPLY5iJ6clQQBLqgforbeYqwkEWP+oxjutfD0YuYHEj5wbrAm2qtotyRMvYC+Lt3UGB2XscPiB79hnGWuF6vHQf+K7lMUiwgXzeiesyHK1x+6HYS4lnVcTU+0D5h6BfO2REQg1U6naA6CO8xWg/UgFdjj3aBB2WriwwgcIaN5rQtFjRvl3oJ5F8RwUtL3PK5St6LpBU6YVCMTGwDraVd8yi0n5JsezPm8A118PyzvEmlyf6G6HRFWS5PrNEkU4BmXJWVzLUANBP7uTpTzRSrWdvwD2ZU2hhVIkTRIgDY1EprylUq9M9UXH7wRvAfK7XrHag8up0ciswM7Dr3NbN7f3uCT2SndAi0+19my5Go4YEzOhMvPAsLhhTNnEyOQKk99Z1m33QF5Zule5OKNpz9B+cbwp8G+3jilSsyekPP6/LlOn2+dY3v0PfcytJR7xnOgpX24qFnQNs6WVygqcws5sV1Qvh0yeyPvZ5dFd1jN6obBMUa7qw6LYcY6V323en1qcYYY+YrYvv4CUk3nWIR5LA/qDXtUU6Iobwa3yNWUiAAYLQquSuJn7ilxyUmqTeKKynz0nLKwaa8WbV1mJq9geqYjhAvU3ymuMfvq4N0=";
+    private final static String sn = "nU4V+cyy5M+IG3djLjKCTZFiXwUdERkohg+6MB1+pm+BDxbMNIPN2g==";
+    private final static String key = "ezJvjl3GtG539PsXZqXcIkmEbhuio9ACWf3giDepTwvhp7njD2b+w6Nd/Rr0cOkBP+scVC59Exkp+IOxgP2w42MKnVbnQ/xNfre4UGyTt40QX92XO1hUaeeYALnFXN7tLRqSCt2G6ETeAPGa74kwS4RBgpSdjACC/b9AsdzS9xjqRProhtG98l8Zks4smHGpJB8wC0R6jLWVgZjBOxqTQoRcy47k26HtttlfLh1LkvyD+LgQphwhMR2H5sQzcCbLE3Jzf3HTy/My/44Tm5ql0Ky9RLW2OLK91ryIJOT3yXeepxEgzu260UhAxCRdmNAtaqxk9su+PTbujlYhOX4ZiKXVQfXXA6ZASbVFkDvFOzphoqIfG3M+aWIIaIipdvsMww44peyWg9rqSiu0hZsmzZkQqJhzi90eTTTRxa+/KSaqNnrQl107g9kqiiuYdO6MCgdI+qrsqO66fS08M8fRJ+d5Y89Y/wdydAZwHkmrXBTMx6pt/BgUmvUvIRabH7xyiSOhyPeDfh3uaIcXje4PfXIQS+XzntkUTKhbLcVK3OoKFmPrG/ox8kv2P+3P2Ojju240Lxg6FtPe+Ze2ZYFvDJQ7pzsx+nAA0bzDmq+nPY/sMNHuQwfkb+1oc3OscGPpO4sXvxhmx1cutnT4gNs51Q7eZJiKbnEUymZLVSFk2m+2Y/3cFU4PdrQHSYoi+OBsqcQ8Ve4kWzPO6KFqVJgrRtw9W52Hb7fElbFp9Po4pYEiT+e6HZ4ZSF8m8odCV9W5oy8vVQAVhCULtcaci6yZxh7oMT+jDII5XvqLIYF0eI3FD3Dl1tW+fh7b+Pg2hJrK1lpGgLyknaUuqLWjYpXjVekMkUenBF7OkZ/Cg4y74JOXanzoA71P+qAfHoZes1FPa60NAF20Db6IFMLKrqLiVCmgbpwp2Ko4deHPSNE1CgCZd8P2HLRDvU7yYQVXOz3DgsL5rW23cHuoMnYeWC5ujFl4imEUfjCOutRZwDJvIa0SubCwfBJJO0v2+HEbSTBpw+XtXJ6JJEAsI1pVsP8Op9TFmrznN6BeyY2DPB3KF3Wp3428h274GJSBXzwPJjvspMS/g2pT0LIYb3KfHCW9qDCLjmgn6rgbLxgT8ZjABJqLQsI36QP2ikQPaztDRh56/7vIgurfFpkchWCjhl7mSmt2HgeGzAm/mpEFK5qNbbUn2jn6h2vhGrOAfCRJKxpTeBhlgHMe1EU/FlgzzYHqA4rpfMPN8jko6F2i6SiSCQ==";
 
     private static int errCode = PDFException.e_errSuccess;
-    private PDFViewCtrl pdfViewCtrl = null;
     static {
         System.loadLibrary("rdk");
     }
@@ -69,6 +74,7 @@ public class FoxitPdf extends CordovaPlugin {
         }
 
         final Context context = this.cordova.getActivity();
+		final Activity activity =  this.cordova.getActivity();
         this.cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -76,7 +82,7 @@ public class FoxitPdf extends CordovaPlugin {
                 RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                         RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
-                pdfViewCtrl = new PDFViewCtrl(context);
+				PDFViewCtrl pdfViewCtrl = new PDFViewCtrl(context);
 
                 relativeLayout.addView(pdfViewCtrl, params);
                 relativeLayout.setWillNotDraw(false);
@@ -84,12 +90,36 @@ public class FoxitPdf extends CordovaPlugin {
                 relativeLayout.setDrawingCacheEnabled(true);
                 setContentView(relativeLayout);
 
-                UIExtensionsManager uiExtensionsManager = new UIExtensionsManager(context,
-                        relativeLayout, pdfViewCtrl);
+				String UIExtensionsConfig = "{\n" +
+						"    \"defaultReader\": true,\n" +
+						"    \"modules\": {\n" +
+						"        \"readingbookmark\": true,\n" +
+						"        \"outline\": true,\n" +
+						"        \"annotations\": true,\n" +
+						"        \"thumbnail\" : true,\n" +
+						"        \"attachment\": true,\n" +
+						"        \"signature\": true,\n" +
+						"        \"search\": true,\n" +
+						"        \"pageNavigation\": true,\n" +
+						"        \"form\": true,\n" +
+						"        \"selection\": true,\n" +
+						"        \"encryption\" : true\n" +
+						"    }\n" +
+						"}\n";
 
-                pdfViewCtrl.setUIExtensionsManager(uiExtensionsManager);
+				InputStream stream = new ByteArrayInputStream(UIExtensionsConfig.getBytes(Charset.forName("UTF-8")));
+				UIExtensionsManager.Config config = new UIExtensionsManager.Config(stream);
 
-                pdfViewCtrl.openDoc(path, null);
+				UIExtensionsManager uiextensionsManager = new UIExtensionsManager(context, relativeLayout, pdfViewCtrl,config);
+				uiextensionsManager.setAttachedActivity(activity);
+
+				pdfViewCtrl.setUIExtensionsManager(uiextensionsManager);
+
+				PDFReader mPDFReader= (PDFReader) uiextensionsManager.getPDFReader();
+				mPDFReader.onCreate(activity, pdfViewCtrl, null);
+				mPDFReader.openDocument(path, null);
+				setContentView(mPDFReader.getContentView());
+				mPDFReader.onStart(activity);
             }
         });
 
