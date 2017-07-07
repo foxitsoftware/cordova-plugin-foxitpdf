@@ -22,7 +22,8 @@
 
 ## Major update
     Now our plugin is also using Foxit RDK 4.0
-    Rdk 4.0 made a lot of major adjustments to optimize a lot of problems
+    It made a lot of major adjustments to optimize a lot of problems
+    It make our plugin easier to use
 
 This is RDK 4.0 Introduction
 
