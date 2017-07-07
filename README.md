@@ -150,13 +150,14 @@ cordova plugin add cordova-plugin-file
 ```
 
 
-<s>## Android Quirks</s>
+## Android Quirks
+
 <s>NOTE: Since the functionality associated with Reply in UIExtension is using FragmentActivity, the current plugin does not handle it, so there is a problem with using it. Will do further processing.</s>
 
 <s>In addition: the current plug-ins already contain armeabi-v7a library, if you want to support other platforms, you need to refer to the Foxit RDK library for other libraries which can be introduced into the project.</s>
 
 
-### Quick Example
+## Quick Example
 
 The PDF file needs to be placed in the project beforehand. The location is in the project root by default
 
