@@ -1,24 +1,15 @@
-package FoxitPdf;
+package com.foxit.cordova.plugin;
 
-import android.content.Context;
-import android.graphics.Color;
-import android.view.View;
-import android.widget.RelativeLayout;
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 
-import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.common.Library;
 import com.foxit.sdk.common.PDFException;
-import com.foxit.uiextensions.UIExtensionsManager;
-import com.foxit.uiextensions.pdfreader.impl.PDFReader;
 
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.nio.charset.Charset;
-
-import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
-
+import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -63,7 +54,7 @@ public class FoxitPdf extends CordovaPlugin {
         callbackContext.error("Succeed to initialize Foxit library.");
     }
 
-    private void openDoc(final String path, CallbackContext callbackContext) {
+    private void openDoc(final String path, final CallbackContext callbackContext) {
         if (path == null || path.trim().length() < 1) {
             callbackContext.error("Please input validate path.");
             return;
@@ -78,55 +69,63 @@ public class FoxitPdf extends CordovaPlugin {
         this.cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                RelativeLayout relativeLayout = new RelativeLayout(context);
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-                        RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-
-				PDFViewCtrl pdfViewCtrl = new PDFViewCtrl(context);
-
-                relativeLayout.addView(pdfViewCtrl, params);
-                relativeLayout.setWillNotDraw(false);
-                relativeLayout.setBackgroundColor(Color.argb(0xff, 0xe1, 0xe1, 0xe1));
-                relativeLayout.setDrawingCacheEnabled(true);
-                setContentView(relativeLayout);
-
-				String UIExtensionsConfig = "{\n" +
-						"    \"defaultReader\": true,\n" +
-						"    \"modules\": {\n" +
-						"        \"readingbookmark\": true,\n" +
-						"        \"outline\": true,\n" +
-						"        \"annotations\": true,\n" +
-						"        \"thumbnail\" : true,\n" +
-						"        \"attachment\": true,\n" +
-						"        \"signature\": true,\n" +
-						"        \"search\": true,\n" +
-						"        \"pageNavigation\": true,\n" +
-						"        \"form\": true,\n" +
-						"        \"selection\": true,\n" +
-						"        \"encryption\" : true\n" +
-						"    }\n" +
-						"}\n";
-
-				InputStream stream = new ByteArrayInputStream(UIExtensionsConfig.getBytes(Charset.forName("UTF-8")));
-				UIExtensionsManager.Config config = new UIExtensionsManager.Config(stream);
-
-				UIExtensionsManager uiextensionsManager = new UIExtensionsManager(context, relativeLayout, pdfViewCtrl,config);
-				uiextensionsManager.setAttachedActivity(activity);
-
-				pdfViewCtrl.setUIExtensionsManager(uiextensionsManager);
-
-				PDFReader mPDFReader= (PDFReader) uiextensionsManager.getPDFReader();
-				mPDFReader.onCreate(activity, pdfViewCtrl, null);
-				mPDFReader.openDocument(path, null);
-				setContentView(mPDFReader.getContentView());
-				mPDFReader.onStart(activity);
+//                RelativeLayout relativeLayout = new RelativeLayout(context);
+//                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+//                        RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+//
+//				PDFViewCtrl pdfViewCtrl = new PDFViewCtrl(context);
+//
+//                relativeLayout.addView(pdfViewCtrl, params);
+//                relativeLayout.setWillNotDraw(false);
+//                relativeLayout.setBackgroundColor(Color.argb(0xff, 0xe1, 0xe1, 0xe1));
+//                relativeLayout.setDrawingCacheEnabled(true);
+//                setContentView(relativeLayout);
+//
+//				String UIExtensionsConfig = "{\n" +
+//						"    \"defaultReader\": true,\n" +
+//						"    \"modules\": {\n" +
+//						"        \"readingbookmark\": true,\n" +
+//						"        \"outline\": true,\n" +
+//						"        \"annotations\": true,\n" +
+//						"        \"thumbnail\" : true,\n" +
+//						"        \"attachment\": true,\n" +
+//						"        \"signature\": true,\n" +
+//						"        \"search\": true,\n" +
+//						"        \"pageNavigation\": true,\n" +
+//						"        \"form\": true,\n" +
+//						"        \"selection\": true,\n" +
+//						"        \"encryption\" : true\n" +
+//						"    }\n" +
+//						"}\n";
+//
+//				InputStream stream = new ByteArrayInputStream(UIExtensionsConfig.getBytes(Charset.forName("UTF-8")));
+//				UIExtensionsManager.Config config = new UIExtensionsManager.Config(stream);
+//
+//				UIExtensionsManager uiextensionsManager = new UIExtensionsManager(context, relativeLayout, pdfViewCtrl,config);
+//				uiextensionsManager.setAttachedActivity(activity);
+//
+//				pdfViewCtrl.setUIExtensionsManager(uiextensionsManager);
+//
+//				PDFReader mPDFReader= (PDFReader) uiextensionsManager.getPDFReader();
+//				mPDFReader.onCreate(activity, pdfViewCtrl, null);
+//				mPDFReader.openDocument(path, null);
+//				setContentView(mPDFReader.getContentView());
+//				mPDFReader.onStart(activity);
+                openDocument(path,callbackContext);
             }
         });
-
-//        callbackContext.success("Open document success.");
     }
 
-    private void setContentView(View view) {
-        this.cordova.getActivity().setContentView(view);
+    
+//    private void setContentView(View view) {
+//        this.cordova.getActivity().setContentView(view);
+//    }
+
+    private void openDocument(String file,CallbackContext callbackContext){
+        Intent intent = new Intent(this.cordova.getActivity(),ReaderActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("path",file);
+        intent.putExtras(bundle);
+        this.cordova.getActivity().startActivity(intent);
     }
 }
