@@ -19,14 +19,14 @@
 
 # cordova-plugin-foxitpdf
     This plugin adds the ability to easily preview any PDF file in your Cordova application
-    
+
 ## Major update
     Now our plugin is also using Foxit RDK 4.0
     Rdk 4.0 made a lot of major adjustments to optimize a lot of problems
-    
+
 This is RDK 4.0 Introduction
 
-> From version 4.0, Foxit MobilePDF SDK makes a big change and optimization that wraps all of the basic UI implementations including the UI design of app to FSPDFReader class, and provides a more convenient way to flexibly control and customize the features through a configuration file, which means developers can easily build a full-featured PDF app with several lines of code. 
+> From version 4.0, Foxit MobilePDF SDK makes a big change and optimization that wraps all of the basic UI implementations including the UI design of app to FSPDFReader class, and provides a more convenient way to flexibly control and customize the features through a configuration file, which means developers can easily build a full-featured PDF app with several lines of code.
 
 ## Installation
 ```bash
@@ -36,7 +36,7 @@ cordova plugin add cordova-plugin-foxitpdf
 ## Usage Instructions for iOS
 Thanks to the new version, and now we use the plug-in iOS only need a few simple steps on it (no longer like the 3.0 version of the kind of cumbersome operation)
 
-1. Target -> Build setting -> Other Linker Flags -> + ->  `-lstdc++` 
+1. Target -> Build setting -> Other Linker Flags -> + ->  `-lstdc++`
 2. Target -> Build Phases -> Copy Bundle Resources ->  +  -> `uiextensions_config.json`
 3. Target -> Build Phases -> Copy Bundle Resources ->  +  -> `Resource`
 
@@ -48,10 +48,10 @@ Thanks to the new version, and now we use the plug-in iOS only need a few simple
 -    Maybe xcode does not help us to add FoxitRDK.framework or libFoxitRDKUIExtensions.a correctly
 -    Just delete it and re-add it
 ```    
-    
+
 > `Note` Do not forget to add pdf files  
    You can add the PDF to Copy Bundle Resources directly. Just left-click the your project, find Copy Bundle Resources in the Build Phases tab, press on the + button, and choose the file to add. You can refer to any PDF file, just add it to the Xcode’s Copy Bundle Resources.
-    
+
 
 The preparatory work has been completed，Now,you can use this code everywhere in your project
 
@@ -62,12 +62,12 @@ The preparatory work has been completed，Now,you can use this code everywhere i
     var error = function(data){
         console.log(data);
     }
-    
+
     var filePath = 'file://path/to/your/file';
     //var filePath = cordova.file.applicationDirectory + 'Sample.pdf';
     window.FoxitPdf.preview(filePath,success,error);
 ```
-    
+
 <s>1. In your Xcode project, find the FoxitSource folder and  "UI Extension" folder(in blue), right click and delete it, confirm "Remove Reference" when prompted. Create the FoxitSource group (in yellow) (because Cordova plug-in can not create iOS group).</s>
 
 <s>2. Turn off arc mode, Build Settings -> Objective-C Automatic Reference Counting to NO </s>
@@ -150,10 +150,10 @@ cordova plugin add cordova-plugin-file
 ```
 
 
-## Android Quirks
-NOTE: Since the functionality associated with Reply in UIExtension is using FragmentActivity, the current plugin does not handle it, so there is a problem with using it. Will do further processing.
+<s>## Android Quirks</s>
+<s>NOTE: Since the functionality associated with Reply in UIExtension is using FragmentActivity, the current plugin does not handle it, so there is a problem with using it. Will do further processing.</s>
 
-In addition: the current plug-ins already contain armeabi-v7a library, if you want to support other platforms, you need to refer to the Foxit RDK library for other libraries which can be introduced into the project.
+<s>In addition: the current plug-ins already contain armeabi-v7a library, if you want to support other platforms, you need to refer to the Foxit RDK library for other libraries which can be introduced into the project.</s>
 
 
 ### Quick Example
@@ -195,4 +195,3 @@ http://www.foxitsdk.com/products/mobile-pdf-sdk/request-quote/?from=cordova-plug
 ## More Support
 
 http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf
-
