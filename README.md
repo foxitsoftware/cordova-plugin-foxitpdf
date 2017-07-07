@@ -45,7 +45,7 @@ Thanks to the new version, and now we use the plug-in iOS only need a few simple
 4. Make sure that Target -> General -> Embedded Binaries -> have FoxitRDK.framework
 ```diff
 -PS:
--    Maybe xcode does not help us to add FoxitRDK.framework or libFoxitRDKUIExtensions.a
+-    Maybe xcode does not help us to add FoxitRDK.framework or libFoxitRDKUIExtensions.a correctly
 -    Just delete it and re-add it
 ```    
     
@@ -121,11 +121,12 @@ Want to see more details, see forums.
 
 
 ## iOS Screen Shot
-![](https://raw.githubusercontent.com/niuemperor/cordova-plugin-foxitpdf/master/images/cordova-plugin-foxitpdf2.gif)
+![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/plugin_ios.gif)
+
 
 
 ## Android Screen Shot
-![](https://raw.githubusercontent.com/niuemperor/cordova-plugin-foxitpdf/master/images/cordova-plugin-foxitodf-android.png)
+![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/plugin_android.gif)
 
 
 ## Supported Platforms
