@@ -21,7 +21,7 @@ import java.nio.charset.Charset;
  * @author yibin.io
  * @see
  */
-public class ReaderActivity extends CordovaActivity {
+public class ReaderActivity extends FragmentActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
