@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.widget.RelativeLayout;
+import android.support.v4.app.FragmentActivity;
 
 import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.uiextensions.UIExtensionsManager;
@@ -15,13 +16,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-/**
- * <br><time>2017/7/3</time>
- *
- * @author yibin.io
- * @see
- */
-public class ReaderActivity extends CordovaActivity {
+
+public class ReaderActivity extends FragmentActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
