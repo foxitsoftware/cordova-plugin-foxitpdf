@@ -141,7 +141,7 @@ Want to see more details, see forums.
 
 ## IOS Quirks
 
-The first argument in the preview method currently only supports absolute paths for incoming files.
+1. The first argument in the preview method currently only supports absolute paths for incoming files.
 
 You can obtain the absolute path to the file using the method provided by the [cordova-plugin-file] (https://github.com/apache/cordova-plugin-file) plugin.
 
@@ -150,6 +150,10 @@ Use the following command to add the [cordova-plugin-file] (https://github.com/a
 ```bash
 cordova plugin add cordova-plugin-file
 ```
+
+2. Note: in some cases the resource folder are not added correctly and the number of items is the same because of XCode bug.（e.g.  Xcode 8.3.3）
+In that case remove the added reference from project tree and then add the Resource using the project tree - Add files to "YourProjectName" ,remember when use this method enable the option of
+"copy items if needed" and "create groups"
 
 
 ## Android Quirks
