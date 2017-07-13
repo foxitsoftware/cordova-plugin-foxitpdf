@@ -38,6 +38,7 @@ cordova plugin add cordova-plugin-foxitpdf
 Thanks to the new version, and now we use the plug-in iOS only need a few simple steps on it (no longer like the 3.0 version of the kind of cumbersome operation)
 
 1. Target -> Build setting -> Other Linker Flags -> + ->  `-lstdc++`
+    ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/ios_step1.png)
 2. Target -> Build Phases -> Copy Bundle Resources ->  +  -> `uiextensions_config.json`
 3. Target -> Build Phases -> Copy Bundle Resources ->  +  -> `Resource`
 
