@@ -154,6 +154,7 @@ Want to see more details, see forums.
 2. Note: in some cases the resource folder are not added correctly and the number of items is the same because of XCode bug.（e.g.  Xcode 8.3.3）
 In that case remove the added reference from project tree and then add the Resource using the project tree - Add files to "YourProjectName" ,remember when use this method enable the option of
 "copy items if needed" and "create groups"
+
 If something like the error in the following picture appears, try the method in step 2
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/lack_resource.png)
 
