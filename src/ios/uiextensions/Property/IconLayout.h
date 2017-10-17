@@ -11,10 +11,11 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @protocol IPropertyValueChangedListener;
 
-@interface IconLayout : UIView <UITableViewDataSource,UITableViewDelegate>
+@interface IconLayout : UIView <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, assign) float layoutHeight;
 @property (nonatomic, strong) UITableView *tableView;

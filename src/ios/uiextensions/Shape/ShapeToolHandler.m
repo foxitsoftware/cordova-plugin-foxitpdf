@@ -11,25 +11,24 @@
  */
 
 #import "ShapeToolHandler.h"
-#import "Utility.h"
 #import "FSAnnotExtent.h"
+#import "Utility.h"
 
 @interface ShapeToolHandler ()
 
-@property (nonatomic, strong) FSPointF* startPoint;
-@property (nonatomic, strong) FSPointF* endPoint;
+@property (nonatomic, strong) FSPointF *startPoint;
+@property (nonatomic, strong) FSPointF *endPoint;
 @property (nonatomic, strong) FSAnnot *annot;
 
 @end
 
 @implementation ShapeToolHandler {
-    UIExtensionsManager* _extensionsManager;
-    FSPDFViewCtrl* _pdfViewCtrl;
-    TaskServer* _taskServer;
+    UIExtensionsManager *_extensionsManager;
+    FSPDFViewCtrl *_pdfViewCtrl;
+    TaskServer *_taskServer;
 }
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager
-{
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager {
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
@@ -41,58 +40,51 @@
     return self;
 }
 
--(NSString*)getName
-{
+- (NSString *)getName {
     return Tool_Shape;
 }
 
--(BOOL)isEnabled
-{
+- (BOOL)isEnabled {
     return YES;
 }
 
--(void)onActivate
-{
+- (void)onActivate {
 }
 
--(void)onDeactivate
-{
+- (void)onDeactivate {
 }
 
 // PageView Gesture+Touch
-- (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer {
     return NO;
 }
 
 #define DEFAULT_RECT_WIDTH 200
 
-- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer {
     CGPoint point = [recognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
-    
-    float defaultRectWidth = [Utility convertWidth:DEFAULT_RECT_WIDTH fromPageViewToPDF:_pdfViewCtrl pageIndex:pageIndex];
-    CGPoint startPoint = CGPointMake(point.x - defaultRectWidth/2, point.y + defaultRectWidth/2);
-    CGPoint endPoint = CGPointMake(point.x + defaultRectWidth/2, point.y - defaultRectWidth/2);
 
-    
+    float defaultRectWidth = [Utility convertWidth:DEFAULT_RECT_WIDTH fromPageViewToPDF:_pdfViewCtrl pageIndex:pageIndex];
+    CGPoint startPoint = CGPointMake(point.x - defaultRectWidth / 2, point.y + defaultRectWidth / 2);
+    CGPoint endPoint = CGPointMake(point.x + defaultRectWidth / 2, point.y - defaultRectWidth / 2);
+
     self.startPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:startPoint pageIndex:pageIndex];
     self.endPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:endPoint pageIndex:pageIndex];
-    FSRectF* dibRect = nil;
-    
+    FSRectF *dibRect = nil;
+
     dibRect = [Utility convertToFSRect:self.startPoint p2:self.endPoint];
     float marginX = [Utility getAnnotMinXMarginInPDF:_pdfViewCtrl pageIndex:pageIndex];
     float marginY = [Utility getAnnotMinYMarginInPDF:_pdfViewCtrl pageIndex:pageIndex];
-    FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+    FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
     float pdfWidth = [page getWidth];
     float pdfHeight = [page getHeight];
-    
+
     if (pdfHeight - dibRect.top < 0) {
         dibRect.bottom += pdfHeight - dibRect.top - marginY;
         dibRect.top = pdfHeight - marginY;
     }
     if (dibRect.bottom < 0) {
-        dibRect.top += - dibRect.bottom + marginY;
+        dibRect.top += -dibRect.bottom + marginY;
         dibRect.bottom = marginY;
     }
     if (pdfWidth - dibRect.right < 0) {
@@ -103,8 +95,8 @@
         dibRect.right += -dibRect.left + marginX;
         dibRect.left = marginX;
     }
-    
-    FSAnnot* annot = [self addAnnotToPage:pageIndex withRect:dibRect];
+
+    FSAnnot *annot = [self addAnnotToPage:pageIndex withRect:dibRect];
     if (!annot) {
         return YES;
     }
@@ -114,126 +106,110 @@
     @try {
         [annotHandler addAnnot:annot addUndo:YES];
     } @catch (NSException *exception) {
-        
     } @finally {
-        
     }
-    
+
     return YES;
 }
 
-- (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer {
     CGPoint point = [recognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
-    UIView* pageView = [_pdfViewCtrl getPageView:pageIndex];
+    UIView *pageView = [_pdfViewCtrl getPageView:pageIndex];
     CGRect rect = [pageView frame];
     CGSize size = rect.size;
-    if(point.x > size.width || point.y > size.height || point.x < 0 || point.y < 0)
+    if (point.x > size.width || point.y > size.height || point.x < 0 || point.y < 0)
         return NO;
+
+    FSPointF *dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
+    FSRectF *dibRect = nil;
     
-    FSPointF* dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
-    FSRectF* dibRect = nil;
-    if (self.startPoint && self.endPoint) {
-        dibRect = [Utility convertToFSRect:self.startPoint p2:self.endPoint];
-    } else {
+    if (recognizer.state == UIGestureRecognizerStateBegan) {
         dibRect = [[FSRectF alloc] init];
-        [dibRect set:dibPoint.x bottom:dibPoint.y right:dibPoint.x+0.1 top:dibPoint.y+0.1];
-    }
-    if (recognizer.state == UIGestureRecognizerStateBegan)
-    {
+        [dibRect set:dibPoint.x bottom:dibPoint.y right:dibPoint.x + 0.1 top:dibPoint.y + 0.1];
+        
         self.annot = [self addAnnotToPage:pageIndex withRect:dibRect];
         if (!self.annot) {
             return YES;
         }
         
         self.startPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
-        self.endPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
-    }
-    else if (recognizer.state == UIGestureRecognizerStateChanged)
-    {
+        self.endPoint   = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
+        
+    } else if (recognizer.state == UIGestureRecognizerStateChanged) {
         if (pageIndex != self.annot.pageIndex) {
             return NO;
         }
-        FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+        FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
         float marginX = [Utility getAnnotMinXMarginInPDF:_pdfViewCtrl pageIndex:pageIndex];
         float marginY = [Utility getAnnotMinYMarginInPDF:_pdfViewCtrl pageIndex:pageIndex];
-        
+
         if (dibPoint.x < marginX || dibPoint.y > [page getHeight] - marginY || dibPoint.y < marginY || dibPoint.x > [page getWidth] - marginX) {
             return NO;
         }
         self.endPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
         
+        dibRect = [Utility convertToFSRect:self.startPoint p2:self.endPoint];
+        
         self.annot.fsrect = dibRect;
         CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:dibRect pageIndex:pageIndex];
         rect = CGRectInset(rect, -10, -10);
         [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
-        
-    }
-    else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled)
-    {
+
+    } else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
         if (self.annot) {
             [self.annot resetAppearanceStream];
             id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.type];
             @try {
                 [annotHandler addAnnot:self.annot addUndo:YES];
             } @catch (NSException *exception) {
-                
             } @finally {
             }
-            
         }
         return YES;
     }
 }
 
-- (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer
-{
+- (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer {
     if (_extensionsManager.currentToolHandler != self) {
         return NO;
     }
     return YES;
 }
 
-- (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet*)touches withEvent:(UIEvent*)event
-{
+- (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     if (_extensionsManager.currentToolHandler != self) {
         return NO;
     }
 }
 
-- (BOOL)onPageViewTouchesMoved:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesMoved:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     if (_extensionsManager.currentToolHandler != self) {
         return NO;
     }
 }
 
-- (BOOL)onPageViewTouchesEnded:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesEnded:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     if (_extensionsManager.currentToolHandler != self) {
         return NO;
     }
 }
 
-- (BOOL)onPageViewTouchesCancelled:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesCancelled:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     if (_extensionsManager.currentToolHandler != self) {
         return NO;
     }
 }
 
-- (FSAnnot*)addAnnotToPage:(int)pageIndex withRect:(FSRectF*)rect
-{
-    FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
-    if (!page) return nil;
-    
-    FSAnnot* annot = nil;
+- (FSAnnot *)addAnnotToPage:(int)pageIndex withRect:(FSRectF *)rect {
+    FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+    if (!page)
+        return nil;
+
+    FSAnnot *annot = nil;
     @try {
         annot = [page addAnnot:self.type rect:rect];
     } @catch (NSException *exception) {
-        
     } @finally {
-        
     }
     annot.NM = [Utility getUUID];
     annot.author = [SettingPreference getAnnotationAuthor];
@@ -242,12 +218,9 @@
     annot.lineWidth = [_extensionsManager getAnnotLineWidth:self.type];
     annot.createDate = [NSDate date];
     annot.modifiedDate = [NSDate date];
-    if (self.type == e_annotCircle)
-    {
+    if (self.type == e_annotCircle) {
         annot.subject = @"Circle";
-    }
-    else if (self.type == e_annotSquare)
-    {
+    } else if (self.type == e_annotSquare) {
         annot.subject = @"Rectangle";
     }
     annot.flags = e_annotFlagPrint;

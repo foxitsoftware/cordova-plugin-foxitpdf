@@ -11,16 +11,23 @@
  */
 
 #import "ReadingBookmarkListCell.h"
-#import "ReadingBookmarkViewController.h"
+#import "Masonry.h"
 #import "PanelHost.h"
+#import "ReadingBookmarkViewController.h"
+
 @implementation ReadingBookmarkButton
 
 @end
+
+@interface ReadingBookmarkListCell () <AnnotationListMoreDelegate>
+
+@end
+
 @implementation ReadingBookmarkListCell
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier{
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
-        
-        CGRect contentFrame = CGRectMake(self.frame.size.width-54, (self.frame.size.height - 32) / 2, 32, 32);
+        CGRect contentFrame = CGRectMake(self.frame.size.width - 54, (self.frame.size.height - 32) / 2, 32, 32);
         contentFrame = CGRectMake(10, (self.frame.size.height - 30) / 2, 300, 30);
         self.pageLabel = [[UILabel alloc] initWithFrame:contentFrame];
         _pageLabel.textAlignment = NSTextAlignmentLeft;
@@ -28,29 +35,26 @@
         _pageLabel.font = [UIFont systemFontOfSize:17];
         _pageLabel.textColor = [UIColor blackColor];
         [self.contentView addSubview:_pageLabel];
-        
+
         self.detailButton = [ReadingBookmarkButton buttonWithType:UIButtonTypeCustom];
         [_detailButton setImage:[UIImage imageNamed:@"document_cellmore_more"] forState:UIControlStateNormal];
-        [_detailButton addTarget:self action:@selector(setEditViewHiden:) forControlEvents:UIControlEventTouchUpInside];
+        [_detailButton addTarget:self action:@selector(handleClickDetailButton) forControlEvents:UIControlEventTouchUpInside];
         _detailButton.frame = CGRectMake(self.bounds.size.width - 50, 0, 50, 50);
-        _detailButton.center = CGPointMake(_detailButton.center.x, self.bounds.size.height/2);
+        _detailButton.center = CGPointMake(_detailButton.center.x, self.bounds.size.height / 2);
         _detailButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleTopMargin;
         [self.contentView addSubview:_detailButton];
-        
-        //Global panel controller.
-        PanelController* panelController = getCurrentPanelController();
-        self.editView = [[AnnotationListMore alloc] initWithFrame:CGRectMake(DEVICE_iPHONE ? SCREENWIDTH : 300, 0, DEVICE_iPHONE ? SCREENWIDTH : 300, self.bounds.size.height) superView:panelController.panel.contentView delegate:self isBookMark:YES isMenu:NO];
-        if (DEVICE_iPHONE) {
-            _editView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        }
-        [self.contentView addSubview:self.editView];
-            }
-    return self;
+
+        return self;
+    }
 }
 
-- (void)setEditViewHiden:(ReadingBookmarkButton *)sender{
-    if (self.delegate && [self.delegate respondsToSelector:@selector(setViewHidden:)]) {
-        [self.delegate setViewHidden:sender.object];
+- (void)handleClickDetailButton {
+    if ([self.delegate respondsToSelector:@selector(readingBookmarkListCellWillShowEditView:)]) {
+        [self.delegate readingBookmarkListCellWillShowEditView:self];
+    }
+    [self setEditViewHidden:NO];
+    if ([self.delegate respondsToSelector:@selector(readingBookmarkListCellDidShowEditView:)]) {
+        [self.delegate readingBookmarkListCellDidShowEditView:self];
     }
 }
 
@@ -62,6 +66,80 @@
     [super setSelected:selected animated:animated];
 
     // Configure the view for the selected state
+}
+
+- (void)setEditViewHidden:(BOOL)isHidden {
+    [self setEditViewHidden:isHidden animated:YES];
+}
+
+- (void)setEditViewHidden:(BOOL)isHidden animated:(BOOL)animated {
+    if (isHidden) {
+        [self hideEditViewAnimated:animated];
+    } else {
+        [self showEditViewAnimated:animated];
+    }
+}
+
+- (void)showEditViewAnimated:(BOOL)animated {
+    void (^showEditView)() = ^{
+        self.editView.frame = ({
+            CGRect frame = self.editView.frame;
+            frame.origin.x = self.editView.superview.bounds.size.width - frame.size.width;
+            frame;
+        });
+    };
+    if (animated) {
+        [UIView animateWithDuration:0.3 animations:showEditView];
+    } else {
+        showEditView();
+    }
+}
+
+- (void)hideEditViewAnimated:(BOOL)animated {
+    void (^hideEditView)() = ^{
+        if (!_editView) {
+            return;
+        }
+        self.editView.frame = ({
+            CGRect frame = self.editView.frame;
+            frame.origin.x = self.editView.superview.bounds.size.width;
+            frame;
+        });
+    };
+    if (animated) {
+        [UIView animateWithDuration:0.3 animations:hideEditView];
+    } else {
+        hideEditView();
+    }
+}
+
+- (AnnotationListMore *)editView {
+    if (!_editView) {
+        _editView = [[AnnotationListMore alloc] initWithOrigin:CGPointMake(self.contentView.bounds.size.width, 0) height:50.0f canRename:YES canEditContent:NO canDescript:NO canDelete:YES canReply:NO canSave:NO];
+        _editView.delegate = self;
+        [self.contentView addSubview:_editView];
+    }
+    return _editView;
+}
+
+- (void)prepareForReuse {
+    if (_editView) {
+        [_editView removeFromSuperview];
+        _editView = nil;
+    }
+}
+
+#pragma mark <AnnotationListMoreDelegate>
+
+- (void)annotationListMoreDelete:(AnnotationListMore *)annotationListMore {
+    if ([self.delegate respondsToSelector:@selector(readingBookmarkListCellDelete:)]) {
+        [self.delegate readingBookmarkListCellDelete:self];
+    }
+}
+- (void)annotationListMoreRename:(AnnotationListMore *)annotationListMore {
+    if ([self.delegate respondsToSelector:@selector(readingBookmarkListCellRename:)]) {
+        [self.delegate readingBookmarkListCellRename:self];
+    }
 }
 
 @end

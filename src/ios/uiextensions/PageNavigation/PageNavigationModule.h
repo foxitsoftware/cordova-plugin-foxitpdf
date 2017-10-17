@@ -10,15 +10,13 @@
  * Review legal.txt for additional license and legal information.
  */
 
+#import "../Common/UIExtensionsSharedHeader.h"
 #import <Foundation/Foundation.h>
+#import <FoxitRDK/FSPDFViewControl.h>
 #import <UIKit/UIKit.h>
-#import <FoxitRDK/FSPDFViewControl.h>
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsSharedHeader.h"
-#import "FSPDFReader.h"
 
-@interface PageNavigationModule : NSObject<IPageEventListener, IDocEventListener, IStateChangeListener, IScrollViewEventListener,IGestureEventListener, IFullScreenListener, IRotationEventListener, IModule>
+@interface PageNavigationModule : NSObject <IPageEventListener, IDocEventListener, IStateChangeListener, IScrollViewEventListener, IGestureEventListener, IFullScreenListener, IRotationEventListener, IModule>
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

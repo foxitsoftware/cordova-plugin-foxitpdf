@@ -21,8 +21,7 @@
 
 @implementation ColorItem
 
-- (instancetype)initWithFrame:(CGRect)frame
-{
+- (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
         self.button = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -35,29 +34,24 @@
     return self;
 }
 
--(void)setColor:(int)color
-{
+- (void)setColor:(int)color {
     _color = color;
     self.button.backgroundColor = [UIColor colorWithRGBHex:color];
 }
 
--(void)onClick
-{
+- (void)onClick {
     if (self.callback) {
-        self.callback(PROPERTY_COLOR,_color);
+        self.callback(PROPERTY_COLOR, _color);
     }
 }
 
--(void)setSelected:(BOOL)selected
-{
+- (void)setSelected:(BOOL)selected {
     if (selected) {
         self.layer.borderWidth = 2.0f;
         self.layer.borderColor = [[UIColor colorWithRed:0.15 green:0.62 blue:0.84 alpha:1] CGColor];
         self.layer.cornerRadius = 5.0f;
         self.backgroundColor = [UIColor clearColor];
-    }
-    else
-    {
+    } else {
         self.layer.borderWidth = 0.0f;
     }
 }

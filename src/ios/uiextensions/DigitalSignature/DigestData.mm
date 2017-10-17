@@ -14,54 +14,44 @@
 
 //Construct and Destruct functions.
 
-FS_DigestContext::FS_DigestContext()
-{
+FS_DigestContext::FS_DigestContext() {
     m_pDigestData = NULL;
 }
 
-FS_DigestContext::~FS_DigestContext()
-{
-    if (NULL != m_pDigestData)
-    {
+FS_DigestContext::~FS_DigestContext() {
+    if (NULL != m_pDigestData) {
         delete m_pDigestData;
         m_pDigestData = NULL;
     }
 }
 
 //Initialize function.
-void FS_DigestContext::Initialize()
-{
+void FS_DigestContext::Initialize() {
 }
 
 //Finalize function.
-void FS_DigestContext::Release()
-{
+void FS_DigestContext::Release() {
 }
 
 //Set variable m_pDigestData.
-BOOL FS_DigestContext::SetData(void* file, const unsigned int* byteRangeArray, unsigned int sizeofArray)
-{
-    if (NULL != m_pDigestData)
-    {
+BOOL FS_DigestContext::SetData(void *file, const unsigned int *byteRangeArray, unsigned int sizeofArray) {
+    if (NULL != m_pDigestData) {
         delete m_pDigestData;
         m_pDigestData = NULL;
     }
-    
-    FS_DigestData* pData = new FS_DigestData;
+
+    FS_DigestData *pData = new FS_DigestData;
     pData->m_file = file;
     pData->m_pByteRangeArray = byteRangeArray;
     pData->m_sizeofArray = sizeofArray;
-    
+
     m_pDigestData = pData;
-    
+
     return TRUE;
 }
 
 //Get variable m_pDigestData.
-BOOL FS_DigestContext::GetData(FS_DigestData*& data)
-{
+BOOL FS_DigestContext::GetData(FS_DigestData *&data) {
     data = m_pDigestData;
     return TRUE;
 }
-
-

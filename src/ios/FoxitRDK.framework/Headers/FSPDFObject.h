@@ -15,32 +15,33 @@
 
 #import "FSCommon.h"
 
+NS_ASSUME_NONNULL_BEGIN
 /**
  * @brief	Enumeration for PDF object type.
  *
  * @details	Values of this enumeration can be used alone.
  */
-enum FS_PDFOBJECTTYPE {
+typedef NS_ENUM(NSUInteger, FSPDFObjectType) {
     /** @brief	Invalid PDF object type. */
     e_objInvalidType = 0,
     /** @brief	PDF object type for boolean. */
-    e_objBoolean = 1,
+    e_objBoolean,
     /** @brief	PDF object type for number. */
-    e_objNumber = 2,
+    e_objNumber,
     /** @brief	PDF object type for string. */
-    e_objString = 3,
+    e_objString,
     /** @brief	PDF object type for name. */
-    e_objName = 4,
+    e_objName,
     /** @brief	PDF object type for array. */
-    e_objArray = 5,
+    e_objArray,
     /** @brief	PDF object type for dictionary. */
-    e_objDictionary = 6,
+    e_objDictionary,
     /** @brief	PDF object type for stream. */
-    e_objStream = 7,
+    e_objStream,
     /** @brief	PDF object type for a null object. */
-    e_objNull = 8,
+    e_objNull,
     /** @brief	PDF object type for a reference object. */
-    e_objReference = 9
+    e_objReference
 };
 
 
@@ -75,7 +76,7 @@ enum FS_PDFOBJECTTYPE {
  *
  * @param[in]	boolean		A boolean value.
  *
- * @return	A new PDF object instance, whose object type is {@link FS_PDFOBJECTTYPE::e_objBoolean}.
+ * @return	A new PDF object instance, whose object type is {@link FSPDFObjectType::e_objBoolean}.
  */
 +(FSPDFObject*)createFromBoolean: (BOOL)boolean;
 /**
@@ -83,7 +84,7 @@ enum FS_PDFOBJECTTYPE {
  *
  * @param[in]	f		A float value.
  *
- * @return	A new PDF object instance, whose object type is {@link FS_PDFOBJECTTYPE::e_objNumber}.
+ * @return	A new PDF object instance, whose object type is {@link FSPDFObjectType::e_objNumber}.
  */
 +(FSPDFObject*)createFromFloat: (float)f;
 /**
@@ -91,7 +92,7 @@ enum FS_PDFOBJECTTYPE {
  *
  * @param[in]	integer		An integer value.
  *
- * @return	A new PDF object instance, whose object type is {@link FS_PDFOBJECTTYPE::e_objNumber}.
+ * @return	A new PDF object instance, whose object type is {@link FSPDFObjectType::e_objNumber}.
  */
 +(FSPDFObject*)createFromInteger: (int)integer;
 /**
@@ -99,7 +100,7 @@ enum FS_PDFOBJECTTYPE {
  *
  * @param[in]	string	A string value.
  *
- * @return	A new PDF object instance, whose object type is {@link FS_PDFOBJECTTYPE::e_objString}.
+ * @return	A new PDF object instance, whose object type is {@link FSPDFObjectType::e_objString}.
  */
 +(FSPDFObject*)createFromString: (NSString *)string;
 /**
@@ -107,7 +108,7 @@ enum FS_PDFOBJECTTYPE {
  *
  * @param[in]	name	A name string.
  *
- * @return	A new PDF object instance, whose object type is {@link FS_PDFOBJECTTYPE::e_objName}.
+ * @return	A new PDF object instance, whose object type is {@link FSPDFObjectType::e_objName}.
  */
 +(FSPDFObject*)createFromName: (NSString *)name;
 /**
@@ -120,7 +121,7 @@ enum FS_PDFOBJECTTYPE {
  *
  * @param[in]	dateTime	A date time instance.
  *
- * @return	A new PDF object instance, whose object type is {@link FS_PDFOBJECTTYPE::e_objString}.
+ * @return	A new PDF object instance, whose object type is {@link FSPDFObjectType::e_objString}.
  */
 +(FSPDFObject*)createFromDateTime: (FSDateTime*)dateTime;
 /**
@@ -136,7 +137,7 @@ enum FS_PDFOBJECTTYPE {
  * @param[in]	pDoc	A PDF document instance.
  * @param[in]	objnum	The indirect object number of the indirect PDF object. This should be above 0.
  *
- * @return	A new PDF object instance, whose object type is {@link FS_PDFOBJECTTYPE::e_objReference}.
+ * @return	A new PDF object instance, whose object type is {@link FSPDFObjectType::e_objReference}.
  */
 +(FSPDFObject*)createReference: (FSPDFDoc*)pDoc objnum: (unsigned int)objnum;
 /**
@@ -148,9 +149,9 @@ enum FS_PDFOBJECTTYPE {
 /**
  * @brief	Get the type of current PDF object.
  *
- * @return	A value represents the object type. Please refer to {@link FS_PDFOBJECTTYPE::e_objBoolean FS_PDFOBJECTTYPE::e_objXXX} values and it would be one of these values.
+ * @return	A value represents the object type. Please refer to {@link FSPDFObjectType::e_objBoolean FSPDFObjectType::e_objXXX} values and it would be one of these values.
  */
--(enum FS_PDFOBJECTTYPE)getType;
+-(FSPDFObjectType)getType;
 /**
  * @brief	Get the indirect object number of current PDF object.
  *
@@ -165,25 +166,25 @@ enum FS_PDFOBJECTTYPE {
 /**
  * @brief	Get the integer value of current PDF object.
  *
- * @details	Only used when current object type is {@link FS_PDFOBJECTTYPE::e_objNumber}.
+ * @details	Only used when current object type is {@link FSPDFObjectType::e_objNumber}.
  *
- * @return	The integer value. -1 may also mean current PDF object type is not {@link FS_PDFOBJECTTYPE::e_objNumber}.
+ * @return	The integer value. -1 may also mean current PDF object type is not {@link FSPDFObjectType::e_objNumber}.
  */
 -(int)getInteger;
 /**
  * @brief	Get the float value of current PDF object.
  *
- * @details	Only used when current object type is {@link FS_PDFOBJECTTYPE::e_objNumber}.
+ * @details	Only used when current object type is {@link FSPDFObjectType::e_objNumber}.
  *
- * @return	The integer value. -1.0 may also mean current PDF object type is not {@link FS_PDFOBJECTTYPE::e_objNumber}.
+ * @return	The integer value. -1.0 may also mean current PDF object type is not {@link FSPDFObjectType::e_objNumber}.
  */
 -(float)getFloat;
 /**
  * @brief	Get the boolean value of current PDF object.
  *
- * @details	Only used when current object type is {@link FS_PDFOBJECTTYPE::e_objBoolean}.
+ * @details	Only used when current object type is {@link FSPDFObjectType::e_objBoolean}.
  *
- * @return	The boolean value. <b>NO</b> may also mean current PDF object type is not {@link FS_PDFOBJECTTYPE::e_objBoolean}.
+ * @return	The boolean value. <b>NO</b> may also mean current PDF object type is not {@link FSPDFObjectType::e_objBoolean}.
  */
 -(BOOL)getBoolean;
 /**
@@ -214,7 +215,7 @@ enum FS_PDFOBJECTTYPE {
 /**
  * @brief	Get the date time value of current PDF object.
  *
- * @details	Only used when current object type is {@link FS_PDFOBJECTTYPE::e_objString} and its content is PDF standard date format.
+ * @details	Only used when current object type is {@link FSPDFObjectType::e_objString} and its content is PDF standard date format.
  *
  * @return	A date time instance.
  *			If there is any error, <b>nil</b> will be returned.
@@ -224,9 +225,9 @@ enum FS_PDFOBJECTTYPE {
  * @brief	Get the string value of current PDF object.
  *
  * @details	This function will get the string format for actual value of current PDF object.<br>
- *			If object type is {@link FS_PDFOBJECTTYPE::e_objBoolean}, "true" or "false" string value will be returned, depending on its actual value.<br>
- *			If object type is {@link FS_PDFOBJECTTYPE::e_objNumber}, the value will be represents as a string. For example, "1.5" string is for value 1.5.<br>
- *			If object type is {@link FS_PDFOBJECTTYPE::e_objString} or {@link FS_PDFOBJECTTYPE::e_objName}, the string value will be retrieved directly.<br>
+ *			If object type is {@link FSPDFObjectType::e_objBoolean}, "true" or "false" string value will be returned, depending on its actual value.<br>
+ *			If object type is {@link FSPDFObjectType::e_objNumber}, the value will be represents as a string. For example, "1.5" string is for value 1.5.<br>
+ *			If object type is {@link FSPDFObjectType::e_objString} or {@link FSPDFObjectType::e_objName}, the string value will be retrieved directly.<br>
  *			If value of current PDF object cannot be converted to a valid string, an empty string will be returned.
  *
  * @return	String value.
@@ -418,7 +419,7 @@ enum FS_PDFOBJECTTYPE {
 /**
  * @brief	Create a new dictionary object.
  *
- * @return	A new PDF dictionary instance, whose object type is {@link FS_PDFOBJECTTYPE::e_objDictionary}.
+ * @return	A new PDF dictionary instance, whose object type is {@link FSPDFObjectType::e_objDictionary}.
  */
 +(FSPDFDictionary*)create;
 /**
@@ -466,7 +467,7 @@ enum FS_PDFOBJECTTYPE {
  * @return	A new position instance that represents the position of next entry in the dictionary.
  *			<b>nil</b> means current entry is the last in the dictionary, or there is any error.
  */
--(void*)moveNext: (void*)pos;
+-(void*)moveNext: (void* _Nullable)pos;
 /**
  * @brief	Set a PDF object as value element to an entry with specific key.
  *
@@ -485,3 +486,5 @@ enum FS_PDFOBJECTTYPE {
 -(void)dealloc;
 
 @end
+
+NS_ASSUME_NONNULL_END

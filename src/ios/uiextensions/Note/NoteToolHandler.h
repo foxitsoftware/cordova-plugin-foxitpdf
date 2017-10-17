@@ -10,8 +10,8 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
 #import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
 @protocol IToolHandler;
 @class UIExtensionsManager;
@@ -19,9 +19,9 @@
 @class NoteDialog;
 
 /**@brief A note tool handler to handle its own events. */
-@interface NoteToolHandler : NSObject<IToolHandler>
-@property (nonatomic, assign) enum FS_ANNOTTYPE type;
+@interface NoteToolHandler : NSObject <IToolHandler>
+@property (nonatomic, assign) FSAnnotType type;
 @property (nonatomic, strong) NoteDialog *currentVC;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 @end

@@ -10,15 +10,15 @@
  * Review legal.txt for additional license and legal information.
  */
 
+#import "../../../../libs/uiextensions_src/UIExtensions/Common/UIExtensionsManager+Private.h"
 #import <Foundation/Foundation.h>
 #import <FoxitRDK/FSPDFObjC.h>
-#import "../../../../libs/uiextensions_src/uiextensions/UIExtensionsManager+Private.h"
 
 @protocol IAnnotHandler;
 #define SIGCONTENT_LENGTH 15884
 
-@interface DigitalSignatureAnnotHandler : NSObject<IAnnotHandler,IRotationEventListener,IDocEventListener,IScrollViewEventListener>
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+@interface DigitalSignatureAnnotHandler : NSObject <IAnnotHandler, IRotationEventListener, IDocEventListener, IScrollViewEventListener>
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 - (void)onDocWillOpen;
 - (void)onDocumentReloaded:(FSPDFDoc *)document;
 @end

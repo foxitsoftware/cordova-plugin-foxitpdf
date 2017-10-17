@@ -19,31 +19,27 @@
  *          OOM recovery could be disabled by setting the property 'shouldRecover' of viewer control to 'NO'.
  */
 
-#import <UIKit/UIKit.h>
 #import "FSPDFObjC.h"
+#import <UIKit/UIKit.h>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnullability-completeness"
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  * @brief	Enumeration for PDF layout mode.
  * 
  * @details	Values of this enumeration should be used alone.
  */
-typedef enum
-{
-	/** @brief	Unknown page mode. */
-	PDF_LAYOUT_MODE_UNKNOWN = 0,
-	/** @brief	Continuous page mode. */
-	PDF_LAYOUT_MODE_CONTINUOUS,
-	/** @brief	Single page mode. */
-	PDF_LAYOUT_MODE_SINGLE,
-	/** @brief	Facing mode. */
-	PDF_LAYOUT_MODE_TWO,
-	/** @brief	Thumbnail mode. */
-	PDF_LAYOUT_MODE_MULTIPLE,
-	/** @brief	Reflow mode. */
-	PDF_LAYOUT_MODE_REFLOW
+typedef enum {
+    /** @brief	Unknown page mode. */
+    PDF_LAYOUT_MODE_UNKNOWN = 0,
+    /** @brief	Continuous page mode. */
+    PDF_LAYOUT_MODE_CONTINUOUS,
+    /** @brief	Single page mode. */
+    PDF_LAYOUT_MODE_SINGLE,
+    /** @brief	Facing mode. */
+    PDF_LAYOUT_MODE_TWO,
+    /** @brief	Reflow mode. */
+    PDF_LAYOUT_MODE_REFLOW
 } PDF_LAYOUT_MODE;
 
 /**
@@ -65,16 +61,15 @@ typedef enum {
  * 
  * @details	Values of this enumeration should be used alone.
  */
-typedef enum
-{
-	/** @brief	Zoom mode: unknown. */
-	PDF_DISPLAY_ZOOMMODE_UNKNOWN = 0,
-	/** @brief	Zoom mode: fit page. */
-	PDF_DISPLAY_ZOOMMODE_FITPAGE,
-	/** @brief	Zoom mode: fit page width. */
-	PDF_DISPLAY_ZOOMMODE_FITWIDTH,
-	/** @brief	Zoom mode: fit page height. */
-	PDF_DISPLAY_ZOOMMODE_FITHEIGHT
+typedef enum {
+    /** @brief	Zoom mode: unknown. */
+    PDF_DISPLAY_ZOOMMODE_UNKNOWN = 0,
+    /** @brief	Zoom mode: fit page. */
+    PDF_DISPLAY_ZOOMMODE_FITPAGE,
+    /** @brief	Zoom mode: fit page width. */
+    PDF_DISPLAY_ZOOMMODE_FITWIDTH,
+    /** @brief	Zoom mode: fit page height. */
+    PDF_DISPLAY_ZOOMMODE_FITHEIGHT
 } PDF_DISPLAY_ZOOMMODE;
 
 /**
@@ -82,8 +77,7 @@ typedef enum
  *
  * @details	Values of this enumeration should be used alone.
  */
-typedef enum
-{
+typedef enum {
     /** @brief	No crop. */
     PDF_CROP_MODE_NONE = -1,
     /** @brief	Crop margin according to bounding box of all contents. */
@@ -143,35 +137,35 @@ typedef enum
  * @brief	Triggered when the document is opened. 
  *
  * @param[in]	document	PDF document instance which is opened.
- * @param[in]	error		Error code. Please refer to {@link FS_ERRORCODE::e_errSuccess FS_ERRORCODE::e_errXXX} values and it should be one of these values.
+ * @param[in]	error		Error code. Please refer to {@link FSErrorCode::e_errSuccess FSErrorCode::e_errXXX} values and it should be one of these values.
  */
-- (void)onDocOpened:(FSPDFDoc* )document error:(int)error;
+- (void)onDocOpened:(FSPDFDoc *)document error:(int)error;
 /** 
  * @brief	Triggered when the document will be closed. 
  *
  * @param[in]	document	PDF document instance which will be closed.
  */
-- (void)onDocWillClose:(FSPDFDoc* )document;
+- (void)onDocWillClose:(FSPDFDoc *)document;
 /** 
  * @brief	Triggered when the document is closed. 
  *
  * @param[in]	document	PDF document instance which is closed.
- * @param[in]	error		Error code. Please refer to {@link FS_ERRORCODE::e_errSuccess FS_ERRORCODE::e_errXXX} values and it should be one of these values.
+ * @param[in]	error		Error code. Please refer to {@link FSErrorCode::e_errSuccess FSErrorCode::e_errXXX} values and it should be one of these values.
  */
-- (void)onDocClosed:(FSPDFDoc* )document error:(int)error;
+- (void)onDocClosed:(FSPDFDoc *)document error:(int)error;
 /** 
  * @brief	Triggered when the document will be saved. 
  *
  * @param[in]	document	PDF document instance which will be saved.
  */
-- (void)onDocWillSave:(FSPDFDoc* )document;
+- (void)onDocWillSave:(FSPDFDoc *)document;
 /** 
  * @brief	Triggered when the document is saved. 
  *
  * @param[in]	document	PDF document instance which is saved.
- * @param[in]	error		Error code. Please refer to {@link FS_ERRORCODE::e_errSuccess FS_ERRORCODE::e_errXXX} values and it should be one of these values.
+ * @param[in]	error		Error code. Please refer to {@link FSErrorCode::e_errSuccess FSErrorCode::e_errXXX} values and it should be one of these values.
  */
-- (void)onDocSaved:(FSPDFDoc* )document error:(int)error;
+- (void)onDocSaved:(FSPDFDoc *)document error:(int)error;
 
 @end
 
@@ -211,15 +205,15 @@ typedef enum
  * @param[in]	indexes		Page index array. Valid range of page index: from 0 to (<i>count</i>-1).
  *							<i>count</i> is the page count.
  */
-- (void)onPagesWillRemove:(NSArray<NSNumber*>*)indexes;
+- (void)onPagesWillRemove:(NSArray<NSNumber *> *)indexes;
 /**
  * @brief	Triggered when pages will be moved to a new index.
  *
  * @param[in]	indexes		Page index array. Valid range of page index: from 0 to (<i>count</i>-1).
  *							<i>count</i> is the page count.
- * @param[in]	dstIndex	The dest page index, which the pages will be moved after.
+ * @param[in]	dstIndex	The destination page index, which the pages will be inserted before.
  */
-- (void)onPagesWillMove:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex;
+- (void)onPagesWillMove:(NSArray<NSNumber *> *)indexes dstIndex:(int)dstIndex;
 /**
  * @brief	Triggered when pages will be rotated.
  *
@@ -227,22 +221,22 @@ typedef enum
  *							<i>count</i> is the page count.
  * @param[in]   rotation    The page rotation, valid value will be 0(0 degree), 1(90 degree), 2(180 degree), 3(270 degree).
  */
-- (void)onPagesWillRotate:(NSArray<NSNumber*>*)indexes rotation:(int)rotation;
+- (void)onPagesWillRotate:(NSArray<NSNumber *> *)indexes rotation:(int)rotation;
 /**
  * @brief	Triggered when pages were removed.
  *
  * @param[in]	indexes		Page index array. Valid range of page index: from 0 to (<i>count</i>-1).
  *							<i>count</i> is the page count.
  */
-- (void)onPagesRemoved:(NSArray<NSNumber*>*)indexes;
+- (void)onPagesRemoved:(NSArray<NSNumber *> *)indexes;
 /**
  * @brief	Triggered when pages were moved to a new index.
  *
  * @param[in]	indexes		Page index array. Valid range of page index: from 0 to (<i>count</i>-1).
  *							<i>count</i> is the page count.
- * @param[in]	dstIndex	The dest page index, which the pages will be moved after.
+ * @param[in]	dstIndex	The destination page index, which the pages will be inserted before.
  */
-- (void)onPagesMoved:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex;
+- (void)onPagesMoved:(NSArray<NSNumber *> *)indexes dstIndex:(int)dstIndex;
 /**
  * @brief	Triggered when pages were rotated.
  *
@@ -250,7 +244,7 @@ typedef enum
  *							<i>count</i> is the page count.
  * @param[in]   rotation    The page rotation, valid value will be 0(0 degree), 1(90 degree), 2(180 degree), 3(270 degree).
  */
-- (void)onPagesRotated:(NSArray<NSNumber*>*)indexes rotation:(int)rotation;
+- (void)onPagesRotated:(NSArray<NSNumber *> *)indexes rotation:(int)rotation;
 /**
  * @brief	Triggered when pages were inserted.
  *
@@ -270,7 +264,7 @@ typedef enum
  * @param[in]	newLayoutMode		New layout mode. 
  *									Please refer to {@link PDF_LAYOUT_MODE::PDF_LAYOUT_MODE_UNKNOWN PDF_LAYOUT_MODE::PDF_LAYOUT_MODE_XXX} values and this should be one of these values.
  */
--(void)onLayoutModeChanged:(PDF_LAYOUT_MODE)oldLayoutMode newLayoutMode:(PDF_LAYOUT_MODE)newLayoutMode;
+- (void)onLayoutModeChanged:(PDF_LAYOUT_MODE)oldLayoutMode newLayoutMode:(PDF_LAYOUT_MODE)newLayoutMode;
 @end
 
 /** @brief	The event listener for scroll view, which is the container of page views. */
@@ -393,7 +387,7 @@ typedef enum
  * @return	<b>YES</b> means the touches has been handled successfully by extensions manager.
  *			<b>NO</b> means The extensions manager did not handle the touches.
  */
-- (BOOL)onTouchesBegan:(NSSet*)touches withEvent:(UIEvent*)event;
+- (BOOL)onTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 /**
  * @brief	Triggered when the touches has moved.
  *
@@ -478,17 +472,17 @@ typedef enum
  *
  * @return <b>YES</b> means success, while <b>NO</b> means fail.
  */
-- (BOOL)insertPageFromImage:(UIImage * __nonnull)image atIndex:(NSUInteger)pageIndex;
+- (BOOL)insertPageFromImage:(UIImage *__nonnull)image atIndex:(NSUInteger)pageIndex;
 /**
  * @brief	Insert multiple new pages to the current document with the pdf pages copied from the source pdf document.
  *
  * @param[in]	document    The source pdf document.
  * @param[in]	sourcePagesIndexes   The specified pages index array to be copied.
  * @param[in]	flags			Options for importing pages.
- *								Please refer to {@link FS_IMPORTFLAGS::e_importFlagNormal FS_IMPORTFLAGS::e_importFlagXXX} and this can be one or a combination of them.
+ *								Please refer to {@link FSImportFlags::e_importFlagNormal FSImportFlags::e_importFlagXXX} and this can be one or a combination of them.
  * @param[in]	layerName		The name of non-selectable label or the prefix name of the non-selectable label to be shown in layer panel of application, in UTF-8 encoding.
- *								If parameter <i>flags</i> contains {@link FS_IMPORTFLAGS::e_importFlagWithLayers}, this should not be empty and should be a valid string.
- *								If parameter <i>flags</i> does not contain {@link FS_IMPORTFLAGS::e_importFlagWithLayers}, this string will be ignored.
+ *								If parameter <i>flags</i> contains {@link FSImportFlags::e_importFlagWithLayers}, this should not be empty and should be a valid string.
+ *								If parameter <i>flags</i> does not contain {@link FSImportFlags::e_importFlagWithLayers}, this string will be ignored.
  *								<ul>
  *								<li>If all the pages of source PDF document is to be imported to current document, all layers from source document will be grouped under a non-selectable label,
  *									and this string will be directly used as the label. </li>
@@ -502,10 +496,9 @@ typedef enum
  *
  * @return <b>YES</b> means success, while <b>NO</b> means fail.
  */
-- (BOOL)insertPagesFromDocument:(FSPDFDoc * __nonnull)document withSourceIndexes:(NSArray<NSNumber *> *)sourcePagesIndexes flags:(enum FS_IMPORTFLAGS)flags layerName:(NSString *)layerName atIndex:(NSUInteger)pageIndex;
+- (BOOL)insertPagesFromDocument:(FSPDFDoc *__nonnull)document withSourceIndexes:(NSArray<NSNumber *> *)sourcePagesIndexes flags:(FSImportFlags)flags layerName:(NSString *)layerName atIndex:(NSUInteger)pageIndex;
 
 @end
-
 
 /** 
  * @brief	Foxit PDF view control for viewing/editing/saving the PDF file. 
@@ -527,16 +520,17 @@ typedef enum
 @interface FSPDFViewCtrl : UIView <IRotationEventListener, FSPageOrganizerDelegate>
 
 /** @brief	The UI extensions manager. UI extensions manager will implement the UI related features such as annotation, outline.*/
-@property (nonatomic, strong) id<FSPDFUIExtensionsManager> extensionsManager;
+@property (nonatomic, weak) id<FSPDFUIExtensionsManager> extensionsManager;
 /** @brief	The current PDF document. */
-@property (nonatomic, strong) FSPDFDoc*  currentDoc;
+@property (nonatomic, strong) FSPDFDoc *currentDoc;
 /** @brief	If current reading mode is night mode: <b>YES</b> means in night mode, while <b>NO</b> means not in night mode. */
 @property (nonatomic, assign) BOOL isNightMode;
 /** @brief	Get or set position of display view from the bottom of control. */
 @property (nonatomic, assign) int bottomOffset;
 /** @brief	Whether or not should view control recover itself when runs out of memory. Default is YES. */
 @property (nonatomic, assign) BOOL shouldRecover;
-
+/** @brief	The file path of current document, which is from openDoc. */
+@property (nonatomic, strong, readonly, nullable) NSString *filePath;
 #pragma mark - View control Initialize
 /** 
  * @brief	Initialize the view control.
@@ -641,13 +635,14 @@ typedef enum
  *
  * @param[in]	doc		A PDF document object.
  */
-- (void)setDoc:(FSPDFDoc*)doc;
+- (void)setDoc:(FSPDFDoc *)doc;
+
 /** 
  * @brief	Get the current PDF document object from view control
  *
  * @return	Current PDF document object.
  */
-- (FSPDFDoc*)getDoc;
+- (FSPDFDoc *)getDoc;
 /** 
  * @brief	Open PDF document from a specified PDF file path.
  *
@@ -656,7 +651,7 @@ typedef enum
  *							Set it to <b>nil</b> if the password is unknown.
  * @param[in]   completion  The callback will be called when current document object becomes available or the view control fail to open the document.
  */
-- (void)openDoc:(NSString*)filePath password:(NSString*)password completion:(void(^)(enum FS_ERRORCODE error))completion;
+- (void)openDoc:(NSString *)filePath password:(NSString *_Nullable)password completion:(void (^)(FSErrorCode error))completion;
 /** 
  * @brief	Open PDF document from a memory buffer.
  *
@@ -665,24 +660,24 @@ typedef enum
  *							Set it to <b>nil</b> if the password is unknown.
  * @param[in]   completion  The callback will be called when document becomes available or fail to open the document.
  */
-- (void)openDocFromMemory:(NSData *)buffer password:(NSString*)password completion:(void(^)(enum FS_ERRORCODE error))completion;
+- (void)openDocFromMemory:(NSData *)buffer password:(NSString *_Nullable)password completion:(void (^)(FSErrorCode error))completion;
 /** 
  * @brief	Close the document.
  *
  * @param[in]	cleanup		A callback function to clean up caller managed resources.
  */
-- (void)closeDoc:(void (^)())cleanup;
+- (void)closeDoc:(void (^_Nullable)())cleanup;
+
 /** 
  * @brief	Save the document to a specified file path with saving flag.
  *
  * @param[in]	filePath	File path for the new saved PDF file.
  * @param[in]	flag		Document saving flags. 
- *							Please refer to {@link FS_SAVEFLAGS::e_saveFlagNormal FS_SAVEFLAGS::e_saveFlagXXX} values 
- *							and this can be one or combination of these values.
+ *							STATE_NORMAL
  *
  * @return	<b>YES</b> means the saving is successfully finished, while <b>NO</b> means failure.
  */
-- (BOOL)saveDoc:(NSString*)filePath flag:(int)flag;
+- (BOOL)saveDoc:(NSString *)filePath flag:(int)flag;
 
 #pragma mark - Get Page
 /** 
@@ -712,7 +707,7 @@ typedef enum
  *
  * @return	NSNumber array of visible pages' indexes.
  */
-- (NSMutableArray*)getVisiblePages;
+- (NSMutableArray *)getVisiblePages;
 /** 
  * @brief	Check whether a specified page is visible or not.
  *
@@ -751,7 +746,7 @@ typedef enum
  * @return	<b>YES</b> means succeed.
  *			<b>NO</b> means failed.
  */
-- (BOOL)gotoPage:(int)index withDocPoint:(FSPointF*)point animated:(BOOL)animated;
+- (BOOL)gotoPage:(int)index withDocPoint:(FSPointF *)point animated:(BOOL)animated;
 /** 
  * @brief	Go to the first page. 
  *
@@ -810,6 +805,10 @@ typedef enum
  *			<b>NO</b> means there is no next page view.
  */
 - (BOOL)hasNextView;
+/**
+ * @brief	Clear prev and next stack.
+ */
+- (void)clearPrevNextStack;
 /** 
  * @brief	Go to the previous view.
  *
@@ -839,7 +838,6 @@ typedef enum
  * @param[in]	reflowMode	reflow mode.
  */
 - (void)setReflowMode:(PDF_REFLOW_REFLOWMODE)reflowMode;
-
 
 #pragma mark - Zoom
 /** 
@@ -913,7 +911,7 @@ typedef enum
  *
  * @return <b>YES</b> means success, while <b>NO</b> means failure.
  */
-- (BOOL)setCropPageRect:(int)pageIndex pdfRect:(FSRectF*)pdfRect;
+- (BOOL)setCropPageRect:(int)pageIndex pdfRect:(FSRectF *)pdfRect;
 
 #pragma mark - Viewer preference
 /** 
@@ -921,7 +919,7 @@ typedef enum
  *
  * @param[in]	color		New background color.
  */
-- (void)setBackgroundColor:(UIColor*)color;
+- (void)setBackgroundColor:(UIColor *_Nullable)color;
 
 #pragma mark - Viewer properties
 /** 
@@ -943,7 +941,7 @@ typedef enum
  * @param[in]	animated	<b>YES</b> means to use animation effects.
  *							<b>NO</b> means not to use animation effects.
  */
-- (void)setHScrollPos: (double)pos animated:(BOOL)animated;
+- (void)setHScrollPos:(double)pos animated:(BOOL)animated;
 /** 
  * @brief	Set the vertical scroll position.
  *
@@ -951,7 +949,7 @@ typedef enum
  * @param[in]	animated	<b>YES</b> means to use animation effects.
  *							<b>NO</b> means not to use animation effects.
  */
-- (void)setVScrollPos: (double)pos animated:(BOOL)animated;
+- (void)setVScrollPos:(double)pos animated:(BOOL)animated;
 /** 
  * @brief	Get the maximum horizontal scroll range.
  *
@@ -1003,7 +1001,7 @@ typedef enum
  *
  * @return	Display view.
  */
-- (UIView*)getDisplayView;
+- (UIView *)getDisplayView;
 /** 
  * @brief	Get the page view by page index. 
  *
@@ -1015,7 +1013,7 @@ typedef enum
  *
  * @return	The page UI view.
  */
-- (UIView*)getPageView:(int)pageIndex;
+- (UIView *)getPageView:(int)pageIndex;
 /**
  * @brief	Get the overlay view on the page, specified by page index. 
  *
@@ -1028,7 +1026,7 @@ typedef enum
  *
  * @return	The overlay UI view.
  */
-- (UIView*)getOverlayView:(int)pageIndex;
+- (UIView *)getOverlayView:(int)pageIndex;
 
 /**
  * @brief	Append a customized UI view to pdf page views.
@@ -1037,9 +1035,10 @@ typedef enum
             The pdf file is not changed. This method can be called multi-times.
  *
  * @param[in]	pageView	User-defined view to be appended as the last page view. 
-                            It CAN'T be subview of FSPDFViewControl, that is, it's invalid to append a view returned by getPageView getOverlayView or getDisplayView.
+                            Note that it CAN'T be subview of FSPDFViewControl, that is, it's invalid to append a view returned by {@link FSPDFViewControl::getPageView:} {@link FSPDFViewControl::getOverlayView:} or {@link FSPDFViewControl::getDisplayView:}.
+ * @return <b>YES</b> means success, while <b>NO</b> means failure.
  */
-- (void)appendPageView:(UIView*)pageView;
+- (BOOL)appendPageView:(UIView *)pageView;
 
 #pragma mark - Coordinate Conversion
 /** 
@@ -1096,7 +1095,7 @@ typedef enum
  *
  * @return	Point on page view.
  */
-- (CGPoint)convertPdfPtToPageViewPt:(FSPointF*)point pageIndex:(int)pageIndex;
+- (CGPoint)convertPdfPtToPageViewPt:(FSPointF *)point pageIndex:(int)pageIndex;
 /** 
  * @brief	Convert the page view point to PDF page point.
  *
@@ -1107,7 +1106,7 @@ typedef enum
  *
  * @return	Point on PDF page.
  */
-- (FSPointF*)convertPageViewPtToPdfPt:(CGPoint)point pageIndex:(int)pageIndex;
+- (FSPointF *)convertPageViewPtToPdfPt:(CGPoint)point pageIndex:(int)pageIndex;
 /** 
  * @brief	Convert the PDF rectangle to page view rectangle.
  *
@@ -1203,5 +1202,4 @@ typedef enum
 
 @end
 
-#pragma clang diagnostic pop
-
+NS_ASSUME_NONNULL_END

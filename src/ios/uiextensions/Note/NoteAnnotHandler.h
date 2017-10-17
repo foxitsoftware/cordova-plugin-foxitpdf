@@ -10,17 +10,15 @@
  * Review legal.txt for additional license and legal information.
  */
 
+#import "../UIExtensionsManager.h"
 #import <FoxitRDK/FSPDFViewControl.h>
 
-@protocol IPropertyBarListener;
-@protocol IRotationEventListener;
-@protocol IGestureEventListener;
 @class ReplyTableViewController;
 
 /**@brief A note annotation handler to handle touches and gestures on tha note annotation. */
-@interface NoteAnnotHandler : NSObject<IAnnotHandler,UIPopoverControllerDelegate,IPropertyBarListener,IRotationEventListener,IScrollViewEventListener,IGestureEventListener,IAnnotPropertyListener>
+@interface NoteAnnotHandler : NSObject <IAnnotHandler>
 
 @property (nonatomic, strong) ReplyTableViewController *currentVC;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 @end

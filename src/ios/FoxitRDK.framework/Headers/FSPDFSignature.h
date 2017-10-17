@@ -14,69 +14,72 @@
  */
 
 #import "FSCommon.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * @brief	Enumeration for signature states.
  *
  * @details	Values of this enumeration can be used alone or in combination.<br>
  *			These values can be divided into four parts:
  *			<ul>
- *			<li>{@link FS_SIGNATURESTATES::e_signatureStateUnknown FS_SIGNATURESTATES::e_signatureStateXXX} values represent signed state, before signature is verified successfully.</li>
- *			<li>{@link FS_SIGNATURESTATES::e_signatureStateVerifyValid FS_SIGNATURESTATES::e_signatureStateVerifyXXX} values represent the verified state of a signature.</li>
- *			<li>{@link FS_SIGNATURESTATES::e_signatureStateVerifyIssueValid FS_SIGNATURESTATES::e_signatureStateVerifyIssueXXX} values represent the verified state of issue for a signature, with more details.</li>
- *			<li>{@link FS_SIGNATURESTATES::e_signatureStateVerifyTimestampNone FS_SIGNATURESTATES::e_signatureStateVerifyTimestampXXX} values represent the verified state for time stamp, with more details.</li>
+ *			<li>{@link FSSignatureStates::e_signatureStateUnknown FSSignatureStates::e_signatureStateXXX} values represent signed state, before signature is verified successfully.</li>
+ *			<li>{@link FSSignatureStates::e_signatureStateVerifyValid FSSignatureStates::e_signatureStateVerifyXXX} values represent the verified state of a signature.</li>
+ *			<li>{@link FSSignatureStates::e_signatureStateVerifyIssueValid FSSignatureStates::e_signatureStateVerifyIssueXXX} values represent the verified state of issue for a signature, with more details.</li>
+ *			<li>{@link FSSignatureStates::e_signatureStateVerifyTimestampNone FSSignatureStates::e_signatureStateVerifyTimestampXXX} values represent the verified state for time stamp, with more details.</li>
  *			</ul>
  */
-enum FS_SIGNATURESTATES {
+typedef NS_OPTIONS(NSUInteger, FSSignatureStates) {
     /** @brief	Unknown signature. */
-    e_signatureStateUnknown = 0x00000000,
-    /** @brief	Signature does not have any data for signing. */
-    e_signatureStateNoSignData = 0x00000200,
+    e_signatureStateUnknown = 0,
     /** @brief	Unsigned signature.*/
-    e_signatureStateUnsigned = 0x00000001,
+    e_signatureStateUnsigned = 1 << 0,
     /** @brief	Signed signature. */
-    e_signatureStateSigned = 0x00000002,
+    e_signatureStateSigned = 1 << 1,
     /** @brief	Verification state of a signature is valid. */
-    e_signatureStateVerifyValid = 0x00000004,
+    e_signatureStateVerifyValid = 1 << 2,
     /** @brief	Verification state of a signature is invalid. */
-    e_signatureStateVerifyInvalid = 0x00000008,
+    e_signatureStateVerifyInvalid = 1 << 3,
     /** @brief	Signature data is destroyed (the signature data cannot be parsed properly). */
-    e_signatureStateVerifyErrorData = 0x00000010,
+    e_signatureStateVerifyErrorData = 1 << 4,
     /** @brief	Unsupported signature. */
-    e_signatureStateVerifyNoSupportWay = 0x00000020,
+    e_signatureStateVerifyNoSupportWay = 1 << 5,
     /** @brief	Non expected byte range. */
-    e_signatureStateVerifyErrorByteRange = 0x00000040,
+    e_signatureStateVerifyErrorByteRange = 1 << 6,
     /** @brief	The document has changed within the scope of the signature. */
-    e_signatureStateVerifyChange = 0x00000080,
+    e_signatureStateVerifyChange = 1 << 7,
     /** @brief	Signature cannot be trusted (containing aggression). */
-    e_signatureStateVerifyIncredible = 0x00000100,
+    e_signatureStateVerifyIncredible = 1 << 8,
+    /** @brief	Signature does not have any data for signing. */
+    e_signatureStateNoSignData = 1 << 9,
     /** @brief	Verification state of the issuer is valid. */
-    e_signatureStateVerifyIssueValid = 0x00001000,
+    e_signatureStateVerifyIssueValid = 1 << 12,
     /** @brief	Verification state of the issuer is unknown. */
-    e_signatureStateVerifyIssueUnknown = 0x00002000,
+    e_signatureStateVerifyIssueUnknown = 1 << 13,
     /** @brief	Certificate for verifying issuer is revoked. */
-    e_signatureStateVerifyIssueRevoke = 0x00004000,
+    e_signatureStateVerifyIssueRevoke = 1 << 14,
     /** @brief	Certificate for verifying issuer is expired. */
-    e_signatureStateVerifyIssueExpire = 0x00008000,
+    e_signatureStateVerifyIssueExpire = 1 << 15,
     /** @brief	Not check the issuer. */
-    e_signatureStateVerifyIssueUncheck = 0x00010000,
+    e_signatureStateVerifyIssueUncheck = 1 << 16,
     /** @brief	The verified issue is current issuer. */
-    e_signatureStateVerifyIssueCurrent = 0x00020000,
+    e_signatureStateVerifyIssueCurrent = 1 << 17,
     /** @brief	No timestamp or not check timestamp. */
-    e_signatureStateVerifyTimestampNone = 0x00040000,
+    e_signatureStateVerifyTimestampNone = 1 << 18,
     /** @brief	The signature is a timestamp signature. */
-    e_signatureStateVerifyTimestampDoc = 0x00080000,
+    e_signatureStateVerifyTimestampDoc = 1 << 19,
     /** @brief	Verification state of the timestamp is valid. */
-    e_signatureStateVerifyTimestampValid = 0x00100000,
+    e_signatureStateVerifyTimestampValid = 1 << 20,
     /** @brief	Verification state of the timestamp is invalid. */
-    e_signatureStateVerifyTimestampInvalid = 0x00200000,
+    e_signatureStateVerifyTimestampInvalid = 1 << 21,
     /** @brief	Verification state of the timestamp is expired. */
-    e_signatureStateVerifyTimestampExpire = 0x00400000,
+    e_signatureStateVerifyTimestampExpire = 1 << 22,
     /** @brief	Verification state of the timestamp issuer is unknown. */
-    e_signatureStateVerifyTimestampIssueUnknown = 0x00800000,
+    e_signatureStateVerifyTimestampIssueUnknown = 1 << 23,
     /** @brief	Verification state of the timestamp issuer is valid. */
-    e_signatureStateVerifyTimestampIssueInvalid = 0x01000000,
+    e_signatureStateVerifyTimestampIssueInvalid = 1 << 24,
     /** @brief	Verification state of the timestamp time is valid, since the times is before the expiration date. */
-    e_signatureStateVerifyTimestampTimeBefore = 0x02000000
+    e_signatureStateVerifyTimestampTimeBefore = 1 << 25
 };
 
 /**
@@ -84,25 +87,25 @@ enum FS_SIGNATURESTATES {
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_SIGNATUREAPFLAGS {
+typedef NS_OPTIONS(NSUInteger, FSSignatureFlags) {
     /** @brief      If set, show Foxit flag on signature appearance. */
-    e_signatureAPFlagFoxitFlag = 0x0001,
+    e_signatureAPFlagFoxitFlag = 1 << 0,
     /** @brief      If set, show label on signature appearance. */
-    e_signatureAPFlagLabel = 0x0002,
+    e_signatureAPFlagLabel = 1 << 1,
     /** @brief      If set, show reason on signature appearance. */
-    e_signatureAPFlagReason = 0x0004,
+    e_signatureAPFlagReason = 1 << 2,
     /** @brief      If set, show signing time on signature appearance. */
-    e_signatureAPFlagSigningTime = 0x0008,
+    e_signatureAPFlagSigningTime = 1 << 3,
     /** @brief      If set, show distinguish name on signature appearance. */
-    e_signatureAPFlagDN = 0x0010,
+    e_signatureAPFlagDN = 1 << 4,
     /** @brief      If set, show location on signature appearance. */
-    e_signatureAPFlagLocation = 0x0020,
+    e_signatureAPFlagLocation = 1 << 5,
     /** @brief      If set, show signer on signature appearance. */
-    e_signatureAPFlagSigner = 0x0040,
+    e_signatureAPFlagSigner = 1 << 6,
     /** @brief      If set, show bitmap on signature appearance. */
-    e_signatureAPFlagBitmap = 0x0080,
+    e_signatureAPFlagBitmap = 1 << 7,
     /** @brief      If set, show text content on signature appearance. */
-    e_signatureAPFlagText = 0x0100
+    e_signatureAPFlagText = 1 << 8
 };
 
 /**
@@ -110,23 +113,23 @@ enum FS_SIGNATUREAPFLAGS {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_SIGNATUREKEYNAME {
+typedef NS_ENUM(NSUInteger, FSSignatureKeyName) {
     /** @brief	Signature key name: signer. */
     e_signatureKeyNameSigner = 0,
     /** @brief	Signature key name: location. */
-    e_signatureKeyNameLocation = 1,
+    e_signatureKeyNameLocation,
     /** @brief	Signature key name: reason. */
-    e_signatureKeyNameReason = 2,
+    e_signatureKeyNameReason,
     /** @brief	Signature key name: contact information. */
-    e_signatureKeyNameContactInfo = 3,
+    e_signatureKeyNameContactInfo,
     /** @brief	Signature key name: distinguish name. */
-    e_signatureKeyNameDN = 4,
+    e_signatureKeyNameDN,
     /** @brief	Signature key name: text content. */
-    e_signatureKeyNameText = 5,
+    e_signatureKeyNameText,
     /** @brief	Signature key name: filter, used to decide which registered signature handler is used to sign/verify signature. */
-    e_signatureKeyNameFilter = 6,
+    e_signatureKeyNameFilter,
     /** @brief	Signature key name: sub filter, used to decide which registered signature handler is used to sign/verify signature. */
-    e_signatureKeyNameSubFilter = 7
+    e_signatureKeyNameSubFilter
     
 };
 
@@ -135,15 +138,15 @@ enum FS_SIGNATUREKEYNAME {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_DIGEST_ALGORITHM {
+typedef NS_ENUM(NSUInteger, FSDigestAlgorithm) {
     /** @brief	Signature digest algorithm: sha1 algorithm. */
     e_digestSHA1 = 0,
     /** @brief	Signature digest algorithm: sha256 algorithm. */
-    e_digestSHA256 = 1,
+    e_digestSHA256,
     /** @brief	Signature digest algorithm: sha384 algorithm. */
-    e_digestSHA384 = 2,
+    e_digestSHA384,
     /** @brief	Signature digest algorithm: sha512 algorithm. */
-    e_digestSHA512 = 3
+    e_digestSHA512
 };
 
 
@@ -162,8 +165,12 @@ enum FS_DIGEST_ALGORITHM {
     void *swigCPtr;
     BOOL swigCMemOwn;
 }
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/** @brief Default initialization. */
+-(id)init;
 /**
  * @brief	A callback function used to start a custom digest calculation, mainly to initialize the calculation process.
  *
@@ -177,7 +184,7 @@ enum FS_DIGEST_ALGORITHM {
  * @return	<b>TRUE</b> means the calculation process is successfully started and then {@link FSSignatureCallback::continueCalcDigest:clientData:} will be triggered to continue the calculation process.
  *			<b>FALSE</b> means fail to start a calculation process.
  */
--(BOOL)startCalcDigest: (FSFileReadCallback*)file byteRangeArray: (NSArray<NSNumber*> *)byteRangeArray signature: (FSSignature*)signature clientData: (void*)clientData;
+-(BOOL)startCalcDigest: (id<FSFileReadCallback>)file byteRangeArray: (NSArray<NSNumber *> *)byteRangeArray signature: (FSSignature*)signature clientData: (void* _Nullable)clientData;
 /**
  * @brief	A callback function used to continue the custom digest calculation process.
  *
@@ -186,12 +193,12 @@ enum FS_DIGEST_ALGORITHM {
  *								If this is not <b>NULL</b>, please check the returned value of {@link FSPauseCallback::needPauseNow} and decide when to pause the calculation process.
  * @param[in]	clientData		Pointer to a user-defined object, which is passed by user from function {@link FSSignature::startSign:certPath:certPassword:digestAlgorithm:pause:clientData:} or {@link FSSignature::startVerify:clientData:}.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the rendering is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the calculation process is not finished yet and callback function {@link FSSignatureCallback::continueCalcDigest:clientData:}
+ * @return	{@link FSProgressState::e_progressFinished} means the rendering is finished successfully.<br>
+ *			{@link FSProgressState::e_progressToBeContinued} means the calculation process is not finished yet and callback function {@link FSSignatureCallback::continueCalcDigest:clientData:}
  *			would be triggered again to continue the process.<br>
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ *			{@link FSProgressState::e_progressError} means any error occurs.
  */
--(enum FS_PROGRESSSTATE)continueCalcDigest: (FSPauseCallback*)pause clientData: (void*)clientData;
+-(FSProgressState)continueCalcDigest: (FSPauseCallback* _Nullable)pause clientData: (void* _Nullable)clientData;
 /**
  * @brief	A callback function used to get the digest after the calculation process is finished.
  *
@@ -202,7 +209,7 @@ enum FS_DIGEST_ALGORITHM {
  * @return	The digest string. A digest buffer is not required to be a UTF-8 string.
  *			If there is any error, please return an empty string.
  */
--(NSData *)getDigest: (void*)clientData;
+-(NSData *)getDigest: (void* _Nullable)clientData;
 /**
  * @brief	A callback function used to do signing and return the signed data.
  *
@@ -210,9 +217,15 @@ enum FS_DIGEST_ALGORITHM {
  *			This callback function would be triggered during the signature signing process.
  *
  * @param[in]	digest			The digest data buffer, for source file buffer to be signed.
- * @param[in]	certPath		    The certificate file path, which will be used for signing. It would be in UTF-8 encoding.
+ * @param[in]   certPath		A full path of a PFX certificate file (including file name and extension),
+ *                              which will be used for signing.
+ *                              If filter of current signature is "Adobe.PPKLite" and
+ *                              sub filter of current signature is "adbe.pkcs7.detached", the input certificate
+ *                              file path should not be empty; for other cases, this can ben empty if not necessary
+ *                              in custom signature callback. When this file path is not empty,
+ *                              it should be in UTF-8 encoding and should be a valid path.
  * @param[in]	password		The password string, used to open the cert file. If this is <b>NULL</b> or empty, that means no password is required.
- * @param[in]	digestAlgorithm 	The algorithm of message digest for signed data. Please refer to {@link FS_DIGEST_ALGORITHM::e_digestSHA1 FS_DIGEST_ALGORITHM::e_digestXXX} values
+ * @param[in]	digestAlgorithm 	The algorithm of message digest for signed data. Please refer to {@link FSDigestAlgorithm::e_digestSHA1 FSDigestAlgorithm::e_digestXXX} values
  *								and it would be one of these values.
  * @param[in]	clientData		Pointer to a user-defined object, which is passed by user from function {@link FSSignature::startSign:certPath:certPassword:digestAlgorithm:pause:clientData:} or {@link FSSignature::startVerify:clientData:}.
  *
@@ -220,7 +233,7 @@ enum FS_DIGEST_ALGORITHM {
  *			Currently, its length should be within 7442.
  *			If there is any error, please return an empty string.
  */
--(NSData *)sign: (NSData*)digest certPath: (NSString *)certPath password: (NSString *)password digestAlgorithm: (unsigned int)digestAlgorithm clientData: (void*)clientData;
+-(NSData *)sign: (NSData*)digest certPath: (NSString * _Nullable)certPath password: (NSString * _Nullable)password digestAlgorithm: (FSDigestAlgorithm)digestAlgorithm clientData: (void* _Nullable)clientData;
 /**
  * @brief	A callback function used to do verifying and return the verify state.
  *
@@ -232,226 +245,233 @@ enum FS_DIGEST_ALGORITHM {
  * @param[in]	clientData	Pointer to a user-defined object, which is passed by user from function {@link FSSignature::startSign:certPath:certPassword:digestAlgorithm:pause:clientData:} or {@link FSSignature::startVerify:clientData:}.
  *
  * @return	Verify state.
- *			Please refer to {@link FS_SIGNATURESTATES::e_signatureStateVerifyValid FS_SIGNATURESTATES::e_signatureStateVerifyXXX} values and it should be one or a combination of them.
+ *			Please refer to {@link FSSignatureStates::e_signatureStateVerifyValid FSSignatureStates::e_signatureStateVerifyXXX} values and it should be one or a combination of them.
  */
--(unsigned int)verifySigState: (NSData*)digest signedData: (NSData*)signedData clientData: (void*)clientData;
+-(FSSignatureStates)verifySigState: (NSData*)digest signedData: (NSData*)signedData clientData: (void* _Nullable)clientData;
 
 -(void)dealloc;
 
 @end
 
 /**
- * @brief	Class to represent a signature.
+ * A digital signature (PDF 1.3) can be used to authenticate the identity of a user and the document's contents.
+ * It stores information about the signer and the state of the document when it was signed. The signature is
+ * contained in a signature field, as a type of form field, so class FSSignature is derived from class FSFormField.
+ * A FSSignature object can be retrieved/added by following functions:
+ * <ul>
+ * <li>To be counted and retrieved as a signature directly from PDF document, please use functions
+ *     {@link FSPDFDoc::GetSignatureCount} and {@link FSPDFDoc::GetSignature}. </li>
+ * <li>To be counted and retrieved as a signature field, please use functions
+ *     {@link FSForm::GetFieldCount} and {@link FSForm::GetField} when field type is
+ *     {@link FSFormFieldType::e_formFieldSignature FSFormFieldType::e_formFieldSignature}.</li>
+ * <li>To add a new signature, please use function {@link FSPDFPage::AddSignature}.</li>
+ * <li>To remove a signature, please use function {@link FSPDFDoc::RemoveSignature}.</li>
+ * </ul>
+ * In a signature, filter and sub filter keys are used to specify the name of signature callback object which will be
+ * used to sign and verify the signature. Before signing or verifying a signature, please ensure
+ * the signature callback object (with same filter and sub-filter of signature) has been registered to Foxit PDF SDK.
+ * For windows platform, Foxit PDF SDK has a default signature callback object with filter "Adobe.PPKLite" and
+ * sub filter "adbe.pkcs7.detached". For rest platform or custom signature callback object, function
+ * {@link FSLibrary::RegisterSignatureCallback} can be used to register a the signature callback object.<br>
+ * This class offers functions to get/set signature information/properties, sign or verify a signature, and so on.
+ * For example:
+ * <ul>
+ * <li>To sign an unsigned signature, please use functions {@link FSSignature::StartSign}.
+ *     When signing a signature successfully, user is strongly recommended to close current document and
+ *     then open the signed PDF document to do following operation.</li>
+ * <li>To verify a signed signature, please use functions {@link FSSignature::StartVerify}.</li>
+ * <li>To retrieve signature dictionary directly, please use function {@link FSSignature::GetSignatureDict}.</li>
+ * </ul>
+ * Before signing an unsigned signature, user can call following functions to set information for signing and
+ * signed appearance:<br>
+ * <ul>
+ * <li>For using default Foxit appearance template, following functions can be used to set related information:
+ *     {@link FSSignature::SetAppearanceFlags}, {@link FSSignature::SetSignTime}, {@link FSSignature::SetKeyValue},
+ *     {@link FSSignature::SetBitmap}, {@link FSSignature::SetImage}.</li>
+ * <li>For using customized appearance, please set appearance stream content by function
+ *     {@link FSSignature::SetAppearanceContent}.</li>
+ * </ul>
+ * If an unsigned signature has been set some information for signing, but the document is saved directly or
+ * closed without signing the signature, these data (including filter and sub filter) will be lost
+ * in the saved document or in the closed document. When the document is opened again, the unsigned signature needs
+ * to be specified at least filter and sub filter for signing; otherwise, this signature cannot be signed.
  *
- * @details	A digital signature (PDF 1.3) can be used to authenticate the identity of a user and the document's contents.
- *			It stores information about the signer and the state of the document when it was signed.
- *			The signature is contained in a signature field, as a type of form field, so class ::FSSignature is derived from class ::FSFormControl.
- *			A ::FSSignature object can be gotten/added by following methods:
- *			<ul>
- *			<li>To count and get signature from document, use functions {@link FSPDFDoc::getSignatureCount} and {@link FSPDFDoc::getSignature:}.</li>
- *			<li>To add a new signature, use function {@link FSPDFPage::addSignature:}.</li>
- *			<li>If the related field type of a ::FSFormControl object is {@link FSM_FORMFIELDTYPE::e_formFieldSignature}, the essential class of this form control is ::FSSignature.
- *				So this ::FSFormControl object can be converted to be used as a ::FSSignature object.</li>
- *			</ul>
- *			In a signature, filter and sub filter keys are used to specify the name of signature handler which will be used to sign and verify the signature.
- *			Before sign a signature, please ensure the signature handler has been registered to Foxit PDF SDK with the same filter and sub filter of the signature.
- *			Before verify a signature, please ensure a signature handler with the same name, which is specified by signature's filter and sub filter keys, has been registered to Foxit PDF SDK.
- *			Function {@link FSLibrary::registerDefaultSignatureHandler} can be used to register the default AdobePPKLite handler, with filter ("Adobe.PPKLite") and sub filter ("adbe.pkcs7.detached" or
- *             "adbe.pkcs7.sha1").
- *			This class offers functions to access signature information/properties, sign or verify a signature, and so on. For example:
- *			<ul>
- *			<li>To sign an unsigned signature, use functions {@link FSSignature::startSign:certPath:certPassword:digestAlgorithm:pause:clientData:} and {@link FSSignature::continueSign}.
- *				When signing a signature successfully, user is strongly recommended to close current document and then open the signed PDF document to do following operation.</li>
- *			<li>To verify a signed signature, use functions {@link FSSignature::startVerify:clientData:} and {@link FSSignature::continueVerify}.</li>
- *			<li>To access signature dictionary directly, use function {@link FSSignature::getSignatureDict}.</li>
- *			</ul>
- *			Before signing an unsigned signature, user can call following functions to set information for signing and signed appearance:<br>
- *			{@link FSSignature::setAppearanceFlags:}, {@link FSSignature::setSigningTime:}, {@link FSSignature::setKeyValue:value:}, {@link FSSignature::setBitmap:},
- *			{@link FSSignature::setAppearanceContent:}.<br>
- *			If an unsigned signature has been set some information for signing, but the document is saved directly or closed without signing the signature,
- *			these data (including filter and sub filter) will be lost in the saved document or in the closed document. When the document is opened again,
- *			the unsigned signature needs to be specified at least filter and sub filter for signing; otherwise, this signature cannot be signed.
- *
- * @see	FSFormControl
+ * @see FSFormField
  * @see FSPDFDoc
  * @see FSPDFPage
  */
-@interface FSSignature : FSFormControl
+@interface FSSignature : FSFormField
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
-
 /**
- * @brief	Check whether current signature is signed or not.
+ * @brief Check whether current signature is signed or not.
  *
- * @return	<b>YES</b> means current signature is signed, and <b>NO</b> means not.
+ * @return <b>true</b> means current signature is signed, and <b>false</b> means not.
  */
 -(BOOL)isSigned;
 
 /**
- * @brief	Start signing current signature if current signature is unsigned.
+ * @brief Start signing current signature if current signature is unsigned.This is progressive, which means that the job may not finished when it return.
  *
- * @details	This function is used for an unsigned signature.
- *			Filter and sub filter keys of current signature specify the name of signature handler which will be used to sign current signature.
- *			So before signing, please ensure:
- *			<ul>
- *			<li>Current signature has valid filter and sub filter string values.</li>
- *			<li>The necessary signature handler has been registered by function {@link FSLibrary::registerDefaultSignatureHandler} (for default siganture handler).</li>
- *			</ul>
- *			It may take a long time to sign a signature, so Foxit PDF SDK uses a progressive process to do this.<br>
- * 			If the signing proecess is not finished, please call function {@link FSSignature::continueSign} to continue the signing process until it is finished.
+ * @details This function is used for an unsigned signature. Filter and sub filter keys of current signature specify
+ *          the name of signature handler which will be used to sign current signature.
+ *          So before signing, please ensure:
+ *          <ul>
+ *          <li>Current signature has valid filter and sub filter string values.</li>
+ *          <li>The necessary signature handler has been registered by function
+ *              {@link FSLibrary::RegisterDefaultSignatureCallback} (for default siganture handler) or
+ *              by function {@link FSLibrary::RegisterSignatureCallback} (for customized signature handler).</li>
+ *          </ul>
+ *          It may take a long time to sign a signature, so Foxit PDF SDK uses a progressive process to do this.<br>
+ *          User can use the returned FSProgressive object to check if the signing is finished or
+ *          needs to be continued.
  *
- * @param[in]	savePath		A full PDF file path for saving the signing result, including file name and extension. It should be in UTF-8 encoding.<br>
- *								The signed document would be saved to another PDF file.
- * @param[in]	certPath		A full path of a pfx certificate file (including file name and extension), which will be used for signing.
- *								It should be in UTF-8 encoding. And it should be a valid path.
- * @param[in]	certPassword	The password string, used to open the cert file. If this is <b>nil</b> or empty, that means no password is required.
- *								It should be valid if parameter <i>passwordLen</i> is above 0.
- * @param[in]	digestAlgorithm	The algorithm of message digest for signed data. Please refer to {@link FS_DIGEST_ALGORITHM::e_digestSHA1 FS_DIGEST_ALGORITHM::e_digestXXX} values
- *								and it should be one of these values.
- * @param[in]	pause			Pause object which decides if the signing process needs to be paused.
- *								This can be <b>nil</b> which means not to pause during the signing process.
- *								If this is not <b>nil</b>, it should be a valid pause object implemented by user.
- * @param[in]	clientData		Pointer to a user-defined object, which will be passed to call back functions in FSSignatureCallback.
- *								This is useless if the default handler will be used to sign current signature.
+ * @param[in] save_path          A full PDF file path for saving the signing result,
+ *                               including file name and extension.
+ *                               It should be in UTF-8 encoding.<br>
+ *                               The signed document would be saved to another PDF file.
+ * @param[in] cert_path          A full path of a PFX certificate file (including file name and extension),
+ *                               which will be used for signing.
+ *                               If filter of current signature is "Adobe.PPKLite" and
+ *                               sub filter of current signature is "adbe.pkcs7.detached", the input certificate
+ *                               file path should not be empty; for other cases, this can ben empty if not necessary
+ *                               in custom signature callback. When this file path is not empty,
+ *                               it should be in UTF-8 encoding and should be a valid path.
+ * @param[in] cert_password      The password string, used to open the cert file. If this is <b>NULL</b> or empty,
+ *                               that means no password is required. It should be valid if parameter
+ *                               <i>cert_password_len</i> is above 0.
+ * @param[in] cert_password_len  The length of password string. It should be non-negative. If this is 0, that means
+ *                               no password is required.
+ * @param[in] digest_algorithm   The algorithm of message digest for signed data. Please refer to
+ *                               {@link FSDigestAlgorithm::e_digestSHA1 FSDigestAlgorithm::e_digestXXX} values and it should be
+ *                               one of these values.
+ * @param[in] pause              Pause object which decides if the signing process needs to be paused. This can be
+ *                               <b>NULL</b> which means not to pause during the signing process. If this is
+ *                               not <b>NULL</b>, it should be a valid pause object implemented by user.
+ * @param[in] client_data        Pointer to a user-defined object, which will be passed to call back functions in
+ *                               FSSignatureCallback. This is useless if the default handler will be used to sign
+ *                               current signature.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the signing is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the signing process is not finished yet and function {@link FSSignature::continueSign} should be called to continue the process.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  *
- * @note	When signing a signature successfully, user is strongly recommended to close current document and then open the signed PDF document to do following operation.
- *
- * @exception	e_errParam		Value of input parameter is invalid.
- * @exception	e_errFormat		Any input UTF-8 string parameter is not in UTF-8 encoding.
- * @exception	e_errUnknown	Any unknown error occurs.
+ * @note When signing a signature successfully, user is strongly recommended to close current document and then open
+ *       the signed PDF document to do following operation.
  */
--(enum FS_PROGRESSSTATE)startSign: (NSString *)savePath certPath: (NSString *)certPath certPassword: (NSString*)certPassword digestAlgorithm: (enum FS_DIGEST_ALGORITHM)digestAlgorithm pause: (FSPauseCallback*)pause clientData: (void*)clientData;
+-(FSProgressive * _Nullable)startSign: (NSString * _Nullable)cert_path cert_password: (NSString * _Nullable)cert_password digest_algorithm: (FSDigestAlgorithm)digest_algorithm client_data: (void * _Nullable)client_data pause: (FSPauseCallback * _Nullable)pause save_path: (NSString *)save_path;
 
 /**
- * @brief	Continue signing process.
+ * @brief Start verifying current signature if current signature is signed.This is progressive, which means that the job may not finished when it return.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the signing is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the signing process is not finished yet and function {@link FSSignature::continueSign} should be called to continue the process.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ * @details This function is used for a signed signature. Filter and sub filter keys of current signature specify the
+ *          name of signature handler which will be used to verify current signature. So before verifying, please
+ *          ensure the necessary signature handler has been registered by function
+ *          {@link FSLibrary::RegisterDefaultSignatureCallback} (for default siganture callback, implemented by Foxit PDF SDK) or
+ *          by function {@link FSLibrary::RegisterSignatureCallback} (for customized signature callback, implemented by user).<br>
+ *          It may take a long time to verify a signature, so Foxit PDF SDK uses a progressive process to do this.<br>
+ *          User can use the returned FSProgressive object to check if the signing is finished or
+ *          needs to be continued.
+ *
+ * @param[in] pause        Pause object which decides if the verifying process needs to be paused.
+ *                         This can be <b>NULL</b> which means not to pause during the verifying process.
+ *                         If this is not <b>NULL</b>, it should be a valid pause object implemented by user.
+ * @param[in] client_data  Pointer to a user-defined object, which will be passed to call back functions in
+ *                         FSSignatureCallback. This is useless if the default handler will be used to verify
+ *                         current signature.
+ *
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  */
--(enum FS_PROGRESSSTATE)continueSign;
-
+-(FSProgressive * _Nullable)startVerify: (void* _Nullable)client_data pause: (FSPauseCallback* _Nullable)pause;
 /**
- * @brief	Start verifying current signature if current signature is signed.
+ * @brief Get certificate information.
  *
- * @details	This function is used for a signed signature.
- *			Filter and sub filter keys of current signature specify the name of signature handler which will be used to verify current signature.
- *			So before verifying, please ensure the necessary signature handler has been registered by function {@link FSLibrary::registerDefaultSignatureHandler} (for default siganture handler) or
- *			by function {@link FSLibrary::registerDefaultSignatureHandler} (for customized signature handler).<br>
- *			It may take a long time to verify a signature, so Foxit PDF SDK uses a progressive process to do this.<br>
- * 			If the verifying proecess is not finished, please call function {@link FSSignature::continueVerify} to continue the verifying process until it is finished.
+ * @details This function is used for a signed signature.
+ *          Currently, this function only supports for iOS and android platform.
  *
- * @param[in]	pause			Pause object which decides if the verifying process needs to be paused.
- *								This can be <b>nil</b> which means not to pause during the verifying process.
- *								If this is not <b>nil</b>, it should be a valid pause object implemented by user.
- * @param[in]	clientData		Pointer to a user-defined object, which will be passed to call back functions in FSSignatureCallback.
- *								This is useless if the default handler will be used to verify current signature.
+ * @param[in] key  Certificate key string, in UTF-8 encoding.
+ *                 Currently it can be one of the following keys:<br>
+ *                 <ul>
+ *                 <li>"SerialNumber"</li>
+ *                 <li>"Issuer"</li>
+ *                 <li>"Subject"</li>
+ *                 <li>"ValidPeriodFrom"</li>
+ *                 <li>"ValidPeriodTo"</li>
+ *                 </ul>
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the verifying is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the verifying process is not finished yet and function {@link FSSignature::continueVerify} should be called to continue the process.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ * @return Certificate information string, in UTF-8 string.
+ *
+ * @note For "ValidPeriodFrom" or "ValidPeriodTo" key, timezone value will not be computed in.
  */
--(enum FS_PROGRESSSTATE)startVerify: (FSPauseCallback*)pause clientData:(void*)clientData;
-
+-(NSString*)getCertificateInfo: (NSString *)key;
 /**
- * @brief	Continue verifying process.
+ * @brief Get the byte ranges data, including 4 elements.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the verifying is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the verifying process is not finished yet and function {@link FSSignature::continueVerify} should be called to continue the process.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ * @details This function is used for a signed signature to retrieve its byte range for digest calculation.
+ *          The array of byte ranges contains 4 elements. These 4 elements are always in pairs of
+ *          integers (starting byte offset, length in bytes), describing the exact byte range
+ *          for the digest calculation.<br>
+ *          Please refer to <PDF Reference 1.7> Section 8.7 Digital Signatures for more details.
+ *
+ * @return the byte ranges array with a size of 4. Return nil means failure.
  */
--(enum FS_PROGRESSSTATE)continueVerify;
-
+-(NSArray<NSNumber *> * _Nullable)getByteRanges;
 /**
- * @brief	Get certificate information.
+ * @brief Get current state.
  *
- * @details	This function is used for a signed signature.
- *			Currently, this function only supports for iOS and android platform.
+ * @details <ul>
+ *          <li>Before verifying a signature, this function is to get the state about if current signature is signed
+ *              or if current signature is lack of data for signing.</li>
+ *          <li>After verifying a signature, this function is to get the verified state -- which indicates that
+ *              the verified signature is signed; if the verified signature is still unsigned, this function will
+ *              get the unsigned state instead.</li>
+ *          </ul>
  *
- * @param[in]	key		Certificate key string, in UTF-8 encoding.
- *						Currently it can be one of the following keys:<br>
- *						<ul>
- *						<li>"SerialNumber"</li>
- *						<li>"Issuer"</li>
- *						<li>"Subject"</li>
- *						<li>"ValidPeriodFrom"</li>
- *						<li>"ValidPeriodTo"</li>
- *						</ul>
- *
- * @return	Certificate information string, in UTF-8 string.
- *
- * @note	For "ValidPeriodFrom" or "ValidPeriodTo" key, timezone value will not be computed in.
- *
- * @exception	e_errParam		Value of input parameter is invalid.
- * @exception	e_errFormat		Any input UTF-8 string parameter is not in UTF-8 encoding.
+ * @return The value of signature state. Please refer to
+ *         {@link FSSignatureStates::e_signatureStateUnknown FSSignatureStates::e_signatureStateXXX} values and it would be
+ *         one or combination of them.<br>
+ *         Specially, if the returned state is
+ *         {@link FSSignatureStates::e_signatureStateNoSignData FSSignatureStates::e_signatureStateNoSignData}, that means
+ *         current signature has no data for signing, and please at least call function
+ *         {@link FSSignature::SetKeyValue} to set necessary filter and sub filter to current signature.
+ *         Use can also call following functions to set other data for signing and signed appearance before calling
+ *         function {@link FSSignature::StartSign}:<br>
+ *         <ul>
+ *         <li>For using default Foxit appearance template, following functions can be used to set related
+ *             information: {@link FSSignature::SetAppearanceFlags}, {@link FSSignature::SetSignTime},
+ *             {@link FSSignature::SetKeyValue}, {@link FSSignature::SetBitmap}, {@link FSSignature::SetImage}.</li>
+ *         <li>For using customized appearance, please set appearance stream content by function
+ *             {@link FSSignature::SetAppearanceContent}.</li>
+ *         </ul>
  */
--(NSString *)getCertificateInfo: (NSString *)key;
-
+-(FSSignatureStates)getState;
 /**
- * @brief	Get the byte ranges data, including 4 elements.
+ * @brief Clear the data and appearance if current signature is singed and verified valid.
  *
- * @details	This function is used for a signed signature.
- *			The array of byte ranges contains 4 elements. These 4 elements are always in pairs of offset-size values,
- *			and is in such order: offset,size,offset,size.
+ * @details This function is used for a signed and valid signature.
  *
- * @return	An array which can contain 4 elements and is used to receives data of byte ranges.
- */
--(NSArray *)getByteRanges;
-
-/**
- * @brief	Get current state.
- *
- * @details	<ul>
- *			<li>Before verifying a signature, this function is to get the state about if current signature is signed
- *				or if current signature is lack of data for signing.</li>
- *			<li>After verifying a signature, this function is to get the verified state -- which indicates that the verified signature is signed;
- *				if the verified signature is still unsigned, this function will get the unsigned state instead.</li>
- *			</ul>
- *
- * @return	The value of signature state.
- *			Please refer to {@link FS_SIGNATURESTATES::e_signatureStateUnknown FS_SIGNATURESTATES::e_signatureStateXXX} values and it would be one or combination of them.<br>
- *			Specially, if the returned state is {@link FS_SIGNATURESTATES::e_signatureStateNoSignData}, that means current signature has no data for signing,
- *			and please at least call function {@link FSSignature::setKeyValue:value:} to set necessary filter and sub filter to current signature.
- *			Use can also call following functions to set other data for signing and signed appearance before calling function {@link FSSignature::startSign:certPath:certPassword:digestAlgorithm:pause:clientData:}<br>
- *			{@link FSSignature::setAppearanceFlags:}, {@link FSSignature::setSigningTime:}, {@link FSSignature::setKeyValue:value:}, {@link FSSignature::setBitmap:},
- *			{@link FSSignature::setAppearanceContent:}.
- */
--(unsigned int)getState;
-
-/**
- * @brief	Clear the data and appearance if current signature is singed and verified valid.
- *
- * @details   This function is used for a signed and valid signature.
- *
- * @return	<b>YES</b> means clear the data and appearance successfully, while <b>NO</b> means no need to clear data and appearance or any error.
+ * @return <b>true</b> means clear the data and appearance successfully, while <b>false</b> means no need to
+ *         clear data and appearance or any error.
  */
 -(BOOL)clearSignedData;
-
 /**
- * @brief	Get the PDF document, which current signature belongs to.
+ * @brief Get the PDF document, which current signature belongs to.
  *
- * @return	A ::FSPDFDoc object.
+ * @return A PDF document object.
  */
 -(FSPDFDoc*)getDocument;
-
 /**
- * @brief	Get signature appearance flags.
+ * @brief Get signature appearance flags.
  *
- * @details	Signature appearance flags indicate which information will be shown.
- *			Currently, this is only useful after {@link FSSignature::setAppearanceFlags:} is called successfully.
- *			For a signature gotten from PDF document, returned value of this function would be useless.
+ * @details Signature appearance flags indicate which information will be shown.
+ *          Currently, this is only useful after {@link FSSignature::SetAppearanceFlags} is called successfully.
+ *          For a signature gotten from PDF document, returned value of this function would be useless.
  *
- * @return	Signature appearance flags.
- *			Please refer to {@link FS_SIGNATUREAPFLAGS::e_signatureAPFlagFoxitFlag FS_SIGNATUREAPFLAGS::e_signatureAPFlagXXX} values and it would be one or a combination of them.
+ * @return Signature appearance flags. Please refer to
+ *         {@link FSSignatureFlags::e_signatureAPFlagFoxitFlag FSSignatureFlags::e_signatureAPFlagXXX} values and it would be
+ *         one or a combination of them.
  */
--(unsigned int)getAppearanceFlags;
-
+-(FSSignatureFlags)getAppearanceFlags;
 /**
  * @brief	Set signature appearance flags.
  *
@@ -460,18 +480,30 @@ enum FS_DIGEST_ALGORITHM {
  *			If customized appearance content has been set by function {@link FSSignature::setAppearanceContent:}, appearance flags will be ignored.
  *
  * @param[in]	apFlags	Signature appearance flags.
- *						Please refer to {@link FS_SIGNATUREAPFLAGS::e_signatureAPFlagFoxitFlag FS_SIGNATUREAPFLAGS::e_signatureAPFlagXXX} values and it should be one or a combination of them.
+ *						Please refer to {@link FSSignatureFlags::e_signatureAPFlagFoxitFlag FSSignatureFlags::e_signatureAPFlagXXX} values and it should be one or a combination of them.
+ *                      note:if use e_signatureAPFlagBitmap flag. you need call FSSignature::setBitmap function
  */
--(void)setAppearanceFlags: (unsigned int)apFlags;
+-(void)setAppearanceFlags: (FSSignatureFlags)apFlags;
 
+/**
+ * @brief	Set customized appearance content (as low level drawing commands) for signed signature appearance.
+ *
+ * @details	This function can only be used for an unsigned signature, before calling function {@link FSSignature::startSign:certPath:certPassword:digestAlgorithm:pause:clientData:} for the unsigned signature.
+ *			Once customized appearance content is set, it will be used as the signed appearance and appearance flags set by function {@link FSSignature::setAppearanceFlags:} will be ignored.
+ *
+ * @param[in]	appearanceContent		Customized appearance content, in UTF-8 encoding.
+ *										A sequence of drawing commands to be used for the appearance, for example "10 10 m 20 10 l S".
+ *
+ * @exception	e_errFormat		Any input UTF-8 string parameter is not in UTF-8 encoding.
+ */
+-(void)setAppearanceContent: (NSString *)appearanceContent;
 /**
  * @brief	Get time of signing.
  *
  * @return	A Foxit::DateTime object that receives the signing time.
  *			If no signing time is found or any error, this function will return a ::FSDateTime with all values 0.
  */
--(FSDateTime*)getSigningTime;
-
+-(FSDateTime*)getSignTime;
 /**
  * @brief	Set time of signing.
  *
@@ -479,8 +511,7 @@ enum FS_DIGEST_ALGORITHM {
  *
  * @param[in]	signTime	The signing time.
  */
--(void)setSigningTime: (FSDateTime*)signTime;
-
+-(void)setSignTime: (FSDateTime*)signTime;
 /**
  * @brief	Get the string value for specified key name.
  *
@@ -488,17 +519,16 @@ enum FS_DIGEST_ALGORITHM {
  *			Specially, filter and sub filter are used to specify which registered signature handler will be used to sign/verify current signature.
  *
  * @param[in]	key		Key name.
- *						Please refer to {@link FS_SIGNATUREKEYNAME::e_signatureKeyNameSigner FS_SIGNATUREKEYNAME::e_signatureKeyNameXXX} values and it should be one of them.
+ *						Please refer to {@link FSSignatureKeyName::e_signatureKeyNameSigner FSSignatureKeyName::e_signatureKeyNameXXX} values and it should be one of them.
  *
  * @return	The string value:
  *          <ul>
- *          <li>For key values {@link FS_SIGNATUREKEYNAME::e_signatureKeyNameFilter} and
- *              {@link FS_SIGNATUREKEYNAME::e_signatureKeyNameSubFilter}, the returend string is in ASCII encoding.</li>
+ *          <li>For key values {@link FSSignatureKeyName::e_signatureKeyNameFilter} and
+ *              {@link FSSignatureKeyName::e_signatureKeyNameSubFilter}, the returend string is in ASCII encoding.</li>
  *          <li>For rest key values, the returned string is in UTF-8 encoding.</li>
  *          </ul>
  */
--(NSString *)getKeyValue: (enum FS_SIGNATUREKEYNAME)key;
-
+-(NSString *)getKeyValue: (FSSignatureKeyName)key;
 /**
  * @brief	Set the string value for specified key name.
  *
@@ -511,14 +541,14 @@ enum FS_DIGEST_ALGORITHM {
  *			and also ensure the handler has been registered before signing and verifying current signature.<br>
  *
  * @param[in]	key		Key name.
- *						      Please refer to {@link FS_SIGNATUREKEYNAME::e_signatureKeyNameSigner FS_SIGNATUREKEYNAME::e_signatureKeyNameXXX} values and it should be one of them.
+ *						      Please refer to {@link FSSignatureKeyName::e_signatureKeyNameSigner FSSignatureKeyName::e_signatureKeyNameXXX} values and it should be one of them.
  * @param[in]	value	New string value:
  *                  <ul>
- *                  <li>For key values {@link FS_SIGNATUREKEYNAME::e_signatureKeyNameFilter} and
- *                      {@link FS_SIGNATUREKEYNAME::e_signatureKeyNameSubFilter}, the input string should be in ASCII encoding.</li>
+ *                  <li>For key values {@link FSSignatureKeyName::e_signatureKeyNameFilter} and
+ *                      {@link FSSignatureKeyName::e_signatureKeyNameSubFilter}, the input string should be in ASCII encoding.</li>
  *                  <li>For rest key values, the returned string should be in UTF-8 encoding.</li>
  *                  </ul>
- *                  This should not be <b>NULL</b> or empty, if parameter <i>key</i> is {@link FS_SIGNATUREKEYNAME::e_signatureKeyNameFilter}.
+ *                  This should not be <b>NULL</b> or empty, if parameter <i>key</i> is {@link FSSignatureKeyName::e_signatureKeyNameFilter}.
  *
  * @return	None.
  *
@@ -526,8 +556,7 @@ enum FS_DIGEST_ALGORITHM {
  * @exception	e_errFormat		Any input UTF-8 string parameter is not in UTF-8 encoding.
  * @exception	e_errUnknown	Any unknown error occurs.
  */
--(void)setKeyValue: (enum FS_SIGNATUREKEYNAME)key value: (NSString *)value;
-
+-(void)setKeyValue: (FSSignatureKeyName)key value: (NSString *)value;
 /**
  * @brief	Get a bitmap used for the signature appearance.
  *
@@ -545,7 +574,23 @@ enum FS_DIGEST_ALGORITHM {
  * @param[in]	bitmap		A bitmap to be set to the appearance. It should be valid.
  */
 -(void)setBitmap: (FSBitmap*)bitmap;
-
+/**
+ * @brief Set an image for the signature appearance, with a specified frame index.
+ *
+ * @details This function is recommended to be used before calling function {@link FSSignature::StartSign} for
+ *          an unsigned signature. If customized appearance content has been set by function
+ *          {@link FSSignature::SetAppearanceContent}, the image will not be used in signed appearance.<br>
+ *          Input image may contain multiple frames, and only one frame of the image can be set to current signature.
+ *
+ * @param[in] image        An image. One of its frames will be set to current signature. This image contains at least
+ *                         one frame and the image type should not be
+ *                         {@link FSImageType::e_imageTypeUnknown FSImageType::e_imageTypeUnknown}.
+ * @param[in] frame_index  Frame index. Valid range: from 0 to (<i>count</i>-1).
+ *                         <i>count</i> is returned by function {@link FSImage::GetFrameCount}.
+ *
+ * @return None.
+ */
+-(void)setImage: (FSImage*)image frame_index: (int)frame_index;
 /**
  * @brief	Get signature dictionary.
  *
@@ -555,21 +600,69 @@ enum FS_DIGEST_ALGORITHM {
  *			If there is any error, this function will return <b>nil</b>.
  */
 -(FSPDFDictionary*)getSignatureDict;
-
 /**
- * @brief	Set customized appearance content (as low level drawing commands) for signed signature appearance.
+ * @brief Set the default length of signature contents which represents signature value (known as signed data).
  *
- * @details	This function can only be used for an unsigned signature, before calling function {@link FSSignature::startSign:certPath:certPassword:digestAlgorithm:pause:clientData:} for the unsigned signature.
- *			Once customized appearance content is set, it will be used as the signed appearance and appearance flags set by function {@link FSSignature::setAppearanceFlags:} will be ignored.
+ * @details This function can only be used before function {@link FSSignature::StartSign}
+ *          for an unsigned signature.<br>
+ *          Signature contents represent the signature value (known as signed data).
+ *          When initializing the signature field, the signature contents will be initialized with
+ *          the default length 7942.
+ *          When using custom signature callback to sign and verify an unsigned signature,
+ *          this function to change the default length of signature contents. In this case, user should also
+ *          ensure that the length of returned signed data in callback function {@link FSSignatureCallback::Sign}
+ *          should not be larger than the default length set by this function.
  *
- * @param[in]	appearanceContent		Customized appearance content, in UTF-8 encoding.
- *										A sequence of drawing commands to be used for the appearance, for example "10 10 m 20 10 l S".
+ * @param[in] default_length  The default length of the signature value (known as signed data), in bytes.
+ *                            It should not be less than 4098.
  *
- * @exception	e_errFormat		Any input UTF-8 string parameter is not in UTF-8 encoding.
+ * @return None.
  */
--(void)setAppearanceContent: (NSString *)appearanceContent;
+-(void)setDefaultContentsLength:(unsigned int)default_length;
+/**
+ * @brief Get the count of certificates in current signature's certificate chain.
+ *
+ * @details This function is recommended to be used before verifying a signature.
+ *          When sub filter of current signature is "adbe.x509.rsa_sha1", application needs to call this function to
+ *          get the count of certificates in certificate chain and then call function {@link FSSignature::GetCert}
+ *          to get verified public certificate before verifying signature.
+ *
+ * @return The count of certificates.
+ */
+-(int)getCertCount;
+/**
+ * @brief Get a certificate from current signature's certificate chain by index.
+ *
+ * @details This function is recommended to be used before verifying a signature.
+ *          When sub filter of current signature is "adbe.x509.rsa_sha1", application needs to call this function to
+ *          get verified public certificate before verifying signature.
+ *          The first certificate in certificate chain is the signing certificate, and it can be used to
+ *          verify the signature.
+ *
+ * @param[in] index  The index of certificate to be gotten. Valid range: from 0 to (<i>count</i>-1).
+ *                   <i>count</i> is returned by function {@link FSSignature::GetCertCount}.
+ *
+ * @return A certificate, in UTF-8 encoding.
+ */
+-(NSString*)getCert: (int)index;
+/**
+ * @brief Set a certificate chain.
+ *
+ * @details This function is recommended to be used before signing an unsigned signature.
+ *          When the signature sub filter is "adbe.x509.rsa_sha1", users need to call this function to
+ *          set the cert chain to the signature. For other sub filter, this function will return directly without
+ *          doing anything.
+ *
+ * @param[in] cert_chain  A string array that represents the certificate chain. Each string in this array should be
+ *                        in UTF-8 encoding.
+ *
+ * @return None.
+ */
+-(void)setCertChain: (NSArray<NSString *> *)cert_chain;
 
 /** @brief Free the object. */
 -(void)dealloc;
 
 @end
+
+NS_ASSUME_NONNULL_END

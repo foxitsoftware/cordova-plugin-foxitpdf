@@ -14,16 +14,11 @@
 
 #import "../UIExtensionsManager.h"
 
-@interface LineToolHandler : NSObject<IToolHandler> 
+@interface LineToolHandler : NSObject <IToolHandler>
 
-@property (nonatomic, assign) enum FS_ANNOTTYPE type;
+@property (nonatomic, assign) FSAnnotType type;
 @property (nonatomic, assign) BOOL isArrowLine;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end
-
-
-
-
-

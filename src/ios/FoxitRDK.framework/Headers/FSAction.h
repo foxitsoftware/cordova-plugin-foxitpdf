@@ -15,50 +15,66 @@
 
 #import "FSCommon.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * @brief	Enumeration for action type.
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_ACTIONTYPE {
+typedef NS_ENUM(NSUInteger, FSActionType) {
     /** @brief	Action type: unknown action. */
     e_actionTypeUnknown = 0,
     /** @brief	Action type: go-to action. */
-    e_actionTypeGoto = 1,
+    e_actionTypeGoto,
     /** @brief	Action type: remote go-to action. */
-    e_actionTypeGoToR = 2,
+    e_actionTypeGoToR,
     /** @brief	Action type: embedded go-to action. */
-    e_actionTypeGoToE = 3,
+    e_actionTypeGoToE,
     /** @brief	Action type: launch action. */
-    e_actionTypeLaunch = 4,
+    e_actionTypeLaunch,
     /** @brief	Action type: thread action. */
-    e_actionTypeThread = 5,
+    e_actionTypeThread,
     /** @brief	Action type: uniform resource identifier (URI) action. */
-    e_actionTypeURI = 6,
+    e_actionTypeURI,
     /** @brief	Action type: sound action. */
-    e_actionTypeSound = 7,
+    e_actionTypeSound,
     /** @brief	Action type: movie action. */
-    e_actionTypeMovie = 8,
+    e_actionTypeMovie,
     /** @brief	Action type: hide action. */
-    e_actionTypeHide = 9,
+    e_actionTypeHide,
     /** @brief	Action type: named action. */
-    e_actionTypeNamed = 10,
+    e_actionTypeNamed,
     /** @brief	Action type: submit-form action. */
-    e_actionTypeSubmitForm = 11,
+    e_actionTypeSubmitForm,
     /** @brief	Action type: reset-form action. */
-    e_actionTypeResetForm = 12,
+    e_actionTypeResetForm,
     /** @brief	Action type: import-data action. */
-    e_actionTypeImportData = 13,
+    e_actionTypeImportData,
     /** @brief	Action type: JavaScript action. */
-    e_actionTypeJavaScript = 14,
+    e_actionTypeJavaScript,
     /** @brief	Action type: set-OCG-state action. */
-    e_actionTypeSetOCGState = 15,
+    e_actionTypeSetOCGState,
     /** @brief	Action type: rendition action. */
-    e_actionTypeRendition = 16,
+    e_actionTypeRendition,
     /** @brief	Action type: transition action. */
-    e_actionTypeTrans = 17,
+    e_actionTypeTrans,
     /** @brief	Action type: go-to-3D-view action. */
-    e_actionTypeGoTo3DView = 18
+    e_actionTypeGoTo3DView
+};
+
+/**
+ * @brief Enumeration for new window flag.
+ *
+ * @details Values of this enumeration should be used alone.
+ */
+typedef NS_ENUM(NSUInteger, FSNewWindowFlag) {
+    /** @brief "NewWindow" flag is <b>false</b>. */
+    e_newWindowFlagFalse = 0,
+    /** @brief "NewWindow" flag is <b>true</b>. */
+    e_newWindowFlagTrue,
+    /** @brief No "NewWindow" flag. */
+    e_newWindowFlagNone
 };
 
 /**
@@ -91,7 +107,7 @@ enum FS_ACTIONTYPE {
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
 /**
- * @brief	Create a destination for zoom mode {@link FS_ZOOMMODE::e_zoomXYZ}.
+ * @brief	Create a destination for zoom mode {@link FSZoomMode::e_zoomXYZ}.
  *
  * @param[in]	page			The destination page.
  * @param[in]	left			Horizontal coordinate value of a position as page's left-top position.
@@ -102,7 +118,7 @@ enum FS_ACTIONTYPE {
  */
 +(FSDestination*)createXYZ: (FSPDFPage*)page left: (float)left top: (float)top zoomFactor: (float)zoomFactor;
 /**
- * @brief	Create a destination for zoom mode {@link FS_ZOOMMODE::e_zoomFitPage}.
+ * @brief	Create a destination for zoom mode {@link FSZoomMode::e_zoomFitPage}.
  *
  * @param[in]	page	The destination page.
  *
@@ -110,7 +126,7 @@ enum FS_ACTIONTYPE {
  */
 +(FSDestination*)createFitPage: (FSPDFPage*)page;
 /**
- * @brief	Create a destination for zoom mode {@link FS_ZOOMMODE::e_zoomFitHorz}.
+ * @brief	Create a destination for zoom mode {@link FSZoomMode::e_zoomFitHorz}.
  *
  * @param[in]	page	The destination page.
  * @param[in]	top		Vertical coordinate of top edge.
@@ -119,7 +135,7 @@ enum FS_ACTIONTYPE {
  */
 +(FSDestination*)createFitHorz: (FSPDFPage*)page top: (float)top;
 /**
- * @brief	Create a destination for zoom mode {@link FS_ZOOMMODE::e_zoomFitVert}.
+ * @brief	Create a destination for zoom mode {@link FSZoomMode::e_zoomFitVert}.
  *
  * @param[in]	page	The destination page.
  * @param[in]	left	Horizontal coordinate of left edge.
@@ -128,7 +144,7 @@ enum FS_ACTIONTYPE {
  */
 +(FSDestination*)createFitVert: (FSPDFPage*)page left: (float)left;
 /**
- * @brief	Create a destination for zoom mode {@link FS_ZOOMMODE::e_zoomFitRect}.
+ * @brief	Create a destination for zoom mode {@link FSZoomMode::e_zoomFitRect}.
  *
  * @param[in]	page		The destination page.
  * @param[in]	left		The coordinate left of a rectangle.
@@ -140,7 +156,7 @@ enum FS_ACTIONTYPE {
  */
 +(FSDestination*)createFitRect: (FSPDFPage*)page left: (float)left bottom: (float)bottom right: (float)right top: (float)top;
 /**
- * @brief	Create a destination for zoom mode {@link FS_ZOOMMODE::e_zoomFitBBox}.
+ * @brief	Create a destination for zoom mode {@link FSZoomMode::e_zoomFitBBox}.
  *
  * @param[in]	page		The destination page.
  *
@@ -148,7 +164,7 @@ enum FS_ACTIONTYPE {
  */
 +(FSDestination*)createFitBBox: (FSPDFPage*)page;
 /**
- * @brief	Create a destination for zoom mode {@link FS_ZOOMMODE::e_zoomFitBHorz}.
+ * @brief	Create a destination for zoom mode {@link FSZoomMode::e_zoomFitBHorz}.
  *
  * @param[in]	page		The destination page.
  * @param[in]	top			Vertical coordinate of top edge
@@ -157,7 +173,7 @@ enum FS_ACTIONTYPE {
  */
 +(FSDestination*)createFitBHorz: (FSPDFPage*)page top: (float)top;
 /**
- * @brief	Create a destination for zoom mode {@link FS_ZOOMMODE::e_zoomFitBVert}.
+ * @brief	Create a destination for zoom mode {@link FSZoomMode::e_zoomFitBVert}.
  *
  * @param[in]	page	The destination page.
  * @param[in]	left	Horizontal coordinate of left edge.
@@ -175,14 +191,14 @@ enum FS_ACTIONTYPE {
 /**
  * @brief	Get the zoom mode
  *
- * @return	Zoom mode value. Please refer to {@link FS_ZOOMMODE::e_zoomXYZ FS_ZOOMMODE::e_zoomXXX} values and it would be one of them.
+ * @return	Zoom mode value. Please refer to {@link FSZoomMode::e_zoomXYZ FSZoomMode::e_zoomXXX} values and it would be one of them.
  *			If there is any error, this function will return 0.
  */
--(enum FS_ZOOMMODE)getZoomMode;
+-(FSZoomMode)getZoomMode;
 /**
  * @brief	Get left position value.
  *
- * @details	This is only useful when zoom mode is {@link FS_ZOOMMODE::e_zoomXYZ}, {@link FS_ZOOMMODE::e_zoomFitVert}, {@link FS_ZOOMMODE::e_zoomFitRect} or {@link FS_ZOOMMODE::e_zoomFitBVert}.
+ * @details	This is only useful when zoom mode is {@link FSZoomMode::e_zoomXYZ}, {@link FSZoomMode::e_zoomFitVert}, {@link FSZoomMode::e_zoomFitRect} or {@link FSZoomMode::e_zoomFitBVert}.
  *			For other zoom mode, this function will return 0.0f.
  *
  * @return	The left position value.
@@ -191,7 +207,7 @@ enum FS_ACTIONTYPE {
 /**
  * @brief	Get top position value.
  *
- * @details	This is only useful when zoom mode is {@link FS_ZOOMMODE::e_zoomXYZ}, {@link FS_ZOOMMODE::e_zoomFitHorz}, {@link FS_ZOOMMODE::e_zoomFitBHorz} or {@link FS_ZOOMMODE::e_zoomFitRect}.
+ * @details	This is only useful when zoom mode is {@link FSZoomMode::e_zoomXYZ}, {@link FSZoomMode::e_zoomFitHorz}, {@link FSZoomMode::e_zoomFitBHorz} or {@link FSZoomMode::e_zoomFitRect}.
  *			For other zoom mode, this function will return 0.0f.
  *
  * @return	The top position value.
@@ -200,7 +216,7 @@ enum FS_ACTIONTYPE {
 /**
  * @brief	Get right position value.
  *
- * @details	This is only useful when zoom mode is {@link FS_ZOOMMODE::e_zoomFitRect}.
+ * @details	This is only useful when zoom mode is {@link FSZoomMode::e_zoomFitRect}.
  *			For other zoom mode, this function will return 0.0f.
  *
  * @return	The right position value.
@@ -209,7 +225,7 @@ enum FS_ACTIONTYPE {
 /**
  * @brief	Get bottom position value.
  *
- * @details	This is only useful when zoom mode is {@link FS_ZOOMMODE::e_zoomFitRect}.
+ * @details	This is only useful when zoom mode is {@link FSZoomMode::e_zoomFitRect}.
  *			For other zoom mode, this function will return 0.0f.
  *
  * @return	The bottom position value.
@@ -218,7 +234,7 @@ enum FS_ACTIONTYPE {
 /**
  * @brief	Get zoom factor.
  *
- * @details	This is only useful when zoom mode is {@link FS_ZOOMMODE::e_zoomXYZ}.
+ * @details	This is only useful when zoom mode is {@link FSZoomMode::e_zoomXYZ}.
  *			For other zoom mode, this function will return 0.0f.
  *
  * @return	The zoom factor.
@@ -241,7 +257,7 @@ enum FS_ACTIONTYPE {
  *			A PDF action may have sub-actions. When this action is triggered, its sub-actions should also be triggered in turn.<br>
  *			Class ::FSAction is the base class for all kinds of PDF actions. For concrete action types, please refer to derived classes.
  *			Function {@link FSLink::getAction} can be used to get an action from a link annotation.
- *			Function {@link FSAction::create:actType:} can be used to create a new action -- currently only support {@link FS_ACTIONTYPE::e_actionTypeGoto}, and {@link FS_ACTIONTYPE::e_actionTypeURI}.
+ *			Function {@link FSAction::create:actType:} can be used to create a new action -- currently only support {@link FSActionType::e_actionTypeGoto}, and {@link FSActionType::e_actionTypeURI}.
  *			This class also offers functions to access sub-actions.
  *
  * @see	FSLink
@@ -266,18 +282,18 @@ enum FS_ACTIONTYPE {
  * @param[in]	doc		The PDF document, which the new action belongs to. It should be valid.
  * @param[in]	actType		Action type, used to specify which action is to be created.
  *							Currently only support:<br>
- *							{@link FS_ACTIONTYPE::e_actionTypeGoto}, {@link FS_ACTIONTYPE::e_actionTypeURI}.
+ *							{@link FSActionType::e_actionTypeGoto}, {@link FSActionType::e_actionTypeURI}.
  *
  * @return	A new action object, with no action data.
  *			If there is any error, this function will return <b>nil</b>.
  */
-+(FSAction*) create :(FSPDFDoc*)doc   actType:(enum FS_ACTIONTYPE) actType;
++(FSAction*) create :(FSPDFDoc*)doc   actType:(FSActionType) actType;
 /**
  * @brief	Get action type.
  *
- * @return	Action type. Please refer to {@link FS_ACTIONTYPE::e_actionTypeGoto FS_ACTIONTYPE::e_actionTypeXXX} values and it would be one of them.
+ * @return	Action type. Please refer to {@link FSActionType::e_actionTypeGoto FSActionType::e_actionTypeXXX} values and it would be one of them.
  */
--(enum FS_ACTIONTYPE)getType;
+-(FSActionType)getType;
 /**
  * @brief	Get the count of sub-actions.
  *
@@ -300,7 +316,7 @@ enum FS_ACTIONTYPE {
  * @param[in]	index	 Index of sub-action to be retrieved. Valid range: from 0 to (<i>count</i>-1).<i>count</i> is returned by function {@link FSAction::getSubActionCount}.
  * @param[in]	subAction	New sub-action to be set.
  *							Currently only support following types as the new sub-action:<br>
- *							{@link FS_ACTIONTYPE::e_actionTypeGoto}, {@link FS_ACTIONTYPE::e_actionTypeURI}.
+ *							{@link FSActionType::e_actionTypeGoto}, {@link FSActionType::e_actionTypeURI}.
  */
 -(void)setSubAction : (int)index  subAction:(FSAction*)subAction;
 /**
@@ -311,7 +327,7 @@ enum FS_ACTIONTYPE {
  *							If this index value equals or larger than current sub-action count, the new sub-action will be inserted to be the last.
  * @param[in]	subAction	New sub-action to be inserted.
  *							Currently only support following types as the new sub-action:<br>
- *							{@link FS_ACTIONTYPE::e_actionTypeGoto}, {@link FS_ACTIONTYPE::e_actionTypeURI}.
+ *							{@link FSActionType::e_actionTypeGoto}, {@link FSActionType::e_actionTypeURI}.
  *
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
  */
@@ -416,3 +432,268 @@ enum FS_ACTIONTYPE {
 -(void)dealloc;
 
 @end
+
+/**
+ * Remote go-to action is similar to an ordinary go-to action but jumps to a destination in another PDF file
+ * (not embedded file) instead of current PDF file (which contains the remote go-to action). <br>
+ * Class FSRemoteGotoAction is derived from FSAction and offers functions to get/set remote go-to action data.
+ * Destination information of a remote go-to action can be represents as either a destination array or
+ * a destination name:
+ * <ul>
+ * <li>If the destination information is a destination array, Foxit PDF SDK uses a FSDestination object to
+ *     represent it and function {@link FSRemoteGotoAction::GetDestination} can be used to get such value.</li>
+ * <li>If the destination information is a destination name, Foxit PDF SDK uses a string to represent it and function
+ *     {@link FSRemoteGotoAction::GetDestinationName} can be used to get such value.
+ *     Specially, the related destination array is defined in the target PDF file, not current PDF file.
+ *     User can use functions in class FSPDFNameTree to retrieve the actual destination array from target PDF file.
+ * </li>
+ * </ul>
+ * Destination PDF file and destination information are necessary for a remote go-to action, so user should
+ * ensure to set both data by function {@link FSRemoteGotoAction::SetFileSpec} and function
+ * {@link FSRemoteGotoAction::SetDestination} or {@link FSRemoteGotoAction::SetDestinationName},
+ * especially for a new remote go-to action; otherwise, the remote go-to action would be useless.
+ *
+ * @see FSAction
+ */
+@interface FSRemoteGotoAction : FSAction
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/**
+ * @brief Get the destination information.
+ *
+ * @details For a remote go-to action, the destination information can be stored
+ *          as either a FSDestination object or a destination name:
+ *          <ul>
+ *          <li>If it is a FSDestination object,
+ *          function {@link FSRemoteGotoAction::GetDestination} would return a valid FSDestination object.</li>
+ *          <li>If it is a destination name,
+ *          function {@link FSRemoteGotoAction::GetDestinationName} would return a valid string,
+ *          and the destination name would be defined in the target PDF file.</li>
+ *          </ul>
+ *          If the remote go-to action does not have any destination information,
+ *          function {@link FSRemoteGotoAction::GetDestination} would return <b>NULL</b>
+ *          and function {@link FSRemoteGotoAction::GetDestinationName} would return an empty string.
+ *
+ * @return A destination object.
+ *         If this function returns <b>NULL</b>, please try function {@link FSRemoteGotoAction::GetDestinationName}.
+ */
+-(FSDestination*)getDestination;
+/**
+ * @brief Set the destination information, which is used to specify the position in target PDF file to jump to.
+ *
+ * @param[in] destination  New destination object to be set. It should be valid.
+ *
+ * @return None.
+ */
+-(void)setDestination: (FSDestination*)destination;
+/**
+ * @brief Get the destination name, which is defined in target PDF file.
+ *
+ * @details For a remote go-to action, the destination information can be stored as
+ *          either a FSDestination object or a destination name:
+ *          <ul>
+ *          <li>If it is a FSDestination object, function {@link FSRemoteGotoAction::GetDestination} would
+ *              return a valid FSDestination object.</li>
+ *          <li>If it is a destination name, function {@link FSRemoteGotoAction::GetDestinationName} would
+ *              return a valid string, and the destination name would be defined in the target PDF file.</li>
+ *          </ul>
+ *          If the remote go-to action does not have any destination information,
+ *          function {@link FSRemoteGotoAction::GetDestination} would return <b>NULL</b>
+ *          and function {@link FSRemoteGotoAction::GetDestinationName} would return an empty string.
+ *
+ * @return The destination name, in UTF-8 encoding.
+ *         If this function returns an empty string, please try function {@link FSRemoteGotoAction::GetDestination}.
+ */
+-(NSString*)getDestinationName;
+/**
+ * @brief Set the destination name.
+ *
+ * @details The destination name should have been in the "Dests" name tree in the target PDF file.
+ *
+ * @param[in] dest_name  New destination name to be set, in UTF-8 encoding. It should be not be <b>NULL</b> and empty.
+ *
+ * @return None.
+ */
+-(void)setDestinationName: (NSString *)destName;
+/**
+ * @brief Get the file specification which specifies the destination file.
+ *
+ * @return A non-embedded file specification object.
+ */
+-(FSFileSpec*)getFileSpec;
+/**
+ * @brief Set the file specification which specifies the destination file.
+ *
+ * @param[in]  file_specification  The file specification object. It should not be <b>NULL</b>.
+ *                                 This object should belong to the same PDF file as current action.
+ *                                 It should represent another PDF file as the target file, and should not
+ *                                 represent an embedded file.
+ *
+ * @return None.
+ */
+-(void)setFileSpec: (FSFileSpec*)fileSpecification;
+/**
+ * @brief Get the flag to decide whether to open the destination document in a new window or not.
+ *
+ * @return Flag for new window. It would be one of following values:<br>
+ *         <ul>
+ *         <li>{@link FSNewWindowFlag::e_newWindowFlagTrue FSNewWindowFlag::e_newWindowFlagTrue}
+ *             means to open the destination document in a new window.</li>
+ *         <li>{@link FSNewWindowFlag::e_newWindowFlagFalse FSNewWindowFlag::e_newWindowFlagFalse}
+ *             means to the destination document replaces current document in the same window.</li>
+ *         <li>{@link FSNewWindowFlag::e_newWindowFlagNone FSNewWindowFlag::e_newWindowFlagNone}
+ *             means no such flag and the viewer application should behave in accordance
+ *             with the current user preference.</li>
+ *         </ul>
+ */
+-(FSNewWindowFlag)getNewWindowFlag;
+/**
+ * @brief Set the flag to decide whether to open the destination document in a new window or not.
+ *
+ * @param[in] flag  Flag for new window. It should be one of following values:<br>
+ *                  <ul>
+ *                  <li>{@link FSNewWindowFlag::e_newWindowFlagTrue FSNewWindowFlag::e_newWindowFlagTrue}
+ *                      means to open the destination document in a new window.</li>
+ *                  <li>{@link FSNewWindowFlag::e_newWindowFlagFalse FSNewWindowFlag::e_newWindowFlagFalse}
+ *                      means to the destination document replaces current document in the same window.</li>
+ *                  <li>{@link FSNewWindowFlag::e_newWindowFlagNone FSNewWindowFlag::e_newWindowFlagNone}
+ *                      means such flag is not needed and the viewer application should behave in accordance
+ *                      with the current user preference.</li>
+ *                  </ul>
+ *
+ * @return None.
+ */
+-(void)setNewWindowFlag: (FSNewWindowFlag)flag;
+
+-(void)dealloc;
+
+@end
+
+/**
+ * Launch action is to launch an application, usually to open a file.
+ * Class FSLaunchAction is derived from FSAction and offers functions to get/set launch action data.
+ *
+ * @see FSAction
+ */
+@interface FSLaunchAction : FSAction
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/**
+ * @brief Get the file specification which specifies the application to be launched
+ *        or the document to be opened or printed.
+ *
+ * @return A file specification object. <b>NULL</b> means no such property is found.
+ */
+-(FSFileSpec*)getFileSpec;
+/**
+ * @brief Set the file specification which an application to be launched
+ *        or a document to be opened or printed.
+ *
+ * @param[in] file_specification  The file specification object. It should be valid.
+ *                                This object should be in the same document with current action object.
+ *
+ * @return None.
+ */
+-(void)setFileSpec: (FSFileSpec*)fileSpecification;
+/**
+ * @brief Get the flag to decide whether to open the destination document in a new window or not.
+ *
+ * @return Flag for new window. It would be one of following values:<br>
+ *         <ul>
+ *         <li>{@link FSNewWindowFlag::e_newWindowFlagTrue FSNewWindowFlag::e_newWindowFlagTrue}
+ *             means to open the destination document in a new window.</li>
+ *         <li>{@link FSNewWindowFlag::e_newWindowFlagFalse FSNewWindowFlag::e_newWindowFlagFalse}
+ *             means to the destination document replaces current document in the same window.</li>
+ *         <li>{@link FSNewWindowFlag::e_newWindowFlagNone FSNewWindowFlag::e_newWindowFlagNone}
+ *             means no such flag and the viewer application should behave in accordance
+ *             with the current user preference.</li>
+ *         </ul>
+ */
+-(FSNewWindowFlag)getNewWindowFlag;
+/**
+ * @brief Set the flag to decide whether to open the destination document in a new window or not.
+ *
+ * @param[in] flag  Flag for new window. It should be one of following values:<br>
+ *                  <ul>
+ *                  <li>{@link FSNewWindowFlag::e_newWindowFlagTrue FSNewWindowFlag::e_newWindowFlagTrue}
+ *                      means to open the destination document in a new window.</li>
+ *                  <li>{@link FSNewWindowFlag::e_newWindowFlagFalse FSNewWindowFlag::e_newWindowFlagFalse}
+ *                      means to the destination document replaces current document in the same window.</li>
+ *                  <li>{@link FSNewWindowFlag::e_newWindowFlagNone FSNewWindowFlag::e_newWindowFlagNone}
+ *                      means no such flag and the viewer application should behave in accordance
+ *                      with the current user preference.</li>
+ *                  </ul>
+ *
+ * @return None.
+ */
+-(void)setNewWindowFlag: (FSNewWindowFlag)flag;
+/**
+ * @brief (Windows-specific launch parameters)
+ *        Get the file name of the application to be launched or the document to be opened or printed.
+ *
+ * @return File name, in UTF-8 encoding.
+ */
+-(NSString*)getWinFileName;
+/**
+ * @brief (Windows-specific launch parameters)Get the default directory in standard DOS syntax.
+ *
+ * @return Default directory, in UTF-8 encoding.
+ */
+-(NSString*)getWinDefaultDirectory;
+/**
+ * @brief (Windows-specific launch parameters)Get the operation name.
+ *
+ * @details Standard strings for operation name are:
+ *          <ul>
+ *          <li>"open": Open a document.</li>
+ *          <li>"Print": Print a document</li>
+ *          </ul>
+ *          If the file name of Windows-specific launch parameters represents an application,
+ *          the operation name would be useless for current action.
+ *
+ * @return Operation name, an ASCII string.
+ */
+-(NSString*)getWinAppOperation;
+/**
+ * @brief (Windows-specific launch parameters)Get parameter string to be passed to the specified application.
+ *
+ * @details If the file name of Windows-specific launch parameters represents a document,
+ *          app parameter string is ignored.
+ *
+ * @return Parameter string, in UTF-8 encoding.
+ */
+-(NSString*)getWinAppParameter;
+/**
+ * @brief (Windows-specific launch parameters)Set Windows-specific launch parameters.
+ *
+ * @details This function is used to set Windows- specific launch parameters.
+ *          Parameter <i>file_name</i> is necessary and can represent either an application or a document.
+ *          When parameter <i>file_name</i> represents an application, parameters <i>operation</i> and
+ *          <i>app_parameter</i> are useless.
+ *
+ * @param[in] file_name          The file name of the application to be launched
+ *                               or the document to be opened or printed.
+ * @param[in] default_directory  Default directory in standard DOS syntax.
+ *                               This can be <b>NULL</b> or empty.
+ * @param[in] operation          Operation name, an ASCII string. This can be <b>NULL</b> or empty.
+ *                               If this is valid, it should be one of following strings:
+ *                               <ul>
+ *                               <li>"open": Open a document.</li>
+ *                               <li>"Print": Print a document</li>
+ *                               </ul>
+ * @param[in] app_parameter      Parameter string to be passed to the specified application.
+ *                               This can be <b>NULL</b> or empty. 
+ *
+ * @return None.
+ */
+-(void)setWinLaunchParameter: (NSString *)fileName defaultDirectory: (NSString *)defaultDirectory operation: (NSString *)operation appParameter: (NSString *)appParameter;
+
+-(void)dealloc;
+
+@end
+
+NS_ASSUME_NONNULL_END

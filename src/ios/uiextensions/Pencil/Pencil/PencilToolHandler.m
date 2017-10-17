@@ -11,13 +11,13 @@
  */
 
 #import "PencilToolHandler.h"
-#import "PencilAnnotHandler.h"
-#import "UIExtensionsManager+Private.h"
+#import "FSAnnotAttributes.h"
 #import "FSAnnotExtent.h"
 #import "FSUndo.h"
-#import "FSAnnotAttributes.h"
+#import "PencilAnnotHandler.h"
+#import "UIExtensionsManager+Private.h"
 
-@interface PencilToolHandler ()
+@interface PencilToolHandler () <IAnnotPropertyListener>
 
 @property (nonatomic, strong) FSInk *annot;
 @property (nonatomic, assign) BOOL isMoving;
@@ -29,13 +29,12 @@
 @end
 
 @implementation PencilToolHandler {
-    UIExtensionsManager* _extensionsManager;
-    FSPDFViewCtrl*  _pdfViewCtrl;
-    TaskServer* _taskServer;
+    UIExtensionsManager *_extensionsManager;
+    FSPDFViewCtrl *_pdfViewCtrl;
+    TaskServer *_taskServer;
 }
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager
-{
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager {
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
@@ -48,22 +47,18 @@
     return self;
 }
 
--(NSString*)getName
-{
+- (NSString *)getName {
     return Tool_Pencil;
 }
 
--(BOOL)isEnabled
-{
+- (BOOL)isEnabled {
     return YES;
 }
 
--(void)onActivate
-{
+- (void)onActivate {
 }
 
--(void)onDeactivate
-{
+- (void)onDeactivate {
     if (self.annot) {
         id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:e_annotInk];
         [annotHandler addAnnot:self.annot addUndo:YES];
@@ -72,99 +67,90 @@
 }
 
 // PageView Gesture+Touch
-- (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer {
     return YES;
 }
 
-- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer {
     return YES;
 }
 
-- (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer {
     return YES;
 }
 
-- (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer
-{
+- (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer {
     return YES;
 }
 
-- (FSInk*)createInkAnnotationInPage:(int)pageIndex atPos:(FSPointF*)pos
-{
-    FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
-    if (!page) return;
-    
+- (FSInk *)createInkAnnotationInPage:(int)pageIndex atPos:(FSPointF *)pos {
+    FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+    if (!page)
+        return;
+
     CGRect rect = CGRectMake(pos.x - 20, pos.y - 20, 40, 40);
-    FSInk* annot = (FSInk*)[page addAnnot:e_annotInk rect:[Utility CGRect2FSRectF:rect]];
+    FSInk *annot = (FSInk *) [page addAnnot:e_annotInk rect:[Utility CGRect2FSRectF:rect]];
     annot.NM = [Utility getUUID];
     annot.author = [SettingPreference getAnnotationAuthor];
     annot.color = [_extensionsManager getPropertyBarSettingColor:self.type];
-    annot.opacity = [_extensionsManager getAnnotOpacity:self.type]/100.0;
+    annot.opacity = [_extensionsManager getAnnotOpacity:self.type] / 100.0;
     annot.lineWidth = [_extensionsManager getAnnotLineWidth:self.type];
     annot.createDate = [NSDate date];
     annot.modifiedDate = [NSDate date];
     annot.flags = e_annotFlagPrint;
-    
-    FSPDFPath* path = [FSPDFPath create];
+
+    FSPDFPath *path = [[FSPDFPath alloc] init];
     [path moveTo:pos];
     [annot setInkList:path];
     [annot resetAppearanceStream];
     return annot;
 }
 
-- (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet*)touches withEvent:(UIEvent*)event
-{
-    UIView* pageView = [_pdfViewCtrl getPageView:pageIndex];
+- (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
+    UIView *pageView = [_pdfViewCtrl getPageView:pageIndex];
     CGPoint point = [[touches anyObject] locationInView:pageView];
     if (point.x < 10 || point.x > pageView.bounds.size.width - 10 ||
         point.y < 10 || point.y > pageView.bounds.size.height - 10) {
         return NO;
     }
-    
+
     _isBegin = YES;
     _isMoving = YES;
-    
-    FSPointF* dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
-    
-    if (self.annot == nil)  //this is the first line
+
+    FSPointF *dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
+
+    if (self.annot == nil) //this is the first line
     {
         self.annot = [self createInkAnnotationInPage:pageIndex atPos:dibPoint];
-    }
-    else
-    {
+    } else {
         if (pageIndex != self.annot.pageIndex) {
             return NO;
         }
-        
-        FSPDFPath* path = [self.annot getInkList];
+
+        FSPDFPath *path = [self.annot getInkList];
         [path moveTo:dibPoint];
         [self.annot setInkList:path];
         [self.annot resetAppearanceStream];
     }
-    
+
     CGRect cgRect = [_pdfViewCtrl convertPdfRectToPageViewRect:self.annot.fsrect pageIndex:pageIndex];
     [_pdfViewCtrl refresh:cgRect pageIndex:pageIndex];
     _lastPoint = point;
     return YES;
 }
 
-- (BOOL)onPageViewTouchesMoved:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    if (_isMoving && !_isZooming)
-    {
-        UIView* pageView = [_pdfViewCtrl getPageView:pageIndex];
+- (BOOL)onPageViewTouchesMoved:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
+    if (_isMoving && !_isZooming) {
+        UIView *pageView = [_pdfViewCtrl getPageView:pageIndex];
         CGPoint point = [[touches anyObject] locationInView:pageView];
         if (point.x < 10 || point.x > pageView.bounds.size.width - 10 ||
             point.y < 10 || point.y > pageView.bounds.size.height - 10) {
             return NO;
         }
 
-        if (self.annot == nil)  //this is the first line
+        if (self.annot == nil) //this is the first line
         {
-            FSPointF* dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
+            FSPointF *dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
             self.annot = [self createInkAnnotationInPage:pageIndex atPos:dibPoint];
             CGRect cgRect = [_pdfViewCtrl convertPdfRectToPageViewRect:self.annot.fsrect pageIndex:pageIndex];
             [_pdfViewCtrl refresh:cgRect pageIndex:pageIndex];
@@ -175,11 +161,11 @@
                 //annotation cannot cross page
                 return NO;
             } else {
-                FSPointF* dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
-                
-                FSPDFPath* path = [self.annot getInkList];
+                FSPointF *dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
+
+                FSPDFPath *path = [self.annot getInkList];
                 if ([path getPointCount] == 0) {
-                    FSPDFPath* path = [FSPDFPath create];
+                    FSPDFPath *path = [[FSPDFPath alloc] init];
                     [path moveTo:dibPoint];
                     [self.annot setInkList:path];
                     return YES;
@@ -187,10 +173,9 @@
                 [path lineTo:dibPoint];
                 [self.annot setInkList:path];
                 [self.annot resetAppearanceStream];
-                
+
                 CGRect pvRect = [_pdfViewCtrl convertPdfRectToPageViewRect:self.annot.fsrect pageIndex:pageIndex];
-                if (CGRectEqualToRect(_lastRect, CGRectZero))
-                {
+                if (CGRectEqualToRect(_lastRect, CGRectZero)) {
                     _lastRect = pvRect;
                 }
                 CGRect unionRect = CGRectUnion(_lastRect, pvRect);
@@ -199,10 +184,10 @@
                 unionRect = CGRectInset(unionRect, -margin, -margin);
                 unionRect = [Utility getStandardRect:unionRect];
                 [_pdfViewCtrl refresh:unionRect pageIndex:pageIndex];
-                
+
                 _lastRect = [_pdfViewCtrl convertPdfRectToPageViewRect:self.annot.fsrect pageIndex:pageIndex];
                 _lastPoint = [_pdfViewCtrl convertPdfPtToPageViewPt:dibPoint pageIndex:pageIndex];
-                
+
                 return YES;
             }
         }
@@ -210,26 +195,22 @@
     return NO;
 }
 
-- (BOOL)onPageViewTouchesEnded:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesEnded:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     _isBegin = NO;
     _isMoving = NO;
     return YES;
 }
 
-- (BOOL)onPageViewTouchesCancelled:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesCancelled:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     return NO;
 }
 
--(void)onDraw:(int)pageIndex inContext:(CGContextRef)context
-{
+- (void)onDraw:(int)pageIndex inContext:(CGContextRef)context {
 }
 
-# pragma IAnnotPropertyListener
+#pragma IAnnotPropertyListener
 
-- (void)onAnnotColorChanged:(unsigned int)color annotType:(enum FS_ANNOTTYPE)annotType
-{
+- (void)onAnnotColorChanged:(unsigned int)color annotType:(FSAnnotType)annotType {
     if (annotType == e_annotInk) {
         if (self.annot) {
             id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.annot.type];
@@ -239,8 +220,7 @@
     }
 }
 
-- (void)onAnnotLineWidthChanged:(unsigned int)lineWidth annotType:(enum FS_ANNOTTYPE)annotType
-{
+- (void)onAnnotLineWidthChanged:(unsigned int)lineWidth annotType:(FSAnnotType)annotType {
     if (annotType == e_annotInk) {
         if (self.annot) {
             id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.annot.type];
@@ -250,8 +230,7 @@
     }
 }
 
-- (void)onAnnotOpacityChanged:(unsigned int)opacity annotType:(enum FS_ANNOTTYPE)annotType
-{
+- (void)onAnnotOpacityChanged:(unsigned int)opacity annotType:(FSAnnotType)annotType {
     if (annotType == e_annotInk) {
         if (self.annot) {
             id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.annot.type];

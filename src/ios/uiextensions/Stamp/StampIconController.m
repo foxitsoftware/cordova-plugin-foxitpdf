@@ -11,11 +11,11 @@
  */
 
 #import "StampIconController.h"
-#import "Utility.h"
 #import "ColorUtility.h"
 #import "Const.h"
 #import "SegmentView.h"
 #import "UIExtensionsManager+Private.h"
+#import "Utility.h"
 
 @implementation StampButton
 
@@ -23,30 +23,28 @@
 
 @implementation StampCell
 
--(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
-{
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
         float stampWidth = 130;
-        
-        float divideWidth = (DEVICE_iPHONE ? (SCREENWIDTH - stampWidth*2): (300 - stampWidth*2)) - 20*2;
-        
+
+        float divideWidth = (DEVICE_iPHONE ? (SCREENWIDTH - stampWidth * 2) : (300 - stampWidth * 2)) - 20 * 2;
+
         StampButton *left = [[StampButton alloc] initWithFrame:CGRectMake(15, 15, stampWidth, 42)];
         left.contentEdgeInsets = UIEdgeInsetsMake(5, 5, 5, 5);
         left.tag = 100;
-        
-        StampButton *right = [[StampButton alloc] initWithFrame:CGRectMake(15 + stampWidth + divideWidth , 15, stampWidth, 42)];
+
+        StampButton *right = [[StampButton alloc] initWithFrame:CGRectMake(15 + stampWidth + divideWidth, 15, stampWidth, 42)];
         right.contentEdgeInsets = UIEdgeInsetsMake(5, 5, 5, 5);
         right.tag = 101;
-        
+
         StampButton *center = [[StampButton alloc] init];
         center.tag = 102;
-        
+
         [self.contentView addSubview:left];
         [self.contentView addSubview:right];
         [self.contentView addSubview:center];
     }
     return self;
-    
 }
 
 @end
@@ -66,36 +64,34 @@
 @property (nonatomic, strong) SegmentView *segmengView;
 @property (nonatomic, strong) UILabel *titleLabel;
 
-
 @end
 
 @implementation StampIconController {
-    UIExtensionsManager* _extensionManager;
+    UIExtensionsManager *_extensionManager;
+    FSPDFViewCtrl *_pdfViewCtrl;
 }
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager
-{
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager {
     self = [super init];
     if (self) {
         _extensionManager = extensionsManager;
+        _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         self.currentIcon = extensionsManager.stampIcon;
-        
+
         self.isiPhoneLandscape = NO;
         self.pdfDocumentRef = nil;
         NSURL *pdfURL = [[NSBundle mainBundle] URLForResource:@"icon" withExtension:@"pdf"];
-        self.pdfDocumentRef = CGPDFDocumentCreateWithURL((CFURLRef)pdfURL);
+        self.pdfDocumentRef = CGPDFDocumentCreateWithURL((CFURLRef) pdfURL);
     }
     return self;
 }
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
 }
 
--(void)viewWillDisappear:(BOOL)animated
-{
+- (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
 }
 
@@ -103,30 +99,25 @@
 {
     if (item.tag == 1) {
         _currentStampType = STAMP_TYPE_STANDER;
-    }
-    else if (item.tag == 2)
-    {
+    } else if (item.tag == 2) {
         _currentStampType = STAMP_TYPE_SIGNHERE;
-    }
-    else if (item.tag == 3)
-    {
+    } else if (item.tag == 3) {
         _currentStampType = STAMP_TYPE_DYNAMIC;
     }
     [self.stampLayout reloadData];
 }
 
-- (void)viewWillAppear:(BOOL)animated
-{
+- (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     self.isiPhoneLandscape = NO;
-    if (DEVICE_iPHONE && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)){
+    if (DEVICE_iPHONE && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
         self.isiPhoneLandscape = YES;
     }
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
     self.toolbar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 104)];
     self.toolbar.backgroundColor = [UIColor colorWithRGBHex:0xF2FAFAFA];
     [self.view addSubview:self.toolbar];
-    
+
     self.backBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     self.backBtn.frame = CGRectMake(20, 30, 26, 26);
     [self.backBtn setImage:[UIImage imageNamed:@"panel_cancel"] forState:UIControlStateNormal];
@@ -134,67 +125,64 @@
     if (DEVICE_iPHONE) {
         [self.toolbar addSubview:self.backBtn];
     }
-    
-    UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(self.toolbar.frame.size.width/2 - 40, DEVICE_iPHONE ? 30 : 10, 80, 30)];
-    title.text = NSLocalizedStringFromTable(@"kPropertyStamps", @"FoxitLocalizable", nil);
+
+    UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(self.toolbar.frame.size.width / 2 - 40, DEVICE_iPHONE ? 30 : 10, 80, 30)];
+    title.text = FSLocalizedString(@"kPropertyStamps");
     title.textColor = [UIColor blackColor];
     title.font = [UIFont systemFontOfSize:18.0f];
     title.textAlignment = NSTextAlignmentCenter;
     self.titleLabel = title;
     [self.toolbar addSubview:title];
-    
+
     SegmentItem *standItem = [[SegmentItem alloc] init];
     standItem.image = [UIImage imageNamed:@"annot_stamp_standard"];
     standItem.selectImage = [UIImage imageNamed:@"annot_stamp_standard_selected"];
     standItem.tag = 1;
-    
+
     SegmentItem *signHereItem = [[SegmentItem alloc] init];
     signHereItem.image = [UIImage imageNamed:@"annot_stamp_sign"];
     signHereItem.selectImage = [UIImage imageNamed:@"annot_stamp_sign_selected"];
     signHereItem.tag = 2;
-    
+
     SegmentItem *dynamicItem = [[SegmentItem alloc] init];
     dynamicItem.image = [UIImage imageNamed:@"annot_stamp_dynamic"];
     dynamicItem.selectImage = [UIImage imageNamed:@"annot_stamp_dynamic_selected"];
     dynamicItem.tag = 3;
-    
+
     NSMutableArray *array = [NSMutableArray array];
     [array addObject:standItem];
     [array addObject:signHereItem];
     [array addObject:dynamicItem];
-    
+
     SegmentView *segmentView = [[SegmentView alloc] initWithFrame:CGRectMake(20, DEVICE_iPHONE ? 65 : 45, self.view.frame.size.width - 40, 32) segmentItems:array];
     segmentView.delegate = self;
     self.segmengView = segmentView;
-    
+
     if (self.currentIcon >= 0 && self.currentIcon <= 11) {
         [segmentView setSelectItem:standItem];
         _currentStampType = STAMP_TYPE_STANDER;
-    }else if (self.currentIcon >= 12 && self.currentIcon <= 16){
+    } else if (self.currentIcon >= 12 && self.currentIcon <= 16) {
         [segmentView setSelectItem:signHereItem];
         _currentStampType = STAMP_TYPE_SIGNHERE;
-    }else if (self.currentIcon >= 17 && self.currentIcon <= 21)
-    {
+    } else if (self.currentIcon >= 17 && self.currentIcon <= 21) {
         [segmentView setSelectItem:dynamicItem];
         _currentStampType = STAMP_TYPE_DYNAMIC;
-    }else{
+    } else {
         [segmentView setSelectItem:standItem];
         _currentStampType = STAMP_TYPE_STANDER;
     }
 
     [self.view addSubview:segmentView];
-    
-    UIView *divide = [[UIView alloc] initWithFrame:CGRectMake(20, DEVICE_iPHONE ? 105 : 85, self.view.frame.size.width-40, [Utility realPX:1.0f])];
+
+    UIView *divide = [[UIView alloc] initWithFrame:CGRectMake(20, DEVICE_iPHONE ? 105 : 85, self.view.frame.size.width - 40, [Utility realPX:1.0f])];
     divide.backgroundColor = [UIColor colorWithRGBHex:0xe6e6e6];
     [self.view addSubview:divide];
-    
+
     CGRect layoutFrame;
     if (DEVICE_iPHONE) {
         layoutFrame = CGRectMake(0, 110, self.view.frame.size.width, self.view.frame.size.height - 110);
-    }
-    else
-    {
-        layoutFrame = CGRectMake(0,  90, self.view.frame.size.width, self.view.frame.size.height - 90);
+    } else {
+        layoutFrame = CGRectMake(0, 90, self.view.frame.size.width, self.view.frame.size.height - 90);
     }
     self.stampLayout = [[UITableView alloc] initWithFrame:layoutFrame];
     self.stampLayout.backgroundColor = [UIColor whiteColor];
@@ -204,98 +192,82 @@
     [self.view addSubview:self.stampLayout];
 }
 
--(void)backClicked
-{
-    [self dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+- (void)backClicked {
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+
+                             }];
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
     self.selectHandler = nil;
-    if (self.pdfDocumentRef)
-    {
+    if (self.pdfDocumentRef) {
         CGPDFDocumentRelease(self.pdfDocumentRef);
     }
 }
 
 #pragma mark - Properties
 
-- (void)setCurrentIcon:(int)currentIcon
-{
+- (void)setCurrentIcon:(int)currentIcon {
     _currentIcon = currentIcon;
 }
 
 #pragma mark -  table view delegate handler
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return 50;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 }
 
 #pragma mark -  table view datasource handler
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (_currentStampType == STAMP_TYPE_STANDER) {
         if (self.isiPhoneLandscape) {
             return 4;
-        }else
-        {
-           return 6;
+        } else {
+            return 6;
         }
-    }
-    else if (_currentStampType == STAMP_TYPE_SIGNHERE)
-    {
+    } else if (_currentStampType == STAMP_TYPE_SIGNHERE) {
         if (self.isiPhoneLandscape) {
             return 2;
-        }else
-        {
+        } else {
             return 3;
         }
-    }
-    else if (_currentStampType == STAMP_TYPE_DYNAMIC)
-    {
+    } else if (_currentStampType == STAMP_TYPE_DYNAMIC) {
         if (self.isiPhoneLandscape) {
             return 2;
-        }else
-        {
+        } else {
             return 3;
         }
     }
     return 3;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    static NSString* cellidentifer = @"CellIdentifer";
-    StampCell* cell = [tableView dequeueReusableCellWithIdentifier:cellidentifer];
-    
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *cellidentifer = @"CellIdentifer";
+    StampCell *cell = [tableView dequeueReusableCellWithIdentifier:cellidentifer];
+
     if (cell == nil) {
-        
-        cell = [[StampCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellidentifer];
+        cell = [[StampCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellidentifer];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
-    StampButton *left = (StampButton*)[cell.contentView viewWithTag:100];
-    StampButton *right = (StampButton*)[cell.contentView viewWithTag:101];
-    StampButton *center = (StampButton *)[cell.contentView viewWithTag:102];
+    StampButton *left = (StampButton *) [cell.contentView viewWithTag:100];
+    StampButton *right = (StampButton *) [cell.contentView viewWithTag:101];
+    StampButton *center = (StampButton *) [cell.contentView viewWithTag:102];
     self.isiPhoneLandscape = NO;
-    CGRect frame = [UIScreen mainScreen].bounds;
+    CGRect frame = _pdfViewCtrl.bounds;
     if (DEVICE_iPHONE) {
         if (UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
             self.isiPhoneLandscape = YES;
             center.hidden = NO;
-            if(!OS_ISVERSION8){
+            if (!OS_ISVERSION8) {
                 frame = CGRectMake(0, 0, frame.size.height, frame.size.width);
             }
             center.frame = CGRectMake(frame.size.width * 0.5 - 130 * 0.5, 15, 130, 42);
             center.contentEdgeInsets = UIEdgeInsetsMake(5, 5, 5, 5);
-        }else
-        {
+        } else {
             center.hidden = YES;
         }
         right.frame = CGRectMake(frame.size.width - 15 - 130, 15, 130, 42);
@@ -304,46 +276,38 @@
     if (_currentStampType == STAMP_TYPE_STANDER) {
         index = 20;
         if (self.isiPhoneLandscape) {
-            left.stampIcon = (int)indexPath.row * 3;
-            center.stampIcon = (int)indexPath.row * 3 + 1;
-            right.stampIcon = (int)indexPath.row * 3 + 2;
-        }else
-        {
-            left.stampIcon = (int)indexPath.row * 2;
-            right.stampIcon = (int)indexPath.row * 2 + 1;
+            left.stampIcon = (int) indexPath.row * 3;
+            center.stampIcon = (int) indexPath.row * 3 + 1;
+            right.stampIcon = (int) indexPath.row * 3 + 2;
+        } else {
+            left.stampIcon = (int) indexPath.row * 2;
+            right.stampIcon = (int) indexPath.row * 2 + 1;
         }
-    }
-    else if (_currentStampType == STAMP_TYPE_SIGNHERE)
-    {
+    } else if (_currentStampType == STAMP_TYPE_SIGNHERE) {
         index = 32;
         if (self.isiPhoneLandscape) {
-            left.stampIcon = 12 + (int)indexPath.row * 3;
-            center.stampIcon = 12 + (int)indexPath.row * 3 + 1;
-            right.stampIcon = 12 + (int)indexPath.row * 3 + 2;
-        }else
-        {
-            left.stampIcon = 12 + (int)indexPath.row * 2;
-            right.stampIcon = 12 + (int)indexPath.row * 2 + 1;
+            left.stampIcon = 12 + (int) indexPath.row * 3;
+            center.stampIcon = 12 + (int) indexPath.row * 3 + 1;
+            right.stampIcon = 12 + (int) indexPath.row * 3 + 2;
+        } else {
+            left.stampIcon = 12 + (int) indexPath.row * 2;
+            right.stampIcon = 12 + (int) indexPath.row * 2 + 1;
         }
-    }
-    else if (_currentStampType == STAMP_TYPE_DYNAMIC)
-    {
+    } else if (_currentStampType == STAMP_TYPE_DYNAMIC) {
         index = 37;
         if (self.isiPhoneLandscape) {
-            left.stampIcon = 17 + (int)indexPath.row * 3;
-            center.stampIcon = 17 + (int)indexPath.row * 3 + 1;
-            right.stampIcon = 17 + (int)indexPath.row * 3 + 2;
-        }else
-        {
-            left.stampIcon = 17 + (int)indexPath.row * 2;
-            right.stampIcon = 17 + (int)indexPath.row * 2 + 1;
+            left.stampIcon = 17 + (int) indexPath.row * 3;
+            center.stampIcon = 17 + (int) indexPath.row * 3 + 1;
+            right.stampIcon = 17 + (int) indexPath.row * 3 + 2;
+        } else {
+            left.stampIcon = 17 + (int) indexPath.row * 2;
+            right.stampIcon = 17 + (int) indexPath.row * 2 + 1;
         }
     }
-    
+
     if (self.isiPhoneLandscape) {
         index += indexPath.row * 3;
-    }else
-    {
+    } else {
         index += indexPath.row * 2;
     }
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(200, 60), YES, [UIScreen mainScreen].scale);
@@ -358,17 +322,16 @@
     [left setImage:UIGraphicsGetImageFromCurrentImageContext() forState:UIControlStateNormal];
     UIGraphicsEndImageContext();
     [left addTarget:self action:@selector(onClicked:) forControlEvents:UIControlEventTouchUpInside];
-    
+
     if (index - 20 == self.currentIcon) {
         left.layer.borderWidth = 2.0f;
         left.layer.borderColor = [[UIColor colorWithRed:0.15 green:0.62 blue:0.84 alpha:1] CGColor];
         left.layer.cornerRadius = 5.0f;
         left.backgroundColor = [UIColor clearColor];
-    }
-    else{
+    } else {
         left.layer.borderWidth = 0.0f;
     }
-    
+
     if (self.isiPhoneLandscape) {
         index++;
         UIGraphicsBeginImageContextWithOptions(CGSizeMake(200, 60), YES, [UIScreen mainScreen].scale);
@@ -381,7 +344,7 @@
         CGContextDrawPDFPage(context3, page3);
         CGContextRestoreGState(context3);
         [center setImage:UIGraphicsGetImageFromCurrentImageContext() forState:UIControlStateNormal];
-        
+
         UIGraphicsEndImageContext();
         [center addTarget:self action:@selector(onClicked:) forControlEvents:UIControlEventTouchUpInside];
         if (index - 20 == self.currentIcon) {
@@ -389,12 +352,11 @@
             center.layer.borderColor = [[UIColor colorWithRed:0.15 green:0.62 blue:0.84 alpha:1] CGColor];
             center.layer.cornerRadius = 5.0f;
             center.backgroundColor = [UIColor clearColor];
-        }
-        else{
+        } else {
             center.layer.borderWidth = 0.0f;
         }
     }
-    
+
     index++;
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(200, 60), YES, [UIScreen mainScreen].scale);
     CGContextRef context1 = UIGraphicsGetCurrentContext();
@@ -408,9 +370,7 @@
     [right setImage:UIGraphicsGetImageFromCurrentImageContext() forState:UIControlStateNormal];
     if (index == 42 || index == 37) {
         right.hidden = YES;
-    }
-    else
-    {
+    } else {
         right.hidden = NO;
     }
     UIGraphicsEndImageContext();
@@ -420,49 +380,45 @@
         right.layer.borderColor = [[UIColor colorWithRed:0.15 green:0.62 blue:0.84 alpha:1] CGColor];
         right.layer.cornerRadius = 5.0f;
         right.backgroundColor = [UIColor clearColor];
-    }
-    else{
+    } else {
         right.layer.borderWidth = 0.0f;
     }
     return cell;
 }
 
--(void)onClicked:(id)sender
-{
-    StampButton *button = (StampButton*)sender;
+- (void)onClicked:(id)sender {
+    StampButton *button = (StampButton *) sender;
     self.currentIcon = button.stampIcon;
     _extensionManager.stampIcon = self.currentIcon;
     [self.stampLayout reloadData];
     if (_selectHandler) {
         _selectHandler(button.stampIcon);
     }
-    [self dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+
+                             }];
 }
 
-- (void)resizeView
-{
+- (void)resizeView {
     if (DEVICE_iPHONE) {
-        CGRect frame = [UIScreen mainScreen].bounds;
+        CGRect frame = _pdfViewCtrl.bounds;
         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
             frame = CGRectMake(0, 0, frame.size.height, frame.size.width);
         }
         self.toolbar.frame = CGRectMake(0, 0, frame.size.width, 104);
-        self.titleLabel.frame = CGRectMake(self.toolbar.frame.size.width/2 - 40, 30, 80, 30);
+        self.titleLabel.frame = CGRectMake(self.toolbar.frame.size.width / 2 - 40, 30, 80, 30);
         self.segmengView.frame = CGRectMake(20, 65, frame.size.width - 40, 32);
         self.stampLayout.frame = CGRectMake(0, 110, frame.size.width, frame.size.height);
         [self.stampLayout reloadData];
     }
 }
 
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
     self.isiPhoneLandscape = NO;
-    if (DEVICE_iPHONE && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)){
+    if (DEVICE_iPHONE && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
         self.isiPhoneLandscape = YES;
-    }else
-    {
+    } else {
         self.isiPhoneLandscape = NO;
     }
     [self resizeView];

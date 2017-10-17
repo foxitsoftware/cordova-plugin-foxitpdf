@@ -10,8 +10,8 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
 #import "UIExtensionsManager+Private.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
 @protocol IAnnotHandler;
 @class UIExtensionsManager;
@@ -21,17 +21,17 @@ static NSString *LINK_DES_INDEX = @"DesIndex";
 static NSString *LINK_DES_RECT = @"DesRect";
 static NSString *LINK_DES_URL = @"DesURL";
 static NSString *LINK_DES_AREA = @"DesArea";
+static NSString *LINK_DES_FILE = @"DesFile";
 
 /**@brief A link annotation handler to handle touches and gestures on tha link annotation. */
-@interface LinkAnnotHandler : NSObject<IAnnotHandler>
-{
+@interface LinkAnnotHandler : NSObject <IAnnotHandler> {
     NSString *_url;
 }
 
 @property (nonatomic, strong) NSMutableDictionary *dictAnnotLink;
 
-- (void)loadAnnotLink:(FSPDFPage*)dmpage;
+- (void)loadAnnotLink:(FSPDFPage *)dmpage;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

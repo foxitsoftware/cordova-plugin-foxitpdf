@@ -19,21 +19,21 @@
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_ENCRYPTTYPE {
+typedef NS_ENUM(NSInteger, FSEncryptType) {
     /** @brief	Unknown encryption type. */
-    e_encryptUnknown   =  -1,
+    e_encryptUnknown = -1,
     /** @brief	No encryption pattern. */
-    e_encryptNone	  =	 0,
+    e_encryptNone	 = 0,
     /** @brief	Encryption type: password, which is the standard encryption. */
-    e_encryptPassword	=	1,
+    e_encryptPassword,
     /** @brief	Encryption type: digital certificate encryption. */
-    e_encryptCertificate	=	2,
+    e_encryptCertificate,
     /** @brief	Encryption type: Foxit DRM encryption. */
-    e_encryptFoxitDRM	=	3,
+    e_encryptFoxitDRM,
     /** @brief	Encryption type: customized encryption. */
-    e_encryptCustom	=	4,
+    e_encryptCustom,
     /** @brief	Encryption type: Microsoft RMS encryption. */
-    e_encryptRMS	=	5
+    e_encryptRMS
 };
 
 /**
@@ -53,13 +53,15 @@ enum FS_ENCRYPTTYPE {
 -(void*)getCptr;
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/** @brief Default initialization. */
+-(id)init;
 /**
  * @brief	Get the encryption type of current security handler.
  *
  * @return	The encryption type.
- *			Please refer to {@link FS_ENCRYPTTYPE::e_encryptPassword FS_ENCRYPTTYPE::e_encryptXXX} values and this would be one these values.
+ *			Please refer to {@link FSEncryptType::e_encryptPassword FSEncryptType::e_encryptXXX} values and this would be one these values.
  */
--(enum FS_ENCRYPTTYPE) getSecurityType;
+-(FSEncryptType) getSecurityType;
 
 /** @brief Free the object. */
 -(void)dealloc;
@@ -74,15 +76,15 @@ enum FS_ENCRYPTTYPE {
  *			Function [FSLibrary unregisterSecurityCallback] can be called to unregister the security callback object with the registered filter name.
  */
 @interface FSCertificateSecurityCallback : FSSecurityCallback
-
+-(id)init;
 /**
  * @brief	Get the encryption type of current security callback.
  *
  * @note	Caller should not override this function, otherwise there will be unexpected behavior.
  *
- * @return	The encryption type. It would always be {@link FS_ENCRYPTTYPE::e_encryptCertificate}.
+ * @return	The encryption type. It would always be {@link FSEncryptType::e_encryptCertificate}.
  */
--(enum FS_ENCRYPTTYPE) getSecurityType;
+-(FSEncryptType) getSecurityType;
 
 /**
  * @brief	Get the PKCS12 format data buffer, usually it's a .pfx file.
@@ -110,13 +112,13 @@ enum FS_ENCRYPTTYPE {
  *
  * @details Values of this enumeration should be used alone.
  */
-enum FS_CIPHERTYPE {
+typedef NS_ENUM(NSUInteger, FSCipherType) {
     /** @brief  Not use encryption algorithm. */\
     e_cipherNone = 0,
     /** @brief  Use RC4 encryption algorithm, with the key length between 5-bytes and 16-bytes. */\
-    e_cipherRC4 = 1,
+    e_cipherRC4,
     /** @brief  Use AES encryption algorithm, with the key length be 16-bytes or 32-bytes. */\
-    e_cipherAES = 2
+    e_cipherAES
 };
 
 
@@ -146,9 +148,9 @@ enum FS_CIPHERTYPE {
  * @brief	Get the encryption type of current security handler.
  *
  * @return	The encryption type.
- *			Please refer to {@link FS_ENCRYPTTYPE::e_encryptPassword FS_ENCRYPTTYPE::e_encryptXXX} values and this would be one these values.
+ *			Please refer to {@link FSEncryptType::e_encryptPassword FSEncryptType::e_encryptXXX} values and this would be one these values.
  */
--(enum FS_ENCRYPTTYPE) getSecurityType;
+-(FSEncryptType) getSecurityType;
 
 /** @brief Free the object. */
 -(void)dealloc;
@@ -168,14 +170,14 @@ enum FS_CIPHERTYPE {
  */
 @interface FSStdSecurityHandler : FSSecurityHandler
 
-+ (FSStdSecurityHandler*)create;
+-(id)init;
 /**
  * @brief Initialize the standard security handler.
  *
- * @param[in]	userPermissions		The user permissions, see {@link FS_USERPERMISSIONS::e_permPrint FS_USERPERMISSIONS::e_permXXX} values and this would be one or combination of its values.
+ * @param[in]	userPermissions		The user permissions, see {@link FSUserPermissions::e_permPrint FSUserPermissions::e_permXXX} values and this would be one or combination of its values.
  * @param[in]	userPassword		The user password, which is used to open the PDF document.
  * @param[in]	ownerPassword		The owner password, which is used to take ownership of the PDF document.
- * @param[in]	cipher				See {FS_CIPHERTYPE::e_cipherXXX} values. e_cipherNone is not allowed.
+ * @param[in]	cipher				See {FSCipherType::e_cipherXXX} values. e_cipherNone is not allowed.
  * @param[in]	keyLen				The key length, in bytes.
  *									For FSCommonDefines::e_cipherRC4 cipher, this value should be between 5 and 16. The prefered one should be 16.
  *									For FSCommonDefines::e_cipherAES cipher, this value should be 16 or 32.
@@ -183,7 +185,7 @@ enum FS_CIPHERTYPE {
  *
  * @return YES if initialize successfully, else NO.
  */
--(BOOL)initialize:(unsigned int)userPermissions userPassword:(NSString*)userPassword ownerPassword:(NSString*)ownerPassword cipher:(enum FS_CIPHERTYPE)cipher keyLen:(int)keyLen encryptMetadata:(BOOL)encryptMetadata;
+-(BOOL)initialize:(unsigned int)userPermissions userPassword:(NSString*)userPassword ownerPassword:(NSString*)ownerPassword cipher:(FSCipherType)cipher keyLen:(int)keyLen encryptMetadata:(BOOL)encryptMetadata;
 
 @end
 
@@ -200,15 +202,15 @@ enum FS_CIPHERTYPE {
  *
  * @return	A new certificate security handler object.
  */
-+(FSCertificateSecurityHandler*)create;
+-(id)init;
 
 /**
  * @brief	Initialize current certificate security handler.
  *
  * @param[in]	x509Certificates	An array which each element specifies the binary buffer of x509 certificates.
  * @param[in]	cipher				Cipher type.
- *									Please refer to {FS_CIPHERTYPE::e_cipherXXX} values and this should be one of these values,
- *									except {@link FS_CIPHERTYPE::e_cipherNone}.
+ *									Please refer to {FSCipherType::e_cipherXXX} values and this should be one of these values,
+ *									except {@link FSCipherType::e_cipherNone}.
  * @param[in]	encryptMetadata		A boolean value that indicates whether to encrypt metadata or not.<br>
  *									<b>YES</b> means to encrypt metadata, and <b>NO</b> means not to encrypt metadata.
  *
@@ -216,7 +218,248 @@ enum FS_CIPHERTYPE {
  *
  * @exception	e_errParam		Value of input parameter is invalid.
  */
--(BOOL)initialize: (NSArray<NSData*>*)x509Certificates cipher: (enum FS_CIPHERTYPE)cipher encryptMetadata: (BOOL)encryptMetadata;
+-(BOOL)initialize: (NSArray<NSData*>*)x509Certificates cipher: (FSCipherType)cipher encryptMetadata: (BOOL)encryptMetadata;
+
+-(void)dealloc;
+
+@end
+
+/**
+ * @brief Class to represent a callback object for custom decryption and encryption.
+ *
+ * @details User should inherit this callback class and implement the pure virtual functions (as callback functions).
+ *          User can register their own custom security callback object to Foxit PDF SDK, by function
+ *          {@link FSLibrary::RegisterSecurityCallback} with any custom filter name (following the PDF name
+ *          conventions). Function {@link FSLibrary::UnregisterSecurityCallback} can be called to unregister
+ *          the security callback object with the registered filter name.
+ */
+@interface FSCustomSecurityCallback : FSSecurityCallback
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+-(id)init;
+/**
+ * @brief Get the encryption type of security callback.
+ *
+ * @note User should not override this function, otherwise there will be unexpected behavior.
+ *
+ * @return The encryption type. It would always be {@link FSEncryptType::e_encryptCustom FSEncryptType::e_encryptCustom}.
+ */
+-(FSEncryptType)getSecurityType;
+
+/**
+ * @brief A callback function used to create context for encryption and decryption.
+ *
+ * @param[in] filter        The encryption filter of the PDF document.
+ * @param[in] subFilter    The sub filter of the PDF document.
+ * @param[in] encryptInfo  The encryption information of the PDF document.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return The encryption context.
+ */
+-(void *)createContext: (NSString *)filter subFilter: (NSString *)subFilter encryptInfo: (NSString *)encryptInfo;
+
+/**
+ * @brief A callback function used to release the context for encryption and decryption.
+ *
+ * @param[in] context  The context for encryption and decryption, returned by callback function
+ *                     {@link FSCustomSecurityCallback::CreateContext}.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return <b>TRUE</b> means success, while <b>FALSE</b> means failure.
+ */
+-(BOOL)releaseContext: (void *)context;
+
+/**
+ * @brief A callback function used to get the user permissions.
+ *
+ * @param[in] context          The context for encryption and decryption, returned by callback function
+ *                             {@link FSCustomSecurityCallback::CreateContext}.
+ * @param[in] userPermission  Original permission settings of the document. Please refer to
+ *                             {@link FSUserPermissions::e_permPrint FSUserPermissions::e_permXXX} values and this whould be
+ *                             one or combination of its values.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return The new user permissions. Please refer to {@link FSUserPermissions::e_permPrint FSUserPermissions::e_permXXX} values
+ *         and this should be one or combination of its values.
+ */
+-(FSUserPermissions)getUserPermissions: (void *)context userPermission: (FSUserPermissions)userPermission;
+
+/**
+ * @brief A callback function used to check if current user is the owner of the PDF document.
+ *
+ * @param[in] context  The context for encryption and decryption, returned by callback function
+ *                     {@link FSCustomSecurityCallback::CreateContext}.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return <b>TRUE</b> means current user is the owner, and <b>FALSE</b> means current user is not the owner.
+ */
+-(BOOL)isOwner: (void *)context;
+
+/**
+ * @brief A callback function used to get the cipher type.
+ *
+ * @param[in] context  The context for encryption and decryption, returned by callback function
+ *                     {@link FSCustomSecurityCallback::CreateContext}.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return The cipher type. Please refer to {@link FSCipherType::e_cipherNone FSCipherType::e_cipherXXX} values and this
+ *         should be one or combination of its values.
+ */
+-(FSCipherType)getCipher: (void *)context;
+
+/**
+ * @brief A callback function used to get the encryption key.
+ *
+ * @param[in] context  The context for encryption and decryption, returned by callback function
+ *                     {@link FSCustomSecurityCallback::CreateContext}.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return The encryption key.
+ */
+-(NSString *)getEncryptKey: (void *)context;
+
+/**
+ * @brief A callback function used to get the estimated decrypted data size.
+ *
+ * @param[in] context        The context for encryption and decryption, returned by callback function
+ *                           {@link FSCustomSecurityCallback::CreateContext}.
+ * @param[in] srcDataSize  Size of source data which is to be decrypted.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return The estimated decrypted data size.
+ */
+-(unsigned int)getDecryptedSize: (void *)context srcDataSize: (unsigned int)srcDataSize;
+
+/**
+ * @brief A callback function used to start a decryption.
+ *
+ * @param[in] context  The context for encryption and decryption, returned by callback function
+ *                     {@link FSCustomSecurityCallback::CreateContext}.
+ * @param[in] objNum  The object number for a PDF object.
+ * @param[in] genNum  The generation number for a PDF object.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return A decryptor implemented and created by user.
+ */
+-(void *)startDecryptor: (void *)context objNum: (int)objNum genNum: (int)genNum;
+
+/**
+ * @brief A callback function used to decrypt the encrypted data.
+ *
+ * @param[in] decryptor           The decryptor implemented and created by user, returned by callback function
+ *                                {@link FSCustomSecurityCallback::StartDecryptor}.
+ * @param[in] encryptedData      The buffer which stores the encrypted data.
+ * @param[in] encryptedDataLen  The length of encrypted data, in bytes.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return The decrypted data content.
+ */
+-(NSString*)decryptData: (void *)decryptor encryptedData: (void *)encryptedData encryptedDataLen: (unsigned int)encryptedDataLen;
+
+/**
+ * @brief A callback function used to finish the decryption.
+ *
+ * @param[in] decryptor  The decryptor implemented and created by user, returned by callback function
+ *                       {@link FSCustomSecurityCallback::StartDecryptor}.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return The decrypted data content.
+ */
+-(NSString *)finishDecryptor: (void *)decryptor;
+
+/**
+ * @brief A callback function used to get the estimated encrypted size.
+ *
+ * @param[in] context       The context for encryption and decryption, returned by callback function
+ *                          {@link FSCustomSecurityCallback::CreateContext}.
+ * @param[in] objNum       The object number for a PDF object.
+ * @param[in] genNum       The generation number for a PDF object.
+ * @param[in] srcData      The buffer which stores the plain text to be encrypted.
+ * @param[in] srcDataLen  The length of the buffer.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return The estimated encrypted size.
+ */
+-(unsigned int)getEncryptedSize: (void *)context objNum: (int)objNum genNum: (int)genNum srcData: (void *)srcData srcDataLen: (unsigned int)srcDataLen;
+
+/**
+ * @brief A callback function used to get encrypted data.
+ *
+ * @param[in] context          The context for encryption and decryption, returned by callback function
+ *                             {@link FSCustomSecurityCallback::CreateContext}.
+ * @param[in] objNum          The object number for a PDF object.
+ * @param[in] genNum          The generation number for a PDF object.
+ * @param[in] srcData         The buffer which stores the plain text to be encrypted.
+ * @param[in] srcDataLen     The length of the buffer.
+ * @param[out] dstBuffer      Used to receives the encrypted content.
+ * @param[out] dstBufferLen  Used to received the length of the encrypted data.
+ *
+ * @note User should implement this callback function.
+ *
+ * @return <b>TRUE</b> means success, while <b>FALSE</b> means failure.
+ */
+-(BOOL)encryptData: (void *)context objNum: (int)objNum genNum: (int)genNum srcData: (void *)srcData srcDataLen: (unsigned int)srcDataLen dstBuffer: (void *)dstBuffer dstBufferLen: (unsigned int *)dstBufferLen;
+
+-(void)dealloc;
+
+@end
+
+/**
+ * @brief Class to represent a custom security handler, used for custom encryption.
+ *
+ * @see FSSecurityHandler
+ */
+@interface FSCustomSecurityHandler : FSSecurityHandler
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+-(id)init;
+
+/**
+ * @brief Get the encryption type of current security handler.
+ *
+ * @return The encryption type. It would always return
+ *         {@link FSEncryptType::e_encryptPassword FSEncryptType::e_encryptCustom}.
+ */
+-(FSEncryptType)getSecurityType;
+
+/**
+ * @brief Initialize current custom security handler.
+ *
+ * @details If this function is successfully, Foxit PDF SDK will take over the input security callback object and
+ *          user should not release this callback object directly anymore; otherwise unexpected crash may occurs
+ *          later.<br>
+ *
+ * @param[in] filter               The filter of PDF document for encryption, in UTF-8 encoding.
+ *                                 It should not be <b>NULL</b> or empty.
+ * @param[in] subFilter           The sub filter of PDF document, in UTF-8 encoding.
+ *                                 It should not be <b>NULL</b> or empty.
+ * @param[in] encryptInfo         The encryption information,which will be stored to document encryption dictionary.
+ *                                 This can be <b>NULL</b> or empty.
+ * @param[in] isEncryptMetadata  A boolean value that indicates whether to encrypt metadata or not.<br>
+ *                                 <b>TRUE</b> means to encrypt metadata, and <b>FALSE</b> means not to
+ *                                 encrypt metadata.
+ * @param[in] callback             A valid FSCustomSecurityCallback object, which is inherited and implemented
+ *                                 by user for their own encryption and description algorithm.
+ *                                 It should not be <b>NULL</b>.
+ *
+ * @return <b>TRUE</b> means success, while <b>FASLE</b> means failure.
+ */
+-(BOOL)initialize: (NSString *)filter subFilter: (NSString *)subFilter encryptInfo: (NSString *)encryptInfo isEncryptMetadata: (BOOL)isEncryptMetadata callback: (FSCustomSecurityCallback *)callback;
 
 -(void)dealloc;
 

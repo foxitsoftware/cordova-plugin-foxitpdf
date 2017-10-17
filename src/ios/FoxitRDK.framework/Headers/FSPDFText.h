@@ -13,6 +13,8 @@
  * @brief	This file contains definitions of object-c APIs for Foxit PDF SDK.
  */
 #import "FSCommon.h"
+
+NS_ASSUME_NONNULL_BEGIN
 /************************************************************************************************
  *														 text search   							*
  *************************************************************************************************/
@@ -22,15 +24,15 @@
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_SEARCHFLAG {
+typedef NS_OPTIONS(NSUInteger, FSSearchFlags) {
     /** @brief	No special finding options.*/
-    e_searchNormal = 0x00,
+    e_searchNormal = 0,
     /** @brief	If set, match the case of keyword when searching. */
-    e_searchMatchCase = 0x01,
+    e_searchMatchCase = 1 << 0,
     /** @brief	If set, match the whole word of keyword when searching. */
-    e_searchMatchWholeWord = 0x02,
+    e_searchMatchWholeWord = 1 << 1,
     /** @brief	If set, match the key word consecutively when searching. For example, "CC" will be matched twice in "CCC". */
-    e_searchConsecutive = 0x04
+    e_searchConsecutive = 1 << 2
 };
 
 /**
@@ -71,7 +73,7 @@ enum FS_SEARCHFLAG {
  *
  * @return	A pointer point to a FSPDFTextSearch object.
  */
-+(FSPDFTextSearch*)create: (FSPDFDoc*)pdfDoc pause: (FSPauseCallback*)pause;
+-(id)initWithPDFDoc: (FSPDFDoc*)pdfDoc pause: (FSPauseCallback* _Nullable)pause;
 /**
  * @brief	Set keywords to search.
  *
@@ -94,14 +96,14 @@ enum FS_SEARCHFLAG {
 /**
  * @brief	Set search flag.
  *
- * @details	If this function is not called, default value {@link FS_SEARCHFLAG::e_searchNormal} will be used.
+ * @details	If this function is not called, default value {@link FSSearchFlags::e_searchNormal} will be used.
  *
  * @param[in]	flag		Search flags.
- *							Please refer to {@link FS_SEARCHFLAG::e_searchNormal FS_SEARCHFLAG::e_searchXXX} values and this can be one or combination of these values.
+ *							Please refer to {@link FSSearchFlags::e_searchNormal FSSearchFlags::e_searchXXX} values and this can be one or combination of these values.
  *
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
  */
--(BOOL)setFlag: (unsigned int)flag;
+-(BOOL)setFlag: (FSSearchFlags)flag;
 /**
  * @brief	Search for next matched pattern.
  *
@@ -195,7 +197,7 @@ enum FS_SEARCHFLAG {
  * @return	A new PDF text selection instance.
  *			If there is any error, <b>nil</b> will be returned.
  */
-+(FSPDFTextSelect*)create: (FSPDFPage*)pPage;
+-(id)initWithPDFPage: (FSPDFPage*)pPage;
 /**
  * @brief	Get the PDF page associated with current text selection object.
  *
@@ -283,9 +285,9 @@ enum FS_SEARCHFLAG {
  *								Valid range: from 0 to (<i>count</i> -1). <i>count</i> is returned by function {@link FSPDFTextSelect::getTextRectCount:count:}.
  *
  * @return	Text trend, as rotation value.
- *			Please refer to {@link FS_ROTATION::e_rotation0 FS_ROTATION::e_rotationXXX} values and this would be one of these values.
+ *			Please refer to {@link FSRotation::e_rotation0 FSRotation::e_rotationXXX} values and this would be one of these values.
  */
--(enum FS_ROTATION)getBaselineRotation: (int)rectIndex;
+-(FSRotation)getBaselineRotation: (int)rectIndex;
 
 /** @brief Free the object. */
 -(void)dealloc;
@@ -390,7 +392,7 @@ enum FS_SEARCHFLAG {
  * @return	A new PDF page links instance.
  *			If there is any error, <b>nil</b> will be returned.
  */
-+(FSPDFPageLinks*)create: (FSPDFPage*)page;
+-(id)initWithPDFPage: (FSPDFPage*)page;
 /**
  * @brief	Get the count of the URL formatted texts, in related PDF page.
  *
@@ -428,4 +430,7 @@ enum FS_SEARCHFLAG {
 -(void)dealloc;
 
 @end
+
+NS_ASSUME_NONNULL_END
+
 

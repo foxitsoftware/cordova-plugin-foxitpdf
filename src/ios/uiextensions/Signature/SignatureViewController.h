@@ -10,8 +10,8 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <UIKit/UIKit.h>
 #import "PropertyBar.h"
+#import <UIKit/UIKit.h>
 
 @class SignatureView;
 @class AnnotationSignature;
@@ -23,13 +23,13 @@ typedef void (^SignatureSaveHandler)(void);
 
 @interface SignatureViewController : UIViewController <IPropertyValueChangedListener>
 
-@property (nonatomic,strong) AnnotationSignature *currentSignature;
-@property (nonatomic,copy) SignatureCancelHandler cancelHandler;
-@property (nonatomic,copy) SignatureSaveHandler saveHandler;
-@property (nonatomic,weak) UIExtensionsManager* extensionsManager;
-@property (nonatomic,assign) BOOL isFieldSig;
-@property (nonatomic,assign) BOOL isShowed;
+@property (nonatomic, strong) AnnotationSignature *currentSignature;
+@property (nonatomic, copy) SignatureCancelHandler cancelHandler;
+@property (nonatomic, copy) SignatureSaveHandler saveHandler;
+@property (nonatomic, weak) UIExtensionsManager *extensionsManager;
+@property (nonatomic, assign) BOOL isFieldSig;
+@property (nonatomic, assign) BOOL isShowed;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

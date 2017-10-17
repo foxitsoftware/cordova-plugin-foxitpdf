@@ -15,66 +15,68 @@
 
 #import "FSCommon.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * @brief	Enumeration for PDF annotation type.
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_ANNOTTYPE {
+typedef NS_ENUM(NSUInteger, FSAnnotType) {
     /** @brief	Annotation type: unknown.*/
     e_annotUnknownType= 0,
     /** @brief	Annotation type: note annotation, which is just "Text" annotation defined in <PDF reference 1.7>.*/
-    e_annotNote		= 1,
+    e_annotNote,
     /** @brief	Annotation type: link annotation.*/
-    e_annotLink		= 2,
+    e_annotLink,
     /** @brief	Annotation type: free text annotation.*/
-    e_annotFreeText	= 3,
+    e_annotFreeText,
     /** @brief	Annotation type: line annotation.*/
-    e_annotLine		= 4,
+    e_annotLine,
     /** @brief	Annotation type: square annotation.*/
-    e_annotSquare	= 5,
+    e_annotSquare,
     /** @brief	Annotation type: circle annotation.*/
-    e_annotCircle	= 6,
+    e_annotCircle,
     /** @brief	Annotation type: polygon annotation.*/
-    e_annotPolygon	= 7,
+    e_annotPolygon,
     /** @brief	Annotation type: polyline annotation.*/
-    e_annotPolyLine	= 8,
+    e_annotPolyLine,
     /** @brief	Annotation type: highlight annotation.*/
-    e_annotHighlight= 9,
+    e_annotHighlight,
     /** @brief	Annotation type: underline annotation.*/
-    e_annotUnderline= 10,
+    e_annotUnderline,
     /** @brief	Annotation type: squiggly annotation.*/
-    e_annotSquiggly	= 11,
+    e_annotSquiggly,
     /** @brief	Annotation type: strikeout annotation.*/
-    e_annotStrikeOut= 12,
+    e_annotStrikeOut,
     /** @brief	Annotation type: stamp annotation.*/
-    e_annotStamp	= 13,
+    e_annotStamp,
     /** @brief	Annotation type: caret annotation.*/
-    e_annotCaret	= 14,
+    e_annotCaret,
     /** @brief	Annotation type: ink annotation.*/
-    e_annotInk		= 15,
+    e_annotInk,
     /** @brief	Annotation type: pressure sensitive ink annotation.*/
-    e_annotPSInk	= 16,
+    e_annotPSInk,
     /** @brief	Annotation type: file attachment annotation.*/
-    e_annotFileAttachment		= 17,
+    e_annotFileAttachment,
     /** @brief	Annotation type: sound annotation.*/
-    e_annotSound	= 18,
+    e_annotSound,
     /** @brief	Annotation type: movie annotation.*/
-    e_annotMovie	= 19,
+    e_annotMovie,
     /** @brief	Annotation type: widget annotation.*/
-    e_annotWidget	= 20,
+    e_annotWidget,
     /** @brief	Annotation type: screen annotation.*/
-    e_annotScreen	= 21,
+    e_annotScreen,
     /** @brief	Annotation type: printer's mark annotation.*/
-    e_annotPrinterMark= 22,
+    e_annotPrinterMark,
     /** @brief	Annotation type: trap network annotation.*/
-    e_annotTrapNet	= 23,
+    e_annotTrapNet,
     /** @brief	Annotation type: watermark annotation.*/
-    e_annotWatermark= 24,
+    e_annotWatermark,
     /** @brief	Annotation type: 3D annotation.*/
-    e_annot3D		= 25,
+    e_annot3D,
     /** @brief	Annotation type: pop-up annotation.*/
-    e_annotPopup	= 26
+    e_annotPopup
 };
 
 /**
@@ -82,27 +84,27 @@ enum FS_ANNOTTYPE {
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_ANNOTFLAGS {
+typedef NS_OPTIONS(NSUInteger, FSAnnotFlags) {
     /** @brief	Annotation flag: invisible */
-    e_annotFlagInvisible = 0x0001,
+    e_annotFlagInvisible = 1 << 0,
     /** @brief	Annotation flag: hidden */
-    e_annotFlagHidden = 0x0002,
+    e_annotFlagHidden =    1 << 1,
     /** @brief	Annotation flag: print */
-    e_annotFlagPrint = 0x0004,
+    e_annotFlagPrint =     1 << 2,
     /** @brief	Annotation flag: no zoom */
-    e_annotFlagNoZoom = 0x0008,
+    e_annotFlagNoZoom =    1 << 3,
     /** @brief	Annotation flag: no rotate */
-    e_annotFlagNoRotate = 0x0010,
+    e_annotFlagNoRotate =  1 << 4,
     /** @brief	Annotation flag: no view */
-    e_annotFlagNoView = 0x0020,
+    e_annotFlagNoView =    1 << 5,
     /** @brief	Annotation flag: read only */
-    e_annotFlagReadOnly = 0x0040,
+    e_annotFlagReadOnly =  1 << 6,
     /** @brief	Annotation flag: locked */
-    e_annotFlagLocked = 0x0080,
+    e_annotFlagLocked =    1 << 7,
     /** @brief	Annotation flag: toggle no view */
-    e_annotFlagToggleNoView = 0x0100,
+    e_annotFlagToggleNoView = 1 << 8,
     /** @brief	Annotation flag: locked contents */
-    e_annotFlagLockedContents = 0x0200
+    e_annotFlagLockedContents = 1 << 9
 };
 
 /**
@@ -110,44 +112,44 @@ enum FS_ANNOTFLAGS {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_BORDERSTYLE {
+typedef NS_ENUM(NSUInteger, FSBorderStyle) {
     /** @brief	Border style: Solid */
-    e_borderStyleSolid		= 0,
+    e_borderStyleSolid = 0,
     /**
      * @brief	Border style: Dashed.
      *
      * @details	This is only useful for link, free text, line, square, circle, polygon, and polyline annotation.
-     *			If this is set to other type annotation, Foxit PDF SDK will change to set border style as {@link FS_BORDERSTYLE::e_borderStyleSolid} by default internally.
+     *			If this is set to other type annotation, Foxit PDF SDK will change to set border style as {@link FSBorderStyle::e_borderStyleSolid} by default internally.
      */
-    e_borderStyleDashed	= 1,
+    e_borderStyleDashed,
     /**
      * @brief	Border style: Underline.
      *
      * @details	This is only useful for link annotation.
-     *			If this is set to other type annotation, Foxit PDF SDK will change to set border style as {@link FS_BORDERSTYLE::e_borderStyleSolid} by default internally.
+     *			If this is set to other type annotation, Foxit PDF SDK will change to set border style as {@link FSBorderStyle::e_borderStyleSolid} by default internally.
      */
-    e_borderStyleUnderLine	= 2,
+    e_borderStyleUnderLine,
     /**
      * @brief	Border style: Beveled.
      *
      * @details	Currently, Foxit PDF SDK does not support the annotation appearance of this border style.
-     *			If this is set to any annotation, Foxit PDF SDK will change to set border style as {@link FS_BORDERSTYLE::e_borderStyleSolid} by default internally.
+     *			If this is set to any annotation, Foxit PDF SDK will change to set border style as {@link FSBorderStyle::e_borderStyleSolid} by default internally.
      */
-    e_borderStyleBeveled	= 3,
+    e_borderStyleBeveled,
     /**
      * @brief	Border style: Inset.
      *
      * @details	Currently, Foxit PDF SDK does not support the annotation appearance of this border style.
-     *			If this is set to any annotation, Foxit PDF SDK will change to set border style as {@link FS_BORDERSTYLE::e_borderStyleSolid} by default internally.
+     *			If this is set to any annotation, Foxit PDF SDK will change to set border style as {@link FSBorderStyle::e_borderStyleSolid} by default internally.
      */
-    e_borderStyleInset		= 4,
+    e_borderStyleInset,
     /**
      * @brief	Border style: Cloudy.
      *
      * @details	This is only useful for free text, square, circle, and polygon annotations.
-     *			If this is set to other type annotation, Foxit PDF SDK will change to set border style as {@link FS_BORDERSTYLE::e_borderStyleSolid} by default internally.
+     *			If this is set to other type annotation, Foxit PDF SDK will change to set border style as {@link FSBorderStyle::e_borderStyleSolid} by default internally.
      */
-    e_borderStyleCloudy	= 5
+    e_borderStyleCloudy
 };
 
 /**
@@ -155,17 +157,117 @@ enum FS_BORDERSTYLE {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_HIGHLIGHTINGMODE {
+typedef NS_ENUM(NSUInteger, FSHighLightingMode) {
     /** @brief	Highlighting mode: None. */
-    e_highlightingModeNone			= 0 ,
+    e_highlightingModeNone = 0,
     /** @brief	Highlighting mode: Invert */
-    e_highlightingModeInvert		= 1 ,
+    e_highlightingModeInvert,
     /** @brief	Highlighting mode: Outline */
-    e_highlightingModeOutline		= 2 ,
+    e_highlightingModeOutline,
     /** @brief	Highlighting mode: Push */
-    e_highlightingModePush			= 3 ,
+    e_highlightingModePush,
     /** @brief	Highlighting mode: Toggle. This is only useful for widget annotation. */
-    e_highlightingModeToggle		= 4
+    e_highlightingModeToggle
+};
+
+/**
+ * @brief Enumeration for alignments(horizontal).
+ *
+ * @details Values of this enumeration should be used alone.
+ */
+typedef NS_ENUM(NSUInteger, FSAlignment) {
+    /** @brief Left alignment.*/
+    e_alignmentLeft,
+    /** @brief Center alignment.*/
+    e_alignmentCenter,
+    /** @brief Righte alignment.*/
+    e_alignmentRight
+};
+
+/**
+ * @brief Enumeration for annotation's MK dictionary (an appearance characteristics) entry.
+ *
+ * @details Values of this enumeration should be used alone.
+ */
+typedef NS_ENUM(NSUInteger, FSAnnotMKEntry) {
+    /** @brief Rotation entry. "R" in MK dictionary. */
+    e_mkEntryRotation = 0,
+    /** @brief Border color entry. "BC" in MK dictionary. */
+    e_mkEntryBorderColor = 1,
+    /** @brief Background color entry. "BG" in MK dictionary. */
+    e_mkEntryBackgroundColor = 2,
+    /**
+     * @brief Normal caption entry. "CA" in MK dictionary.
+     *
+     * @note Only applicable for widget annotation associated with pushbutton field, check box field or radio button field.
+     */
+    e_mkEntryNormalCaption = 3,
+    /**
+     * @brief Rollover caption entry. "RC" in MK dictionary.
+     *
+     * @note Only applicable for widget annotation associated with pushbutton field.
+     */
+    e_mkEntryRolloverCaption = 4,
+    /**
+     * @brief Down caption (or alternate caption) entry. "AC" in MK dictionary.
+     *
+     * @note Only applicable for widget annotation associated with pushbutton field.
+     */
+    e_mkEntryDownCaption = 5,
+    /**
+     * @brief Normal icon entry. "I" in MK dictionary.
+     *
+     * @note Only applicable for widget annotation associated with pushbutton field.
+     */
+    e_mkEntryNormalIcon = 6,
+    /**
+     * @brief Rollover icon entry. "RI" in MK dictionary.
+     *
+     * @note Only applicable for widget annotation associated with pushbutton field.
+     */
+    e_mkEntryRolloverIcon = 7,
+    /**
+     * @brief Down icon (or alternate icon) entry. "IX" in MK dictionary.
+     *
+     * @note Only applicable for widget annotation associated with pushbutton field.
+     */
+    e_mkEntryDownIcon = 8,
+    /**
+     * @brief Icon fit information entry. "IF" in MK dictionary.
+     *
+     * @note Only applicable for widget annotation associated with pushbutton field.
+     */
+    e_mkEntryIconFit = 9,
+    /**
+     * @brief Icon and caption relation entry. "TP" in MK dictionary.
+     *
+     * @note Only applicable for widget annotation associated with pushbutton field.
+     *       This is used to specify where to position the text of widget annotation's mk caption
+     *       relative to widget annotation's mk icon.
+     */
+    e_mkEntryIconCaptionRelation = 10
+};
+
+/**
+ * @brief Enumeration for icon and caption relative position in annotation's MK dictionary.
+ *
+ * @details Values of this enumeration should be used alone.
+ */
+typedef NS_ENUM(NSUInteger, FSAnnotMKIconCaptionRelation) {
+    /** @brief No icon; captin only. */
+    e_mkRelationNoIcon = 0,
+    /** @brief No caption; icon only. */
+    e_mkRelationNoCaption = 1,
+    /** @brief Caption below the icon. */
+    e_mkRelationCaptionBelowIcon = 2,
+    /** @brief Caption above the icon. */
+    e_mkRelationCaptionAboveIcon = 3,
+    /** @brief Caption to the right of the icon. */
+    e_mkRelationCaptionRight = 4,
+    /** @brief Caption to the left of the icon. */
+    e_mkRelationCaptionLeft = 5,
+    /** @brief Caption overlaid directly on the icon. */
+    e_mkRelationCaptionOvrlayOnIcon = 6
 };
 
 /**
@@ -220,9 +322,9 @@ enum FS_HIGHLIGHTINGMODE {
  * @brief	Get actual annotation type of current annotation.
  *
  * @return	Annotation type.
- *			Please refer to {@link FS_ANNOTTYPE::e_annotNote FS_ANNOTTYPE::e_annotXXX} values and it would be one of these values.
+ *			Please refer to {@link FSAnnotType::e_annotNote FSAnnotType::e_annotXXX} values and it would be one of these values.
  */
--(enum FS_ANNOTTYPE)getType;
+-(FSAnnotType)getType;
 /**
  * @brief	Get the index of current annotation, in the page which current annotation belongs to.
  *
@@ -259,17 +361,17 @@ enum FS_HIGHLIGHTINGMODE {
  * @brief	Get annotation flags.
  *
  * @return	The annotation flags.
- *			Please refer to {@link FS_ANNOTFLAGS::e_annotFlagInvisible FS_ANNOTFLAGS::e_annotFlagXXX} values and it would be one or a combination of them.
+ *			Please refer to {@link FSAnnotFlags::e_annotFlagInvisible FSAnnotFlags::e_annotFlagXXX} values and it would be one or a combination of them.
  *			0 means no annotation flag.
  */
--(unsigned int)getFlags;
+-(FSAnnotFlags)getFlags;
 /**
  * @brief	Set annotation flags.
  *
  * @param[in]	flags	The annotation flags.
- *						It could be 0, or one or a combination of {@link FS_ANNOTFLAGS::e_annotFlagInvisible FS_ANNOTFLAGS::e_annotFlagXXX} values.
+ *						It could be 0, or one or a combination of {@link FSAnnotFlags::e_annotFlagInvisible FSAnnotFlags::e_annotFlagXXX} values.
  */
--(void)setFlags: (unsigned int)flags;
+-(void)setFlags: (FSAnnotFlags)flags;
 /**
  * @brief	Get unique ID.
  *
@@ -371,7 +473,7 @@ enum FS_HIGHLIGHTINGMODE {
  * @return	<b>YES</b> means remove the specified property successfully, or current annotation supports the property but does not have the property.
  *			<b>NO</b> means current annotation does not support to have the specified property, current annotation cannot be modified or failure.
  */
--(BOOL)removeProperty: (enum FS_ANNOTPROPERTY)property;
+-(BOOL)removeProperty: (FSAnnotProperty)property;
 
 /** @brief Free the object. */
 -(void)dealloc;
@@ -398,24 +500,31 @@ enum FS_HIGHLIGHTINGMODE {
 -(void*)getCptr;
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+
 /**
- * @brief	Set value.
+ * @brief Set value.
  *
- * @param[in]	width		Border width, in points. This should be a non-negative value.
- *							If this value is 0, no border is drawn.
- * @param[in]	style		Border style. Please refer to {@link FSM_BORDERSTYLE::e_borderStyleSolid FS_BORDERSTYLE::e_borderStyleXXX} values and it should be one of these values.
- * @param[in]	intensity	Intensity of the cloudy effect. Only useful when parameter <i>style</i> is {@link FS_BORDERSTYLE::e_borderStyleCloudy}.
- *							Valid value range: 0 to 2. 0 means no cloudy border effect.<br>
- *							If the value is below 0, it will have the same effect as value 0.
- *							If the value is above 2, it will have the same effect as value 2.
- * @param[in]	dashPhase	Dash phase. Only useful when parameter <i>style</i> is {@link FS_BORDERSTYLE::e_borderStyleDashed}.
- * @param[in]	dashes	Dashes array. Only useful when parameter <i>style</i> is {@link FS_BORDERSTYLE::e_borderStyleDashed}.<br>
- *							The value of useful elements in this array should not be negative.<br>
- *							In this array, an element with value -1 means that all the elements before this element are useful,
- *							and this element with the rest will be ignored.<br>
- *							If no element's value is -1, that means all of 16 elements are useful.
+ * @param[in] width       Border width, in points. This should be a non-negative value.
+ *                        If this value is 0, no border is drawn.
+ * @param[in] style       Border style. Please refer to
+ *                        {@link FSBorderStyle::e_borderStyleSolid FSBorderStyle::e_borderStyleXXX} values and it should
+ *                        be one of these values.
+ * @param[in] intensity   Intensity of the cloudy effect. Only useful when parameter <i>style</i> is
+ *                        {@link FSBorderStyle::e_borderStyleCloudy FSBorderStyle::e_borderStyleCloudy}.
+ *                        Valid value range: 0 to 2. 0 means no cloudy border effect.<br>
+ *                        If the value is below 0, it will have the same effect as value 0.
+ *                        If the value is above 2, it will have the same effect as value 2.
+ * @param[in] dashPhase  Dash phase. Only useful when parameter <i>style</i> is
+ *                        {@link FSBorderStyle::e_borderStyleDashed FSBorderStyle::e_borderStyleDashed}.
+ * @param[in] dashes      A dash array that represents the dash patterns. The value of each element in this array
+ *                        should not be negative. Only useful when FSBorderInfo::style is
+ *                        {@link FSBorderStyle::e_borderStyleDashed FSBorderStyle::e_borderStyleDashed}.
+ * @param[in] dashCount  The count of elements in dash array. Only useful when FSBorderInfo::style is
+ *                        {@link FSBorderStyle::e_borderStyleDashed FSBorderStyle::e_borderStyleDashed}.
+ *
+ * @return None.
  */
--(void)set: (float)width style: (enum FS_BORDERSTYLE)style intensity: (float)intensity dashPhase: (float)dashPhase dashes: (NSArray *)dashes;
+-(void)set: (float)width style: (FSBorderStyle)style intensity: (float)intensity dashPhase: (float)dashPhase dashes: (float *)dashes dashCount: (int)dashCount;
 /**
  * @brief	Set border width, in points.
  *
@@ -434,17 +543,17 @@ enum FS_HIGHLIGHTINGMODE {
  * @brief	Set border style.
  *
  * @param[in]	value	Border style.
- *						Please refer to enumeration {@link FS_BORDERSTYLE::e_borderStyleSolid FS_BORDERSTYLE::e_borderStyleXXX} and this should be one of its values.
+ *						Please refer to enumeration {@link FSBorderStyle::e_borderStyleSolid FSBorderStyle::e_borderStyleXXX} and this should be one of its values.
  *						Please also check comment of these values for more details.
  */
--(void)setStyle: (enum FS_BORDERSTYLE)value;
+-(void)setStyle: (FSBorderStyle)value;
 /**
  * @brief	Get border style.
  *
  * @return	Border style.
- *			Please refer to enumeration {@link FS_BORDERSTYLE::e_borderStyleSolid FS_BORDERSTYLE::e_borderStyleXXX} and this should be one of its values.
+ *			Please refer to enumeration {@link FSBorderStyle::e_borderStyleSolid FSBorderStyle::e_borderStyleXXX} and this should be one of its values.
  */
--(enum FS_BORDERSTYLE)getStyle;
+-(FSBorderStyle)getStyle;
 /**
  * @brief	set intensity of the cloudy effect.
  *
@@ -464,7 +573,7 @@ enum FS_HIGHLIGHTINGMODE {
  * @brief	Get intensity of the cloudy effect.
  *
  * @details	Intensity of the cloudy effect is only useful to free text, square, circle, polygon, and polyline annotations
- *			when FSBorderInfo::getStyle is {@link FS_BORDERSTYLE::e_borderStyleCloudy}.
+ *			when FSBorderInfo::getStyle is {@link FSBorderStyle::e_borderStyleCloudy}.
  *
  * @return	Intensity of the cloudy effect. Valid value range: 0 to 2.
  *			-1 mean no cloudy border effect.<br>
@@ -473,7 +582,7 @@ enum FS_HIGHLIGHTINGMODE {
 /**
  * @brief	Set dash phase.
  *
- * @details	Dash phase is only useful when FSBorderInfo::getStyle is {@link FS_BORDERSTYLE::e_borderStyleDashed}.
+ * @details	Dash phase is only useful when FSBorderInfo::getStyle is {@link FSBorderStyle::e_borderStyleDashed}.
  *             The value of useful elements in this array should not be negative.<br>
  *			In this array, an element with integer value -1 means that all the elements before this element are useful,
  *			and this element with the rest will be ignored.<br>
@@ -485,7 +594,7 @@ enum FS_HIGHLIGHTINGMODE {
 /**
  * @brief	Get dash phase.
  *
- * @details	Dash phase is only useful when FSBorderInfo::getStyle is {@link FS_BORDERSTYLE::e_borderStyleDashed}.
+ * @details	Dash phase is only useful when FSBorderInfo::getStyle is {@link FSBorderStyle::e_borderStyleDashed}.
  *
  * @return	Dash phase.
  */
@@ -493,22 +602,23 @@ enum FS_HIGHLIGHTINGMODE {
 /**
  * @brief	Set dash pattern array.
  *
- * @details	Dashes array is only useful when FSBorderInfo::getStyle is {@link FS_BORDERSTYLE::e_borderStyleDashed}.
+ * @details	Dashes array is only useful when FSBorderInfo::getStyle is {@link FSBorderStyle::e_borderStyleDashed}.
+ *          The value of elements in this array should not be negative.<br>
  *
  * @param[in]	value	New dash pattern array, with float values.
- *						Only the first 16 elements will be used and all the useful elements in this array should be non-negative float value.<br>
+ *						The value of elements in this array should not be negative.<br>
  *						<b>nil</b> means no dash pattern array is needed.
  */
--(void)setDashes: (NSArray *)value;
+-(void)setDashes: (NSArray<NSNumber *> *)value;
 /**
  * @brief	Get dash pattern array.
  *
- * @details	Dashes array is only useful when FSBorderInfo::getStyle is {@link FS_BORDERSTYLE::e_borderStyleDashed}.
+ * @details	Dashes array is only useful when FSBorderInfo::getStyle is {@link FSBorderStyle::e_borderStyleDashed}.
  *
- * @return	Dashes array, with at most 16 valid float values.
+ * @return	Dashes array, with elements of non-negative values.
  *			<b>nil</b> means no dash pattern array.
  */
--(NSArray *)getDashes;
+-(NSArray<NSNumber *> *)getDashes;
 /** @brief Initialize the object. */
 -(id)init;
 
@@ -682,6 +792,8 @@ enum FS_HIGHLIGHTINGMODE {
 -(void*)getCptr;
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/** @brief Default initialization. */
+-(id)init;
 /**
  * @brief	A callback function used to get provider ID.
  *
@@ -702,41 +814,41 @@ enum FS_HIGHLIGHTINGMODE {
  * @brief	A callback function used to check if current icon provider supports icon for a specified type.
  *
  * @param[in]	annotType	The annotation type.
- *							It should be one of {@link FS_ANNOTTYPE::e_annotNote}, {@link FS_ANNOTTYPE::e_annotFileAttachment} and {@link FS_ANNOTTYPE::e_annotStamp}.
+ *							It should be one of {@link FSAnnotType::e_annotNote}, {@link FSAnnotType::e_annotFileAttachment} and {@link FSAnnotType::e_annotStamp}.
  * @param[in]	iconName	The annotation icon name. Please refer to macro definitions {@link ::FS_ANNOT_ICONNAME_TEXT_CHECK FS_ANNOT_ICONNAME_XXX}.
  *
  * @return	<b>YES</b> means current icon provider supports the specific icon,
  *			while <b>NO</b> means not support.
  */
--(BOOL)hasIcon: (enum FS_ANNOTTYPE)annotType iconName: (NSString *)iconName;
+-(BOOL)hasIcon: (FSAnnotType)annotType iconName: (NSString *)iconName;
 /**
  * @brief	A callback function used to check if current icon provider supports to change color for a specified type.
  *
  * @param[in]	annotType	The annotation type.
- *							It should be one of {@link FS_ANNOTTYPE::e_annotNote}, {@link FS_ANNOTTYPE::e_annotFileAttachment} and {@link FS_ANNOTTYPE::e_annotStamp}.
+ *							It should be one of {@link FSAnnotType::e_annotNote}, {@link FSAnnotType::e_annotFileAttachment} and {@link FSAnnotType::e_annotStamp}.
  * @param[in]	iconName	The annotation icon name. Please refer to macro definitions {@link ::FS_ANNOT_ICONNAME_TEXT_CHECK FS_ANNOT_ICONNAME_XXX}.
  *
  * @return	<b>YES</b> means current icon provider supports to change color for a specific icon type,
  *			while <b>NO</b> means not support.
  */
--(BOOL)canChangeColor: (enum FS_ANNOTTYPE)annotType iconName: (NSString *)iconName;
+-(BOOL)canChangeColor: (FSAnnotType)annotType iconName: (NSString *)iconName;
 /**
  * @brief	A callback function used to get the icon as PDF page contents for a specified type.
  *
  * @param[in]	annotType	The annotation type.
- *							It should be one of {@link FS_ANNOTTYPE::e_annotNote}, {@link FS_ANNOTTYPE::e_annotFileAttachment} and {@link FS_ANNOTTYPE::e_annotStamp}.
+ *							It should be one of {@link FSAnnotType::e_annotNote}, {@link FSAnnotType::e_annotFileAttachment} and {@link FSAnnotType::e_annotStamp}.
  * @param[in]	iconName	The annotation icon name. Please refer to macro definitions {@link ::FS_ANNOT_ICONNAME_TEXT_CHECK FS_ANNOT_ICONNAME_XXX}.
  * @param[in]	color		The annotation icon color. Format: 0xAARRGGBB.
  *
  * @return	A page instance, whose content would be used as the icon.
  */
--(FSPDFPage*)getIcon: (enum FS_ANNOTTYPE)annotType iconName: (NSString *)iconName color: (unsigned int)color;
+-(FSPDFPage*)getIcon: (FSAnnotType)annotType iconName: (NSString *)iconName color: (unsigned int)color;
 /**
  * @brief	A callback function used to get the shading colors if current icon provider supports for a specified type.
  *			Currently, only support Type-2 shading settings with two color values.
  *
  * @param[in]	annotType		The annotation type.
- *								It should be one of {@link FS_ANNOTTYPE::e_annotNote}, {@link FS_ANNOTTYPE::e_annotFileAttachment} and {@link FS_ANNOTTYPE::e_annotStamp}.
+ *								It should be one of {@link FSAnnotType::e_annotNote}, {@link FSAnnotType::e_annotFileAttachment} and {@link FSAnnotType::e_annotStamp}.
  * @param[in]	iconName		The annotation icon name. Please refer to macro definitions {@link ::FS_ANNOT_ICONNAME_TEXT_CHECK FS_ANNOT_ICONNAME_XXX}.
  * @param[in]	refColor		Referenced color. Format: 0xAARRGGBB and alpha component is ignored.
  * @param[in]	shadingIndex	Index color of shading, starting from 0. If shading colors are more than one, this function will be called multiple times.
@@ -744,7 +856,7 @@ enum FS_HIGHLIGHTINGMODE {
  * @return	The two shading color value.
  *			If there is any error, implementation of this function should return <b>nil</b>.
  */
--(FSShadingColor*)getShadingColor: (enum FS_ANNOTTYPE)annotType iconName: (NSString *)iconName refColor: (unsigned int)refColor shadingIndex: (int)shadingIndex;
+-(FSShadingColor*)getShadingColor: (FSAnnotType)annotType iconName: (NSString *)iconName refColor: (unsigned int)refColor shadingIndex: (int)shadingIndex;
 /**
  * @brief	A callback function used to get the width for display of a specified icon, in device size(pixel normally).
  *
@@ -752,12 +864,12 @@ enum FS_HIGHLIGHTINGMODE {
  *			function {@link FSRenderer::setTransformAnnotIcon:} is called with value <b>NO</b> before rendering.
  *
  * @param[in]	annotType	The annotation type.
- *							It should be one of {@link FS_ANNOTTYPE::e_annotNote}, {@link FS_ANNOTTYPE::e_annotFileAttachment} and {@link FS_ANNOTTYPE::e_annotStamp}.
+ *							It should be one of {@link FSAnnotType::e_annotNote}, {@link FSAnnotType::e_annotFileAttachment} and {@link FSAnnotType::e_annotStamp}.
  * @param[in]	iconName	The annotation icon name. Please refer to macro definitions {@link ::FS_ANNOT_ICONNAME_TEXT_CHECK FS_ANNOT_ICONNAME_XXX}.
  *
  * @return	The width for display.
  */
--(NSNumber*)getDisplayWidth: (enum FS_ANNOTTYPE)annotType iconName: (NSString *)iconName;
+-(NSNumber*)getDisplayWidth: (FSAnnotType)annotType iconName: (NSString *)iconName;
 /**
  * @brief	A callback function used to get the height for display of a specific icon, in device size(pixel normally).
  *
@@ -765,12 +877,12 @@ enum FS_HIGHLIGHTINGMODE {
  *			function {@link FSRenderer::setTransformAnnotIcon:} is called with value <b>NO</b> before rendering.
  *
  * @param[in]	annotType	The annotation type.
- *							It should be one of {@link FS_ANNOTTYPE::e_annotNote}, {@link FS_ANNOTTYPE::e_annotFileAttachment} and {@link FS_ANNOTTYPE::e_annotStamp}.
+ *							It should be one of {@link FSAnnotType::e_annotNote}, {@link FSAnnotType::e_annotFileAttachment} and {@link FSAnnotType::e_annotStamp}.
  * @param[in]	iconName	The annotation icon name. Please refer to macro definitions {@link ::FS_ANNOT_ICONNAME_TEXT_CHECK FS_ANNOT_ICONNAME_XXX}.
  *
  * @return	The height for display.
  */
--(NSNumber*)getDisplayHeight: (enum FS_ANNOTTYPE)annotType iconName: (NSString *)iconName;
+-(NSNumber*)getDisplayHeight: (FSAnnotType)annotType iconName: (NSString *)iconName;
 
 /** @brief Free the object. */
 -(void)dealloc;
@@ -1105,20 +1217,20 @@ enum FS_HIGHLIGHTINGMODE {
  * @details	A markup annotation may have an author-specific state associated with it.
  *			The state is not specified in the annotation itself but in a separate text annotation
  *			that refers to the original annotation.<br>
- *			Usually, when state model is {@link FS_ANNOTSTATEMODEL::e_annotStateModelMarked}, the markup annotation only has one state annotation.<br>
- *			When state model is {@link FS_ANNOTSTATEMODEL::e_annotStateModelReview}, the markup annotation can have several state annotations in a chain:
+ *			Usually, when state model is {@link FSAnnotStateModel::e_annotStateModelMarked}, the markup annotation only has one state annotation.<br>
+ *			When state model is {@link FSAnnotStateModel::e_annotStateModelReview}, the markup annotation can have several state annotations in a chain:
  *			first state annotation refers to the markup annotation, second state annotation refers to the first state annotation, etc. Just like this:
  *			markup annotation <-- reviewed state1 <-- reviewed state2 ...
  *
  * @param[in]	stateModel 	State model. It should be one of following values:
  *							<ul>
- *							<li>{@link FS_ANNOTSTATEMODEL::e_annotStateModelMarked}</li>
- *							<li>{@link FS_ANNOTSTATEMODEL::e_annotStateModelReview}</li>
+ *							<li>{@link FSAnnotStateModel::e_annotStateModelMarked}</li>
+ *							<li>{@link FSAnnotStateModel::e_annotStateModelReview}</li>
  *							</ul>
  *
  * @return	The count of states for the specified state model.
  */
--(int)getStateAnnotCount: (enum FS_ANNOTSTATEMODEL)stateModel;
+-(int)getStateAnnotCount: (FSAnnotStateModel)stateModel;
 
 /**
  * @brief	Get a state annotation, under a specified state model.
@@ -1126,15 +1238,15 @@ enum FS_HIGHLIGHTINGMODE {
  * @details	A markup annotation may have an author-specific state associated with it.
  *			The state is not specified in the annotation itself but in a separate text annotation
  *			that refers to the original annotation.<br>
- *			Usually, when state model is {@link FS_ANNOTSTATEMODEL::e_annotStateModelMarked}, the markup annotation only has one state annotation.<br>
- *			When state model is {@link FS_ANNOTSTATEMODEL::e_annotStateModelReview}, the markup annotation can have several state annotations in a chain:
+ *			Usually, when state model is {@link FSAnnotStateModel::e_annotStateModelMarked}, the markup annotation only has one state annotation.<br>
+ *			When state model is {@link FSAnnotStateModel::e_annotStateModelReview}, the markup annotation can have several state annotations in a chain:
  *			first state annotation refers to the markup annotation, second state annotation refers to the first state annotation, etc. Just like this:
  *			markup annotation <-- reviewed state1 <-- reviewed state2 ...
  *
  * @param[in]	stateModel 	State model. It should be one of following values:
  *							<ul>
- *							<li>{@link FS_ANNOTSTATEMODEL::e_annotStateModelMarked}</li>
- *							<li>{@link FS_ANNOTSTATEMODEL::e_annotStateModelReview}</li>
+ *							<li>{@link FSAnnotStateModel::e_annotStateModelMarked}</li>
+ *							<li>{@link FSAnnotStateModel::e_annotStateModelReview}</li>
  *							</ul>
  * @param[in]	index		The index of the state annotation to be retrieved. Valid range: from 0 to (<i>count</i>-1).
  *							<i>count</i> is returned by function {@link FSMarkup::getStateAnnotCount:} with the same parameter <i>stateModel</i>.
@@ -1142,7 +1254,7 @@ enum FS_HIGHLIGHTINGMODE {
  * @return	The state annotation, represented by a note annotation.
  *			If there is any error, this function will return <b>nil</b>.
  */
--(FSNote*)getStateAnnot: (enum FS_ANNOTSTATEMODEL)stateModel index: (int)index;
+-(FSNote*)getStateAnnot: (FSAnnotStateModel)stateModel index: (int)index;
 
 /**
  * @brief	Add a new state annotation.
@@ -1150,8 +1262,8 @@ enum FS_HIGHLIGHTINGMODE {
  * @details	A markup annotation may have an author-specific state associated with it.
  *			The state is not specified in the annotation itself but in a separate text annotation
  *			that refers to the original annotation.<br>
- *			Usually, when state model is {@link FS_ANNOTSTATEMODEL::e_annotStateModelMarked}, the markup annotation only has one state annotation.<br>
- *			When state model is {@link FS_ANNOTSTATEMODEL::e_annotStateModelReview}, the markup annotation can have several state annotations in a chain:
+ *			Usually, when state model is {@link FSAnnotStateModel::e_annotStateModelMarked}, the markup annotation only has one state annotation.<br>
+ *			When state model is {@link FSAnnotStateModel::e_annotStateModelReview}, the markup annotation can have several state annotations in a chain:
  *			first state annotation refers to the markup annotation, second state annotation refers to the first state annotation, etc. Just like this:
  *			markup annotation <-- reviewed state1 <-- reviewed state2 ...<br>
  *
@@ -1179,10 +1291,10 @@ enum FS_HIGHLIGHTINGMODE {
  *							</ul>
  * @param[in]	state		State value for the new state annotation. It should be one of following values:
  *							<ul>
- *							<li>If parameter <i>stateModel</i> is {@link FS_ANNOTSTATEMODEL::e_annotStateModelMarked}, the state should be
+ *							<li>If parameter <i>stateModel</i> is {@link FSAnnotStateModel::e_annotStateModelMarked}, the state should be
  *								{@link FSM_ANNOTSTATE::e_annotStateMarked} or {@link FSM_ANNOTSTATE::e_annotStateUnmarked}.
  *							</li>
- *							<li>If parameter <i>stateModel</i> is {@link FS_ANNOTSTATEMODEL::e_annotStateModelReview}, the state should be
+ *							<li>If parameter <i>stateModel</i> is {@link FSAnnotStateModel::e_annotStateModelReview}, the state should be
  *								{@link FSM_ANNOTSTATE::e_annotStateAccepted}, {@link FSM_ANNOTSTATE::e_annotStateRejected}, {@link  FSM_ANNOTSTATE::e_annotStateCancelled},
  *								{@link FSM_ANNOTSTATE::e_annotStateCompleted}, or {@link FSM_ANNOTSTATE::e_annotStateNone}.
  *							</li>
@@ -1191,7 +1303,7 @@ enum FS_HIGHLIGHTINGMODE {
  * @return	A new state annotation, represented by a note annotation.
  *			If there is any error, this function will return <b>nil</b>.
  */
--(FSNote*)addStateAnnot: (enum FS_ANNOTSTATEMODEL)stateModel state: (enum FS_ANNOTSTATE)state;
+-(FSNote*)addStateAnnot: (FSAnnotStateModel)stateModel state: (FSAnnotState)state;
 
 /**
  * @brief	Remove all state annotations.
@@ -1319,11 +1431,11 @@ enum FS_HIGHLIGHTINGMODE {
  *			Function {@link FSNote::isStateAnnot} can be used to check this.
  *
  * @return	The state model.
- *			If function succeeds, the return value would be {@link FS_ANNOTSTATEMODEL::e_annotStateModelMarked} or {@link
- *              FS_ANNOTSTATEMODEL::e_annotStateModelReview}.<br>
+ *			If function succeeds, the return value would be {@link FSAnnotStateModel::e_annotStateModelMarked} or {@link
+ *              FSAnnotStateModel::e_annotStateModelReview}.<br>
  *			If current note annotation is not a state annotation or there is any error, this function will return 0.
  */
--(enum FS_ANNOTSTATEMODEL)getStateModel;
+-(FSAnnotStateModel)getStateModel;
 /**
  * @brief	Get the state.
  *
@@ -1334,7 +1446,7 @@ enum FS_HIGHLIGHTINGMODE {
  *			Please refer to {@link FSM_ANNOTSTATE::e_annotStateMarked FSM_ANNOTSTATE::e_annotStateXXX} values and it would be one of these values.
  *			If current note annotation is not a state annotation or there is any error, This function will return 0.
  */
--(enum FS_ANNOTSTATE)getState;
+-(FSAnnotState)getState;
 /**
  * @brief	Set the state.
  *
@@ -1343,17 +1455,17 @@ enum FS_HIGHLIGHTINGMODE {
  *
  * @param[in]	state		New state. It should be one of following values:
  *							<ul>
- *							<li>If state model is  {@link FS_ANNOTSTATEMODEL::e_annotStateModelMarked}, the state should be
+ *							<li>If state model is  {@link FSAnnotStateModel::e_annotStateModelMarked}, the state should be
  *								{@link FSM_ANNOTSTATE::e_annotStateMarked} or {@link FSM_ANNOTSTATE::e_annotStateUnmarked}.
  *							</li>
- *							<li>If state model is {@link FS_ANNOTSTATEMODEL::e_annotStateModelReview}, the state should be
+ *							<li>If state model is {@link FSAnnotStateModel::e_annotStateModelReview}, the state should be
  *								{@link FSM_ANNOTSTATE::e_annotStateAccepted}, {@link FSM_ANNOTSTATE::e_annotStateRejected}, {@link FSM_ANNOTSTATE::e_annotStateCancelled},
  *								{@link FSM_ANNOTSTATE::e_annotStateCompleted}, or {@link FSM_ANNOTSTATE::e_annotStateNone}.
  *							</li>
  *							</ul>
  *							State model can be gotten by function {@link FSNote::getStateModel}.
  */
--(void)setState: (enum FS_ANNOTSTATE)state;
+-(void)setState: (FSAnnotState)state;
 
 /** @brief Free the object. */
 -(void)dealloc;
@@ -1785,11 +1897,11 @@ enum FS_HIGHLIGHTINGMODE {
 /**
  * @brief	Get highlighting mode.
  *
- * @return	Highlighting mode value. Please refer to {@link FS_HIGHLIGHTINGMODE::e_highlightingModeNone FS_HIGHLIGHTINGMODE::e_highlightingModeXXX} values
- *			and it would be one of these values except {@link FS_HIGHLIGHTINGMODE::e_highlightingModeToggle}.
+ * @return	Highlighting mode value. Please refer to {@link FSHighLightingMode::e_highlightingModeNone FSHighLightingMode::e_highlightingModeXXX} values
+ *			and it would be one of these values except {@link FSHighLightingMode::e_highlightingModeToggle}.
  *			-1 means no highlighting mode value is found or error.
  */
--(enum FS_HIGHLIGHTINGMODE)getHighlightingMode;
+-(FSHighLightingMode)getHighlightingMode;
 /**
  * @brief	Set highlighting mode.
  *
@@ -1797,7 +1909,7 @@ enum FS_HIGHLIGHTINGMODE {
  *							Please refer to {@link FSM_HIGHLIGHTINGMODE::e_highlightingModeNone FSM_HIGHLIGHTINGMODE::e_highlightingModeXXX} values
  *							and it should be one of these values except {@link FSM_HIGHLIGHTINGMODE::e_highlightingModeToggle}.
  */
--(void)setHighlightingMode : (enum FS_HIGHLIGHTINGMODE) mode;
+-(void)setHighlightingMode : (FSHighLightingMode) mode;
 /**
  * @brief	Get action.
  *
@@ -1810,7 +1922,7 @@ enum FS_HIGHLIGHTINGMODE {
  *
  * @param[in]	action		New action to be set. It should be valid.
  *							Currently only support following types as the new action:<br>
- *							{@link FS_ACTIONTYPE::e_actionTypeGoto}, {@link FS_ACTIONTYPE::e_actionTypeURI}.
+ *							{@link FSActionType::e_actionTypeGoto}, {@link FSActionType::e_actionTypeURI}.
  */
 -(void)setAction : (FSAction*) action;
 /**
@@ -1837,8 +1949,8 @@ enum FS_HIGHLIGHTINGMODE {
  *			without setting any properties, the default appearance will be used:<br>
  *			border width = 1.0, border style = {@link FSM_BORDERSTYLE::e_borderStyleSolid},
  *			border color = 0xFFFF0000 (red), opacity = 1.0, alignment = 0 (as left-justified),
- *			{@link FSDefaultAppearance::flags} = {@link FS_DEFAULTAPFLAGS::e_defaultAPFont}|{@link FS_DEFAULTAPFLAGS::e_defaultAPTextColor}|{@link FS_DEFAULTAPFLAGS::e_defaultAPFontSize},
- *			{@link FSDefaultAppearance::font} is created based on {@link FS_STANDARDFONTID::e_fontStandardIDHelvetica},
+ *			{@link FSDefaultAppearance::flags} = {@link FSDefaultAPFlags::e_defaultAPFont}|{@link FSDefaultAPFlags::e_defaultAPTextColor}|{@link FSDefaultAPFlags::e_defaultAPFontSize},
+ *			{@link FSDefaultAppearance::font} is created based on {@link FSStandardFontID::e_fontStandardIDHelvetica},
  *			{@link FSDefaultAppearance::fontSize} = 12, {@link FSDefaultAppearance::textColor} = 0xFF0000FF (blue).
  *
  * @see	FSMarkup
@@ -1876,29 +1988,25 @@ enum FS_HIGHLIGHTINGMODE {
  */
 -(void)setFillColor: (unsigned int)fillColor;
 /**
- * @brief	Get alignment.
+ * @brief   Get alignment.
  *
- * @return	An integer value that indicates the alignment:
- *			<ul>
- *			<li>0: Left-justified</li>
- *			<li>1: Centered</li>
- *			<li>2: Right-justified</li>
- *			</ul>
- *			If there is any error, this function will return -1.
+ * @details This property has effect on free text annotation's appearance.
+ *
+ * @return  The alignment property of a free text annotation.
  */
--(int)getAlignment;
+-(FSAlignment)getAlignment;
 /**
- * @brief	Set alignment.
+ * @brief Set alignment.
  *
- * @param[in]	alignment	An integer value that specifies the new alignment. It should be one of following values:
- *							<ul>
- *							<li>0: Left-justified</li>
- *							<li>1: Centered</li>
- *							<li>2: Right-justified</li>
- *							</ul>
- *							If other values is used to set, 0 will be used by default.
+ * @details This property has effect on free text annotation's appearance. If user wants the new alignment has effect
+ *          on annotation's appearance, please call function {@link FSAnnot::ResetAppearanceStream} after setting
+ *          new alignment.
+ *
+ * @param[in] alignment  It should be one of {@link FSAlignment::e_alignmentLeft, FSAlignment::e_alignmentXXX} <br>.
+ *                       If other values is used to set,
+ *                       {@link FSAlignment::e_alignmentLeft, FSAlignment::e_alignmentLeft} will be used by default.
  */
--(void)setAlignment: (int)alignment;
+-(void)setAlignment: (FSAlignment)alignment;
 /**
  * @brief	Get the inner rectangle.
  *
@@ -1968,7 +2076,7 @@ enum FS_HIGHLIGHTINGMODE {
  *								If this is <b>nil</b> or an empty string, "None" will be used as default.<br>
  *								Please refer to "Details" part of this method about the valid strings for line ending style.
  */
--(void)setCalloutLineEndingStyle: (NSString*)startingStyle;
+-(void)setCalloutLineEndingStyle: (NSString*)endingStyle;
 /**
  * @brief	Get the count of callout line points.
  *
@@ -2275,13 +2383,13 @@ enum FS_HIGHLIGHTINGMODE {
  *			The ink list contains one or more stroked path. <br>
  *			In Foxit PDF SDK, class ::FSPDFPath is used to represent the ink list data,
  *			but the point types for ::FSPDFPath object have been specially simplified for ink list.
- *			Only {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo} and {@link FS_PATHPOINTTYPE::e_pointTypeLineTo} types are used for points in the ink list:
+ *			Only {@link FSPathPointType::e_pointTypeMoveTo} and {@link FSPathPointType::e_pointTypeLineTo} types are used for points in the ink list:
  *			<ul>
- *			<li>a point with type {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo} means that this point is the start point of a stroked path.
+ *			<li>a point with type {@link FSPathPointType::e_pointTypeMoveTo} means that this point is the start point of a stroked path.
  *				Usually the first in ::FSPDFPath object should be this type.
  *			</li>
- *			<li>a point with type {@link FS_PATHPOINTTYPE::e_pointTypeLineTo} means that this point is in a stroked path,
- *				which is started by a point with with type {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo},
+ *			<li>a point with type {@link FSPathPointType::e_pointTypeLineTo} means that this point is in a stroked path,
+ *				which is started by a point with with type {@link FSPathPointType::e_pointTypeMoveTo},
  *				and when function {@link FSInk::resetAppearanceStream} is called, Foxit PDF SDK will connect this point with other points by curves.</li>
  *			</ul>
  * @note    Operations such as move the ink annotation, or set a new ink path to this annotation will update its internal ink path data, so that the
@@ -2298,18 +2406,18 @@ enum FS_HIGHLIGHTINGMODE {
  *			The ink list contains one or more stroked path. <br>
  *			In Foxit PDF SDK, class ::FSPDFPath is used to represent the ink list data,
  *			but the point types for ::FSPDFPath object have been specially simplified for ink list.
- *			Only {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo} and {@link FS_PATHPOINTTYPE::e_pointTypeLineTo} types are used for points in the ink list:
+ *			Only {@link FSPathPointType::e_pointTypeMoveTo} and {@link FSPathPointType::e_pointTypeLineTo} types are used for points in the ink list:
  *			<ul>
- *			<li>a point with type {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo} means that this point is the start point of a stroked path.
+ *			<li>a point with type {@link FSPathPointType::e_pointTypeMoveTo} means that this point is the start point of a stroked path.
  *				Usually the first in ::FSPDFPath object should be this type.
  *			</li>
- *			<li>a point with type {@link FS_PATHPOINTTYPE::e_pointTypeLineTo} means that this point is in a stroked path,
- *				which is started by a point with with type {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo},
+ *			<li>a point with type {@link FSPathPointType::e_pointTypeLineTo} means that this point is in a stroked path,
+ *				which is started by a point with with type {@link FSPathPointType::e_pointTypeMoveTo},
  *				and when function {@link FSInk::resetAppearanceStream} is called, Foxit PDF SDK will connect this point with other points by curves.</li>
  *			</ul>
  *			Specially, if input parameter <i>inkList</i> contains bezier points (for example, added by function {@link FSPDFPath::cubicBezierTo:point2:point3:}), the control points will be ignored
  *			and only the target point will be used in the ink list data.<br>
- *			User is strongly recommended to pass a valid ::FSPDFPath object only with point types {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo} and {@link FS_PATHPOINTTYPE::e_pointTypeLineTo}.
+ *			User is strongly recommended to pass a valid ::FSPDFPath object only with point types {@link FSPathPointType::e_pointTypeMoveTo} and {@link FSPathPointType::e_pointTypeLineTo}.
  *
  *
  * @param[in]	inkList		New ::FSPDFPath object which specifies the new list data.
@@ -2664,7 +2772,9 @@ enum FS_HIGHLIGHTINGMODE {
  * @see	FSMarkup
  */
 @interface FSFileAttachment : FSMarkup
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
 /**
  * @brief	Reset appearance stream.
@@ -2743,3 +2853,559 @@ enum FS_HIGHLIGHTINGMODE {
 
 @end
 
+@class FSIconFit;
+@class FSImage;
+
+/**
+ * A widget annotation (PDF 1.2) is used to represent the appearance of form fields.
+ * Class FSWidget is derived from class FSAnnot and also offers functions to get/set widget annotation's properties.<br>
+ * Functions {@link FSWidget::GetField} and {@link FSWidget::GetControl} can be used to get the associated form field
+ * and form control object. If a widget annotation is not associated with any form field or is associated with
+ * a signature field, this widget can still get/set properties, but cannot be reset appearance. For these cases,
+ * {@link FSWidget::ResetAppearanceStream} will return <b>false</b> directly.
+ *
+ * @see FSAnnot
+ * @see FSFormField
+ * @see FSFormControl
+ */
+@interface FSWidget : FSAnnot
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/**
+ * @brief Get associated form field.
+ *
+ * @return A form field object.
+ */
+-(FSFormField*)getField;
+/**
+ * @brief Get associated form control.
+ *
+ * @return A form control object.
+ */
+-(FSFormControl*)getControl;
+/**
+ * @brief Reset appearance stream.
+ *
+ * @details Annotation's appearance is stored as stream in PDF document.
+ *          When any appearance related property is changed by corresponding setting functions,
+ *          if user wants the effect to be shown in annotation's appearance, current function should be called.<br>
+ *          If current widget is associated with a signature field or is not associated with any form field,
+ *          current widget cannot be reset appearance stream and current function will return <b>false</b> directly.
+ *
+ * @return <b>true</b> means success, while <b>false</b> means current widget is not associated
+ *         with any form field or is associated with a signature field.
+ */
+-(BOOL)resetAppearanceStream;
+/**
+ * @brief Get highlighting mode.
+ *
+ * @details Highlighting mode is the visual effect to be used when the mouse button is pressed or held down
+ *          inside its active area
+ *
+ * @return Highlighting mode value. Please refer to
+ *         {@link FSHighLightingMode::e_highlightingModeNone FSHighLightingMode::e_highlightingModeXXX}
+ *         values and it would be one of these values.
+ */
+-(FSHighLightingMode)getHighlightingMode;
+/**
+ * @brief Set highlighting mode.
+ *
+ * @details Highlighting mode is the visual effect to be used when the mouse button is pressed or held down
+ *          inside its active area
+ *
+ * @param[in] mode  New highlighting mode value.
+ *                  Please refer to {@link FSHighLightingMode::e_highlightingModeNone FSHighLightingMode::e_highlightingModeXXX}
+ *                  values and it should be one of these values.
+ *
+ * @return None.
+ */
+-(void)setHighlightingMode: (FSHighLightingMode)mode;
+/**
+ * @brief Get action.
+ *
+ * @return A FSAction object that receives the action data. <b>NULL</b> means no action.
+ */
+-(FSAction*)getAction;
+/**
+ * @brief Set action.
+ *
+ * @param[in] action  New action to be set. It should be valid.
+ *                    Currently only support following types as the new action:<br>
+ *                    {@link FSActionType::e_actionTypeGoto FSActionType::e_actionTypeGoto},
+ *                    {@link FSActionType::e_actionTypeURI FSActionType::e_actionTypeURI},
+ *                    {@link FSActionType::e_actionTypeJavaScript FSActionType::e_actionTypeJavaScript},
+ *                    {@link FSActionType::e_actionTypeNamed FSActionType::e_actionTypeNamed},
+ *                    {@link FSActionType::e_actionTypeGoToR FSActionType::e_actionTypeGoToR},
+ *                    {@link FSActionType::e_actionTypeGoToE FSActionType::e_actionTypeGoToE},
+ *                    {@link FSActionType::e_actionTypeSubmitForm FSActionType::e_actionTypeSubmitForm},
+ *                    {@link FSActionType::e_actionTypeResetForm FSActionType::e_actionTypeResetForm},
+ *                    {@link FSActionType::e_actionTypeHide FSActionType::e_actionTypeHide},
+ *                    {@link FSActionType::e_actionTypeLaunch FSActionType::e_actionTypeLaunch},
+ *                    {@link FSActionType::e_actionTypeImportData FSActionType::e_actionTypeImportData}.
+ *
+ * @return None.
+ */
+-(void)setAction: (FSAction*)action;
+/**
+ * @brief Remove action.
+ *
+ * @return None.
+ */
+-(void)removeAction;
+/**
+ * @brief Check if a specified entry exists in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *
+ * @param[in] mk_entry  An entry in MK dictionary. Please refer to
+ *                      {@link FSAnnotMKEntry::e_mkEntryRotation FSAnnotMKEntry::e_mkEntryXXX}
+ *                      values and it should be one of these values.
+ *
+ * @return <b>true</b> means the specified entry exists in the MK dictionary, while <b>false</b> means not.
+ */
+-(BOOL)hasMKEntry: (FSAnnotMKEntry)mk_entry;
+/**
+ * @brief Remove a specified entry from the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *
+ * @param[in] mk_entry  An entry in MK dictionary. Please refer to
+ *                      {@link FSAnnotMKEntry::e_mkEntryRotation FSAnnotMKEntry::e_mkEntryXXX}
+ *                      values and it should be one of these values.
+ *
+ * @return None.
+ */
+-(void)removeMKEntry: (FSAnnotMKEntry)mk_entry;
+/**
+ * @brief Get the rotation value in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          The rotation in MK dictionary specifies the degrees by which the widget annotation is rotated
+ *          counterclockwise relative to the page.
+ *
+ * @return The rotation value in MK dictionary. Please refer to {@link FSRotation::e_rotation0 FSRotation::e_rotationXXX}
+ *         values and it would be one of these values.
+ *         Value {@link FSRotation::e_rotationUnknown FSRotation::e_rotationUnknown} means no rotation in MK dictionary.
+ */
+-(FSRotation)getMKRotation;
+/**
+ * @brief Set the rotation value in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          The rotation in MK dictionary specifies the degrees by which the widget annotation is rotated
+ *          counterclockwise relative to the page.
+ *
+ * @param[in] rotation  The rotation value to be set in MK dictionary. Please refer to
+ *                      {@link FSRotation::e_rotation0 FSRotation::e_rotationXXX} values and
+ *                      it should be one of these values except value
+ *                      {@link FSRotation::e_rotationUnknown FSRotation::e_rotationUnknown}
+ */
+-(void)setMKRotation: (FSRotation)rotation;
+/**
+ * @brief Get the border color in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *
+ * @return The border color in MK dictionary. Value format: 0xRRGGBB. <br>
+ *         0 may means no border color in MK dictionary. In this case, please call function
+ *         {@link FSWidget::HasMKEntry} with value
+ *         {@link FSAnnotMKEntry::e_mkEntryBorderColor FSAnnotMKEntry::e_mkEntryBorderColor} to check.
+ */
+-(unsigned int)getMKBorderColor;
+/**
+ * @brief Set the border color in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *
+ * @param[in] color  The border color to be set in MK dictionary. Value format: 0xRRGGBB.
+ *
+ * @return None.
+ */
+-(void)setMKBorderColor: (unsigned int)color;
+/**
+ * @brief Get the background color in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *
+ * @return The background color in MK dictionary. Value format: 0xRRGGBB. <br>
+ *         0 may means no background color in MK dictionary. In this case, please call function
+ *         {@link FSWidget::HasMKEntry} with value
+ *         {@link FSAnnotMKEntry::e_mkEntryBackgroundColor FSAnnotMKEntry::e_mkEntryBackgroundColor} to check.
+ */
+-(unsigned int)getMKBackgroundColor;
+/**
+ * @brief Set the background color in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *
+ * @param[in] color  The background color to be set in MK dictionary. Value format: 0xRRGGBB.
+ *
+ * @return None.
+ */
+-(void)setMKBackgroundColor: (unsigned int)color;
+/**
+ * @brief Get the normal caption string in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Normal caption in MK dictionary is used to displayed when the widget is not
+ *          interacting with the user. This is applicable for widget associated with
+ *          pushbutton field, check box field or radio button field. For other type of fields, this will be useless.
+ *
+ * @return Normal caption string, in UTF-8 encoding.
+ *         An empty string may means no normal caption in MK dictionary. In this case, please call function
+ *         {@link FSWidget::HasMKEntry} with value
+ *         {@link FSAnnotMKEntry::e_mkEntryNormalCaption FSAnnotMKEntry::e_mkEntryNormalCaption} to check.
+ */
+-(NSString*)getMKNormalCaption;
+/**
+ * @brief Set the normal caption string in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Normal caption in MK dictionary is used to displayed when the widget is not
+ *          interacting with the user. This is applicable for widgets associated with
+ *          pushbutton field, check box field or radio button field. For other type of fields, this will be useless.
+ *
+ * @param[in] caption  Normal caption string to be set in MK dictionary, in UTF-8 encoding.
+ *                     It can be <b>NULL</b> or an empty string.
+ *
+ * @return None.
+ */
+-(void)setMKNormalCaption: (NSString *)caption;
+/**
+ * @brief Get the rollover caption string in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Rollover caption in MK dictionary is used to displayed when the user rolls the cursor into
+ *          its active area without pressing the mouse button.
+ *          This is applicable for widget associated with pushbutton field. For other type of fields,
+ *          this will be useless.
+ *
+ * @return Rollover caption string, in UTF-8 encoding.
+ *         An empty string may means no rollover caption in MK dictionary. In this case, please call function
+ *         {@link FSWidget::HasMKEntry} with value
+ *         {@link FSAnnotMKEntry::e_mkEntryRolloverCaption FSAnnotMKEntry::e_mkEntryRolloverCaption} to check.
+ */
+-(NSString*)getMKRolloverCaption;
+/**
+ * @brief Set the rollover caption string in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Rollover caption in MK dictionary is used to displayed when the user rolls the cursor into
+ *          its active area without pressing the mouse button.
+ *          This is applicable for widget associated with pushbutton field. For other type of fields,
+ *          this will be useless.
+ *
+ * @param[in] caption  Rollover caption string to be set in MK dictionary, in UTF-8 encoding.
+ *                     It can be <b>NULL</b> or an empty string.
+ *
+ * @return None.
+ */
+-(void)setMKRolloverCaption: (NSString *)caption;
+/**
+ * @brief Get the down caption string in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Down caption (or alternate caption) in MK dictionary is used to displayed when the mouse button is
+ *          pressed within its active area. This is applicable for widget associated with pushbutton field.
+ *          For other type of fields, this will be useless.
+ *
+ * @return Down caption string, in UTF-8 encoding.
+ *         An empty string may means no down caption in MK dictionary. In this case, please call function
+ *         {@link FSWidget::HasMKEntry} with value
+ *         {@link FSAnnotMKEntry::e_mkEntryDownCaption FSAnnotMKEntry::e_mkEntryDownCaption} to check.
+ */
+-(NSString*)getMKDownCaption;
+/**
+ * @brief Set the down caption string in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Down caption (or alternate caption) in MK dictionary is used to displayed when the mouse button is
+ *          pressed within its active area. This is applicable for widget associated with pushbutton field.
+ *          For other type of fields, this will be useless.
+ *
+ * @param[in] caption  Down caption string to be set in MK dictionary, in UTF-8 encoding.
+ *                     It can be <b>NULL</b> or an empty string.
+ *
+ * @return None.
+ */
+-(void)setMKDownCaption: (NSString *)caption;
+/**
+ * @brief Get the normal icon bitmap in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Normal icon in MK dictionary is used to displayed when the widget is not
+ *          interacting with the user. This is applicable for widget associated with pushbutton field.
+ *          For other type of fields, this will be useless.
+ *
+ * @return Normal icon bitmap. NULL means no such bitmap in MK dictionary.
+ */
+-(FSBitmap*)getMKNormalIconBitmap;
+/**
+ * @brief Set a bitmap as normal icon in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Normal icon in MK dictionary is used to displayed when the widget is not
+ *          interacting with the user. This is applicable for widget associated with pushbutton field.
+ *          For other type of fields, this will be useless.
+ *
+ * @param[in] bitmap  A bitmap to be set as normal icon in MK dictionary. It should be valid and
+ *                    should not be <b>NULL</b>.
+ *
+ * @return None.
+ */
+-(void)setMKNormalIconBitmap: (FSBitmap*)bitmap;
+/**
+ * @brief Set an image with specified frame index as normal icon in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Normal icon in MK dictionary is used to displayed when the widget is not
+ *          interacting with the user. This is applicable for widget associated with pushbutton field.
+ *          For other type of fields, this will be useless.
+ *
+ * @param[in] image        An image. One of its frames will be set as normal icon in MK dictionary.
+ *                         This image should contain at least one frame and the image type should not be
+ *                         {@link FSImageType::e_imageTypeUnknown FSImageType::e_imageTypeUnknown}.
+ * @param[in] frame_index  Frame index. Valid range: from 0 to (<i>count</i>-1).
+ *                         <i>count</i> is returned by function {@link FSImage::GetFrameCount}.
+ */
+-(void)setMKNormalIconImage: (FSImage*)image frame_index: (int)frame_index;
+/**
+ * @brief Get the rollover icon bitmap in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Rollover icon in MK dictionary is used to displayed when the user rolls the cursor into
+ *          its active area without pressing the mouse button.
+ *          This is applicable for widget associated with pushbutton field. For other type of fields,
+ *          this will be useless.
+ *
+ * @return Rollover icon bitmap. NULL means no such bitmap in MK dictionary.
+ */
+-(FSBitmap*)getMKRolloverIconBitmap;
+/**
+ * @brief Set the rollover icon bitmap in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Rollover icon in MK dictionary is used to displayed when the user rolls the cursor into
+ *          its active area without pressing the mouse button.
+ *          This is applicable for widget associated with pushbutton field. For other type of fields,
+ *          this will be useless.
+ *
+ * @param[in] bitmap  A bitmap to be set as rollover icon in MK dictionary. It should be valid and
+ *                    should not be <b>NULL</b>.
+ *
+ * @return None.
+ */
+-(void)setMKRolloverIconBitmap: (FSBitmap*)bitmap;
+/**
+ * @brief Set an image with specified frame index as rollover icon in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Rollover icon in MK dictionary is used to displayed when the user rolls the cursor into
+ *          its active area without pressing the mouse button.
+ *          This is applicable for widget associated with pushbutton field. For other type of fields,
+ *          this will be useless.
+ *
+ * @param[in] image        An image. One of its frames will be set as rollover icon in MK dictionary.
+ *                         This image should contain at least one frame and the image type should not be
+ *                         {@link FSImageType::e_imageTypeUnknown FSImageType::e_imageTypeUnknown}.
+ * @param[in] frame_index  Frame index. Valid range: from 0 to (<i>count</i>-1).
+ *                         <i>count</i> is returned by function {@link FSImage::GetFrameCount}.
+ */
+-(void)setMKRolloverIconImage: (FSImage*)image frame_index: (int)frame_index;
+/**
+ * @brief Get the down icon bitmap in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Down icon (or alternate icon) in MK dictionary is used to displayed when the mouse button is
+ *          pressed within its active area. This is applicable for widget associated with pushbutton field.
+ *          For other type of fields, this will be useless.
+ *
+ * @return Down icon bitmap. NULL means no such bitmap in MK dictionary.
+ */
+-(FSBitmap*)getMKDownIconBitmap;
+/**
+ * @brief Set the down icon bitmap in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Down icon (or alternate icon) in MK dictionary is used to displayed when the mouse button is
+ *          pressed within its active area. This is applicable for widget associated with pushbutton field.
+ *          For other type of fields, this will be useless.
+ *
+ * @param[in] bitmap  A bitmap to be set as down icon in MK dictionary. It should be valid and
+ *                    should not be <b>NULL</b>.
+ *
+ * @return None.
+ */
+-(void)setMKDownIconBitmap: (FSBitmap*)bitmap;
+/**
+ * @brief Set an image with specified frame index as down icon in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          Down icon (or alternate icon) in MK dictionary is used to displayed when the mouse button is
+ *          pressed within its active area. This is applicable for widget associated with pushbutton field.
+ *          For other type of fields, this will be useless.
+ *
+ * @param[in] image        An image. One of its frames will be set as down icon in MK dictionary.
+ *                         This image should contain at least one frame and the image type should not be
+ *                         {@link FSImageType::e_imageTypeUnknown FSImageType::e_imageTypeUnknown}.
+ * @param[in] frame_index  Frame index. Valid range: from 0 to (<i>count</i>-1).
+ *                         <i>count</i> is returned by function {@link FSImage::GetFrameCount}.
+ */
+-(void)setMKDownIconImage: (FSImage*)image frame_index: (int)frame_index;
+/**
+ * @brief Get the icon fit information in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          The icon fit information specifies how to display the widget annotation's icon within
+ *          its annotation rectangle. If present, the icon fit information applies to all of the annotation's icons.
+ *          This is applicable for widget associated with pushbutton field. For other type of fields,
+ *          this will be useless.
+ *
+ * @return A FSIconFit object, which contains the icon fit information in MK dictionary.
+ *         If {@link FSIconFit::scale_way_type} is 0, that means no icon fit information in MK dictionary.
+ */
+-(FSIconFit*)getMKIconFit;
+/**
+ * @brief Set the icon fit information in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          The icon fit information specifies how to display the widget annotation's icon within
+ *          its annotation rectangle. If present, the icon fit information applies to all of the annotation's icons.
+ *          This is applicable for widget associated with pushbutton field. For other type of fields,
+ *          this will be useless.
+ *
+ * @param[in] icon_fit  A FSIconFit object which represents the icon fit information to be set in MK dictionary.
+ *                      If value of any member in this object is invalid, this function will throw exception
+ *                      {@link FSErrorCode::e_errParam FSErrorCode::e_errParam}.
+ *                      Please refer to FSIconFit to check the valid value range for each member.
+ */
+-(void)setMKIconFit: (FSIconFit*)icon_fit;
+/**
+ * @brief Get the relation of icon and caption in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          The relation position of caption and icon specifies where to position the text of
+ *          the widget annotation's caption relative to its icon.
+ *          This is applicable for widget associated with pushbutton field. For other type of fields,
+ *          this will be useless.
+ *
+ * @return The relation position of caption and icon. Please refer to
+ *         {@link FSAnnotMKIconCaptionRelation::e_mkRelationNoIcon FSAnnotMKIconCaptionRelation::e_mkRelation}
+ *         values and it should be one of these values.
+ */
+-(FSAnnotMKIconCaptionRelation)getMKIconCaptionRelation;
+/**
+ * @brief Set the relation of icon and caption in the MK dictionary
+ *
+ * @details MK dictionary is an appearance characteristics dictionary to be used in
+ *          constructing a dynamic appearance stream specifying the annotation's visual presentation on the page.
+ *          The relation position of caption and icon specifies where to position the text of
+ *          the widget annotation's caption relative to its icon.
+ *          This is applicable for widget associated with pushbutton field. For other type of fields,
+ *          this will be useless.
+ *
+ * @param[in] relation  The relation position of caption and icon. Please refer to
+ *                      {@link FSAnnotMKIconCaptionRelation::e_mkRelationNoIcon FSAnnotMKIconCaptionRelation::e_mkRelationXXX}
+ *                      values and it should be one of these values.
+ */
+-(void)setMKIconCaptionRelation: (FSAnnotMKIconCaptionRelation)relation;
+
+-(void)dealloc;
+
+@end
+
+/**
+ * @brief Enumeration for the type of icon scaling way.
+ *
+ * @details Values of this enumeration should be used alone.
+ */
+typedef NS_ENUM(NSUInteger, FSIconScaleWayType) {
+    /** @brief Always scale. */
+    e_iconScaleWayTypeAlways = 1,
+    /** @brief Scale only when icon is bigger than annotation rectangle. */
+    e_iconScaleWayTypeBigger = 2,
+    /** @brief Scale only when icon is smaller than annotation rectangle. */
+    e_iconScaleWayTypeSmaller = 3,
+    /** @brief Never scale.*/
+    e_iconScaleWayTypeNever = 4
+};
+
+/**
+ * @brief This class represents icon fit information.
+ * Icon fit information is used to specify how to display a button's icon within the annotation rectangle of
+ * its associated widget annotation.
+ */
+@interface FSIconFit : NSObject {
+    void *swigCPtr;
+    BOOL swigCMemOwn;
+}
+/** @brief The circumstances under which the icon should be scaled inside
+ *         the annotation rectangle. Please refer to
+ *         {@link FSIconScaleWayType::e_iconScaleWayTypeAlways FSIconScaleWayType::e_iconScaleWayTypeXXX} values
+ *         and it should be one of these values.
+ */
+@property (nonatomic) FSIconScaleWayType scaleWayType;
+/** @brief Indicates whether use proportional scaling or not.
+ *         <b>true</b> means to fill the annotation rectangle exactly, without regard to its original
+ *         aspect ratio (ratio of width to height).<br><b>false</b> means scale the icon to scale the icon to
+ *         fit the width or height of the annotation rectangle while maintaining the icon's original aspect ratio.
+ */
+@property (nonatomic, getter=isProportionalScaling) BOOL proportionalScaling;
+/** @brief The horizontal fraction of left-over space to allocate
+ *         at the left and bottom of the icon if the icon is scaled proportionally.
+ *         Valid range: 0.0 to 1.0.
+ */
+@property (nonatomic) float horizontalFraction;
+/** @brief The vertical fraction of left-over space to allocate
+ *         at the left and bottom of the icon if the icon is scaled proportionally.
+ *         Valid range: 0.0 to 1.0.
+ */
+@property (nonatomic) float verticalFraction;
+/** @brief Indicates whether to scale button appearance to fit fully within bounds or not.
+ *         <b>true</b> means that the button appearance should be scaled to fit fully within the bounds
+ *         of the annotation without taking into consideration the line width of the border.
+ */
+@property (nonatomic, getter=isFitBounds) BOOL fitBounds;
+
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+-(id)init;
+-(id)initWithIconFit: (FSIconFit*)iconFit;
+/** @brief Set property values. */
+-(void)set: (FSIconScaleWayType)type proportionalScaling: (BOOL)proportionalScaling horizontalFraction: (float)horizontalFraction verticalFraction: (float)verticalFraction fitBounds: (BOOL)fitBounds;
+
+-(void)dealloc;
+
+@end
+
+NS_ASSUME_NONNULL_END

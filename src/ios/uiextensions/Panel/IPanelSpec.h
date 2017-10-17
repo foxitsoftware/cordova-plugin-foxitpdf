@@ -13,15 +13,22 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+typedef NS_ENUM(NSUInteger, FSPanelTag) {
+    FSPanelTagAnnotation = 1,
+    FSPanelTagAttachment,
+    FSPanelTagOutline,
+    FSPanelTagReadingBookmark
+};
+
 @class PanelButton;
 @protocol IPanelSpec <NSObject>
 
--(int)getTag;
+- (int)getTag;
 
--(PanelButton*)getButton;
--(UIView*)getTopToolbar;
--(UIView*)getContentView;
+- (PanelButton *)getButton;
+- (UIView *)getTopToolbar;
+- (UIView *)getContentView;
 
--(void)onActivated;
--(void)onDeactivated;
+- (void)onActivated;
+- (void)onDeactivated;
 @end

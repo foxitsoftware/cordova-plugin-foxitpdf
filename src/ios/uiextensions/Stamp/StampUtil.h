@@ -14,5 +14,5 @@
 
 @interface StampUtil : NSObject
 
-+ (NSString*)stampIconConvert2Appearance:(int)index;
++ (NSString *)stampIconConvert2Appearance:(int)index;
 @end

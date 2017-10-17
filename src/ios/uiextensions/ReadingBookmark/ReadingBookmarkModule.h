@@ -10,14 +10,18 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <UIKit/UIKit.h>
+#import "../Common/UIExtensionsSharedHeader.h"
 #import "AnnotationListMore.h"
 #import "Const.h"
-#import "UIExtensionsSharedHeader.h"
+#import <UIKit/UIKit.h>
 
+/** @brief Nofitication center messeage, will notify when reading bookmark is updated from panel.*/
+#define UPDATEBOOKMARK @"UpdateBookmark"
 
-@interface ReadingBookmarkModule: NSObject<IModule>
+@interface ReadingBookmarkModule : NSObject <IModule, IDocEventListener, IPageEventListener, ILayoutEventListener>
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader;
+@property (nonatomic, strong) UIButton *bookmarkButton;
+
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

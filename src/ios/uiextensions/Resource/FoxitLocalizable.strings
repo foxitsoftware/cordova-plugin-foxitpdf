@@ -64,7 +64,10 @@
 "kSelectFile" = "Select";
 "kIllegalNameWarning" = "You have entered an illegal name";
 
-"kFileInformation" = "File information";
+"kFileInformation" = "File Information";
+"kReduceFileSize" = "Reduce File Size";
+"kReduceFileSizeDescription" = "You choose to reduce the PDF file size, but it will not be applied to the document until you save the document. You may continue to edit the document.";
+
 "kName" = "Name";
 "kAdded" = "Added";
 "kModify" = "Updated";
@@ -322,4 +325,5 @@
 "kFailedRenameAttachmentToEmptyName" = "Attachment name can't be empty.";
 "kCopyFileFailed" = "Fail to copy this file:\n%@: %@\n";
 "kFailedChangeDocumentAttachmentDescription" = "Failed to change description of document attachment: '%@'";
-"kFailedSaveAttachmentBadFileName" = "There was an error saveing this document. Bad file name";
+"kFailedSaveAttachmentBadFileName" = "There was an error saving this attachment file. Bad file name";
+"kFailedOpenAttachmentBadFileName" = "There was an error opening this attachment file. Bad file name";

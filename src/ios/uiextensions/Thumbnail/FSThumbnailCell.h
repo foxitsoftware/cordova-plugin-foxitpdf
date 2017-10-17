@@ -28,15 +28,15 @@
 @property (nonatomic, weak) id<FSThumbnailCellDelegate> delegate;
 @property (nonatomic, strong) UIImageView *imageView;
 @property (nonatomic, strong) UILabel *labelNumber;
-@property (nonatomic, strong) UIButton* checkBtn; // top left check box
+@property (nonatomic, strong) UIButton *checkBtn; // top left check box
 @property (nonatomic, assign) BOOL isEditing;
 @property (nonatomic, assign) BOOL alwaysHideCheckBox;
 
-@property (nonatomic, strong) UIButton* deleteBtn;  //delete
-@property (nonatomic, strong) UIButton* rotateLeftBtn;  //rotateLeft
-@property (nonatomic, strong) UIButton* rotateRightBtn;  //rotateRight
-@property (nonatomic, strong) UIButton* insertPrevBtn;  //insertPrev
-@property (nonatomic, strong) UIButton* insertNextBtn;  //insertNext
+@property (nonatomic, strong) UIButton *deleteBtn;      //delete
+@property (nonatomic, strong) UIButton *rotateLeftBtn;  //rotateLeft
+@property (nonatomic, strong) UIButton *rotateRightBtn; //rotateRight
+@property (nonatomic, strong) UIButton *insertPrevBtn;  //insertPrev
+@property (nonatomic, strong) UIButton *insertNextBtn;  //insertNext
 
 - (void)prepareForReuse;
 - (void)updateButtonFramesWithThumbnailWidth:(CGFloat)thumbnailWidth;
@@ -50,4 +50,3 @@
 @interface FSReorderableCollectionViewPlaceholderCell : UICollectionViewCell
 
 @end
-

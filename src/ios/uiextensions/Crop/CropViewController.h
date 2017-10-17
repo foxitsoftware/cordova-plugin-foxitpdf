@@ -10,8 +10,8 @@
  * Review legal.txt for additional license and legal information.
  */
 
+#import "../Common/UIExtensionsSharedHeader.h"
 #import <UIKit/UIKit.h>
-#import "UIExtensionsSharedHeader.h"
 
 typedef void (^CropViewClosedHandler)();
 
@@ -24,7 +24,7 @@ typedef void (^CropViewClosedHandler)();
 @property (strong, nonatomic) IBOutlet UIButton *buttonNoCrop;
 @property (strong, nonatomic) IBOutlet UIButton *buttonCrop;
 
-@property (strong, nonatomic) IBOutlet UIToolbar* bottomToolbar;
+@property (strong, nonatomic) IBOutlet UIToolbar *bottomToolbar;
 @property (strong, nonatomic) IBOutlet UIButton *buttonSmartCrop;
 @property (strong, nonatomic) IBOutlet UIButton *buttonDetect;
 @property (strong, nonatomic) IBOutlet UIButton *buttonFull;
@@ -35,7 +35,7 @@ typedef void (^CropViewClosedHandler)();
 @property (strong, nonatomic) IBOutlet UIButton *buttonApply2All;
 @property (strong, nonatomic) IBOutlet UIButton *buttonApply2OddEven;
 
-@property (nonatomic,copy) CropViewClosedHandler cropViewClosedHandler;
+@property (nonatomic, copy) CropViewClosedHandler cropViewClosedHandler;
 
 - (IBAction)noCropClicked:(id)sender;
 - (IBAction)smartCropClicked:(id)sender;
@@ -47,5 +47,5 @@ typedef void (^CropViewClosedHandler)();
 - (IBAction)prevPageClicked:(id)sender;
 - (IBAction)nextPageClicked:(id)sender;
 
--(void)setExtension:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader;
+- (void)setExtension:(UIExtensionsManager *)extensionsManager;
 @end

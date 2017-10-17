@@ -10,48 +10,39 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <UIKit/UIKit.h>
 #import "AnnotationItem.h"
-#import <FoxitRDK/FSPDFObjC.h>
 #import "FSAnnotExtent.h"
 #import "Utility.h"
+#import <FoxitRDK/FSPDFObjC.h>
+#import <UIKit/UIKit.h>
 
 @implementation AnnotationItem
 
--(void)addCurrentlevel:(NSNumber *)object{
-    
+- (void)addCurrentlevel:(NSNumber *)object {
     _currentlevel = [object intValue];
-    
 }
 
--(void)setReplytoauthor:(NSString *)replytoauthor{
+- (void)setReplytoauthor:(NSString *)replytoauthor {
     if (_replytoauthor != replytoauthor) {
-                _replytoauthor = [replytoauthor copy];
+        _replytoauthor = [replytoauthor copy];
     }
 }
 
--(void)setSecondLevel:(NSNumber*)object{
-    
+- (void)setSecondLevel:(NSNumber *)object {
     _isSecondLevel = [object boolValue];
 }
 
--(void)setcurrentlevelshow:(NSNumber*)object{
-    
+- (void)setcurrentlevelshow:(NSNumber *)object {
     _currentlevelshow = [object boolValue];
-    
 }
 
--(void)setAnnotationSection:(NSNumber*)object{
-    
+- (void)setAnnotationSection:(NSNumber *)object {
     _annosection = [object intValue];
-    
 }
 
 @end
 
-
 @implementation AnnotationButton
-
 
 @end
 
@@ -59,8 +50,7 @@
 
 @synthesize description;
 
-- (instancetype)init
-{
+- (instancetype)init {
     self = [super init];
     if (self) {
         self.isDocumentAttachment = NO;
@@ -76,13 +66,12 @@
     return self;
 }
 
-+ (instancetype)itemWithAttachmentAnnotation:(FSFileAttachment*)annot
-{
++ (instancetype)itemWithAttachmentAnnotation:(FSFileAttachment *)annot {
     AttachmentItem *attachmentItem = [[AttachmentItem alloc] init];
     attachmentItem.isDocumentAttachment = NO;
     attachmentItem.pageIndex = annot.pageIndex;
     attachmentItem.annot = annot;
-    FSFileSpec* file = [annot getFileSpec];
+    FSFileSpec *file = [annot getFileSpec];
     attachmentItem.fileSpec = file;
     attachmentItem.filePath = [Utility getAttachmentTempFilePath:annot];
     attachmentItem.fileName = [file getFileName];
@@ -93,8 +82,7 @@
     return attachmentItem;
 }
 
-+ (instancetype)itemWithDocumentAttachment:(NSString*)keyName file:(FSFileSpec*)attachmentFile PDFPath:(NSString*)PDFPath
-{
++ (instancetype)itemWithDocumentAttachment:(NSString *)keyName file:(FSFileSpec *)attachmentFile PDFPath:(NSString *)PDFPath {
     AttachmentItem *attachmentItem = [[AttachmentItem alloc] init];
     attachmentItem.keyName = keyName;
     attachmentItem.isDocumentAttachment = YES;
@@ -109,4 +97,3 @@
 }
 
 @end
-

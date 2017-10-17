@@ -17,34 +17,35 @@
 
 @class FSLayerPrintData;
 
+NS_ASSUME_NONNULL_BEGIN
 /**
  * @brief	Enumeration for PDF layer usage type.
  */
-enum FS_LAYERUSAGETYPE {
+typedef NS_ENUM(NSUInteger, FSLayerUsageType) {
     /** @brief	Use for a viewer. */
-    e_layerUsageTypeView = 0x0000,
+    e_layerUsageTypeView = 0,
     /** @brief	Use for represent a document designer's structural organization of artwork. */
-    e_layerUsageTypeDesign = 0x0001,
+    e_layerUsageTypeDesign,
     /** @brief	Use for printing. */
-    e_layerUsageTypePrint = 0x0002,
+    e_layerUsageTypePrint,
     /** @brief	Use for exporting. */
-    e_layerUsageTypeExport = 0x0003,
+    e_layerUsageTypeExport,
     /** @brief	Use for zooming. */
-    e_layerUsageTypeZoom = 0x0004
+    e_layerUsageTypeZoom
 };
 
 /**
  * @brief	Enumeration for PDF layer base state.
  */
-enum FS_LAYERUSAGESTATE {
+typedef NS_ENUM(NSUInteger, FSLayerUsageState) {
     /** @brief	The state is ON. */
-    e_layerStateON = 0x0000,
+    e_layerStateON = 0,
     /** @brief	The state is OFF. */
-    e_layerStateOFF = 0x0001,
+    e_layerStateOFF,
     /** @brief	The state is unchanged. */
-    e_layerStateUnchanged = 0x0002,
+    e_layerStateUnchanged,
     /** @brief	The state is undefined. */
-    e_layerStateUndefined = 0x0003
+    e_layerStateUndefined
 };
 
 /**
@@ -184,20 +185,20 @@ enum FS_LAYERUSAGESTATE {
  * @details	This function is only useful when function {@link FSLayerNode::hasLayer} returns <b>YES</b>.
  *
  * @return	Layer usage state.
- *			Please refer to {@link FS_LAYERUSAGESTATE::e_layerStateON FS_LAYERUSAGESTATE::e_layerStateXXX} values and it would be one of these values
- *			except {@link FS_LAYERUSAGESTATE::e_layerStateUnchanged}.
+ *			Please refer to {@link FSLayerUsageState::e_layerStateON FSLayerUsageState::e_layerStateXXX} values and it would be one of these values
+ *			except {@link FSLayerUsageState::e_layerStateUnchanged}.
  */
--(enum FS_LAYERUSAGESTATE)getViewUsage;
+-(FSLayerUsageState)getViewUsage;
 /**
  * @brief	Get the layer usage state for exporting.
  *
  * @details	This function is only useful when function {@link FSLayerNode::hasLayer} returns <b>YES</b>.
  *
  * @return	Layer usage state.
- *			Please refer to {@link FS_LAYERUSAGESTATE::e_layerStateON FS_LAYERUSAGESTATE::e_layerStateXXX} values and it would be one of these values
- *			except {@link FS_LAYERUSAGESTATE::e_layerStateUnchanged}.
+ *			Please refer to {@link FSLayerUsageState::e_layerStateON FSLayerUsageState::e_layerStateXXX} values and it would be one of these values
+ *			except {@link FSLayerUsageState::e_layerStateUnchanged}.
  */
--(enum FS_LAYERUSAGESTATE)getExportUsage;
+-(FSLayerUsageState)getExportUsage;
 /**
  * @brief	Get the layer usage data for printing.
  *
@@ -243,14 +244,14 @@ enum FS_LAYERUSAGESTATE {
  *
  * @param[in]	state		Layer usage state. It should be one of following values:
  *							<ul>
- *							<li>{@link FS_LAYERUSAGESTATE::e_layerStateON}</li>
- *							<li>{@link FS_LAYERUSAGESTATE::e_layerStateOFF}</li>
- *							<li>{@link FS_LAYERUSAGESTATE::e_layerStateUndefined} means to remove this property from current layer node</li>
+ *							<li>{@link FSLayerUsageState::e_layerStateON}</li>
+ *							<li>{@link FSLayerUsageState::e_layerStateOFF}</li>
+ *							<li>{@link FSLayerUsageState::e_layerStateUndefined} means to remove this property from current layer node</li>
  *							</ul>
  *
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
  */
--(BOOL)setViewUsage: (enum FS_LAYERUSAGESTATE)state;
+-(BOOL)setViewUsage: (FSLayerUsageState)state;
 /**
  * @brief	Set layer usage state for exporting.
  *
@@ -259,14 +260,14 @@ enum FS_LAYERUSAGESTATE {
  *
  * @param[in]	state		Layer usage state. It should be one of following values:
  *							<ul>
- *							<li>{@link FS_LAYERUSAGESTATE::e_layerStateON}</li>
- *							<li>{@link FS_LAYERUSAGESTATE::e_layerStateOFF}</li>
- *							<li>{@link FS_LAYERUSAGESTATE::e_layerStateUndefined} means to remove this property from current layer node</li>
+ *							<li>{@link FSLayerUsageState::e_layerStateON}</li>
+ *							<li>{@link FSLayerUsageState::e_layerStateOFF}</li>
+ *							<li>{@link FSLayerUsageState::e_layerStateUndefined} means to remove this property from current layer node</li>
  *							</ul>
  *
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
  */
--(BOOL)setExportUsage: (enum FS_LAYERUSAGESTATE)state;
+-(BOOL)setExportUsage: (FSLayerUsageState)state;
 /**
  * @brief	Set layer usage data for printing.
  *
@@ -275,9 +276,9 @@ enum FS_LAYERUSAGESTATE {
  *
  * @param[in]	data		Layer print data. The value of {@link FSLayerPrintData::getPrintState} should be one of following values:
  *							<ul>
- *							<li>{@link FS_LAYERUSAGESTATE::e_layerStateON}</li>
- *							<li>{@link FS_LAYERUSAGESTATE::e_layerStateOFF}</li>
- *							<li>{@link FS_LAYERUSAGESTATE::e_layerStateUndefined} means to remove this property from current layer node</li>
+ *							<li>{@link FSLayerUsageState::e_layerStateON}</li>
+ *							<li>{@link FSLayerUsageState::e_layerStateOFF}</li>
+ *							<li>{@link FSLayerUsageState::e_layerStateUndefined} means to remove this property from current layer node</li>
  *							</ul>
  *
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
@@ -332,11 +333,11 @@ enum FS_LAYERUSAGESTATE {
  * @details	If current layer node does not have the specified usage or does not have any usage, this function will return <b>YES</b>.
  *
  * @param[in]	usageType	Layer usage type to be removed.
- *							Please refer to {@link FS_LAYERUSAGETYPE::e_layerUsageTypeView FS_LAYERUSAGETYPE::e_layerUsageTypeXXX} values and it should be one of these values.
+ *							Please refer to {@link FSLayerUsageType::e_layerUsageTypeView FSLayerUsageType::e_layerUsageTypeXXX} values and it should be one of these values.
  *
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
  */
--(BOOL)removeUsage: (enum FS_LAYERUSAGETYPE)usageType;
+-(BOOL)removeUsage: (FSLayerUsageType)usageType;
 /** @brief Free the object. */
 -(void)dealloc;
 
@@ -350,8 +351,8 @@ enum FS_LAYERUSAGESTATE {
  *          and then use the new FSLayerContext to FSRenderer to do rendering.
  *
  * @param[in]	state		Layer usage state.
- *							Please refer to {@link FS_LAYERUSAGESTATE::e_layerStateON FS_LAYERUSAGESTATE::e_layerStateXXX} values and it should be one of these values
- *							except {@link FS_LAYERUSAGESTATE::e_layerStateUndefined}.
+ *							Please refer to {@link FSLayerUsageState::e_layerStateON FSLayerUsageState::e_layerStateXXX} values and it should be one of these values
+ *							except {@link FSLayerUsageState::e_layerStateUndefined}.
  *
  * @return	<b>TRUE</b> means success, while <b>FALSE</b> means failure.
  */
@@ -373,7 +374,7 @@ enum FS_LAYERUSAGESTATE {
  *
  * @return	A new FSLayerTree object. If there is no layer in PDF document, this function will return <b>NULL</b>.
  */
-+(FSLayerTree*)create: (FSPDFDoc*)doc;
+- (FSLayerTree *)initWithPDFDoc:(FSPDFDoc *)doc;
 /**
  * @brief	Set the base state for all layers in the default configuration.
  *
@@ -381,12 +382,12 @@ enum FS_LAYERUSAGESTATE {
  *          and then use the new FSLayerContext to FSRenderer to do rendering.
  *
  * @param[in]	state		Layer usage state.
- *							Please refer to {@link FS_LAYERUSAGESTATE::e_layerStateON FS_LAYERUSAGESTATE::e_layerStateXXX} values and it should be one of these values
- *							except {@link FS_LAYERUSAGESTATE::e_layerStateUndefined}.
+ *							Please refer to {@link FSLayerUsageState::e_layerStateON FSLayerUsageState::e_layerStateXXX} values and it should be one of these values
+ *							except {@link FSLayerUsageState::e_layerStateUndefined}.
  *
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
  */
--(BOOL)setBaseState: (enum FS_LAYERUSAGESTATE)state;
+-(BOOL)setBaseState: (FSLayerUsageState)state;
 /**
  * @brief	Get the root layer node.
  *
@@ -432,26 +433,26 @@ enum FS_LAYERUSAGESTATE {
  *
  * @param[in]	doc			A PDF document object. It should be valid.
  * @param[in]	usageType	Layer usage type.
- *							Please refer to {@link FS_LAYERUSAGETYPE::e_layerUsageTypeView FS_LAYERUSAGETYPE::e_layerUsageTypeXXX} values and it should be one of these values
- *							except value {@link FS_LAYERUSAGETYPE::e_layerUsageTypeZoom}.
+ *							Please refer to {@link FSLayerUsageType::e_layerUsageTypeView FSLayerUsageType::e_layerUsageTypeXXX} values and it should be one of these values
+ *							except value {@link FSLayerUsageType::e_layerUsageTypeZoom}.
  *
  * @return	A new FSLayerContext object.
  */
-+(FSLayerContext*)create: (FSPDFDoc*)doc usageType: (enum FS_LAYERUSAGETYPE)usageType;
+- (FSLayerContext *)initWithPDFDoc:(FSPDFDoc *)doc usageType:(FSLayerUsageType)usageType;
 /**
  * @brief	Get the related PDF document.
  *
  * @return	The related PDF document object.
  */
--(FSPDFDoc*)getPDFDocument;
+-(FSPDFDoc*)getDocument;
 /**
  * @brief	Get the layer usage type.
  *
  * @return	Layer usage type.
- *			Please refer to {@link FS_LAYERUSAGETYPE::e_layerUsageTypeView FS_LAYERUSAGETYPE::e_layerUsageTypeXXX} values and it would be one of these values
- *			except value {@link FS_LAYERUSAGETYPE::e_layerUsageTypeZoom}.
+ *			Please refer to {@link FSLayerUsageType::e_layerUsageTypeView FSLayerUsageType::e_layerUsageTypeXXX} values and it would be one of these values
+ *			except value {@link FSLayerUsageType::e_layerUsageTypeZoom}.
  */
--(enum FS_LAYERUSAGETYPE)getUsageType;
+-(FSLayerUsageType)getUsageType;
 /**
  * @brief	Reset current layer context, back to the initialized state just after being created.
  *
@@ -525,7 +526,7 @@ enum FS_LAYERUSAGESTATE {
  *
  * @return	None.
  */
--(id)initWithSubType: (NSString*)subType PrintState:(enum FS_LAYERUSAGESTATE)state;
+-(id)initWithSubType: (NSString*)subType PrintState:(FSLayerUsageState)state;
 /**@brief	Constructor with the other data object. */
 -(id)initWithData: (FSLayerPrintData*)data;
 /**
@@ -536,7 +537,7 @@ enum FS_LAYERUSAGESTATE {
  *
  * @return	None.
  */
--(void)set: (NSString*)subtype printState: (enum FS_LAYERUSAGESTATE)printState;
+-(void)set: (NSString*)subtype printState: (FSLayerUsageState)printState;
 /** @brief	Set a UTF-8 encoding string, specifying the kind of content controlled by the group.*/
 -(void)setSubtype: (NSString*)value;
 /** @brief	Get a UTF-8 encoding string, specifying the kind of content controlled by the group.*/
@@ -545,13 +546,15 @@ enum FS_LAYERUSAGESTATE {
  * @brief	Layer usage state, indicating that the group should be set to which state when the document is printed from a viewer application.
  *
  * @param[in]	value		Layer usage state, indicating that the group should be set to which state when the document is printed from a viewer application.
- * @details	Please refer to {@link FS_LAYERUSAGESTATE::e_layerStateON FS_LAYERUSAGESTATE::e_layerStateXXX} values and it should be one of these values
- *			except {@link FS_LAYERUSAGESTATE::e_layerStateUnchanged}.
+ * @details	Please refer to {@link FSLayerUsageState::e_layerStateON FSLayerUsageState::e_layerStateXXX} values and it should be one of these values
+ *			except {@link FSLayerUsageState::e_layerStateUnchanged}.
  */
--(void)setPrintState: (enum FS_LAYERUSAGESTATE)value;
+-(void)setPrintState: (FSLayerUsageState)value;
 /** @brief	Get layer usage state. */
--(enum FS_LAYERUSAGESTATE)getPrintState;
+-(FSLayerUsageState)getPrintState;
 /** @brief Free the object. */
 -(void)dealloc;
 
 @end
+
+NS_ASSUME_NONNULL_END

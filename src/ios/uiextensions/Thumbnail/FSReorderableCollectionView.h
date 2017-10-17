@@ -16,22 +16,22 @@
 
 @protocol FSReorderableCollectionViewDataSource <UICollectionViewDataSource>
 
-- (void)reorderableCollectionView:(FSReorderableCollectionView * _Nullable)collectionView moveItemAtIndexPaths:(NSArray<NSIndexPath *> *_Nonnull)sourceIndexPaths toIndex:(NSUInteger)destinationIndex;
+- (void)reorderableCollectionView:(FSReorderableCollectionView *_Nullable)collectionView moveItemAtIndexPaths:(NSArray<NSIndexPath *> *_Nonnull)sourceIndexPaths toIndex:(NSUInteger)destinationIndex;
 
 @end
 
 @protocol FSReorderableCollectionViewReorderDelegate <NSObject>
 
-- (void)reorderableCollectionView:(FSReorderableCollectionView * _Nullable)collectionView willMoveItemsAtIndexPaths:(NSArray<NSIndexPath *> *_Nonnull)sourceIndexPaths toIndex:(NSUInteger)destinationIndex;
-- (void)reorderableCollectionView:(FSReorderableCollectionView * _Nullable)collectionView didMoveItemsAtIndexPaths:(NSArray<NSIndexPath *> *_Nonnull)sourceIndexPaths toIndex:(NSUInteger)destinationIndex;
+- (void)reorderableCollectionView:(FSReorderableCollectionView *_Nullable)collectionView willMoveItemsAtIndexPaths:(NSArray<NSIndexPath *> *_Nonnull)sourceIndexPaths toIndex:(NSUInteger)destinationIndex;
+- (void)reorderableCollectionView:(FSReorderableCollectionView *_Nullable)collectionView didMoveItemsAtIndexPaths:(NSArray<NSIndexPath *> *_Nonnull)sourceIndexPaths toIndex:(NSUInteger)destinationIndex;
 
 @end
 
 // drag and drop cells in colleciont view, assumed only ONE secton
 @interface FSReorderableCollectionView : UICollectionView
 
-@property (nonatomic, weak, nullable) id <FSReorderableCollectionViewDataSource> dataSource;
-@property (nonatomic, weak, nullable) id <FSReorderableCollectionViewReorderDelegate> reorderDelegate;
+@property (nonatomic, weak, nullable) id<FSReorderableCollectionViewDataSource> dataSource;
+@property (nonatomic, weak, nullable) id<FSReorderableCollectionViewReorderDelegate> reorderDelegate;
 @property (nonatomic, readonly) BOOL isDraggingCell;
 @property (nonatomic, strong, nullable) NSMutableIndexSet *indexSetForDraggingCells;
 @property (nonatomic, strong, nullable) NSIndexPath *indexPathForPlaceholderCell; // a transparent cell showing insert position while dragging
@@ -41,4 +41,3 @@
 - (instancetype)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout isModifiable:(BOOL)isModifiable;
 
 @end
-

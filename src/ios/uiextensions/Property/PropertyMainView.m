@@ -11,8 +11,8 @@
  */
 
 #import "PropertyMainView.h"
-#import "PropertyBar.h"
 #import "ColorUtility.h"
+#import "PropertyBar.h"
 
 @interface PropertyMainView ()
 
@@ -26,8 +26,7 @@
 
 @implementation PropertyMainView
 
-- (instancetype)init
-{
+- (instancetype)init {
     self = [super init];
     if (self) {
         self.segmentItems = [NSMutableArray array];
@@ -35,8 +34,7 @@
     return self;
 }
 
-- (void)showTab:(Property_TabType)type
-{
+- (void)showTab:(Property_TabType)type {
     if (self.currentColorLayout) {
         self.currentColorLayout.hidden = YES;
     }
@@ -53,142 +51,132 @@
         self.currentIconLayout.hidden = YES;
     }
     switch (type) {
-        case TAB_FILL:
-            if (self.currentColorLayout) {
-                self.currentColorLayout.hidden = NO;
-            }
-            if (self.currentOpacityLayout) {
-                self.currentOpacityLayout.hidden = NO;
-            }
-            break;
-        case TAB_BORDER:
-            if (self.currentLineWidthLayout) {
-                self.currentLineWidthLayout.hidden = NO;
-            }
-            break;
-        case TAB_FONT:
-            if (self.currentFontLayout) {
-                self.currentFontLayout.hidden = NO;
-            }
-            break;
-        case TAB_TYPE:
-            if (self.currentIconLayout) {
-                self.currentIconLayout.hidden = NO;
-            }
-            break;
-            
-        default:
-            break;
+    case TAB_FILL:
+        if (self.currentColorLayout) {
+            self.currentColorLayout.hidden = NO;
+        }
+        if (self.currentOpacityLayout) {
+            self.currentOpacityLayout.hidden = NO;
+        }
+        break;
+    case TAB_BORDER:
+        if (self.currentLineWidthLayout) {
+            self.currentLineWidthLayout.hidden = NO;
+        }
+        break;
+    case TAB_FONT:
+        if (self.currentFontLayout) {
+            self.currentFontLayout.hidden = NO;
+        }
+        break;
+    case TAB_TYPE:
+        if (self.currentIconLayout) {
+            self.currentIconLayout.hidden = NO;
+        }
+        break;
+
+    default:
+        break;
     }
 }
 
-- (void)addLayoutAtTab:(UIView*)layout tab:(Property_TabType)tab
-{
+- (void)addLayoutAtTab:(UIView *)layout tab:(Property_TabType)tab {
     switch (tab) {
-        case TAB_FILL:
-        {
-            if ([layout respondsToSelector:@selector(supportProperty)]) {
-                if ([(id)layout supportProperty] & PROPERTY_COLOR) {
-                    self.currentColorLayout = (ColorLayout*)layout;
-                    CGRect colorFrame = layout.frame;
-                    colorFrame.origin.y = TABHEIGHT;
-                    colorFrame.size.height = [(ColorLayout*)layout layoutHeight];
-                    layout.frame = colorFrame;
-                    [self addSubview:layout];
-                }
-            }
-            
-            if ([layout respondsToSelector:@selector(supportProperty)]) {
-                if ([(id)layout supportProperty] & PROPERTY_OPACITY) {
-                    self.currentOpacityLayout = (OpacityLayout*)layout;
-                    CGRect opacityFrame = layout.frame;
-                    opacityFrame.origin.y = TABHEIGHT + self.currentColorLayout.layoutHeight;
-                    opacityFrame.size.height = [(OpacityLayout*)layout layoutHeight];
-                    layout.frame = opacityFrame;
-                    [self addSubview:layout];
-                }
+    case TAB_FILL: {
+        if ([layout respondsToSelector:@selector(supportProperty)]) {
+            if ([(id) layout supportProperty] & PROPERTY_COLOR) {
+                self.currentColorLayout = (ColorLayout *) layout;
+                CGRect colorFrame = layout.frame;
+                colorFrame.origin.y = TABHEIGHT;
+                colorFrame.size.height = [(ColorLayout *) layout layoutHeight];
+                layout.frame = colorFrame;
+                [self addSubview:layout];
             }
         }
-            break;
-        case TAB_BORDER:
-        {
-            if ([layout respondsToSelector:@selector(supportProperty)]) {
-                if ([(id)layout supportProperty] & PROPERTY_LINEWIDTH) {
-                    self.currentLineWidthLayout = (LineWidthLayout*)layout;
-                    CGRect lineWidthFrame = layout.frame;
-                    lineWidthFrame.origin.y = TABHEIGHT;
-                    lineWidthFrame.size.height = [(LineWidthLayout*)layout layoutHeight];
-                    layout.frame = lineWidthFrame;
-                    [self addSubview:layout];
-                }
+
+        if ([layout respondsToSelector:@selector(supportProperty)]) {
+            if ([(id) layout supportProperty] & PROPERTY_OPACITY) {
+                self.currentOpacityLayout = (OpacityLayout *) layout;
+                CGRect opacityFrame = layout.frame;
+                opacityFrame.origin.y = TABHEIGHT + self.currentColorLayout.layoutHeight;
+                opacityFrame.size.height = [(OpacityLayout *) layout layoutHeight];
+                layout.frame = opacityFrame;
+                [self addSubview:layout];
             }
         }
-            break;
-        case TAB_FONT:
-        {
-            if ([layout respondsToSelector:@selector(supportProperty)]) {
-                if ([(id)layout supportProperty] & PROPERTY_FONTNAME) {
-                    self.currentFontLayout = (FontLayout*)layout;
-                    CGRect fontFrame = layout.frame;
-                    fontFrame.origin.y = TABHEIGHT;
-                    fontFrame.size.height = [(FontLayout*)layout layoutHeight];
-                    layout.frame = fontFrame;
-                    [self addSubview:layout];
-                }
+    } break;
+    case TAB_BORDER: {
+        if ([layout respondsToSelector:@selector(supportProperty)]) {
+            if ([(id) layout supportProperty] & PROPERTY_LINEWIDTH) {
+                self.currentLineWidthLayout = (LineWidthLayout *) layout;
+                CGRect lineWidthFrame = layout.frame;
+                lineWidthFrame.origin.y = TABHEIGHT;
+                lineWidthFrame.size.height = [(LineWidthLayout *) layout layoutHeight];
+                layout.frame = lineWidthFrame;
+                [self addSubview:layout];
             }
         }
-            break;
-        case TAB_TYPE:
-        {
-            if ([layout respondsToSelector:@selector(supportProperty)]) {
-                if ([(id)layout supportProperty] & PROPERTY_ICONTYPE || [(id)layout supportProperty] & PROPERTY_ATTACHMENT_ICONTYPE) {
-                    self.currentIconLayout = (IconLayout*)layout;
-                    CGRect typeFrame = layout.frame;
-                    typeFrame.origin.y = TABHEIGHT;
-                    typeFrame.size.height = [(IconLayout*)layout layoutHeight];
-                    layout.frame = typeFrame;
-                    [self addSubview:layout];
-                }
-                
-            }
-            
-            BOOL isTyped = NO;
-            for (SegmentItem *item in self.segmentItems) {
-                if (item.tag == TAB_BORDER) {
-                    isTyped = YES;
-                    break;
-                }
-            }
-            if (!isTyped) {
-                SegmentItem *typeItem = [[SegmentItem alloc] init];
-                typeItem.title = NSLocalizedStringFromTable(@"kIcon", @"FoxitLocalizable", nil);
-                typeItem.image = nil;
-                typeItem.tag = TAB_TYPE;
-                typeItem.titleNormalColor = [UIColor colorWithRGBHex:0x179cd8];
-                typeItem.titleSelectedColor = [UIColor whiteColor];
-                [self.segmentItems addObject:typeItem];
-            }
-            
-            BOOL isFilled = NO;
-            for (SegmentItem *item in self.segmentItems) {
-                if (item.tag == TAB_FILL) {
-                    isFilled = YES;
-                    break;
-                }
-            }
-            if (!isFilled) {
-                SegmentItem *fillItem = [[SegmentItem alloc] init];
-                fillItem.title = NSLocalizedStringFromTable(@"kPropertyFill", @"FoxitLocalizable", nil);
-                fillItem.image = nil;
-                fillItem.tag = TAB_FILL;
-                fillItem.titleNormalColor = [UIColor colorWithRGBHex:0x179cd8];
-                fillItem.titleSelectedColor = [UIColor whiteColor];
-                [self.segmentItems addObject:fillItem];
+    } break;
+    case TAB_FONT: {
+        if ([layout respondsToSelector:@selector(supportProperty)]) {
+            if ([(id) layout supportProperty] & PROPERTY_FONTNAME) {
+                self.currentFontLayout = (FontLayout *) layout;
+                CGRect fontFrame = layout.frame;
+                fontFrame.origin.y = TABHEIGHT;
+                fontFrame.size.height = [(FontLayout *) layout layoutHeight];
+                layout.frame = fontFrame;
+                [self addSubview:layout];
             }
         }
-            break;
-        default:
-            break;
+    } break;
+    case TAB_TYPE: {
+        if ([layout respondsToSelector:@selector(supportProperty)]) {
+            if ([(id) layout supportProperty] & PROPERTY_ICONTYPE || [(id) layout supportProperty] & PROPERTY_ATTACHMENT_ICONTYPE) {
+                self.currentIconLayout = (IconLayout *) layout;
+                CGRect typeFrame = layout.frame;
+                typeFrame.origin.y = TABHEIGHT;
+                typeFrame.size.height = [(IconLayout *) layout layoutHeight];
+                layout.frame = typeFrame;
+                [self addSubview:layout];
+            }
+        }
+
+        BOOL isTyped = NO;
+        for (SegmentItem *item in self.segmentItems) {
+            if (item.tag == TAB_BORDER) {
+                isTyped = YES;
+                break;
+            }
+        }
+        if (!isTyped) {
+            SegmentItem *typeItem = [[SegmentItem alloc] init];
+            typeItem.title = FSLocalizedString(@"kIcon");
+            typeItem.image = nil;
+            typeItem.tag = TAB_TYPE;
+            typeItem.titleNormalColor = [UIColor colorWithRGBHex:0x179cd8];
+            typeItem.titleSelectedColor = [UIColor whiteColor];
+            [self.segmentItems addObject:typeItem];
+        }
+
+        BOOL isFilled = NO;
+        for (SegmentItem *item in self.segmentItems) {
+            if (item.tag == TAB_FILL) {
+                isFilled = YES;
+                break;
+            }
+        }
+        if (!isFilled) {
+            SegmentItem *fillItem = [[SegmentItem alloc] init];
+            fillItem.title = FSLocalizedString(@"kPropertyFill");
+            fillItem.image = nil;
+            fillItem.tag = TAB_FILL;
+            fillItem.titleNormalColor = [UIColor colorWithRGBHex:0x179cd8];
+            fillItem.titleSelectedColor = [UIColor whiteColor];
+            [self.segmentItems addObject:fillItem];
+        }
+    } break;
+    default:
+        break;
     }
     int mainHeight = 0;
     int fillHeight = 0;
@@ -213,7 +201,7 @@
     CGRect mainRect = self.frame;
     mainRect.size.height = mainHeight;
     self.frame = mainRect;
-    
+
     if (self.currentIconLayout) {
         CGRect typeFrame = self.currentIconLayout.frame;
         typeFrame.origin.y = TABHEIGHT;
@@ -222,18 +210,16 @@
         typeFrame.origin.y = 0;
         typeFrame.size.height = mainHeight - TABHEIGHT;
         self.currentIconLayout.tableView.frame = typeFrame;
-        
+
         CGRect colorFrame = self.currentColorLayout.frame;
         colorFrame.origin.y = TABHEIGHT;
         self.currentColorLayout.frame = colorFrame;
         [self.currentColorLayout addDivideView];
-        
+
         CGRect opacityFrame = self.currentOpacityLayout.frame;
         opacityFrame.origin.y = TABHEIGHT + colorFrame.size.height;
         self.currentOpacityLayout.frame = opacityFrame;
-    }
-    else
-    {
+    } else {
         [self resetAllLayout];
         if (self.currentFontLayout) {
             self.currentFontLayout.mainLayoutHeight = mainHeight;
@@ -241,88 +227,63 @@
     }
 }
 
-- (void)resetAllLayout
-{
-    if (self.currentColorLayout
-        && self.currentOpacityLayout
-        && !self.currentLineWidthLayout
-        && !self.currentFontLayout) //markup
+- (void)resetAllLayout {
+    if (self.currentColorLayout && self.currentOpacityLayout && !self.currentLineWidthLayout && !self.currentFontLayout) //markup
     {
         CGRect colorFrame = self.currentColorLayout.frame;
         colorFrame.origin.y = 0;
         self.currentColorLayout.frame = colorFrame;
         [self.currentColorLayout addDivideView];
-        
+
         CGRect opacityFrame = self.currentOpacityLayout.frame;
         opacityFrame.origin.y = colorFrame.size.height;
         self.currentOpacityLayout.frame = opacityFrame;
-    }
-    else if (self.currentColorLayout
-             && self.currentOpacityLayout
-             && self.currentLineWidthLayout
-             && !self.currentFontLayout) //line shape pencil
+    } else if (self.currentColorLayout && self.currentOpacityLayout && self.currentLineWidthLayout && !self.currentFontLayout) //line shape pencil
     {
         CGRect colorFrame = self.currentColorLayout.frame;
         colorFrame.origin.y = 0;
         self.currentColorLayout.frame = colorFrame;
         [self.currentColorLayout addDivideView];
-        
+
         CGRect linewidthFrame = self.currentLineWidthLayout.frame;
         linewidthFrame.origin.y = colorFrame.size.height;
         self.currentLineWidthLayout.frame = linewidthFrame;
         [self.currentLineWidthLayout addDivideView];
-        
+
         CGRect opacityFrame = self.currentOpacityLayout.frame;
         opacityFrame.origin.y = colorFrame.size.height + linewidthFrame.size.height;
         self.currentOpacityLayout.frame = opacityFrame;
-    }
-    else if (self.currentColorLayout
-             && self.currentOpacityLayout
-             && !self.currentLineWidthLayout
-             && self.currentFontLayout) //freetext
+    } else if (self.currentColorLayout && self.currentOpacityLayout && !self.currentLineWidthLayout && self.currentFontLayout) //freetext
     {
         CGRect fontFrame = self.currentFontLayout.frame;
         fontFrame.origin.y = 0;
         self.currentFontLayout.frame = fontFrame;
         [self.currentFontLayout addDivideView];
-        
+
         CGRect colorFrame = self.currentColorLayout.frame;
         colorFrame.origin.y = fontFrame.size.height;
         self.currentColorLayout.frame = colorFrame;
         [self.currentColorLayout addDivideView];
-        
+
         CGRect opacityFrame = self.currentOpacityLayout.frame;
         opacityFrame.origin.y = fontFrame.size.height + colorFrame.size.height;
         self.currentOpacityLayout.frame = opacityFrame;
-    }
-    else if (!self.currentColorLayout
-             && !self.currentOpacityLayout
-             && !self.currentFontLayout
-             && self.currentLineWidthLayout)//erase
+    } else if (!self.currentColorLayout && !self.currentOpacityLayout && !self.currentFontLayout && self.currentLineWidthLayout) //erase
     {
         CGRect linewidthFrame = self.currentLineWidthLayout.frame;
         linewidthFrame.origin.y = 0;
         self.currentLineWidthLayout.frame = linewidthFrame;
-    }
-    else if (self.currentColorLayout
-             && !self.currentOpacityLayout
-             && self.currentLineWidthLayout
-             && !self.currentFontLayout)//sigature
+    } else if (self.currentColorLayout && !self.currentOpacityLayout && self.currentLineWidthLayout && !self.currentFontLayout) //sigature
     {
         CGRect colorFrame = self.currentColorLayout.frame;
         colorFrame.origin.y = 0;
         self.currentColorLayout.frame = colorFrame;
         [self.currentColorLayout addDivideView];
-        
+
         CGRect linewidthFrame = self.currentLineWidthLayout.frame;
         linewidthFrame.origin.y = colorFrame.size.height;
         self.currentLineWidthLayout.frame = linewidthFrame;
-    }
-    else if (self.currentColorLayout
-             && !self.currentOpacityLayout
-             && !self.currentLineWidthLayout
-             && !self.currentFontLayout)
-    {
+    } else if (self.currentColorLayout && !self.currentOpacityLayout && !self.currentLineWidthLayout && !self.currentFontLayout) {
         CGRect colorFrame = self.currentColorLayout.frame;
         colorFrame.origin.y = 0;
         self.currentColorLayout.frame = colorFrame;
@@ -330,9 +291,8 @@
 }
 
 #pragma mark SegmentDeletate
--(void)itemClickWithItem:(SegmentItem *)item
-{
-    if ([item.title isEqualToString:NSLocalizedStringFromTable(@"kPropertyFill", @"FoxitLocalizable", nil)]) {
+- (void)itemClickWithItem:(SegmentItem *)item {
+    if ([item.title isEqualToString:FSLocalizedString(@"kPropertyFill")]) {
         [self showTab:TAB_FILL];
     }
     if ([item.title isEqualToString:@"Border"]) {
@@ -341,7 +301,7 @@
     if ([item.title isEqualToString:@"Font"]) {
         [self showTab:TAB_FONT];
     }
-    if ([item.title isEqualToString:NSLocalizedStringFromTable(@"kIcon", @"FoxitLocalizable", nil)]) {
+    if ([item.title isEqualToString:FSLocalizedString(@"kIcon")]) {
         [self showTab:TAB_TYPE];
     }
 }

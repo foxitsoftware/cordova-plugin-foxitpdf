@@ -21,8 +21,7 @@
 
 @implementation OpacityItem
 
-- (instancetype)initWithFrame:(CGRect)frame
-{
+- (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
         self.button = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -33,35 +32,34 @@
     return self;
 }
 
--(void)setOpacity:(int)opacity
-{
-     _opacity = opacity;
+- (void)setOpacity:(int)opacity {
+    _opacity = opacity;
     switch (opacity) {
-        case 25:
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_25"] forState:UIControlStateNormal];
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_25_selected"] forState:UIControlStateHighlighted];
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_25_selected"] forState:UIControlStateSelected];
-            break;
-        case 50:
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_50"] forState:UIControlStateNormal];
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_50_selected"] forState:UIControlStateHighlighted];
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_50_selected"] forState:UIControlStateSelected];
-            break;
-        case 75:
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_75"] forState:UIControlStateNormal];
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_75_selected"] forState:UIControlStateHighlighted];
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_75_selected"] forState:UIControlStateSelected];
-            break;
-        case 100:
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_100"] forState:UIControlStateNormal];
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_100_selected"] forState:UIControlStateHighlighted];
-            [self.button setImage:[UIImage imageNamed:@"property_opacity_100_selected"] forState:UIControlStateSelected];
-            break;
-        default:
-            break;
+    case 25:
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_25"] forState:UIControlStateNormal];
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_25_selected"] forState:UIControlStateHighlighted];
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_25_selected"] forState:UIControlStateSelected];
+        break;
+    case 50:
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_50"] forState:UIControlStateNormal];
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_50_selected"] forState:UIControlStateHighlighted];
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_50_selected"] forState:UIControlStateSelected];
+        break;
+    case 75:
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_75"] forState:UIControlStateNormal];
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_75_selected"] forState:UIControlStateHighlighted];
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_75_selected"] forState:UIControlStateSelected];
+        break;
+    case 100:
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_100"] forState:UIControlStateNormal];
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_100_selected"] forState:UIControlStateHighlighted];
+        [self.button setImage:[UIImage imageNamed:@"property_opacity_100_selected"] forState:UIControlStateSelected];
+        break;
+    default:
+        break;
     }
-   
-    NSString *st_opacity = [NSString stringWithFormat:@"%d %@",opacity,@"%"];
+
+    NSString *st_opacity = [NSString stringWithFormat:@"%d %@", opacity, @"%"];
     [self.button setTitle:st_opacity forState:UIControlStateNormal];
     [self.button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self.button setTitleColor:[UIColor colorWithRed:0.15 green:0.62 blue:0.84 alpha:1] forState:UIControlStateHighlighted];
@@ -72,15 +70,13 @@
     self.button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
 }
 
--(void)onClick
-{
+- (void)onClick {
     if (self.callback) {
-        self.callback(PROPERTY_OPACITY,_opacity);
+        self.callback(PROPERTY_OPACITY, _opacity);
     }
 }
 
--(void)setSelected:(BOOL)selected
-{
+- (void)setSelected:(BOOL)selected {
     self.button.selected = selected;
 }
 

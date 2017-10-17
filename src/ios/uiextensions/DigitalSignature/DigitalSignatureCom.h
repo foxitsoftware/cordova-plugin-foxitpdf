@@ -16,26 +16,25 @@
 #import <FoxitRDK/FSPDFObjC.h>
 
 @interface CERT_INFO : NSObject
-@property (nonatomic, copy) NSString*	certSerialNum;
-@property (nonatomic, copy) NSString*	certPublisher;
-@property (nonatomic, copy) NSString*	certStartDate;
-@property (nonatomic, copy) NSString*	certEndDate;
-@property (nonatomic, copy) NSString*	certEmailInfo;
-@property (nonatomic, strong) FSDateTime* signDate;
-@property (nonatomic, assign) const unsigned int* byteRangeArray;
+@property (nonatomic, copy) NSString *certSerialNum;
+@property (nonatomic, copy) NSString *certPublisher;
+@property (nonatomic, copy) NSString *certStartDate;
+@property (nonatomic, copy) NSString *certEndDate;
+@property (nonatomic, copy) NSString *certEmailInfo;
+@property (nonatomic, strong) FSDateTime *signDate;
+@property (nonatomic, assign) const unsigned int *byteRangeArray;
 @property (nonatomic, assign) int sizeofArray;
 @end
 
 @interface DIGITALSIGNATURE_PARAM : NSObject
-@property (nonatomic, copy) NSString*	certFile;
-@property (nonatomic, copy) NSString*	certPwd;
-@property (nonatomic, copy) NSString*	subfilter;
-@property (nonatomic, copy) NSString*	signFilePath;
-@property (nonatomic, copy) NSString*	imagePath;
-@property (nonatomic, strong) FSRectF* rect;
-@property (nonatomic, copy) NSString*   sigName;
+@property (nonatomic, copy) NSString *certFile;
+@property (nonatomic, copy) NSString *certPwd;
+@property (nonatomic, copy) NSString *subfilter;
+@property (nonatomic, copy) NSString *signFilePath;
+@property (nonatomic, copy) NSString *imagePath;
+@property (nonatomic, strong) FSRectF *rect;
+@property (nonatomic, copy) NSString *sigName;
 @end
-
 
 #define P12FILESCANFERROR -10
 #define P12FILEPASSWDERROR -11

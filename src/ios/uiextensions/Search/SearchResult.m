@@ -19,14 +19,10 @@
 @synthesize rtText;
 @synthesize rtHeight;
 
-
-
 @end
 
 @implementation SearchResult
 @synthesize index;
 @synthesize infos;
-
-
 
 @end

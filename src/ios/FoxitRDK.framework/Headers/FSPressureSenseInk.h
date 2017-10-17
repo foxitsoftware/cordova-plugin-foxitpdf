@@ -17,6 +17,7 @@
 @class FSPSI;
 @class FSPSInk;
 
+NS_ASSUME_NONNULL_BEGIN
 /**
  * @brief	Class to represents a callback object for refreshing a region for PSI.
  *
@@ -34,7 +35,8 @@
 -(void*)getCptr;
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
-
+/** @brief Default initialization. */
+-(id)init;
 /**
  * @brief	A callback function used to refresh a specified region for PSI.
  *
@@ -45,6 +47,12 @@
  */
 -(void)refresh:(FSPSI*)PSIHandle Rect:(FSRectF*)flushRect;
 
+/**
+ * @brief   FSPSICallback release by it's handler ,don't need release it by itself
+ *
+ * @return  None.
+ */
+-(void)dealloc;
 @end
 
 /**
@@ -72,7 +80,7 @@
 /**
  * @brief	Create a PSI object, based on a bitmap.
  *
- * @param[in]	bitmap		A bitmap used for rendering. It should be created with {@link FS_DIBFORMAT::e_dibArgb} format.
+ * @param[in]	bitmap		A bitmap used for rendering. It should be created with {@link FSDIBFormat::e_dibArgb} format.
  *							User should ensure this bitmap to keep valid until current PSI object is released.
  * @param[in]	simulate	Turn on/off simulation of PSI:<br>
  *							<b>YES</b> means to turn on simulation, and <b>NO</b> means to turn off simulation.<br>
@@ -83,7 +91,7 @@
  * @exception	e_errParam			Value of input parameter is invalid.
  * @exception	e_errOutOfMemory	Out-of-memory error occurs.
  */
-+(FSPSI*)create: (FSBitmap*)bitmap simulate: (BOOL)simulate;
+-(id)initWithBitmap: (FSBitmap*)bitmap simulate: (BOOL)simulate;
 
 /**
  * @brief	Create a PSI object, with specified width and height for the canvas.
@@ -96,7 +104,7 @@
  *
  * @return	A new PSI object.
  */
-+(FSPSI*)create: (int)width height: (int)height simulate: (BOOL)simulate;
+-(id)initWithWidth: (int)width height: (int)height simulate: (BOOL)simulate;
 
 /**
  * @brief	Set the callback object for refreshing.
@@ -157,14 +165,14 @@
  *
  * @param[in]	point		A point in canvas coordinate system.
  * @param[in]	ptType	Point type. <br>
- *							Please refer to {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo FS_PATHPOINTTYPE::e_pointTypeXXX} values and it would be one of them.
+ *							Please refer to {@link FSPathPointType::e_pointTypeMoveTo FSPathPointType::e_pointTypeXXX} values and it would be one of them.
  * @param[in]	pressure	Pressure value for this point. Valid value: between 0 and 1.
  *
  * @return None.
  *
  * @exception	e_errParam		Value of input parameter is invalid.
  */
--(void)addPoint: (FSPointF*)point ptType: (enum FS_PATHPOINTTYPE)ptType pressure: (float)pressure;
+-(void)addPoint: (FSPointF*)point ptType: (FSPathPointType)ptType pressure: (float)pressure;
 
 /**
  * @brief	Get contents rectangle.
@@ -185,13 +193,13 @@
  * @brief	Convert a PSI object to a PSInk annotation and insert the annotation to a PDF page.
  *
  * @details	Actually, this function is to convert the path data of current PSI to a PSInk annotation, ignoring the canvas bitmap.<br>
- *			Before calling this function, user should ensure that current PSI object has contained a valid path (whose last point's type is {@link FS_PATHPOINTTYPE::e_pointTypeLineToCloseFigure}.
+ *			Before calling this function, user should ensure that current PSI object has contained a valid path (whose last point's type is {@link FSPathPointType::e_pointTypeLineToCloseFigure}.
  *			Otherwise, the conversion will be failed.<br>
  *
  * @param[in]	pdfPage		A PDF page object, to which the PSI is expected to inserted.
  * @param[in]	rect	A rectangle to specify the position in the PDF page, where the new PSInk annotation will be inserted.
  *							It should be valid in PDF coordinate system.
- * @param[in]	rotate		Rotation value. Currently, it can only be {@link FS_ROTATION::e_rotation0}.
+ * @param[in]	rotate		Rotation value. Currently, it can only be {@link FSRotation::e_rotation0}.
  *
  * @return	A new PSInk annotation.
  *			If there is any error, this function will return <b>nil</b>.
@@ -201,9 +209,12 @@
  * @exception	e_errParam		Value of input parameter is invalid.
  
  */
--(FSPSInk*)convertToPDFAnnot: (FSPDFPage*)pdfPage rect: (FSRectF*)rect rotate: (enum FS_ROTATION)rotate;
+-(FSPSInk*)convertToPDFAnnot: (FSPDFPage*)pdfPage rect: (FSRectF*)rect rotate: (FSRotation)rotate;
 
 /** @brief Free the object. */
 -(void)dealloc;
 
 @end
+
+NS_ASSUME_NONNULL_END
+

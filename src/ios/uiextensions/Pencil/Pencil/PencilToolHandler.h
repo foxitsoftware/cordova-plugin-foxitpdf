@@ -10,13 +10,13 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
 #import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-@interface PencilToolHandler : NSObject<IToolHandler, IAnnotPropertyListener>
+@interface PencilToolHandler : NSObject <IToolHandler>
 
-@property (nonatomic, assign)enum FS_ANNOTTYPE type;
+@property (nonatomic, assign) FSAnnotType type;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

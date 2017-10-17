@@ -14,30 +14,28 @@
 
 #import <FoxitRDK/FSPDFViewControl.h>
 
-@interface SignatureView : UIView
-{
-    void* dibBuf;
+@interface SignatureView : UIView {
+    void *dibBuf;
 }
 
-@property (nonatomic, strong) FSBitmap* dib;
+@property (nonatomic, strong) FSBitmap *dib;
 @property (nonatomic, assign) CGRect rectSigPart;
 @property (nonatomic, assign) int color;
 @property (nonatomic, assign) int diameter;
 @property (nonatomic, assign) BOOL hasChanged;
-@property (nonatomic, copy) void(^signHasChangedCallback)(BOOL hasChanged);
+@property (nonatomic, copy) void (^signHasChangedCallback)(BOOL hasChanged);
 
 - (void)clear;
-- (void)loadSignature:(NSData*)dibData rect:(CGRect)rect;
-- (UIImage*)getCurrentImage;
-- (NSData*)getCurrentDib;
-- (void)invalidateRect:(FSRectF*)rect;
+- (void)loadSignature:(NSData *)dibData rect:(CGRect)rect;
+- (UIImage *)getCurrentImage;
+- (NSData *)getCurrentDib;
+- (void)invalidateRect:(FSRectF *)rect;
 @end
-
 
 @interface FSPSICallbackImp : FSPSICallback
 
-@property (nonatomic, weak) SignatureView* sigView;
+@property (nonatomic, weak) SignatureView *sigView;
 
--(id)initWithSigView:(SignatureView*)view;
+- (id)initWithSigView:(SignatureView *)view;
 
 @end

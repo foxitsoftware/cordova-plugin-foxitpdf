@@ -10,16 +10,15 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
 #import "UIExtensionsManager+Private.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-@interface CaretAnnotHandler : NSObject<IAnnotHandler,UIPopoverControllerDelegate,IScrollViewEventListener, IPropertyBarListener,IRotationEventListener,IGestureEventListener>
+@interface CaretAnnotHandler : NSObject <IAnnotHandler, UIPopoverControllerDelegate, IScrollViewEventListener, IPropertyBarListener, IRotationEventListener, IGestureEventListener>
 @property (nonatomic, strong) UIImage *annotImage;
 @property (nonatomic, strong) NSObject *currentVC;
 @property (nonatomic, assign) BOOL isInsert;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
-
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

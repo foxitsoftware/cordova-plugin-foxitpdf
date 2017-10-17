@@ -21,6 +21,7 @@
 @class FSReadingBookmark;
 @class FSBookmark;
 
+NS_ASSUME_NONNULL_BEGIN
 /************************************************************************************************
  *									PDF Document					  							*
  *************************************************************************************************/
@@ -29,19 +30,19 @@
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_PAGELABELSTYLE {
+typedef NS_ENUM(NSUInteger, FSPageLabelStyle) {
     /** @brief	Page label style: no numbering style. */
-    e_pageLabelStyleNone	 =	0,
+    e_pageLabelStyleNone = 0,
     /** @brief	Page label style: decimal Arabic numerals. */
-    e_pageLabelStyleDecimalNums	=	1,
+    e_pageLabelStyleDecimalNums,
     /** @brief	Page label style: uppercase roman numerals. */
-    e_pageLabelStyleUpperRomanNums	=	2,
+    e_pageLabelStyleUpperRomanNums,
     /** @brief	Page label style: lowercase roman numerals. */
-    e_pageLabelStyleLowerRomanNums	=	3,
+    e_pageLabelStyleLowerRomanNums,
     /** @brief	Page label style: uppercase letters (A to Z for the first 26 pages, AA to ZZ for the next 26, and so on). */
-    e_pageLabelStyleUpperLetters =	4,
+    e_pageLabelStyleUpperLetters,
     /** @brief	Page label style: lowercase letters (a to z for the first 26 pages, aa to zz for the next 26, and so on). */
-    e_pageLabelStyleLowerLetters =	5
+    e_pageLabelStyleLowerLetters
 };
 
 
@@ -50,222 +51,52 @@ enum FS_PAGELABELSTYLE {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_PASSWORDTYPE {
+typedef NS_ENUM(NSUInteger, FSPasswordType) {
     /** @brief	The password is invalid. */
-    e_pwdInvalid	 =	0,
+    e_pwdInvalid = 0,
     /** @brief	No password is used in PDF document. */
-    e_pwdNoPassword	=	1,
+    e_pwdNoPassword	,
     /** @brief	A user password is used in PDF document. */
-    e_pwdUser	=	2,
+    e_pwdUser,
     /** @brief	An owner password is used in PDF document. */
-    e_pwdOwner	=	3
+    e_pwdOwner
 };
-
-/**
- * @brief	Enumeration for user permissions of a PDF document.
- *
- * @details	Values of this enumeration can be used alone or in combination.
- */
-
-enum FS_USERPERMISSIONS {
-    /**
-     * @brief	Print PDF document with normal mode. (Bit 3 in permission value)
-     *
-     * @details	If user wants to print a higher quality level of PDF document, please set current value with {@link FS_USERPERMISSIONS::e_permPrintHigh} together.
-     */
-    e_permPrint = 0x0004,
-    /**
-     * @brief	Modify PDF contents. (Bit 4 in permission value)
-     *
-     * @details	If this value is set, user can modify contents of PDF document
-     *			by operations other than those controlled by {@link FS_USERPERMISSIONS::e_permAnnotForm}, {@link FS_USERPERMISSIONS::e_permFillForm} and {@link FS_USERPERMISSIONS::e_permAssemble} values.
-     */
-    e_permModify	= 0x0008,
-    /**
-     * @brief	Extract PDF contents. (Bit 5 in permission value)
-     *
-     * @details	If this value is set, user can copy or otherwise extract text and graphics from the document
-     *			by operations other than that controlled by {@link FS_USERPERMISSIONS::e_permExtractAccess} value.
-     */
-    e_permExtract = 0x0010,
-    /**
-     * @brief	Operate text annotations and fill in interactive form fields. (Bit 6 in permission value)
-     *
-     * @details	If {@link FS_USERPERMISSIONS::e_permModify} is also set, user can create or modify interactive form fields (including signature fields).
-     */
-    e_permAnnotForm = 0x0020,
-    /**
-     * @brief	Fill PDF form. (Bit 9 in permission value)
-     *
-     * @details	If this value is set, user can fill in interactive form fields (including signature fields),
-     * 			even if {@link FS_USERPERMISSIONS::e_permAnnotForm} is not used.
-     */
-    e_permFillForm = 0x0100,
-    /**
-     * @brief	Disabilities support. (Bit 10 in permission value)
-     *
-     * @details	If this value is set, user can extract text and graphics in support of accessibility to users with disabilities
-     *			or for other purposes.
-     */
-    e_permExtractAccess = 0x0200,
-    /**
-     * @brief	Assemble PDF document. (Bit 11 in permission value)
-     *
-     * @details	If this value is set, it enables to assemble the document (insert, rotate, or delete pages
-     * 			and create bookmarks or thumbnail images), regardless if {@link FS_USERPERMISSIONS::e_permModify} is set or not.
-     */
-    e_permAssemble = 0x0400,
-    /**
-     * @brief	Print PDF document with higher qualities. (Bit 12 in permission value)
-     *
-     * @details	If this value is not set (and {@link FS_USERPERMISSIONS::e_permPrint} is set), printing is limited to a low-level
-     * 			representation of the appearance, possibly of degraded quality.
-     */
-    e_permPrintHigh = 0x0800
-};
-
-
-
-/**
- * @brief	Class to represent information of a page labeling range.
- *
- * @details	Page label is used to identify each page visually on the screen or in print,
- *			and can be specified in any way that is appropriate for the particular document.<br>
- *			For purposes of page labeling, a document can be divided into labeling ranges,
- *			each of which is a series of consecutive pages using the same numbering system.
- *			Pages within a range are numbered sequentially in ascending order.
- *			A page's label consists of a numeric portion based on its position within its labeling range,
- *			optionally preceded by a label prefix denoting the range itself. <br>
- *			For example, the pages in an appendix might be labeled with decimal numeric portions prefixed
- *			with the string A-; the resulting page labels would be A-1, A-2, and so on.<br>
- *			This class represents the information of a page labeling range, including numbering style, label prefix
- *			and value of the numeric portion for the first page label in the range.<br>
- */
-@interface FSPageLabel : NSObject
-{
-    /** @brief SWIG proxy related property, it's deprecated to use it. */
-    void *swigCPtr;
-    /** @brief SWIG proxy related property, it's deprecated to use it. */
-    BOOL swigCMemOwn;
-}
-/** @brief SWIG proxy related function, it's deprecated to use it. */
--(void*)getCptr;
-/** @brief SWIG proxy related function, it's deprecated to use it. */
--(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
-/**
- * @brief	Set value.
- *
- * @param[in]	start				The index of first page in current labeling range, starting from 0.
- * @param[in]	style				The numbering style to be used for the numeric portion of each page label.
- *									Please refer to {@link FS_PAGELABELSTYLE::e_pageLabelStyleNone FS_PAGELABELSTYLE::e_pageLabelStyleXXX} and it should be one of these values.
- *									If the value is {@link FS_PAGELABELSTYLE::e_pageLabelStyleNone}, page labels consist solely of a label prefix with no numeric portion.
- * @param[in]	prefix				The label prefix string for page labels in current labeling range.
- *									Only the first 100 characters can be used as label prefix string.
- * @param[in]	firstPageNumber		The value of the numeric portion for the first page label in current labeling range.
- *									Subsequent pages are numbered sequentially from this value, which must be greater than or equal to 1.
- */
--(void)set: (int)start style: (enum FS_PAGELABELSTYLE)style prefix: (NSString *)prefix firstPageNumber: (int)firstPageNumber;
-/**
- * @brief	Set the index of first page in current labeling range.
- *
- * @param[in]	value	New index for first page. Valid range: from 0 to (<i>count</i>-1).
- *						<i>count</i> is the page count of the PDF document.
- */
--(void)setStart: (int)value;
-/**
- * @brief	Get the index of first page in current labeling range.
- *
- * @return	The index for first page, starting from 0.
- */
--(int)getStart;
-/**
- * @brief	Set numbering style.
- *
- * @details	Numbering style is used for the numeric portion of each page label.
- *
- * @param[in]	value	New numbering style.
- *						Please refer to {@link FS_PAGELABELSTYLE::e_pageLabelStyleNone FS_PAGELABELSTYLE::e_pageLabelStyleXXX} and it should be one of these values.
- *						If the value is {@link FS_PAGELABELSTYLE::e_pageLabelStyleNone}, page labels consist solely of a label prefix with no numeric portion.
- */
--(void)setStyle: (enum FS_PAGELABELSTYLE)value;
-/**
- * @brief	Get numbering style.
- *
- * @details	Numbering style is used for the numeric portion of each page label.
- *
- * @return	The numbering style.
- *			Please refer to {@link FS_PAGELABELSTYLE::e_pageLabelStyleNone FS_PAGELABELSTYLE::e_pageLabelStyleXXX} and it would be one of these values.
- *			If the value is {@link FS_PAGELABELSTYLE::e_pageLabelStyleNone}, page labels consist solely of a label prefix with no numeric portion.
- */
--(enum FS_PAGELABELSTYLE)getStyle;
-/**
- * @brief	Set label prefix.
- *
- * @param[in]	value	New label prefix string.
- *						Only the first 100 characters can be used as label prefix string.
- */
--(void)setPrefix: (NSString *)value;
-/**
- * @brief	Get label prefix.
- *
- * @return	Label prefix string.
- */
--(NSString *)getPrefix;
-/**
- * @brief	Set the value of the numeric portion for the first page label
- *
- * @details	Subsequent pages are numbered sequentially from this value,
- *			which must be greater than or equal to 1
- *
- * @param[in]	value	New value of the numeric portion.
- */
--(void)setFirstPageNumber: (int)value;
-/**
- * @brief	Get the value of the numeric portion for the first page label
- *
- * @details	Subsequent pages are numbered sequentially from this value,
- *			which must be greater than or equal to 1
- *
- * @return	Value of the numeric portion.
- */
--(int)getFirstPageNumber;
-/** @brief Initialize the object. */
--(id)init;
-
-/** @brief Free the object. */
--(void)dealloc;
-
-@end
-
 
 /**
  * @brief	Enumeration for PDF document saving flags.
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_SAVEFLAGS {
+typedef NS_OPTIONS(NSUInteger, FSSaveFlags) {
     /** @brief	Save document normally, without using any special flag. This can only be used alone.*/
     e_saveFlagNormal = 0,
     /**
      * @brief	Save document incrementally.
      *
-     * @details	This can be used alone or be combined with other saving flags except {@link FS_SAVEFLAGS::e_saveFlagNormal}.
-     *			Especially, if this is combined with {@link FS_SAVEFLAGS::e_saveFlagNoOriginal}, only the increment data will be saved.
+     * @details	This can be used alone or be combined with other saving flags except {@link FSSaveFlags::e_saveFlagNormal}.
+     *			Especially, if this is combined with {@link FSSaveFlags::e_saveFlagNoOriginal}, only the increment data will be saved.
      */
-    e_saveFlagIncremental = 0x0001,
+    e_saveFlagIncremental = 1 << 0,
     /**
      * @brief	Save document without original data or unchanged objects.
      *
-     * @details	This can be used alone or be combined with other saving flags except {@link FS_SAVEFLAGS::e_saveFlagNormal}.
-     *			Especially, if this is combined with {@link FS_SAVEFLAGS::e_saveFlagIncremental}, only the increment data will be saved.
+     * @details	This can be used alone or be combined with other saving flags except {@link FSSaveFlags::e_saveFlagNormal}.
+     *			Especially, if this is combined with {@link FSSaveFlags::e_saveFlagIncremental}, only the increment data will be saved.
      */
-    e_saveFlagNoOriginal = 0x0002,
+    e_saveFlagNoOriginal  = 1 << 1,
     /**
-     * @brief	Save document by using object stream, in order to reduce the file size.
+     * @brief	Save document by using XRef stream.
      *
-     * @details	This can be used alone or be combined with other saving flags except {@link FS_SAVEFLAGS::e_saveFlagNormal}.
+     * @details	This can be used alone or be combined with other saving flags except {@link FSSaveFlags::e_saveFlagNormal}.
      */
-    e_saveFlagObjectStream = 0x0004
+    e_saveFlagXRefStream  = 1 << 3,
+    /**
+     * @brief Save document as a linearized file.
+     *
+     * @details This should be used alone and cannot be used with other saving flags.
+     *          This can only be used for function {@link FSPDFDoc::saveAs}.
+     */
+    e_saveFlagLinearized = 1 << 12
 };
 
 /**
@@ -273,63 +104,45 @@ enum FS_SAVEFLAGS {
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_IMPORTFLAGS {
+typedef NS_OPTIONS(NSUInteger, FSImportFlags) {
     /** @brief	Import pages normally.*/
     e_importFlagNormal = 0,
     /** @brief	Import pages with layers.*/
-    e_importFlagWithLayers = 0x0001,
+    e_importFlagWithLayers = 1 << 0,
     /**
      * @brief	Import pages without cloning stream objects into memory.
      *
      * @details	This flags is only useful when the source PDF document has not been encrypted.
      *			If this flag is used for importing pages, it will reduce memory overhead.
      */
-    e_importFlagShareStream = 0x0002
+    e_importFlagShareStream = 1 << 1
 };
 
 /**
- * @brief	Class to access a PDF document.
+ * A PDF document object can be constructed with an existing one from file path, memory buffer,
+ * a custom implemented FSFileReadCallback object and an input file stream, and then call function
+ * {@link FSPDFDoc::Load} or {@link FSPDFDoc::startLoad} to load document content. A FSPDFDoc can also be constructed
+ * as a new FDF or XFDF document.
+ * This class offers functions to retrieve different part of a PDF document. For example:
+ * <ul>
+ * <li>To retrieve pages, please use functions {@link FSPDFDoc::getPageCount} and {@link FSPDFDoc::getPage}.</li>
+ * <li>To retrieve bookmark, such as function {@link FSPDFDoc::getFirstBookmark}, {@link FSPDFDoc::createFirstBookmark},
+ *     etc.</li>
+ * <li>To retrieve some document's dictionaries (in low-level),
+ *     such as functions {@link FSPDFDoc::getCatalog}, {@link FSPDFDoc::getTrailer}, etc.</li>
+ * <li>To retrieve reading bookmark, such as functions {@link FSPDFDoc::getReadingBookmarkCount},
+ *     {@link FSPDFDoc::getReadingBookmark}, etc.</li>
+ * <li>To retrieve interactive form, such as functions {@link FSPDFDoc::hasForm}, {@link FSPDFDoc::getForm},
+ *     {@link FSPDFDoc::createForm}.</li>
+ * </ul>
+ * This class also offers functions for features, such as saving current document as another PDF file,
+ * importing pages from another PDF file, setting security handler in order to save encrypted PDF file, and so on.
  *
- * @details	A <CODE>PDFDoc</CODE> object can be created by following functions:
- *			<ul>
- *			<li>{@link FSPDFDoc::createFromFilePath:}: from a specified PDF file path.</li>
- *			<li>{@link FSPDFDoc::createFromMemory:}: from memory buffer which contains the serialized document.</li>
- *			<li>{@link FSPDFDoc::createFromHandler:}: from a customized <CODE>FileRead</CODE> object.</li>
- *			</ul>
- *			After a <CODE>PDFDoc</CODE> object is created, function {@link FSPDFDoc::load:} should be called to load the document content.<br>
- *			This class also offers functions to access different part of a PDF document. For example:
- *			<ul>
- *			<li>To access pages, use functions {@link FSPDFDoc::getPageCount} and {@link FSPDFDoc::getPage:}.</li>
- *			<li>To access bookmark:
- *				<ul>
- *				<li>To access bookmark tree, use function {@link FSPDFDoc::getFirstBookmark}.</li>
- *				<li>To create bookmark root node, use function {@link FSPDFDoc::createFirstBookmark}.</li>
- *				<li>To remove bookmark, use function {@link FSPDFDoc::removeBookmark:}.</li>
- *				</ul>
- *			</li>
- *			<li>To access document information (that is "metadata"), use functions {@link FSPDFDoc::hasMetadataKey:}, {@link FSPDFDoc::getCreationDateTime},
- *				{@link FSPDFDoc::getModifiedDateTime} and {@link FSPDFDoc::getMetadataValue:}.</li>
- *			<li>To access page labeling range information , use functions {@link FSPDFDoc::getPageLabelRangeCount} and {@link FSPDFDoc::getPageLabelInfo:}.
- *			</li>
- *			<li>To access document catalog dictionary (in low-level), use function {@link FSPDFDoc::getCatalog}.</li>
- *			<li>To access document trailer dictionary (in low-level), use function {@link FSPDFDoc::getTrailer}.</li>
- *			<li>To access document information dictionary (in low-level), use function {@link FSPDFDoc::getInfo}.</li>
- *			<li>To access document encrypt dictionary (in low-level), use function {@link FSPDFDoc::getEncryptDict}.</li>
- *			<li>To access reading bookmark:
- *				<ul>
- *				<li>To access the reading bookmark, use function {@link FSPDFDoc::getReadingBookmarkCount} and {@link FSPDFDoc::getReadingBookmark:}.</li>
- *				<li>To insert the reading bookmark, use function {@link FSPDFDoc::insertReadingBookmark:title:pageIndex:}.</li>
- *				<li>To remove the reading bookmark, use function {@link FSPDFDoc::removeReadingBookmark:}.</li>
- *				</ul>
- *			</li>
- *			<li>To access interactive form, use functions {@link FSPDFDoc::hasForm} and {@link FSPDFDoc::getForm}.</li>
- *			</ul>
- *
- * @see	FSPDFPage
- * @see	FSBookmark
- * @see	FSPageLabel
- * @see	FSPDFDictionary
- * @see	FSReadingBookmark
+ * @see FSPDFPage
+ * @see FSBookmark
+ * @see FSPDFDictionary
+ * @see FSReadingBookmark
+ * @see FSForm
  */
 @interface FSPDFDoc : NSObject
 {
@@ -350,7 +163,7 @@ enum FS_IMPORTFLAGS {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
-+(FSPDFDoc*)create;
+-( FSPDFDoc *)init;
 
 /**
  * @brief	Create a PDF document object with an existing PDF document from file path.
@@ -362,7 +175,7 @@ enum FS_IMPORTFLAGS {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
-+(FSPDFDoc*)createFromFilePath: (NSString *)path;
+-(FSPDFDoc*)initWithFilePath: (NSString *)path;
 /**
  * @brief	Create a PDF document object with a memory buffer.
  *
@@ -376,7 +189,7 @@ enum FS_IMPORTFLAGS {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
-+(FSPDFDoc*)createFromMemory: (NSData *)buffer;
+-(FSPDFDoc*)initWithMemory: (NSData *)buffer;
 /**
  * @brief	Create a document object with a file read instance.
  *
@@ -387,21 +200,48 @@ enum FS_IMPORTFLAGS {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
-+(FSPDFDoc*)createFromHandler: (FSFileReadCallback*)fileRead;
+-(FSPDFDoc*)initWithHandler: (id<FSFileReadCallback>)fileRead;
 /**
  * @brief	Load current document content by using the specified password.
  *
  * @param[in]	password		The password string, used to load current document content. It can be either user password or owner password.
  *								If current document is not encrypted by password, just pass an empty string.
  *
- * @return	{@link FS_ERRORCODE::e_errSuccess} means success. <br>
- *			{@link FS_ERRORCODE::e_errFile} means there is any error occurs when accessing to current document content.<br>
- *			{@link FS_ERRORCODE::e_errFormat} means the format of current document content is not PDF or the file is corrupted.<br>
- *			{@link FS_ERRORCODE::e_errSecurityHandler} means current PDF document is encrypted by some unsupported security handler.<br>
- *			{@link FS_ERRORCODE::e_errCertificate} means current PDF document is encrypted by digital certificate and current user does not have the correct certificate. <br>
- *			For other error code value, please refer to {@link FS_ERRORCODE::e_errSuccess FS_ERRORCODE::e_errXXX} for more details.
+ * @return	{@link FSErrorCode::e_errSuccess} means success. <br>
+ *			{@link FSErrorCode::e_errFile} means there is any error occurs when accessing to current document content.<br>
+ *			{@link FSErrorCode::e_errFormat} means the format of current document content is not PDF or the file is corrupted.<br>
+ *			{@link FSErrorCode::e_errSecurityHandler} means current PDF document is encrypted by some unsupported security handler.<br>
+ *			{@link FSErrorCode::e_errCertificate} means current PDF document is encrypted by digital certificate and current user does not have the correct certificate. <br>
+ *			For other error code value, please refer to {@link FSErrorCode::e_errSuccess FSErrorCode::e_errXXX} for more details.
  */
--(enum FS_ERRORCODE)load: (NSString *)password;
+-(FSErrorCode)load: (NSString * _Nullable)password;
+
+/**
+ * @brief Progressive loading current document content by using a specified password. This is progressive, which means that the job may not finished when it return.
+ *
+ * @param[in] password         The password string, used to load current document content.
+ *                             It can be either user password or owner password.
+ *                             If current document is not encrypted by password, just pass an empty string.
+ * @param[in] length           The length of password string.
+ * @param[in] is_cache_stream  Whether loading stream content into memory.
+ *                             Loading stream content into memory will improve performance for frequent access,
+ *                             however, it will also consume a lot of memory space.
+ *                             Therefore, we provide an option to leave stream content on file system, and read them
+ *                             whenever we need them. If may reduce the performance a little bit, but greatly reduce
+ *                             the memory consumption, especially when the file is big.
+ * @param[in] pause            Pause object which decides if the importing process needs to be paused.
+ *                             This can be <b>NULL</b> which means not to pause during the parsing process.
+ *                             If this is not <b>NULL</b>, it should be a valid pause object implemented by user.
+ *
+ * @details If the function {@link FSProgressive::GetRateOfProgress} return value is between 0 and 100,
+ *         means the load process is not finished yet,
+ *         and function {@link FSProgressive::Continue}
+ *         should be called to continue the process.
+ *         FSProgressive object should be deleted by user when progressive progress is finish<br>
+ *
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
+ */
+-(FSProgressive * _Nullable)startLoad: (NSString *)password length: (int)length is_cache_stream: (BOOL)is_cache_stream pause: (FSPauseCallback* _Nullable)pause;
 
 /** @brief	Get file size of this PDF document.*/
 -(unsigned long long)getFileSize;
@@ -440,16 +280,16 @@ enum FS_IMPORTFLAGS {
  * @brief	Get the encryption type.
  *
  * @return	Encryption type.
- *			Please refer to {@link FS_ENCRYPTTYPE::e_encryptNone FS_ENCRYPTTYPE::e_encryptXXX} values and it would be one of these values.
+ *			Please refer to {@link FSEncryptType::e_encryptNone FSEncryptType::e_encryptXXX} values and it would be one of these values.
  */
--(enum FS_ENCRYPTTYPE)getEncryptionType;
+-(FSEncryptType)getEncryptionType;
 /**
  * @brief	For the password protected document, get the type of password, which is used when loading document content in function {@link FSPDFDoc::load:}.
  *
  * @return	Password type.
- *			Please refer to {@link FS_PASSWORDTYPE::e_pwdInvalid FS_PASSWORDTYPE::e_pwdXXX} values and it would be one of these values.
+ *			Please refer to {@link FSPasswordType::e_pwdInvalid FSPasswordType::e_pwdXXX} values and it would be one of these values.
  */
--(enum FS_PASSWORDTYPE)getPasswordType;
+-(FSPasswordType)getPasswordType;
 /**
  * @brief	For the password protected document, check the type of a specified password.
  *
@@ -458,22 +298,50 @@ enum FS_IMPORTFLAGS {
  * @param[in]	password		The password string to be checked.
  *
  * @return	Password type.
- *			Please refer to {@link FS_PASSWORDTYPE::e_pwdInvalid FS_PASSWORDTYPE::e_pwdXXX} values and it would be one of these values.
+ *			Please refer to {@link FSPasswordType::e_pwdInvalid FSPasswordType::e_pwdXXX} values and it would be one of these values.
  */
--(enum FS_PASSWORDTYPE)checkPassword: (NSString *)password;
+-(FSPasswordType)checkPassword: (NSString * _Nullable)password;
 /**
  * @brief	Save current PDF document as another PDF file.
  *
  * @param[in]	filePath		File path for the new saved PDF file.
  * @param[in]	saveFlags		Document saving flags.
- *								Please refer to {@link FS_SAVEFLAGS::e_saveFlagNormal FS_SAVEFLAGS::e_saveFlagXXX} values and this can be one or combination of these values.
+ *								Please refer to {@link FSSaveFlags::e_saveFlagNormal FSSaveFlags::e_saveFlagXXX} values and this can be one or combination of these values.
  *
  * @return	<b>YES</b> means the saving is successfully finished, while <b>NO</b> means failure.
  *
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(BOOL)saveAs: (NSString *)filePath saveFlags:(unsigned int)saveFlags;
+-(BOOL)saveAs: (NSString *)filePath saveFlags:(FSSaveFlags)saveFlags;
+
+/**
+ * @brief Start to save current PDF document as another PDF file. This is progressive, which means that the job may not finished when it return.
+ *
+ * @details If current document is loaded from an existing PDF file
+ *          and a different file version has been set by function {@link FSPDFDoc::setFileVersion} before saving,
+ *          Foxit PDF SDK will ignore {@link FSSaveFlags::e_saveFlagIncremental FSSaveFlags::e_saveFlagIncremental}
+ *          in parameter <i>save_flags</i> and use the file version in saved PDF file.
+ *
+ * @param[in] file_path   A full path for the new saved PDF file, including file name and extension.
+ *                        It should be in UTF-8 encoding.
+ * @param[in] save_flags  Document saving flags.
+ *                        Please refer to {@link FSSaveFlags::e_saveFlagNormal FSSaveFlags::e_saveFlagXXX}
+ *                        values and this can be one or combination of these values.
+ * @param[in] pause          Pause object which decides if the saving process needs to be paused.
+ *                           This can be <b>NULL</b> which means not to pause during the saving process.
+ *                           If this is not <b>NULL</b>, it should be a valid pause object implemented by user.
+ *
+ * @details If the function {@link FSProgressive::GetRateOfProgress} return value is between 0 and 100,
+ *         means the save process is not finished yet,
+ *         and function {@link FSProgressive::Continue}
+ *         should be called to continue the process.
+ *         FSProgressive object should be deleted by user when progressive progress is finish<br>
+ *
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
+ */
+-(FSProgressive * _Nullable)startSaveAs: (NSString *)file_path save_flags: (FSSaveFlags)save_flags pause: (FSPauseCallback * _Nullable)pause;
+
 /**
  * @brief	Create new bookmark root node.
  *
@@ -544,23 +412,23 @@ enum FS_IMPORTFLAGS {
  * @details	Display mode specifies how the document should be displayed when opened.
  *
  * @return	Display mode value.
- *			Please refer to {@link FS_DISPLAYMODE::e_displayUseNone FS_DISPLAYMODE::e_displayUseXXX} values and this would be one of its values.
+ *			Please refer to {@link FSDisplayMode::e_displayUseNone FSDisplayMode::e_displayUseXXX} values and this would be one of its values.
  */
--(enum FS_DISPLAYMODE)getDisplayMode;
+-(FSDisplayMode)getDisplayMode;
 /**
  * @brief	Set the display mode.
  *
  * @details	Display mode specifies how the document should be displayed when opened.
  *
  * @param[in]	displayMode	Display mode value.
- *							Please refer to {@link FS_DISPLAYMODE::e_displayUseNone FS_DISPLAYMODE::e_displayUseXXX} values and this should be one of these values.
+ *							Please refer to {@link FSDisplayMode::e_displayUseNone FSDisplayMode::e_displayUseXXX} values and this should be one of these values.
  *
  * @return	None.
  *
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(void)setDisplayMode: (enum FS_DISPLAYMODE)displayMode;
+-(void)setDisplayMode: (FSDisplayMode)displayMode;
 /**
  * @brief	Get the catalog dictionary.
  *
@@ -639,215 +507,9 @@ enum FS_IMPORTFLAGS {
  * @brief	Get user access permissions.
  *
  * @return	User access permission.
- *			Please refer to {@link FS_USERPERMISSIONS::e_permPrint FS_USERPERMISSIONS::e_permXXX} values and this would be one or combination of its values.
+ *			Please refer to {@link FSUserPermissions::e_permPrint FSUserPermissions::e_permXXX} values and this would be one or combination of its values.
  */
--(unsigned int)getUserPermissions;
-/**
- * @brief	Check whether current document has a specified metadata key or not.
- *
- * @param[in]	key		The metadata key to be confirmed.
- *
- * @return	<b>YES</b> means current document has the specified metadata key,
- *			while <b>NO</b> means current document does not have the specified metadata key.
- *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
- */
--(BOOL)hasMetadataKey: (NSString *)key;
-/**
- * @brief	Get creation date time.
- *
- * @return	The creation date time.
- *			If no creation date time can be found or any error occurs, <b>nil</b> will be returned.
- *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
- */
--(FSDateTime*)getCreationDateTime;
-/**
- * @brief	Get modified date time.
- *
- * @return	The modified date time.
- *			If no modified date time can be found or any error occurs, <b>nil</b> will be returned.
- *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
- */
--(FSDateTime*)getModifiedDateTime;
-/**
- * @brief	Set creation date time.
- *
- * @param[in]	dateTime The creation date time.
- *
- * @return	None.
- *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
- */
--(void)setCreationDateTime: (FSDateTime* __nonnull)dateTime;
-/**
- * @brief	Set modified date time.
- *
- * @param[in]	dateTime	The modified date time.
- *
- * @return	None.
- *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
- */
--(void)setModifiedDateTime: (FSDateTime* __nonnull)dateTime;
-
-/**
- * @brief	Get metadata value.
- *
- * @details	This function is used to get the whole value (which may contain several values for some keys)
- *          for a metadata key.<br>
- *          For some metadata keys such as "Author" and "Keywords", they can contain single or multiple values.
- *          If user wants to get the values one by one for these two keys, please use function
- *          {@link FSPDFDoc::getMetadataValueCount:} and {@link FSPDFDoc::getMetadataValueByIndex:index:}.
- *
- * @param[in]	key		Metadata key string, in UTF-8 encoding.
- *						Currently it can be one of the following keys:<br>
- *						<ul>
- *						<li>"Title"</li>
- *						<li>"Author"</li>
- *						<li>"Subject"</li>
- *						<li>"Keywords"</li>
- *						<li>"Creator"</li>
- *						<li>"Producer"</li>
- *						<li>"Trapped"</li>
- *						<li>"pdfaid"</li>
- *						</ul>
- *
- * @return	Metadata value string, in UTF-8 string.
- *
- * @throws	FSException	For more information about exception values,
- *						please refere to {@link FS_ERRCODE::e_errFile FS_ERRCODE::e_errXXX}.
- */
--(NSString *)getMetadataValue: (NSString *)key;
-
-/**
- * @brief	Get the count of metadata value.
- *
- * @details	For some metadata key such as "Author" and "Keywords", they can contain single or multiple values.
- *          This function is used to get the count of values, and then function
- *          {@link FSPDFDoc::getMetadataValueByIndex:index:} can be used to get one of these values.<br>
- *          If user just wants to get the whole values, please use function {@link FSPDFDoc::getMetadataValue:}.
- *
- * @param[in]	key		Metadata key string, in UTF-8 encoding.
- *						Currently it can be one of the following keys:<br>
- *						<ul>
- *						<li>"Title"</li>
- *						<li>"Author"</li>
- *						<li>"Subject"</li>
- *						<li>"Keywords"</li>
- *						<li>"Creator"</li>
- *						<li>"Producer"</li>
- *						<li>"Trapped"</li>
- *						<li>"pdfaid"</li>
- *						<li>Some other custom information keys, if they're supported by the PDF file.</li>
- *						</ul>
- *
- * @return	The count of metadata value.
- *
- * @throws	FSException	For more information about exception values,
- *						please refere to {@link FS_ERRCODE::e_errFile FS_ERRCODE::e_errXXX}.
- */
--(int)getMetadataValueCount: (NSString *)key;
-
-/**
- * @brief	Get metadata value by index.
- *
- * @details	For some metadata key such as "Author" and "Keywords", they can contain single or multiple values.
- *          This function is used to get one of these values.<br>
- *          If user just wants to get the whole values, please use function {@link FSPDFDoc::getMetadataValue:}.
- *
- * @param[in]	key		Metadata key string, in UTF-8 encoding.
- *						Currently it can be one of the following keys:<br>
- *						<ul>
- *						<li>"Title"</li>
- *						<li>"Author"</li>
- *						<li>"Subject"</li>
- *						<li>"Keywords"</li>
- *						<li>"Creator"</li>
- *						<li>"Producer"</li>
- *						<li>"Trapped"</li>
- *						<li>"pdfaid"</li>
- *						<li>Some other custom information keys, if they're supported by the PDF file.</li>
- *						</ul>
- *
- * @param[in]	index	The index of metadata value.Valid range: from 0 to (<i>count</i>-1).
- *						<i>count</i> is returned by function {@link FSPDFDoc::getMetadataValueCount:}.
- *
- * @return	Metadata value string, in UTF-8 string.
- *
- * @throws	FSException	For more information about exception values,
- *						please refere to {@link FS_ERRCODE::e_errFile FS_ERRCODE::e_errXXX}.
- */
--(NSString *)getMetadataValueByIndex: (NSString *)key index: (int)index;
-
-/**
- * @brief	Set the array of metadata values.
- *
- * @details	This function is used to set single or multiple values to a specified metadata key:
- *          <ul>
- *          <li>For metadata keys "Author" and "Keywords", they can contain single or multiple values.</li>
- *          <li>For metadata key "pdfaid" which means the PDFA file version, the length of its value string is
- *              always 2, such as "2a", "1a" and so on. So, only the first two characters of the first element
- *              in parameter <i>valueArray</i> will be used.</li>
- *          <li>For rest pre-defined keys, they do not support multiple values. So all the elements in
- *              parameter <i>valueArray</i> will be put into one string and connected by ";".
- *              Then this string will be treated as one value.</li>
- *          </ul>
- *
- * @param[in]	key		Metadata key string, in UTF-8 encoding.
- *						Currently it can be one of the following keys:<br>
- *						<ul>
- *						<li>"Title"</li>
- *						<li>"Author"</li>
- *						<li>"Subject"</li>
- *						<li>"Keywords"</li>
- *						<li>"Creator"</li>
- *						<li>"Producer"</li>
- *						<li>"Trapped"</li>
- *						<li>"pdfaid"</li>
- *						<li>Some other custom information keys, if they're supported by the PDF file.</li>
- *						</ul>
- *
- * @param[in]	valueArray	The array of metadata value string, in UTF-8 string. It must not be <b>NULL</b>.
- *                        Please refer to comment of current function for more details.
- * @param[in]	count		The count of elements in parameter <i>valueArray</i>.
- *
- * @return	None.
- *
- * @throws	FSException	For more information about exception values,
- *						please refere to {@link FS_ERRCODE::e_errFile FS_ERRCODE::e_errXXX}.
- */
--(void)setMetadataArray: (NSString * __nonnull)key valueArray: (NSArray<NSString *>* __nonnull)valueArray count: (int)count;
-
-/**
- * @brief	Get count of ranges of page labels, which use different numbering systems.
- *
- * @return	The count of the page label range.
- *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
- */
--(int)getPageLabelRangeCount;
-/**
- * @brief	Get information of a specified page label.
- *
- * @param[in]	index		The index of the page label range to get the information.
- *							Valid range: from 0 to (<i>count</i>-1).
- *							<i>count</i> is returned by function {@link FSPDFDoc::getPageLabelRangeCount}.
- *
- * @return	The page label information.
- *			If any error occurs, <i>nil</i> will be returned.
- *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
- */
--(FSPageLabel*)getPageLabelInfo: (int)index;
+-(FSUserPermissions)getUserPermissions;
 
 /**
  * @brief	Check whether current PDF document has interactive form (also known as AcroForm).
@@ -1001,98 +663,135 @@ enum FS_IMPORTFLAGS {
 -(BOOL)movePageTo: (FSPDFPage*)page dstIndex: (int)dstIndex;
 
 /**
- * @brief	Start to import pages from another PDF document (via file path).
+ * @brief Start to import pages from another PDF document (via file path).This is progressive, which means that the job may not finished when it return.
  *
- * @details	Currently not support to import pages from a PDF which contains XFA form.
+ * @details Signed signatures in the pages of source PDF document will not be imported into current PDF document.<br>
+ *          Currently, if either current PDF document or the source PDF document contains XFA,
+ *          not support to do the importing.
  *
- * @param[in]	dstIndex		A page index in current PDF document. This is used to specify where the imported pages will be inserted.
- *								If parameter <i>dstIndex</i> is less than 0, the imported pages will be inserted to the first. <br>
- *								If parameter <i>dstIndex</i> is equal to or larger than current page count, the imported pages will be inserted to the end.
- * @param[in]	flags			Options for importing pages.
- *								Please refer to {@link FS_IMPORTFLAGS::e_importFlagNormal FS_IMPORTFLAGS::e_importFlagXXX} and this can be one or a combination of them.
- * @param[in]	layerName		The name of non-selectable label or the prefix name of the non-selectable label to be shown in layer panel of application, in UTF-8 encoding.
- *								If parameter <i>flags</i> contains {@link FS_IMPORTFLAGS::e_importFlagWithLayers}, this should not be empty and should be a valid string.
- *								If parameter <i>flags</i> does not contain {@link FS_IMPORTFLAGS::e_importFlagWithLayers}, this string will be ignored.
- *								<ul>
- *								<li>If all the pages of source PDF document is to be imported to current document, all layers from source document will be grouped under a non-selectable label,
- *									and this string will be directly used as the label. </li>
- *								<li>If only part of pages of source PDF document is to be imported to current document, layers in the same page will be grouped under a single non-selectable label,
- *									and this string will be used as the prefix name of the label. The label will be like "layerName_Page_X". </li>
- *								</ul>
- * @param[in]	srcFilePath		The file path of source PDF document, from which some pages will be imported to current PDF document.
- * @param[in]	password		The password string for source PDF document. It should be in UTF-8 encoding. If source PDF document is not encrypted by password, just pass an empty string.
- * @param[in]	pageRanges		An integer array which contains the page ranges of source PDF document, to be imported.<br>
- *								In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count.<br>
- *								If this parameter is set to <b>nil</b>, all pages in the source document will be imported.
- *								If this parameter is not <b>nil</b>, it should contains at least 2 numbers, and the count of elements should be a multiples of 2.
- * @param[in]	count			The count of elements in parameter <i>pageRanges</i>.
- *								If parameter <i>pageRanges</i> is not <b>nil</b>, this value should be above 0 and be a multiples of 2.
- *								If parameter <i>pageRanges</i> is <b>nil</b>, this value will be ignored.
- * @param[in]	pause			Pause object which decides if the importing process needs to be paused.
- *								This can be <b>nil</b> which means not to pause during the parsing process.
- *								If this is not <b>nil</b>, it should be a valid pause object implemented by user.
+ * @param[in] dest_index     A page index in current PDF document.
+ *                           This is used to specify where the imported pages will be inserted.
+ *                           If parameter <i>dest_index</i> is less than 0,
+ *                           the imported pages will be inserted to the first. <br>
+ *                           If parameter <i>dest_index</i> is equal to or larger than current page count,
+ *                           the imported pages will be inserted to the end.
+ * @param[in] flags          Options for importing pages.
+ *                           Please refer to macro definitions
+ *                           {@link FSImportFlags::e_importFlagNormal FSImportFlags::e_importFlagXXX}
+ *                           and this can be one or a combination of these macros.
+ * @param[in] layer_name     The name of non-selectable label or the prefix name of the non-selectable label
+ *                           to be shown in layer panel of application, in UTF-8 encoding.
+ *                           If parameter <i>flags</i> contains
+ *                           {@link FSImportFlags::e_importFlagWithLayers FSImportFlags::e_importFlagWithLayers},
+ *                           this should not be empty and should be a valid string.
+ *                           If parameter <i>flags</i> does not contain
+ *                           {@link FSImportFlags::e_importFlagWithLayers FSImportFlags::e_importFlagWithLayers},
+ *                           this string will be ignored.
+ *                           <ul>
+ *                           <li>If all the pages of source PDF document is to be imported to current document,
+ *                               all layers from source document will be grouped under a non-selectable label,
+ *                               and this string will be directly used as the label. </li>
+ *                           <li>If only part of pages of source PDF document is to be imported to current document,
+ *                               layers in the same page will be grouped under a single non-selectable label,
+ *                               and this string will be used as the prefix name of the label.
+ *                               The label will be like "layerName_Page_X". </li>
+ *                           </ul>
+ * @param[in] src_file_path  A full path of an existing PDF file as the source PDF document
+ *                           (including file name and extension), in UTF-8 encoding. It should be a PDF file.
+ *                           Some pages will be imported from this PDF file to current PDF document.
+ * @param[in] password       The password string for source PDF document.
+ *                           If source PDF document is not encrypted by password, just pass an empty string.
+ * @param[in] length         The length of password string.
+ * @param[in] page_ranges    An integer array which specifies the page ranges
+ *                           to be imported from source PDF document.<br>
+ *                           In this array, 2 numbers are a pair: the first integer is the starting page index,
+ *                           and the second integer is the page count.<br>
+ *                           If this parameter is set to <b>NULL</b>,
+ *                           all pages in the source document will be imported.
+ *                           If this parameter is not <b>NULL</b>, it should contains at least 2 numbers,
+ *                           and the count of elements should be a multiples of 2.
+ * @param[in] count          The count of elements in parameter <i>page_ranges</i>.
+ *                           If parameter <i>page_ranges</i> is not <b>NULL</b>,
+ *                           this value should be above 0 and be a multiples of 2.
+ *                           If parameter <i>page_ranges</i> is <b>NULL</b>, this value will be ignored.
+ * @param[in] pause          Pause object which decides if the importing process needs to be paused.
+ *                           This can be <b>NULL</b> which means not to pause during the parsing process.
+ *                           If this is not <b>NULL</b>, it should be a valid pause object impled by user.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the importing process is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the importing process is not finished yet and function FSPDFDoc::continueImportPages() should be called to continue the process.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ * @details If the function {@link FSProgressive::GetRateOfProgress} return value is between 0 and 100,
+ *         means the import pages process is not finished yet,
+ *         and function {@link FSProgressive::Continue}
+ *         should be called to continue the process.
+ *         FSProgressive object should be deleted by user when progressive progress is finish<br>
  *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  */
--(enum FS_PROGRESSSTATE)startImportPagesFromFilePath: (int)dstIndex flags: (unsigned int)flags layerName: (NSString *)layerName srcFilePath: (NSString *)srcFilePath password: (NSString *)password pageRanges: (int *)pageRanges count: (int)count pause: (FSPauseCallback*)pause;
+-(FSProgressive* _Nullable)startImportPagesFromFilePath: (int)dstIndex flags: (FSImportFlags)flags layerName: (NSString *)layerName srcFilePath: (NSString *)srcFilePath password: (NSString * _Nullable)password pageRanges: (int *)pageRanges count: (int)count pause: (FSPauseCallback* _Nullable)pause;
 
 /**
- * @brief	Start to import pages from another PDF document (via file document).
+ * @brief Start to import pages from another PDF document (via file document).This is progressive, which means that the job may not finished when it return.
  *
- * @details	Currently not support to import pages from a PDF which contains XFA form.
+ * @details Signed signatures in the pages of source PDF document will not be imported into current PDF document.
+ *          Currently, if either current PDF document or the source PDF document contains XFA,
+ *          not support to do the importing.
  *
- * @param[in]	dstIndex		A page index in current PDF document. This is used to specify where the imported pages will be inserted.
- *								If parameter <i>dstIndex</i> is less than 0, the imported pages will be inserted to the first. <br>
- *								If parameter <i>dstIndex</i> is equal to or larger than current page count, the imported pages will be inserted to the end.
- * @param[in]	flags			Options for importing pages.
- *								Please refer to {@link FS_IMPORTFLAGS::e_importFlagNormal FS_IMPORTFLAGS::e_importFlagXXX} and this can be one or a combination of them.
- * @param[in]	layerName		The name of non-selectable label or the prefix name of the non-selectable label to be shown in layer panel of application, in UTF-8 encoding.
- *								If parameter <i>flags</i> contains {@link FS_IMPORTFLAGS::e_importFlagWithLayers}, this should not be empty and should be a valid string.
- *								If parameter <i>flags</i> does not contain {@link FS_IMPORTFLAGS::e_importFlagWithLayers}, this string will be ignored.
- *								<ul>
- *								<li>If all the pages of source PDF document is to be imported to current document, all layers from source document will be grouped under a non-selectable label,
- *									and this string will be directly used as the label. </li>
- *								<li>If only part of pages of source PDF document is to be imported to current document, layers in the same page will be grouped under a single non-selectable label,
- *									and this string will be used as the prefix name of the label. The label will be like "layerName_Page_X". </li>
- *								</ul>
- * @param[in]	srcDoc			A ::FSPDFDoc object that represents the source PDF document, whose pages will be imported to current PDF document.
- *								Please keep this source document valid until current document will not be saved any more.
- * @param[in]	pageRanges		An integer array which contains the page ranges of source PDF document, to be imported.<br>
- *								In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count.<br>
- *								If this parameter is set to <b>nil</b>, all pages in the source document will be imported.
- *								If this parameter is not <b>nil</b>, it should contains at least 2 numbers, and the count of elements should be a multiples of 2.
- * @param[in]	count			The count of elements in parameter <i>pageRanges</i>.
- *								If parameter <i>pageRanges</i> is not <b>nil</b>, this value should be above 0 and be an even number.
- *								If parameter <i>pageRanges</i> is <b>nil</b>, this value will be ignored.
- * @param[in]	pause			Pause object which decides if the importing process needs to be paused.
- *								This can be <b>nil</b> which means not to pause during the parsing process.
- *								If this is not <b>nil</b>, it should be a valid pause object implemented by user.
+ * @param[in] dest_index   A page index in current PDF document.
+ *                         This is used to specify where the imported pages will be inserted.
+ *                         If parameter <i>dest_index</i> is less than 0,
+ *                         the imported pages will be inserted to the first. <br>
+ *                         If parameter <i>dest_index</i> is equal to or larger than current page count,
+ *                         the imported pages will be inserted to the end.
+ * @param[in] flags        Options for importing pages.
+ *                         It could be {@link FSImportFlags::e_importFlagNormal FSImportFlags::e_importFlagNormal}
+ *                         or {@link FSImportFlags::e_importFlagWithLayers FSImportFlags::e_importFlagWithLayers}.
+ *                         {@link FSImportFlags::e_importFlagShareStream FSImportFlags::e_importFlagShareStream}
+ *                         would not take any effect.
+ * @param[in] layer_name   The name of non-selectable label or the prefix name of the non-selectable label
+ *                         to be shown in layer panel of application, in UTF-8 encoding.
+ *                         If parameter <i>flags</i> contains
+ *                         {@link FSImportFlags::e_importFlagWithLayers FSImportFlags::e_importFlagWithLayers},
+ *                         this should not be empty and should be a valid string.
+ *                         If parameter <i>flags</i> does not contain
+ *                         {@link FSImportFlags::e_importFlagWithLayers FSImportFlags::e_importFlagWithLayers},
+ *                         this string will be ignored.
+ *                         <ul>
+ *                         <li>If all the pages of source PDF document is to be imported to current document,
+ *                             all layers from source document will be grouped under a non-selectable label,
+ *                             and this string will be directly used as the label. </li>
+ *                         <li>If only part of pages of source PDF document is to be imported to current document,
+ *                             layers in the same page will be grouped under a single non-selectable label,
+ *                             and this string will be used as the prefix name of the label.
+ *                             The label will be like "layerName_Page_X". </li>
+ *                         </ul>
+ * @param[in] src_doc      A FSPDFDoc object that represents the source PDF document,
+ *                         whose pages will be imported to current PDF document.
+ *                         Please keep this source document valid until current document will not be saved any more.
+ * @param[in] page_ranges  An integer array which specifies the page ranges
+ *                         to be imported from source PDF document.<br>
+ *                         In this array, 2 numbers are a pair: the first integer is the starting page index,
+ *                         and the second integer is the page count.<br>
+ *                         If this parameter is set to <b>NULL</b>,
+ *                         all pages in the source document will be imported.
+ *                         If this parameter is not <b>NULL</b>, it should contains at least 2 numbers,
+ *                         and the count of elements should be a multiples of 2.
+ * @param[in] count        The count of elements in parameter <i>page_ranges</i>.
+ *                         If parameter <i>page_ranges</i> is not <b>NULL</b>,
+ *                         this value should be above 0 and be a multiples of 2.
+ *                         If parameter <i>page_ranges</i> is <b>NULL</b>, this value will be ignored.
+ * @param[in] pause        Pause callback object which decides if the importing process needs to be paused.
+ *                         This can be <b>NULL</b> which means not to pause during the parsing process.
+ *                         If this is not <b>NULL</b>, it should be a valid pause object impled by user.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the importing process is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the importing process is not finished yet and function FSPDFDoc::continueImportPages() should be called to continue the process.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ * @details If the function {@link FSProgressive::GetRateOfProgress} return value is between 0 and 100,
+ *         means the import pages process is not finished yet,
+ *         and function {@link FSProgressive::Continue}
+ *         should be called to continue the process.
+ *         FSProgressive object should be deleted by user when progressive progress is finish<br>
  *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  */
--(enum FS_PROGRESSSTATE)startImportPages: (int)dstIndex flags: (unsigned int)flags layerName: (NSString *)layerName srcDoc: (FSPDFDoc *)srcDoc pageRanges: (int *)pageRanges count: (int)count pause: (FSPauseCallback*)pause;
+-(FSProgressive* _Nullable)startImportPages: (int)dstIndex flags: (unsigned int)flags layerName: (NSString *)layerName srcDoc: (FSPDFDoc *)srcDoc pageRanges: (int *)pageRanges count: (int)count pause: (FSPauseCallback* _Nullable)pause;
 
-/**
- * @brief	Continue to import pages if the importing process has not been finished yet.
- *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the importing process is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the importing process is not finished yet and function FSPDFDoc::continueImportPages() should be called to continue the process.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
- *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
- */
--(enum FS_PROGRESSSTATE)continueImportPages;
 
 /**
  * @brief	Get PDF file version stored in PDF header section.
@@ -1101,12 +800,17 @@ enum FS_IMPORTFLAGS {
  */
 -(int)getFileVersion;
 /**
- * @brief	Specify the PDF file version which will be stored in PDF header section of the saved PDF file.
+ * @brief Specify the PDF file version which will be stored in PDF header section of the saved PDF file.
  *
- * @details This function does not check whether the PDF matches the specified version.
+ * @details The new file version will not affect on current document directly,
+ *          but will be used in the saved PDF file in function {@link FSPDFDoc::saveAs}
+ *          This function does not check whether the PDF matches the specified version.
  *
- * @param[in]	version		An integer specify the file version, such as 14 for 1.4, 15 for 1.5, and etc. Its value should be between 10 and 17,
- *							If this is out of range, then it would be reset as the closest version (10 or 17).
+ * @param[in] version  An integer specify the file version, such as 14 for 1.4, 15 for 1.5, and etc.
+ *                     Its value should be from 10 to 17 or 20 and be equal or greater than current version.
+ *
+ * @exception For more information about exception values,
+ *                     please refer to {@link FSErrorCode::e_errFile FSErrorCode::e_errXXX}.
  *
  * @return None.
  */
@@ -1146,13 +850,13 @@ enum FS_IMPORTFLAGS {
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_PAGEPARSEFLAG {
+typedef NS_OPTIONS(NSUInteger, FSPageParseFlag) {
     /** @brief	PDF page parsing flag for normal mode. */
-    e_parsePageNormal = 0x0000,
+    e_parsePageNormal = 0,
     /** @brief	PDF page parsing flag for text-only mode. */
-    e_parsePageTextOnly = 0x0001,
+    e_parsePageTextOnly = 1 << 0,
     /** @brief	Parse the text content of PDF page with outputting the hyphen on a line feed.*/
-    e_parseTextOutputHyphen = 0x0002
+    e_parseTextOutputHyphen = 1 << 1
 };
 
 /**
@@ -1160,7 +864,7 @@ enum FS_PAGEPARSEFLAG {
  *
  * @details	Values of this enumeration can be used alone.
  */
-enum FS_CALCMARGINMODE {
+typedef NS_ENUM(NSUInteger, FSCalcMarginMode) {
     /** @brief	Calculate margin according to bounding box of all contents. */
     e_calcContentsBox = 0,
     /** @brief	Calculate margin by detecting paths or images. */
@@ -1191,7 +895,9 @@ enum FS_CALCMARGINMODE {
     /** @brief SWIG proxy related property, it's deprecated to use it. */
     BOOL swigCMemOwn;
 }
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
 /**
  * @brief   Get the position of first graphics object in graphics object list, based on type filter.
@@ -1199,8 +905,8 @@ enum FS_CALCMARGINMODE {
  * @details After getting a position in the graphics object list, then user can call function {@link FSPDFGraphicsObjects::getGraphicsObject:} to get the graphics object with this position.
  *
  * @param[in]   filter      Type filter that specifies which kind of graphics object is to be gotten.
- *                          Please refer to {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeAll FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeXXX} values and it should be one of these values.
- *                          {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeAll} means for all kinds of graphics objects.
+ *                          Please refer to {@link FSGraphicsObjectType::e_graphicsObjTypeAll FSGraphicsObjectType::e_graphicsObjTypeXXX} values and it should be one of these values.
+ *                          {@link FSGraphicsObjectType::e_graphicsObjTypeAll} means for all kinds of graphics objects.
  *
  * @return  A pointer that represents the position of first graphics object in graphics object list.
  *          <b>nil</b> means there is no graphics object.
@@ -1208,15 +914,15 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(void*)getFirstGraphicsObjectPosition: (enum FS_GRAPHICSOBJECTTYPE)filter;
+-(void*)getFirstGraphicsObjectPosition: (FSGraphicsObjectType)filter;
 /**
  * @brief   Get the position of last graphics object in graphics object list, based on type filter.
  *
  * @details After getting a position in the graphics object list, then user can call function {@link FSPDFGraphicsObjects::getGraphicsObject:} to get the graphics object with this position.
  *
  * @param[in]   filter      Type filter that specifies which kind of graphics object is to be gotten.
- *                          Please refer to {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeAll FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeXXX} values and it should be one of these values.
- *                          {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeAll} means for all kinds of graphics objects.
+ *                          Please refer to {@link FSGraphicsObjectType::e_graphicsObjTypeAll FSGraphicsObjectType::e_graphicsObjTypeXXX} values and it should be one of these values.
+ *                          {@link FSGraphicsObjectType::e_graphicsObjTypeAll} means for all kinds of graphics objects.
  *
  * @return  A pointer that represents the position of last graphics object in graphics object list.
  *          <b>nil</b> means there is no graphics object.
@@ -1224,15 +930,15 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(void*)getLastGraphicsObjectPosition: (enum FS_GRAPHICSOBJECTTYPE)filter;
+-(void*)getLastGraphicsObjectPosition: (FSGraphicsObjectType)filter;
 /**
  * @brief   Get the position of next graphics object in graphics object list, based on type filter and specified current position.
  *
  * @details After getting a position in the graphics object list, then user can call function {@link FSPDFGraphicsObjects::getGraphicsObject:} to get the graphics object with this position.
  *
  * @param[in]   filter      Type filter that specifies which kind of graphics object is to be gotten.
- *                          Please refer to {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeAll FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeXXX} values and it should be one of these values.
- *                          {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeAll} means for all kinds of graphics objects.
+ *                          Please refer to {@link FSGraphicsObjectType::e_graphicsObjTypeAll FSGraphicsObjectType::e_graphicsObjTypeXXX} values and it should be one of these values.
+ *                          {@link FSGraphicsObjectType::e_graphicsObjTypeAll} means for all kinds of graphics objects.
  * @param[in]   pos         A pointer that indicates a position in the graphics object list, whose next position is to be gotten. It should not be <b>nil</b>
  *
  * @return  A pointer that represents the position of next graphics object in graphics object list.
@@ -1241,15 +947,15 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(void*)getNextGraphicsObjectPosition: (enum FS_GRAPHICSOBJECTTYPE)filter pos: (void*)pos;
+-(void*)getNextGraphicsObjectPosition: (FSGraphicsObjectType)filter pos: (void*)pos;
 /**
  * @brief   Get the position of previous graphics object in graphics object list, based on type filter and specified current position.
  *
  * @details After getting a position in the graphics object list, then user can call function {@link FSPDFGraphicsObjects::getGraphicsObject:} to get the graphics object with this position.
  *
  * @param[in]   filter      Type filter that specifies which kind of graphics object is to be gotten.
- *                          Please refer to {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeAll FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeXXX} values and it should be one of these values.
- *                          {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeAll} means for all kinds of graphics objects.
+ *                          Please refer to {@link FSGraphicsObjectType::e_graphicsObjTypeAll FSGraphicsObjectType::e_graphicsObjTypeXXX} values and it should be one of these values.
+ *                          {@link FSGraphicsObjectType::e_graphicsObjTypeAll} means for all kinds of graphics objects.
  * @param[in]   pos         A pointer that indicates a position in the graphics object list, whose previous position is to be gotten. It should not be <b>nil</b>
  *
  * @return  A pointer that represents the position of previous graphics object in graphics object list.
@@ -1258,7 +964,7 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(void*)getPrevGraphicsObjectPosition: (enum FS_GRAPHICSOBJECTTYPE)filter pos: (void*)pos;
+-(void*)getPrevGraphicsObjectPosition: (FSGraphicsObjectType)filter pos: (void*)pos;
 /**
  * @brief   Get the graphics object by position in graphics object list.
  *
@@ -1373,31 +1079,33 @@ enum FS_CALCMARGINMODE {
  */
 -(BOOL)isParsed;
 /**
- * @brief	Start to parse current page.
+ * @brief Start to parse current page.This is progressive, which means that the job may not finished when it return.
  *
- * @param[in]	flag		Parsing flag.
- *							Please refer to {@link FS_PAGEPARSEFLAG::e_parsePageNormal FS_PAGEPARSEFLAG::e_parsePageXXX} values and this should be one or a combination of these values.
- * @param[in]	pause		A pause instance (which is implemented by user) to decide if the parsing process needs to be paused.
- *							This can be <b>nil</b> which means not to pause during the parsing process.
- *							If this is not <b>nil</b>, it should be a valid pause object implemented by user.
- * @param[in]	isReparse	<b>YES</b> means to re-parse current page, while <b>NO</b> means do not re-parse current page.
+ * @param[in] flags        Parsing  flags.
+ *                        Please refer to {@link FSPageParseFlag::e_parsePageNormal FSPageParseFlag::e_parsePageXXX}
+ *                        values and this should be one or a combination of these values.
+ * @param[in] pause       Pause callback object which decides if the parsing process needs to be paused.
+ *                        This can be <b>NULL</b> which means not to pause during the parsing process.
+ *                        If this is not <b>NULL</b>, it should be a valid pause object impled by user.
+ * @param[in] isReparse  <b>true</b> means to re-parse current page,
+ *                        while <b>false</b> means do not re-parse current page.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the paring is finished or the page has already been parsed.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the paring process is not finished yet and function {@link FSPDFPage::continueParse} should be called to continue the process.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ * @return A progressive object:
+ *         <ul>
+ *         <li>If the returned object is not <b>NULL</b>, that means the progress needs to be continued.
+ *             Please call function {@link FSProgressive::Continue} to coninue the progress until it is finished.
+ *             After the progress is finished, user should remember to delete the returned progressive object.
+ *         </li>
+ *         <li>If the returned object is <b>NUL</b>, that means the progress has been finished.</li>
+ *         </ul>
  *
- * @exception	An exception will be thrown on failure.
- *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
+ * @note When parameter <i>isReparse</i> is set to <b>true</b>, that means to re-parse current PDF page,
+ *       and all the retrieved graphics object's position (as FS_POSITION object) and graphics object (as
+ *       FSPDFGraphicsObject object) will be invalid.<br>
+ *       Application needs to get graphics objects again after re-parsing a PDF page.
+ *
  */
--(enum FS_PROGRESSSTATE)startParse: (unsigned int)flag pause: (FSPauseCallback*)pause isReparse: (BOOL)isReparse;
-/**
- * @brief	Continue to parse the page if the parsing process has not been finished yet.
- *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the paring is finished or the page has already been parsed.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the paring process is not finished yet and function {@link FSPDFPage::continueParse} should be called to continue the process.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
- */
--(enum FS_PROGRESSSTATE)continueParse;
+-(FSProgressive * _Nullable)startParse: (FSPageParseFlag)flag pause: (FSPauseCallback* _Nullable)pause isReparse: (BOOL)isReparse;
 /**
  * @brief	Get page index.
  *
@@ -1420,9 +1128,9 @@ enum FS_CALCMARGINMODE {
  * @brief	Get the page rotation.
  *
  * @return	Page rotation value.
- *			Please refer to {@link FS_ROTATION::e_rotation0 FS_ROTATION::e_rotationXXX} values and this would be one of these values.
+ *			Please refer to {@link FSRotation::e_rotation0 FSRotation::e_rotationXXX} values and this would be one of these values.
  */
--(enum FS_ROTATION)getRotation;
+-(FSRotation)getRotation;
 /**
  * @brief	Load the thumbnail bitmap.
  *
@@ -1441,7 +1149,7 @@ enum FS_CALCMARGINMODE {
  * @param[in]	xSize	Width of the transformation area in device coordinate system, commonly in pixels.
  * @param[in]	ySize	Height of the transformation area in device coordinate system, commonly in pixels.
  * @param[in]	rotate	Rotation value.
- *						Please refer to {@link FS_ROTATION::e_rotation0 FS_ROTATION::e_rotationXXX} values and this would be one of these values.
+ *						Please refer to {@link FSRotation::e_rotation0 FSRotation::e_rotationXXX} values and this would be one of these values.
  *
  * @return	Display matrix.
  *			If there is any error, <b>nil</b> will be returned.
@@ -1449,14 +1157,14 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(FSMatrix*)getDisplayMatrix: (int)xPos yPos: (int)yPos xSize: (int)xSize ySize: (int)ySize rotate: (enum FS_ROTATION)rotate;
+-(FSMatrix*)getDisplayMatrix: (int)xPos yPos: (int)yPos xSize: (int)xSize ySize: (int)ySize rotate: (FSRotation)rotate;
 /**
  * @brief	Calculate the content area of PDF page.
  *
  * @param[in]	mode	Calculation mode. It should be one of following values:
  *						<ul>
- *						<li>{@link FS_CALCMARGINMODE::e_calcContentsBox} means calculate margin according to bounding box of all contents.</li>
- * 						<li>{@link FS_CALCMARGINMODE::e_calcDetection} means calculate margin by detecting paths or images.</li>
+ *						<li>{@link FSCalcMarginMode::e_calcContentsBox} means calculate margin according to bounding box of all contents.</li>
+ * 						<li>{@link FSCalcMarginMode::e_calcDetection} means calculate margin by detecting paths or images.</li>
  *						</ul>
  *
  * @return	The minimal rectangle which contains the visible page content.
@@ -1467,7 +1175,7 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(FSRectF*)calcContentBBox: (enum FS_CALCMARGINMODE)mode;
+-(FSRectF*)calcContentBBox: (FSCalcMarginMode)mode;
 /**
  * @brief	Get the count of annotations.
  *
@@ -1504,7 +1212,7 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(FSAnnot*)getAnnotAtPos: (FSPointF*)pos tolerance: (float)tolerance;
+-(FSAnnot* _Nullable)getAnnotAtPos: (FSPointF*)pos tolerance: (float)tolerance;
 /**
  * @brief	Get the annotation at a specific position, in device coordination system.
  *
@@ -1521,7 +1229,7 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(FSAnnot*)getAnnotAtDevicePos:(const FSMatrix*)matrix position: (FSPointF*)pos tolerance: (float)tolerance;
+-(FSAnnot* _Nullable)getAnnotAtDevicePos:(const FSMatrix*)matrix position: (FSPointF*)pos tolerance: (float)tolerance;
 /**
  * @brief	Add an annotation to PDF page.
  *
@@ -1567,7 +1275,7 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(FSAnnot*)addAnnot: (enum FS_ANNOTTYPE)annotType rect: (FSRectF*)rect;
+-(FSAnnot*)addAnnot: (FSAnnotType)annotType rect: (FSRectF*)rect;
 /**
  * @brief	Remove an annotation.
  *
@@ -1596,9 +1304,9 @@ enum FS_CALCMARGINMODE {
  * @param[in]	isDisplay	The flatten flags:
  *							<b>YES</b> means the flatten result is used for display, and <b>NO</b> means the flatten result is used for print.
  * @param[in]	options		The flatten options.
- *							Please refer to {@link FS_FLATTENOPTIONS::e_flattenOptionAll FS_FLATTENOPTIONS::e_flattenOptionXXX} values and it should one
+ *							Please refer to {@link FSFlattenOptions::e_flattenOptionAll FSFlattenOptions::e_flattenOptionXXX} values and it should one
  *                                  or a combination of them.<br>
- *							Specially, if {@link FS_FLATTENOPTIONS::e_flattenOptionNoAnnot} and {@link FS_FLATTENOPTIONS::e_flattenOptionNoFormControl}
+ *							Specially, if {@link FSFlattenOptions::e_flattenOptionNoAnnot} and {@link FSFlattenOptions::e_flattenOptionNoFormControl}
  *                                  are used together,
  *							that means nothing is to be flatten to page and this function will return <b>YES</b> directly.
  *
@@ -1607,7 +1315,7 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(BOOL)flatten:(BOOL)isDisplay options:(unsigned int)options;
+-(BOOL)flatten:(BOOL)isDisplay options:(FSFlattenOptions)options;
 /**
  * @brief	Group all the input markup annotations together.
  *
@@ -1647,19 +1355,34 @@ enum FS_CALCMARGINMODE {
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
 -(FSSignature*)addSignature: (FSRectF*)rect;
-
+/**
+ * @brief Check whether the current page has any watermark, not including Foxit PDF SDK trial watermark.
+ *
+ * @details Before using this function, please ensure current page has been parsed.
+ *
+ * @return <b>true</b> means the current page has watermark, and <b>false</b> means the current page has no watermark.
+ */
+-(BOOL)hasWatermark;
+/**
+ * @brief Remove all watermarks.
+ *
+ * @details Before using this function, please ensure current page has been parsed.
+ *
+ * @return <b>true</b> means success, while <b>false</b> means failure.
+ */
+-(BOOL)removeAllWatermarks;
 /**
  * @brief	Set page rotation.
  *
  * @param[in]	rotate	New page rotation value.
- *						Please refer to {@link FS_ROTATION::e_rotation0 FS_ROTATION::e_rotationXXX} values and this should be one of these values.
+ *						Please refer to {@link FSRotation::e_rotation0 FSRotation::e_rotationXXX} values and this should be one of these values.
  *
  * @return	None.
  *
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(void)setRotation: (enum FS_ROTATION)rotate;
+-(void)setRotation: (FSRotation)rotate;
 /**
  * @brief	Set page width and height.
  *
@@ -1680,7 +1403,7 @@ enum FS_CALCMARGINMODE {
  * @brief	Set page box.
  *
  * @param[in]	boxType		Page box type.
- *							Please refer to {@link FS_PAGEBOX::e_pageMediaBox FS_PAGEBOX::e_pageXXXBox} values and it should be one of these values.
+ *							Please refer to {@link FSPageBoxType::e_pageMediaBox FSPageBoxType::e_pageXXXBox} values and it should be one of these values.
  * @param[in]	box			New box rectangle, in PDF coordinate system.
  *
  * @return	None.
@@ -1688,7 +1411,21 @@ enum FS_CALCMARGINMODE {
  * @exception	An exception will be thrown on failure.
  *				For more information about exception values, please refere to FS_ERRCODE::e_errXXX.
  */
--(void)setBox: (enum FS_PAGEBOX)boxType box: (FSRectF*)box;
+-(void)setBox: (FSPageBoxType)boxType box: (FSRectF*)box;
+/**
+ * @brief Get page box.
+ *
+ * @param[in] box_type  Page  box type.
+ *                      Please refer to {@link FSPageBoxType::e_pageMediaBox FSPageBoxType::e_pageXXXBox}
+ *                      values and it should be one of these values.
+ *
+ * @return A box rectangle, in PDF coordinate system.
+ *
+ * @exception For more information about exception values,
+ *                     please refer to {@link FSErrorCode::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(FSRectF*)GetBox:(FSPageBoxType)box_type;
+
 /**
  * @brief	Transform a PDF page, including the annotations and form fields on the page.
  *
@@ -1768,14 +1505,13 @@ enum FS_CALCMARGINMODE {
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_BOOKMARKSTYLE
-{
+typedef NS_OPTIONS(NSUInteger, FSBookmarkStyle){
     /** @brief	 Show bookmark title as normal text. */
-    e_bookmarkStyleNormal = 0x00,
+    e_bookmarkStyleNormal = 0,
     /** @brief	 Show bookmark title as italic text. */
-    e_bookmarkStyleItalic = 0x01,
+    e_bookmarkStyleItalic = 1,
     /** @brief	 Show bookmark title as bold text. */
-    e_bookmarkStyleBold = 0x02
+    e_bookmarkStyleBold = 1 << 1
 };
 /**
  * @brief	Enumeration for bookmark position.
@@ -1783,20 +1519,19 @@ enum FS_BOOKMARKSTYLE
  * @details	Values of this enumeration should be used alone.<br>
  *			Actually, "bookmark position" means the relationship between current bookmark and another bookmark.
  */
-enum FS_BOOKMARKPOSITION
-{
+typedef NS_ENUM(NSUInteger, FSBookmarkPosition){
     /** @brief	 Position as first child. */
     e_bookmarkPosFirstChild	= 0,
     /** @brief	 Position as last child. */
-    e_bookmarkPosLastChild = 1,
+    e_bookmarkPosLastChild,
     /** @brief	Position as previous sibling. */
-    e_bookmarkPosPrevSibling = 2,
+    e_bookmarkPosPrevSibling,
     /** @brief	Position as next sibling. */
-    e_bookmarkPosNextSibling = 3,
+    e_bookmarkPosNextSibling,
     /** @brief	Position as first sibling. */
-    e_bookmarkPosFirstSibling = 4,
+    e_bookmarkPosFirstSibling,
     /** @brief	Position as last sibling. */
-    e_bookmarkPosLastSibling = 5
+    e_bookmarkPosLastSibling
 };
 /**
  * @brief	Class to access a PDF bookmark.
@@ -1837,46 +1572,57 @@ enum FS_BOOKMARKPOSITION
  *
  * @return	The parent bookmark instance.
  */
--(FSBookmark*)getParent;
+-(FSBookmark* _Nullable)getParent;
 /**
  * @brief	Get the first child bookmark.
  *
  * @return	The first child bookmark instance.
  */
--(FSBookmark*)getFirstChild;
+-(FSBookmark* _Nullable)getFirstChild;
 /**
  * @brief	Get the next sibling bookmark.
  *
  * @return	The next sibling bookmark instance.
  */
--(FSBookmark*)getNextSibling;
+-(FSBookmark* _Nullable)getNextSibling;
 /**
  * @brief	Insert a new bookmark according to the position.
  *
- * @details	For the new bookmark, the color be 0xFF000000 and the style would be {@link FS_BOOKMARKSTYLE::e_bookmarkStyleNormal} by default.<br>
+ * @details	For the new bookmark, the color be 0xFF000000 and the style would be {@link FSBookmarkStyle::e_bookmarkStyleNormal} by default.<br>
  *
  * @param[in]	title	Title string for the new bookmark. It should be UTF-8 encoding.
  * @param[in]	pos		The position where the new bookmark item is to be inserted, based on current bookmark.
- *						Please refer to {@link FS_BOOKMARKPOSITION::e_bookmarkPosFirstChild FS_BOOKMARKPOSITION::e_bookmarkPosXXX} values and it would be one of these values.<br>
- *						If current bookmark is just the "root bookmark", parameter <i>pos</i> can only be {@link FS_BOOKMARKPOSITION::e_bookmarkPosFirstChild} or {@link FS_BOOKMARKPOSITION::e_bookmarkPosLastChild}.
+ *						Please refer to {@link FSBookmarkPosition::e_bookmarkPosFirstChild FSBookmarkPosition::e_bookmarkPosXXX} values and it would be one of these values.<br>
+ *						If current bookmark is just the "root bookmark", parameter <i>pos</i> can only be {@link FSBookmarkPosition::e_bookmarkPosFirstChild} or {@link FSBookmarkPosition::e_bookmarkPosLastChild}.
  *
  * @return	A new bookmark object.
  *			If there is any error, this function will return <b>nil</b>.
  */
--(FSBookmark*)insert: (NSString*)title  pos: (enum FS_BOOKMARKPOSITION)pos;
+-(FSBookmark*)insert: (NSString*)title  pos: (FSBookmarkPosition)pos;
+
+
 /**
- * @brief	Move current bookmark to be child or sibling of another bookmark.
+ * @brief Move current bookmark to be child or sibling of another bookmark.
  *
- * @details	The root bookmark cannot be moved to be child or sibling of any bookmark in the bookmark tree.
+ * @details If current bookmark is returned by function {@link FSPDFDoc::GetFirstBookmark}
+ *          or {@link FSPDFDoc::CreateFirstBookmark}, that means it is the "root bookmark",
+ *          and it cannot be moved to be child or sibling of any bookmark in the bookmark tree.
+ *          In this case, this function will return <b>false</b> directly.
  *
- * @param[in]	destBookmark	The destination bookmark. It should not be current bookmark itself or any descendant of current bookmark.<br>
- *								Current bookmark will be moved to be child or sibling of the destination bookmark.
- * @param[in]	pos				The position where the current bookmark is to be moved to, based on parameter <i>destBookmark</i>.
- *								Please refer to {@link FS_BOOKMARKPOSITION::e_bookmarkPosFirstChild FS_BOOKMARKPOSITION::e_bookmarkPosXXX} values and it would be one of these values.
+ * @param[in] dest_bookmark  The destination bookmark. It should not be current bookmark itself or
+ *                           any descendant of current bookmark.<br>
+ *                           Current bookmark will be moved to be child or sibling of the destination bookmark.
+ * @param[in] position       The position where the current bookmark is to be moved to,
+ *                           based on parameter <i>destBookmark</i>. Please refer to
+ *                           {@link foxit::e_bookmarkPosFirstChild FSBookmarkPosition::e_bookmarkPosXXX}
+ *                           values and it would be one of these values.
  *
- * @return	<b>YES</b> means success, while <b>NO</b> means failure.
+ * @return <b>true</b> means success, while <b>false</b> means failure.
+ *
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
  */
--(BOOL)moveTo: (FSBookmark*)destBookmark  pos: (enum FS_BOOKMARKPOSITION)pos;
+-(BOOL)moveTo: (FSBookmark*)destBookmark  pos: (FSBookmarkPosition)pos;
 /**
  * @brief	Get the destination of the bookmark.
  *
@@ -1923,16 +1669,16 @@ enum FS_BOOKMARKPOSITION
  * @brief	Get bookmark style.
  *
  * @return	The bookmark style values.
- *			This would be one or a combination of {@link FS_BOOKMARKSTYLE::e_bookmarkStyleNormal FS_BOOKMARKSTYLE::e_bookmarkStyleXXX} values.
+ *			This would be one or a combination of {@link FSBookmarkStyle::e_bookmarkStyleNormal FSBookmarkStyle::e_bookmarkStyleXXX} values.
  */
--(unsigned int)getStyle;
+-(FSBookmarkStyle)getStyle;
 /**
  * @brief	Set bookmark style.
  *
- * @param[in]	style	The style of the bookmark. This can be one or a combination of {@link FS_BOOKMARKSTYLE::e_bookmarkStyleNormal FS_BOOKMARKSTYLE::e_bookmarkStyleXXX} values.
- *						If the <i>style</i> is invalid, {@link FS_BOOKMARKSTYLE::e_bookmarkStyleNormal} will be set instead.
+ * @param[in]	style	The style of the bookmark. This can be one or a combination of {@link FSBookmarkStyle::e_bookmarkStyleNormal FSBookmarkStyle::e_bookmarkStyleXXX} values.
+ *						If the <i>style</i> is invalid, {@link FSBookmarkStyle::e_bookmarkStyleNormal} will be set instead.
  */
--(void)setStyle: (unsigned int)style;
+-(void)setStyle: (FSBookmarkStyle)style;
 
 /** @brief Free the object. */
 -(void)dealloc;
@@ -2058,13 +1804,13 @@ enum FS_BOOKMARKPOSITION
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_NAMETREETYPE {
+typedef NS_ENUM(NSUInteger, FSNameTreeType) {
     /** @brief	"Dests" name tree. */ 
     e_nameTreeDests = 1,
     /** @brief	"JavaScript" name tree. */
-    e_nameTreeJavaScript = 2,
+    e_nameTreeJavaScript,
     /** @brief	"EmbeddedFiles" name tree. */
-    e_nameTreeEmbeddedFiles = 3
+    e_nameTreeEmbeddedFiles
 };
 
 /**
@@ -2081,13 +1827,13 @@ enum FS_NAMETREETYPE {
  *			and set/add/remove any key-value pair.
  *			Currently, class {@link FSPDFNameTree} can support to access to following name trees:
  *			<ul>
- *			<li>Destinations name tree (with type {@link FS_NAMETREETYPE::e_nameTreeDests}), which maps name strings to destinations.
+ *			<li>Destinations name tree (with type {@link FSNameTreeType::e_nameTreeDests}), which maps name strings to destinations.
  *				Values in this name tree should be a destination array (or a reference object to destination array).
  *			</li>
- *			<li>JavaScript name tree (with type {@link FS_NAMETREETYPE::e_nameTreeJavaScript}), which maps name strings to document-level JavaScript actions.
+ *			<li>JavaScript name tree (with type {@link FSNameTreeType::e_nameTreeJavaScript}), which maps name strings to document-level JavaScript actions.
  *				Values in this name tree should be a javascript action dictionary (or a reference object to javascript action dictionary).
  *			</li>
- *			<li>EmbeddedFiles name tree, with type {@link FS_NAMETREETYPE::e_nameTreeEmbeddedFiles}, which maps name strings to file specifications for embedded file streams.
+ *			<li>EmbeddedFiles name tree, with type {@link FSNameTreeType::e_nameTreeEmbeddedFiles}, which maps name strings to file specifications for embedded file streams.
  *				Values in this name tree should be a file specification dictionary (or a reference object to file specification dictionary), which contains an embedded file stream.
  *			</li>
  *			</ul>
@@ -2103,6 +1849,8 @@ enum FS_NAMETREETYPE {
 -(void*)getCptr;
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+
+-(id)init NS_UNAVAILABLE;
 /**
  * @brief	Create a {@link FSPDFNameTree} object to access to a specified type name tree in the PDF document.
  *
@@ -2110,11 +1858,11 @@ enum FS_NAMETREETYPE {
  *
  * @param[in]	pdfDoc		A FSPDFDoc object, it should be valid.
  * @param[in]	type		The type of the name tree.
- *							Please refer to {@link FS_NAMETREETYPE::e_nameTreeDests FS_NAMETREETYPE::e_nameTreeXXX} values and it should be one of these values.
+ *							Please refer to {@link FSNameTreeType::e_nameTreeDests FSNameTreeType::e_nameTreeXXX} values and it should be one of these values.
  *
  * @return	A {@link FSPDFNameTree} object.
  */
-+(FSPDFNameTree*)create: (FSPDFDoc*)pdfDoc type: (enum FS_NAMETREETYPE)type;
+- (FSPDFNameTree *)initWithPDFDoc:(FSPDFDoc *)pdfDoc type:(FSNameTreeType)type;
 /**
  * @brief	Check if the specified name exists in current name tree.
  *
@@ -2217,10 +1965,411 @@ enum FS_NAMETREETYPE {
  */
 -(BOOL)removeAllObjs;
 /**@brief Default initialization. */
--(id)init;
+
 /** @brief Free the object. */
 -(void)dealloc;
 
 @end
 
+/**
+ * @brief Class to represent information of a page labeling range.
+ *
+ * @see PDF Reference 1.7 Section 8.3.1 Page Labels
+ */
+@interface FSPDFPageLabels : NSObject
+{
+    /** @brief SWIG proxy related property, it's deprecated to use it. */
+    void *swigCPtr;
+    /** @brief SWIG proxy related property, it's deprecated to use it. */
+    BOOL swigCMemOwn;
+}
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/**
+ * @brief Construct from a PDF document object.
+ *
+ * @details If there exists page labeling range information information in the specified PDF document,
+ *          this function is just to construct a FSPDFPageLabels object to be associated with these information.
+ *          If there is no such information in the specified PDF document, the constructed FSPDFPageLabels object
+ *          can be used to set page labeling range information to PDF document.
+ *
+ * @param[in] document  A PDF document object. It should be valid and should not be <b>NULL</b>.
+ */
+-(id)initWithDocument: (FSPDFDoc*)document;
+/**
+ * @brief Get the full page label title for a page specified by page index.
+ *
+ * @details This function can help to get the full page label title of a specified page index directly, and
+ *          user does not need to take care about which page labeling range this page belongs to.
+ *
+ * @param[in] page_index  A page index. Valid range: from 0 to (<i>count</i>-1).
+ *                        <i>count</i> is the page count of related PDF document,
+ *                        which is returned by function {@link FSPDFDoc::getPageCount}.
+ *
+ * @return The page label full title string, in UTF-8 encoding.
+ *
+ * @exception For more information about exception values,
+ *                     please refer to {@link FSErrorCode::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(NSString*)getPageLabelTitle: (int)page_index;
 
+/**
+ * @brief Check if there is a page labeling range starting from the specified page index.
+ *
+ * @details Each page labeling range has its own numbering format.
+ *          The numbering format is defined with the start page of the page labeling range.
+ *
+ * @param[in] page_index  A page index. Valid range: from 0 to (<i>count</i>-1).
+ *                        <i>count</i> is the page count of related PDF document,
+ *                        which is returned by function {@link FSPDFDoc::getPageCount}.
+ *
+ * @return <b>true</b> means there exists format information of a page labeling range with input page index,
+ *         while <b>false</b> means there is no such format information with input page index.
+ *
+ * @exception For more information about exception values,
+ *                     please refer to {@link FSErrorCode::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(BOOL)hasPageLabel: (int)page_index;
+
+/**
+ * @brief Get the numbering style to be used for the numeric portion in a page labeling range
+ *        starting from the specified page index.
+ *
+ * @details This function is only useful when input page index is the start page of a page labeling range.
+ *          Function {@link FSPDFPageLabels::HasPageLabel}(with same page index) can be used to check this.
+ *          If input page index is not the start page of any page labeling range, this function will return -1.
+ *
+ * @param[in] page_index  The page index which specifies the start page of a page labeling range.
+ *                        Valid range: from 0 to (<i>count</i>-1).
+ *                        <i>count</i> is the page count of related PDF document,
+ *                        which is returned by function {@link FSPDFDoc::getPageCount}.
+ *
+ * @return The the numbering style. Please refer to
+ *         {@link FSPageLabelStyle::e_pageLabelStyleNone FSPageLabelStyle::e_pageLabelStyleXXX}
+ *         and it would be one of these values.<br>
+ *         -1 means input page index is not the start page of any page labeling range.
+ *
+ * @exception For more information about exception values,
+ *                     please refer to {@link FSErrorCode::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(FSPageLabelStyle)getPageLabelStyle: (int)page_index;
+/**
+ * @brief Get the label prefix string for page labels in a page labeling range
+ *        starting from the specified page index.
+ *
+ * @details This function is only useful when input page index is the start page of a page labeling range.
+ *          Function {@link FSPDFPageLabels::HasPageLabel}(with same page index) can be used to check this.
+ *          If input page index is not the start page of any page labeling range, this function will
+ *          return empty string.
+ *
+ * @param[in] page_index  The page index which specifies the start page of a page labeling range.
+ *                        Valid range: from 0 to (<i>count</i>-1).
+ *                        <i>count</i> is the page count of related PDF document,
+ *                        which is returned by function {@link FSPDFDoc::getPageCount}.
+ *
+ * @return The label prefix string, in UTF-8 encoding.
+ *         Empty string means no prefix string is used or input page index is not the start page of
+ *         any page labeling range.<br>
+ *         Function {@link FSPDFPageLabels::HasPageLabel} can be used to check if there is a page labeling range
+ *         starting from the specified page index.
+ *
+ * @exception For more information about exception values,
+ *                     please refer to {@link FSErrorCode::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(NSString*)getPageLabelPrefix: (int)page_index;
+/**
+ * @brief Get the value of the numeric portion for the first page label in a page labeling range
+ *        starting from the specified page index.
+ *
+ * @details Subsequent pages are numbered sequentially from this value, which must be greater than or equal to 1.
+ *
+ * @param[in] page_index  The page index which specifies the start page of a page labeling range.
+ *                        Valid range: from 0 to (<i>count</i>-1).
+ *                        <i>count</i> is the page count of related PDF document,
+ *                        which is returned by function {@link FSPDFDoc::getPageCount}.
+ *
+ * @return The value of the numeric portion for the first page label in specific labeling range,
+ *         which would be greater than or equal to 1.
+ *         -1 means no first label number is defined or no format information of page labeling range is
+ *         associated with input page index. Function {@link FSPDFPageLabels::HasFormatInfo} can be used to check
+ *         if there exists such format information with input page index.
+ *
+ * @exception For more information about exception values,
+ *                     please refer to {@link FSErrorCode::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(int)getFirstLabelNumber: (int)page_index;
+
+/**
+ * @brief Set a page label (as numbering format) with a page index which is used to be the start page
+ *        in the range.
+ *
+ * @details <ul>
+ *          <li>If no page labeling range starts from input page index, this function will set input page index as
+ *              the start page of a new page labeling range and use input values as the numbering format of
+ *              this new range. Pages following the specified page will be in the same labeling range,
+ *              until the next page labeling range appears.</li>
+ *          <li>If there exists a page labeling range starting from input page index,
+ *              this function will replace the old numbering format with input values.</li>
+ *          </ul>
+ *
+ * @param[in] page_index          A page index as the start page of the page labeling range.
+ *                                Valid range: from 0 to (<i>count</i>-1).
+ *                                <i>count</i> is the page count of related PDF document,
+ *                                which is returned by function {@link FSPDFDoc::getPageCount}.
+ * @param[in] label_style         The the numbering style to be used for the numeric portion
+ *                                in the page labeling range. Please refer to
+ *                                {@link FSPageLabelStyle::e_pageLabelStyleNone FSPageLabelStyle::e_pageLabelStyleXXX}
+ *                                and it should be one of these values.
+ * @param[in] prefix_string       The label prefix string for page labels in the labeling range,
+ *                                in UTF-8 encoding. This can be NULL or empty, which means not use prefix string.
+ * @param[in] first_label_number  The value of the numeric portion for the first page label
+ *                                in the page labeling range. It should be greater than or equal to 1.
+ *                                If the input value is invalid, Foxit PDF SDK will use 1 by default.
+ *
+ * @return None.
+ *
+ * @exception For more information about exception values,
+ *                     please refer to {@link FSErrorCode::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(void)setPageLabel: (int)page_index label_style: (FSPageLabelStyle)label_style prefix_string: (NSString *)prefix_string first_label_number: (int)first_label_number;
+
+/**
+ * @brief Remove a page label associated with a specified page index.
+ *
+ * @details After the specified page label is removed, the specified labeling range will be merged with
+ *          the previous page label sequence.
+ *
+ * @param[in] page_index  The page index which specifies the start page of a page labeling range.
+ *                        Valid range: from 0 to (<i>count</i>-1).
+ *                        <i>count</i> is the page count of related PDF document,
+ *                        which is returned by function {@link FSPDFDoc::getPageCount}.
+ *
+ * @return None.
+ *
+ * @exception For more information about exception values,
+ *                     please refer to {@link FSErrorCode::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(void)removePageLabel: (int)page_index;
+
+/**
+ * @brief Remove all page labeling ranges.
+ *
+ * @return None.
+ *
+ * @exception For more information about exception values,
+ *                     please refer to {@link FSErrorCode::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(void)removeAll;
+
+-(void)dealloc;
+
+@end
+
+/**
+ * @brief Enumeration for metadata key type.
+ *
+ * @details Values of this enumeration should be used alone.
+ */
+typedef NS_ENUM(NSUInteger, FSMetadataKeyType) {
+    /**
+     * @brief Standard metadata keys, including traditional standard keys ("Info" dictionary and XML) and
+     *        Foxit standard keys.
+     */
+    e_metadataKeyTypeStandard = 0x01,
+    /** @brief Custom metadata keys. */
+    e_metadataKeyTypeCustom = 0x02
+};
+
+/**
+ * In PDF document, metadata information is stored in document's Info dictionary or in metadata stream (represented
+ * in Extensible Markup Language, known as XML). When a key exists in both Info dictionary and metadata stream,
+ * the latest modified one will be used.<br>
+ * This class is constructed from PDF document object and is used to get or set metadata information
+ * from both document's Info dictionary and metadata stream.
+ */
+@interface FSPDFMetadata : NSObject
+{
+    /** @brief SWIG proxy related property, it's deprecated to use it. */
+    void *swigCPtr;
+    /** @brief SWIG proxy related property, it's deprecated to use it. */
+    BOOL swigCMemOwn;
+}
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/**
+ * @brief Construct from a PDF document object.
+ *
+ * @details If there exists metadata information information in the specified PDF document,
+ *          this function is just to construct a FSPDFMetadata object to be associated with these information.
+ *          If there is no such information in the specified PDF document, the constructed FSPDFMetadata object
+ *          can be used to set metadata information to PDF document.
+ *
+ * @param[in] document  A PDF document object. It should be valid and should not be <b>NULL</b>.
+ */
+-(id)initWithDocument: (FSPDFDoc*)document;
+/**
+ * @brief Check whether current document has a specified metadata key or not.
+ *
+ * @param[in] key  The metadata key to be confirmed. It should be in UTF-8 encoding.
+ *
+ * @return <b>true</b> means current document has the specified metadata key,
+ *         while <b>false</b> means current document does not have the specified metadata key.
+ */
+-(BOOL)hasKey: (NSString *)key;
+/**
+ * @brief Get creation date time.
+ *
+ * @return The creation date time.
+ *         Return nil if not found.
+ */
+-(FSDateTime * _Nullable)getCreationDateTime;
+/**
+ * @brief Get modified date time.
+ *
+ * @return The modified date time.
+ *         Return nil if not found.
+ */
+-(FSDateTime * _Nullable)getModifiedDateTime;
+/**
+ * @brief Set creation date time.
+ *
+ * @param[in] date_time  New creation date time. Please refer to comment of class FSDateTime to check
+ *                       the valid range for each member.
+ *
+ * @return None.
+ */
+-(void)setCreationDateTime: (FSDateTime*)date_time;
+/**
+ * @brief Set modified date time.
+ *
+ * @param[in] date_time  New modified date time. Please refer to comment of class FSDateTime to check
+ *                       the valid range for each member.
+ *
+ * @return None.
+ */
+-(void)setModifiedDateTime: (FSDateTime*)date_time;
+/**
+ * @brief Get metadata value.
+ *
+ * @details For a metadata key, it can contain single or multiple values.
+ *          This function is used to get the whole values for a metadata key.<br>
+ *          For some metadata keys such as "Author" and "Keywords", they can contain single or multiple values.
+ *          If user wants to get the values one by one, please use function
+ *          {@link FSPDFMetadata::GetValueCount} and {@link FSPDFMetadata::GetValueByIndex}.
+ *
+ * @param[in] key  Metadata key string, in UTF-8 encoding. It should not be <b>NULL</b> or empty.
+ *                 Currently it can be one of the following keys:<br>
+ *                 "Title", "Author", "Subject", "Keywords", "Creator", "Producer", "Trapped",
+ *                 "CreationDate", "ModDate", "pdfaid".<br>
+ *                 Some other custom information keys, if they're supported by the PDF file.<br>
+ *                 For "CreationDate" and "ModDate", user is recommended to use functions
+ *                 {@link FSPDFMetadata::GetCreationDateTime} and {@link FSPDFMetadata::GetModifiedDateTime} to
+ *                 get the date information.
+ *
+ * @return Metadata value string, in UTF-8 string.
+ */
+-(NSString * _Nullable)getValue: (NSString *)key;
+/**
+ * @brief Get the count of metadata value.
+ *
+ * @details For some metadata keys, such as "Author" and "Keywords", they can contain single or multiple values.
+ *          This function is used to get the count of values,
+ *          and then function {@link FSPDFMetadata::GetValueByIndex} can be used to get one of these values.<br>
+ *          If user just wants to get the whole values, please use function {@link FSPDFMetadata::GetValue}.
+ *
+ * @param[in] key  Metadata key string, in UTF-8 encoding. It should not be <b>NULL</b> or empty.
+ *                 Currently it can be one of the following keys:<br>
+ *                 "Title", "Author", "Subject", "Keywords", "Creator", "Producer", "Trapped",
+ *                 "CreationDate", "ModDate", "pdfaid".<br>
+ *                 Some other custom information keys, if they're supported by the PDF file.<br>
+ *                 For "CreationDate" and "ModDate", user is recommended to use functions
+ *                 {@link FSPDFMetadata::GetCreationDateTime} and {@link FSPDFMetadata::GetModifiedDateTime} to
+ *                 get the date information.
+ *
+ * @return The count of metadata value.
+ */
+-(int)getValueCount: (NSString *)key;
+/**
+ * @brief Get metadata value by index.
+ *
+ * @details For some metadata keys, such as "Author" and "Keywords", they can contain single or multiple values.
+ *          This function is used to get one of these values.<br>
+ *          If user just wants to get the whole values, please use function {@link FSPDFMetadata::GetValue}.
+ *
+ * @param[in] key    Metadata key string, in UTF-8 encoding. It should not be <b>NULL</b> or empty.
+ *                   Currently it can be one of the following keys:<br>
+ *                   "Title", "Author", "Subject", "Keywords", "Creator", "Producer", "Trapped",
+ *                   "CreationDate", "ModDate", "pdfaid".<br>
+ *                   Some other custom information keys, if they're supported by the PDF file.<br>
+ *                   For "CreationDate" and "ModDate", user is recommended to use functions
+ *                   {@link FSPDFMetadata::GetCreationDateTime} and {@link FSPDFMetadata::GetModifiedDateTime} to
+ *                   get the date information.
+ * @param[in] index  The index of metadata value.Valid range: from 0 to (<i>count</i>-1).
+ *                   <i>count</i> is returned by function {@link FSPDFMetadata::GetValueCount}.
+ *
+ * @return Metadata value string, in UTF-8 string.
+ */
+-(NSString*)getValueByIndex: (NSString *)key index: (int)index;
+/**
+ * @brief Set the array of metadata values.
+ *
+ * @details This function is used to set single or multiple values to a specified metadata key:
+ *          <ul>
+ *          <li>For metadata keys "Author" and "Keywords", they can contain single or multiple values.</li>
+ *          <li>For metadata key "pdfaid" which means the PDFA file version, the length of its value string is
+ *              always 2, such as "2a", "1a" and so on. So, only the first two characters of the first element
+ *              in parameter <i>valueArray</i> will be used.</li>
+ *          <li>For rest pre-defined keys, they do not support multiple values. So all the elements in
+ *              parameter <i>valueArray</i> will be put into one string and connected by ";".
+ *              Then this string will be treated as one value.</li>
+ *          </ul>
+ *
+ * @param[in] key          Metadata key string, in UTF-8 encoding. It should not be <b>NULL</b> or empty.
+ *                         Currently it can be one of the following keys:<br>
+ *                         "Title", "Author", "Subject", "Keywords", "Creator", "Producer", "Trapped",
+ *                         "CreationDate", "ModDate", "pdfaid".<br>
+ *                         Some other custom information keys, if they're supported by the PDF file.<br>
+ *                         For "CreationDate" and "ModDate", user is recommended to use functions
+ *                         {@link FSPDFMetadata::SetCreationDateTime} and {@link FSPDFMetadata::SetModifiedDateTime}
+ *                         to set the date information.
+ * @param[in] value_array  The array of metadata value string, in UTF-8 string. It should not be <b>NULL</b>.
+ * @param[in] count        The count of elements in parameter <i>value_array</i>.
+ *
+ * @return None.
+ */
+-(void)setValues: (NSString *)key value_array:(NSArray<NSString*>*)value_array;
+/**
+ * @brief Get keys from metadata (both Info dictionary and metadata stream) according to specified type.
+ *
+ * @details In Info dictionary and metadata stream, they have some standard keys which have same feature
+ *          but different name. For this case, Foxit PDF SDK will use the standard key names in Info dictionary.
+ *
+ * @param[in] key_type  Key type to specify which kind of keys will be retrieved. Please refer to
+ *                      {@link FSMetadataKeyType::e_metadataKeyTypeStandard FSMetadataKeyType::e_metadataKeyTypeXXX}
+ *                      values and this should be one or a combination of these values.
+ *
+ * @return An array of key strings. Each string in this list would be in UTF-8 encoding.
+ */
+-(NSArray<NSString *> * _Nullable)getKeys: (FSMetadataKeyType)key_type;
+/**
+ * @brief Remove a specified key (with related value).
+ *
+ * @param[in] key  Metadata key string, in UTF-8 encoding. It should not be <b>NULL</b> or empty.
+ *                 Currently it can be one of the following keys:<br>
+ *                 "Title", "Author", "Subject", "Keywords", "Creator", "Producer", "Trapped",
+ *                 "CreationDate", "ModDate", "pdfaid".<br>
+ *                 Some other custom information keys, if they're supported by the PDF file.<br>
+ *
+ * @return None.
+ */
+-(void)removeKey: (NSString *)key;
+
+-(void)dealloc;
+
+@end
+
+NS_ASSUME_NONNULL_END

@@ -15,25 +15,23 @@
 #import "UIExtensionsManager+Private.h"
 #import <FoxitRDK/FSPDFViewControl.h>
 
-typedef void(^NoteEditDone)(void);
-typedef void(^NoteEditCancel)(void);
-typedef void(^NoteEditDelete)(void);
+@class NoteDialog;
+
+typedef void (^NoteEditDone)(NoteDialog *);
+typedef void (^NoteEditCancel)(NoteDialog *);
+typedef void (^NoteEditDelete)(NoteDialog *);
 
 /**@brief A note annotation dialog when being new added. */
-@interface NoteDialog : UIViewController<UINavigationControllerDelegate, UITextViewDelegate>
-{
+@interface NoteDialog : UIViewController <UINavigationControllerDelegate, UITextViewDelegate> {
     CGRect _oldRect;
     NSTimer *_caretVisibilityTimer;
 }
 
-@property (nonatomic, copy)NoteEditDone noteEditDone;
-@property (nonatomic, copy)NoteEditCancel noteEditCancel;
-@property (nonatomic, copy)NoteEditDelete noteEditDelete;
+@property (nonatomic, copy) NoteEditDone noteEditDone;
+@property (nonatomic, copy) NoteEditCancel noteEditCancel;
+@property (nonatomic, copy) NoteEditDelete noteEditDelete;
 
-+ (void)setViewCtrl:(FSPDFViewCtrl*)pdfViewCtrl;
-+ (NoteDialog*)defaultNoteDialog;
-
-- (void)show:(FSAnnot*)rootAnnot replyAnnots:(NSArray*)replyAnnots;
+- (void)show:(FSAnnot *)rootAnnot replyAnnots:(NSArray *)replyAnnots title:(NSString *)title;
 - (void)dismiss;
-- (NSString*)getContent;
+- (NSString *)getContent;
 @end

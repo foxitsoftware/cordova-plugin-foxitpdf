@@ -10,10 +10,10 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import "Const.h"
 #import "UniversalEditViewController.h"
-#import "ColorUtility.h"
 #import "AlertView.h"
+#import "ColorUtility.h"
+#import "Const.h"
 #import "UINavigationItem+IOS7PaddingAdditions.h"
 
 @interface UniversalEditViewController ()
@@ -37,8 +37,7 @@
 @synthesize editingDoneHandler = _editingDoneHandler;
 @synthesize editingCancelHandler = _editingCancelHandler;
 
-- (id)initWithStyle:(UITableViewStyle)style
-{
+- (id)initWithStyle:(UITableViewStyle)style {
     self = [super initWithStyle:style];
     if (self) {
         // Custom initialization
@@ -46,11 +45,9 @@
     return self;
 }
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
-    if (APPLICATION_ISFULLSCREEN)
-    {
+    if (APPLICATION_ISFULLSCREEN) {
         [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
     }
     [self initNavigationBar];
@@ -59,39 +56,31 @@
     self.textField.delegate = self;
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
- 
+
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
 
-- (void)viewWillAppear:(BOOL)animated
-{
-    if (_autoIntoEditing)
-    {
-        if (_editStyle == UNIVERSAL_EDIT_STYLE_SINGLE)
-        {
+- (void)viewWillAppear:(BOOL)animated {
+    if (_autoIntoEditing) {
+        if (_editStyle == UNIVERSAL_EDIT_STYLE_SINGLE) {
             [_textField becomeFirstResponder];
-        }
-        else
-        {
+        } else {
             [_textView becomeFirstResponder];
         }
     }
     self.navigationController.navigationBar.tag = 1;
-    if ([self.navigationController.navigationBar respondsToSelector:@selector(titleTextAttributes)])
-    {
-        self.navigationController.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys: [UIColor whiteColor], NSForegroundColorAttributeName, nil];
+    if ([self.navigationController.navigationBar respondsToSelector:@selector(titleTextAttributes)]) {
+        self.navigationController.navigationBar.titleTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[UIColor whiteColor], NSForegroundColorAttributeName, nil];
     }
-    if (OS_ISVERSION7)
-    {
+    if (OS_ISVERSION7) {
         self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
         self.navigationController.navigationBar.translucent = YES;
     }
     self.navigationController.navigationBar.barTintColor = [UIColor colorWithRGBHex:0x179cd8];
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
     self.textField = nil;
     self.textView = nil;
     self.cellSingle = nil;
@@ -103,62 +92,49 @@
     self.editingCancelHandler = nil;
 }
 
-- (void)viewDidUnload
-{
+- (void)viewDidUnload {
     [super viewDidUnload];
     self.textField = nil;
     self.textView = nil;
     self.cellSingle = nil;
-    self.cellMutliple = nil;  
+    self.cellMutliple = nil;
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     return YES; //(interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
 #pragma mark - Table view data source
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return 1;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (_editStyle == UNIVERSAL_EDIT_STYLE_SINGLE)
-    {
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (_editStyle == UNIVERSAL_EDIT_STYLE_SINGLE) {
         return 44;
-    }
-    else
-    {
+    } else {
         return 95;
     }
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section
-{
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
     return _footTipText;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = nil;
-    if (_editStyle == UNIVERSAL_EDIT_STYLE_SINGLE)
-    {
+    if (_editStyle == UNIVERSAL_EDIT_STYLE_SINGLE) {
         cell = _cellSingle;
         _textField.text = _textContent;
         _textField.placeholder = _placeholderText;
-    }
-    else
-    {
+    } else {
         cell = _cellMutliple;
         _textView.text = _textContent;
     }
@@ -167,10 +143,8 @@
     return cell;
 }
 
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
-{
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
     if ([string isEqualToString:@"/"]) {
-        
         return YES;
     }
     return YES;
@@ -178,8 +152,7 @@
 
 #pragma mark - Table view delegate
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     // Navigation logic may go here. Create and push another view controller.
     /*
      DetailViewController *detailViewController = [[DetailViewController alloc] initWithNibName:@"Nib name" bundle:nil];
@@ -190,105 +163,85 @@
 }
 
 #pragma mark - properties
-- (void)setEditStyle:(UNIVERSAL_EDIT_STYLE)editStyle
-{
-    if (_editStyle == editStyle)
-    {
+- (void)setEditStyle:(UNIVERSAL_EDIT_STYLE)editStyle {
+    if (_editStyle == editStyle) {
         return;
     }
     _editStyle = editStyle;
     [self.tableView reloadData];
 }
 
-- (void)setTextContent:(NSString *)textContent
-{
-    if ([_textContent isEqualToString:textContent])
-    {
+- (void)setTextContent:(NSString *)textContent {
+    if ([_textContent isEqualToString:textContent]) {
         return;
     }
-        _textContent = textContent;
+    _textContent = textContent;
     [self.tableView reloadData];
 }
 
-- (void)setPlaceholderText:(NSString *)placeholderText
-{
-    if ([_placeholderText isEqualToString:placeholderText])
-    {
+- (void)setPlaceholderText:(NSString *)placeholderText {
+    if ([_placeholderText isEqualToString:placeholderText]) {
         return;
     }
-        _placeholderText = placeholderText;
+    _placeholderText = placeholderText;
     [self.tableView reloadData];
 }
 
-- (void)setFootTipText:(NSString *)footTipText
-{
-    if ([_footTipText isEqualToString:footTipText])
-    {
+- (void)setFootTipText:(NSString *)footTipText {
+    if ([_footTipText isEqualToString:footTipText]) {
         return;
     }
-        _footTipText = footTipText;
+    _footTipText = footTipText;
     [self.tableView reloadData];
 }
 
 #pragma mark - UITextView delegate
 
-- (void)textViewDidChange:(UITextView *)textView
-{
-        _textContent = textView.text;
+- (void)textViewDidChange:(UITextView *)textView {
+    _textContent = textView.text;
 }
 
 #pragma mark - UITextField event
 
-- (IBAction)editingChanged:(UITextField *)sender
-{
-        _textContent = sender.text;
+- (IBAction)editingChanged:(UITextField *)sender {
+    _textContent = sender.text;
 }
 
 #pragma mark - event handler
-- (void)doneAction:(id)sender
-{
-    if (_textContent == nil || _textContent.length == 0)
-    {
-        AlertView *alertView = [[AlertView alloc] initWithTitle:NSLocalizedStringFromTable(@"kWarning", @"FoxitLocalizable", nil) message:NSLocalizedStringFromTable(@"kIllegalNameWarning", @"FoxitLocalizable", nil) buttonClickHandler:nil cancelButtonTitle:nil otherButtonTitles:@"kOK", nil];
+- (void)doneAction:(id)sender {
+    if (_textContent == nil || _textContent.length == 0) {
+        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning" message:@"kIllegalNameWarning" buttonClickHandler:nil cancelButtonTitle:nil otherButtonTitles:@"kOK", nil];
         [alertView show];
         return;
-    }
-    else if ([_textContent rangeOfString:@"/"].location != NSNotFound)
-    {
-        AlertView *alertView = [[AlertView alloc] initWithTitle:NSLocalizedStringFromTable(@"kWarning", @"FoxitLocalizable", nil) message:NSLocalizedStringFromTable(@"kIllegalNameWarning", @"FoxitLocalizable", nil) buttonClickHandler:nil cancelButtonTitle:@"kOK" otherButtonTitles:nil];
+    } else if ([_textContent rangeOfString:@"/"].location != NSNotFound) {
+        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning" message:@"kIllegalNameWarning" buttonClickHandler:nil cancelButtonTitle:@"kOK" otherButtonTitles:nil];
         [alertView show];
         return;
     }
     //Avi - in Case of foldername starting from . show error
     else if ([_textContent stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length != 0 && [[[_textContent stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] substringWithRange:NSMakeRange(0, 1)] isEqualToString:@"."]) {
-        
-        AlertView *alertView = [[AlertView alloc] initWithTitle:NSLocalizedStringFromTable(@"kWarning", @"FoxitLocalizable", nil) message:NSLocalizedStringFromTable(@"kIllegalNameWarning", @"FoxitLocalizable", nil) buttonClickHandler:nil cancelButtonTitle:@"kOK" otherButtonTitles:nil];
+        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning" message:@"kIllegalNameWarning" buttonClickHandler:nil cancelButtonTitle:@"kOK" otherButtonTitles:nil];
         [alertView show];
         return;
-        
     }
 
-    if (_editingDoneHandler)
-    {
+    if (_editingDoneHandler) {
         _editingDoneHandler(_textContent);
     }
 }
 
-- (void)cancelAction:(id)sender
-{
-    if (_editingCancelHandler)
-    {
+- (void)cancelAction:(id)sender {
+    if (_editingCancelHandler) {
         _editingCancelHandler();
     }
 }
 
 #pragma mark - private methods
 
-- (void)initNavigationBar
-{
+- (void)initNavigationBar {
     UIButton *buttonCancel = [UIButton buttonWithType:UIButtonTypeCustom];
     buttonCancel.frame = CGRectMake(0.0, 0.0, 55.0, 32);
-    [buttonCancel setTitle:NSLocalizedStringFromTable(@"kCancel", @"FoxitLocalizable", nil) forState:UIControlStateNormal];
+    [buttonCancel setTitle:FSLocalizedString(@"kCancel") forState:UIControlStateNormal];
     buttonCancel.titleLabel.font = [UIFont boldSystemFontOfSize:15.0f];
     [buttonCancel setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
     [buttonCancel addTarget:self action:@selector(cancelAction:) forControlEvents:UIControlEventTouchUpInside];
@@ -296,7 +249,7 @@
 
     UIButton *buttonDone = [UIButton buttonWithType:UIButtonTypeCustom];
     buttonDone.frame = CGRectMake(0.0, 0.0, 55.0, 32);
-    [buttonDone setTitle:NSLocalizedStringFromTable(@"kDone", @"FoxitLocalizable", nil) forState:UIControlStateNormal];
+    [buttonDone setTitle:FSLocalizedString(@"kDone") forState:UIControlStateNormal];
     buttonDone.titleLabel.font = [UIFont boldSystemFontOfSize:15.0f];
     [buttonDone setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
     [buttonDone addTarget:self action:@selector(doneAction:) forControlEvents:UIControlEventTouchUpInside];

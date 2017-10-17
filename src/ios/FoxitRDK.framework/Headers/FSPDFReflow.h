@@ -13,23 +13,25 @@
  * @brief	This file contains definitions of object-c APIs for Foxit PDF SDK.
  */
 #import "FSCommon.h"
+
+NS_ASSUME_NONNULL_BEGIN
 /**
  * @brief	Enumeration for reflow Parser Flags.
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_REFLOWFLAGS{
+typedef NS_OPTIONS(NSUInteger, FSReflowFlags) {
     /** @brief	Reflow parsing flag for normal mode, without image. */
-    e_reflowNormal = 0x0,
+    e_reflowNormal = 0,
     /** @brief	Reflow parsing flag for image mode. */
-    e_reflowWithImage = 0x1,
+    e_reflowWithImage = 1 << 0,
     /** @brief	Reflow parsing flag for single screen mode.
      *  The flag can avoid that truncate problem the bottom of screen displaying the upper part of last text or image in single screen mode.
      *	The truncate problem is related to the height by calling {@link FSReflowPage::startParse:} and
      *	if it is not set this flag, the screen could display the upper part of text in the last line or image.
      *	It can improve the effect when reading single screen mode, however, the scroll screen mode would be affected.
      */
-    e_reflowNoTruncate = 0x2
+    e_reflowNoTruncate = 1 << 1
 };
 
 /**
@@ -86,7 +88,7 @@ enum FS_REFLOWFLAGS{
  *            If there is any error, this function will return <b>nil</b>.
  *
  */
-+(FSReflowPage*)create: (FSPDFPage*)pdfPage;
+- (FSReflowPage *)initWithPDFPage:(FSPDFPage *)pdfPage;
 
 /**
  * @brief	Set screen size before calling function {@link FSReflowPage::startParse:}. This is required.
@@ -113,12 +115,12 @@ enum FS_REFLOWFLAGS{
 /**
  * @brief	Set the Parsing flag before calling function {@link FSReflowPage::startParse:}.
  *
- * @param[in]	flags		Reflow parsing mode. It should be one of the following enumeration definitions. Default value: {@link FS_REFLOWFLAGS::e_reflowNormal}.
- *							Please refer to {@link FS_REFLOWFLAGS::e_reflowNormal FS_REFLOWFLAGS::e_reflowXXXX} values and this should be one or a combination of these values.
+ * @param[in]	flags		Reflow parsing mode. It should be one of the following enumeration definitions. Default value: {@link FSReflowFlags::e_reflowNormal}.
+ *							Please refer to {@link FSReflowFlags::e_reflowNormal FSReflowFlags::e_reflowXXXX} values and this should be one or a combination of these values.
  *
  * @return None.
  */
--(void)setParseFlags: (unsigned int)flags;
+-(void)setParseFlags: (FSReflowFlags)flags;
 
 /**
  * @brief	Set line space before calling function {@link FSReflowPage::startParse:}.
@@ -138,31 +140,20 @@ enum FS_REFLOWFLAGS{
 -(void)setTopSpace: (float)topSpace;
 
 /**
- * @brief	Start parsing process for a reflow page.
+ * @brief Start parsing process.This is progressive, which means that the job may not finished when it return.
  *
- * @details	It may take a long time to parsing a reflow page, so Foxit PDF SDK uses a progressive process to do this.<br>
- *			All the resources about reflow page will be loaded after the reflow page is parsed.<br>
- *			And this function should be called before any getting reflow method can be used.
+ * @details It may take a long time to parsing a reflow page,
+ *          so Foxit PDF SDK uses a progressive process to do this.
+ *          All the resources about reflow page will be loaded after the reflow page is parsed. <br>
+ *          This function should be called before any getting function of current reflow page object can be used.
  *
- * @param[in]	pause	Pause object which decides if the parsing process needs to be paused.
- *						This can be <b>nil</b> which means not to pause during the parsing process.
- *						If this is not <b>nil</b>, it should be a valid pause object implemented by user.
+ * @param[in] pause  Pause callback object which decides if the parsing process needs to be paused.
+ *                   This can be <b>NULL</b> which means not to pause during the parsing process.
+ *                   If this is not <b>NULL</b>, it should be a valid pause object implemented by user.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the paring is finished successfully or the page has already been parsed.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the paring process is not finished yet.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
- *
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  */
--(enum FS_PROGRESSSTATE)startParse: (FSPauseCallback*)pause;
-
-/**
- * @brief	Continue to parse a reflow page if the parsing process has not been finished yet.
- *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the paring is finished successfully or the reflow page has already been parsed.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the paring process is not finished yet and function FSPDFPage::continueParse() should be called to continue the process.
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
- */
--(enum FS_PROGRESSSTATE)continueParse;
+-(FSProgressive * _Nullable)startParse: (FSPauseCallback* _Nullable)pause;
 
 /**
  * @brief	Get width of a reflow page after calling function {@link FSReflowPage::startParse:}.
@@ -233,3 +224,6 @@ enum FS_REFLOWFLAGS{
 -(void)dealloc;
 
 @end
+
+NS_ASSUME_NONNULL_END
+

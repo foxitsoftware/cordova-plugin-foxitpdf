@@ -10,22 +10,19 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <UIKit/UIKit.h>
-#import <FoxitRDK/FSPDFViewControl.h>
 #import "../Panel/PanelController.h"
 #import "ReadingBookmarkListCell.h"
+#import <FoxitRDK/FSPDFViewControl.h>
+#import <UIKit/UIKit.h>
 @class FileDetailViewController;
 
 typedef void (^ReadingBookmarkGotoPageHandler)(int page);
 typedef void (^ReadingBookmarkSelectionHandler)();
 typedef void (^ReadingBookmarkDeleteHandler)();
 
-
-
-@interface ReadingBookmarkViewController : UITableViewController<IPanelChangedListener>
-{
+@interface ReadingBookmarkViewController : UITableViewController <IPanelChangedListener> {
     FSReadingBookmark *selectBookmark;
-    FSPDFViewCtrl* _pdfViewCtrl;
+    FSPDFViewCtrl *_pdfViewCtrl;
 }
 
 @property (nonatomic, copy) ReadingBookmarkGotoPageHandler bookmarkGotoPageHandler;
@@ -39,9 +36,9 @@ typedef void (^ReadingBookmarkDeleteHandler)();
 @property (nonatomic, assign) BOOL isShowMore;
 @property (nonatomic, strong) NSIndexPath *moreIndexPath;
 @property (nonatomic, strong) NSObject *currentVC;
-@property (nonatomic, strong) PanelController* panelController;
+@property (nonatomic, strong) FSPanelController *panelController;
 
-- (id)initWithStyle:(UITableViewStyle)style pdfViewCtrl:(FSPDFViewCtrl*)pdfViewCtrl panelController:(PanelController*)panelController;
+- (id)initWithStyle:(UITableViewStyle)style pdfViewCtrl:(FSPDFViewCtrl *)pdfViewCtrl panelController:(FSPanelController *)panelController;
 - (void)loadData;
 - (void)clearData:(BOOL)fromPDF;
 - (NSUInteger)getBookmarkCount;
@@ -52,5 +49,6 @@ typedef void (^ReadingBookmarkDeleteHandler)();
 - (void)renameBookmarkWithIndex:(NSInteger)index;
 - (void)deleteBookmarkWithIndex:(NSInteger)index;
 
+- (void)hideCellEditView;
 
 @end

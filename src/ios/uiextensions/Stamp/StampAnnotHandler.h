@@ -10,12 +10,11 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
 #import "UIExtensionsManager+Private.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-@interface StampAnnotHandler : NSObject<IAnnotHandler,IRotationEventListener,IGestureEventListener, IScrollViewEventListener, IPropertyBarListener>
-{
+@interface StampAnnotHandler : NSObject <IAnnotHandler, IRotationEventListener, IGestureEventListener, IScrollViewEventListener, IPropertyBarListener> {
     EDIT_ANNOT_RECT_TYPE _editType;
     float _minWidth;
     float _minHeight;
@@ -25,6 +24,6 @@
 @property (nonatomic, strong) UIImage *annotImage;
 @property (nonatomic, strong) UIViewController *replyVC;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

@@ -20,6 +20,7 @@
 extern "C" {
 #endif
 #import <UIKit/UIGestureRecognizer.h>
+#import <UIKit/UIKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 @class FSAnnotIconProviderCallback;
 @class FSPDFDoc;
@@ -37,7 +38,7 @@ extern "C" {
 @class FSFormControl;
 @class FSFormFiller;
 @class FSDateTime;
-@class FSFileReadCallback;
+@protocol FSFileReadCallback;
 @class FSSignature;
 @class FSSignatureCallback;
 @class FSReflowPage;
@@ -46,6 +47,8 @@ extern "C" {
 @class FSPDFGraphicsObjects;
 @class FSSecurityCallback;
 @class FSAnnot;
+    
+NS_ASSUME_NONNULL_BEGIN
     
 /**
  * @name	Macro Definitions for Annotation Icon Name
@@ -101,17 +104,17 @@ extern "C" {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_ROTATION {
+typedef NS_ENUM(NSUInteger, FSRotation) {
     /** @brief	No rotation. */
     e_rotation0 = 0,
     /** @brief	Rotate 90 degrees in clockwise direction. */
-    e_rotation90 = 1,
+    e_rotation90,
     /** @brief	Rotate 180 degrees in clockwise direction. */
-    e_rotation180 = 2,
+    e_rotation180,
     /** @brief	Rotate 270 degrees in clockwise direction. */
-    e_rotation270 = 3,
+    e_rotation270,
     /** @brief	Unknown rotation. */
-    e_rotationUnknown = 4
+    e_rotationUnknown
 };
 
 /**
@@ -119,13 +122,13 @@ enum FS_ROTATION {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_PROGRESSSTATE {
+typedef NS_ENUM(NSUInteger, FSProgressState) {
     /** @brief	Progress state: any error occurs. */
     e_progressError = 0,
     /** @brief	Progress state: progress needs to be continued. */
-    e_progressToBeContinued = 1,
+    e_progressToBeContinued,
     /** @brief	Progress state: progress is finished. */
-    e_progressFinished = 2
+    e_progressFinished
 };
 
 /**
@@ -133,7 +136,7 @@ enum FS_PROGRESSSTATE {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_DIBFORMAT {
+typedef NS_ENUM(NSUInteger, FSDIBFormat) {
     /** @brief	Invalid DIB format. */
     e_dibInvalid = 0,
     /** @brief	DIB format: 24bpp format, with bits order "Blue, Green, Red". Blue is in the lowest order. */
@@ -144,6 +147,8 @@ enum FS_DIBFORMAT {
     e_dibArgb = 0x220,
     /** @brief	DIB format: 8bpp alpha mask. */
     e_dib8bppMask = 0x108,
+    /** @brief DIB format: 8bpp format, 256 color RGB bitmap. */
+    e_dib8bpp = 0x008
 };
 
 /**
@@ -151,13 +156,13 @@ enum FS_DIBFORMAT {
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_BITMAPINTERPOLATIONFLAG {
-    /** @brief  When set, do not do halftone for shrinking or rotating. */\
-    e_interpolationDownsample= 0x01,
-    /** @brief  When set, do interpolation for stretching or transforming. */\
-    e_interpolationQuadratic= 0x02,
-    /** @brief  When set, do bicubic interpolation for stretching or transforming. */\
-    e_interpolationBicubic= 0x04
+typedef NS_OPTIONS(NSUInteger, FSBitmapInterpolationFlag) {
+    /** @brief  When set, do not do halftone for shrinking or rotating. */
+    e_interpolationDownsample = 1 << 0,
+    /** @brief  When set, do interpolation for stretching or transforming. */
+    e_interpolationQuadratic  = 1 << 1,
+    /** @brief  When set, do bicubic interpolation for stretching or transforming. */
+    e_interpolationBicubic    = 1 << 2
 };
 
 /**
@@ -165,36 +170,57 @@ enum FS_BITMAPINTERPOLATIONFLAG {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_ERRORCODE {
+typedef NS_ENUM(NSUInteger, FSErrorCode) {
     /** @brief	Success, and no error occurs. */
     e_errSuccess = 0,
     /** @brief	File error: file cannot be found or could not be opened. */
-    e_errFile = 1,
+    e_errFile,
     /** @brief	Format error: format is invalid. For files, this may also mean that file is corrupted. */
-    e_errFormat = 2,
+    e_errFormat,
     /**
      * @brief	Password error: invalid password.
      *
      * @details	Usually, this error may occur when loading a PDF document with password.
      *			When meet this, user should call function {@link FSPDFDoc::load:} again, with correct password.
      */
-    e_errPassword = 3,
+    e_errPassword,
     /** @brief	Handler is invalid. */
-    e_errHandler = 4,
+    e_errHandler,
     /** @brief	Certificate error: PDF document is encrypted by digital certificate and current user does not have the correct certificate. */
-    e_errCertificate = 5,
+    e_errCertificate,
     /** @brief	Unknown error: any unknown error occurs. */
-    e_errUnknown = 6,
+    e_errUnknown,
     /** @brief	License error: invalid license is used to initialize Foxit PDF SDK library. */
-    e_errInvalidLicense = 7,
+    e_errInvalidLicense,
     /** @brief	Parameter error: value of any input parameter for a function is invalid. */
-    e_errParam = 8,
+    e_errParam,
     /** @brief	Unsupported error: some types are not supported.*/
-    e_errUnsupported = 9,
+    e_errUnsupported,
     /** @brief	Memory error: out-of-memory error occurs.*/
-    e_errOutOfMemory = 10,
+    e_errOutOfMemory,
     /** @brief	Security handler error: PDF document is encrypted by some unsupported security handler. */
-    e_errSecurityHandler = 11
+    e_errSecurityHandler,
+    /**
+     * @brief Not parsed error: content has not been parsed yet.
+     *        Usually, this represents PDF page has not been parsed yet.
+     */
+    e_errNotParsed,
+    /** @brief Data cannot be found. */
+    e_errNotFound,
+    /** @brief Invalid object type. */
+    e_errInvalidType,
+    /** @brief Data or values conflict. */
+    e_errConflict,
+    /** @brief Unknown state. */
+    e_errUnknownState,
+    /**
+     * @brief Data is not ready.
+     *
+     * @note Usually this is used as an exception error code when loading document in asynchronous way.
+     */
+    e_errDataNotReady,
+    /** @brief Data of current object is invalid. */
+    e_errInvalidData
 };
 
 /**
@@ -202,19 +228,19 @@ enum FS_ERRORCODE {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_DISPLAYMODE {
+typedef NS_ENUM(NSUInteger, FSDisplayMode) {
     /** @brief	When document is opened, neither document outlines nor thumbnail images are visible. */
     e_displayUseNone = 0,
     /** @brief	When document is opened, document outlines (bookmarks) are visible. */
-    e_displayUseOutlines = 1,
+    e_displayUseOutlines,
     /** @brief	When document is opened, thumbnail images are visible. */
-    e_displayUseThumbs = 2,
+    e_displayUseThumbs,
     /** @brief	When document is opened, full-screen mode, with no menu bar, window controls, or any other windows are visible. */
-    e_displayFullScreen = 3,
+    e_displayFullScreen,
     /** @brief	When document is opened, optional content group panels are visible. */
-    e_displayUseOC = 4,
+    e_displayUseOC,
     /** @brief	When document is opened, attachment panels are visible. */
-    e_displayUseAttachment = 5
+    e_displayUseAttachment
 };
 
 /**
@@ -222,7 +248,7 @@ enum FS_DISPLAYMODE {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_ZOOMMODE {
+typedef NS_ENUM(NSUInteger, FSZoomMode) {
     /**
      * @brief	Display page with a specific position and a specific zoom factor.
      *
@@ -239,21 +265,21 @@ enum FS_ZOOMMODE {
      *			If the required horizontal and vertical magnification factors are different,
      *			use the smaller of the two, centering the page within the window in the other dimension.
      */
-    e_zoomFitPage = 2,
+    e_zoomFitPage,
     /**
      * @brief	Fit the entire width of the page within the display area when display the page.
      *
      * @details	If this is used, that means the contents of the page should be magnified
      *			just enough to fit the entire width of the page within the display area.
      */
-    e_zoomFitHorz = 3,
+    e_zoomFitHorz,
     /**
      * @brief	Fit the entire height of the page within the display area when display the page.
      *
      * @details	If this is used, that means the contents of the page should be magnified
      *			just enough to fit the entire height of the page within the display area.
      */
-    e_zoomFitVert = 4,
+    e_zoomFitVert,
     /**
      * @brief	Fit the page content in a specific rectangle entirely within the display area when display the page.
      *
@@ -262,7 +288,7 @@ enum FS_ZOOMMODE {
      *			If the required horizontal and vertical magnification factors are different,
      *			use the smaller of the two, centering the rectangle within the display area in the other dimension.
      */
-    e_zoomFitRect = 5,
+    e_zoomFitRect,
     /**
      * @brief	Fit the bounding box of page entirely within the display area when display the page.
      *
@@ -271,21 +297,21 @@ enum FS_ZOOMMODE {
      *			If the required horizontal and vertical magnification factors are different,
      *			use the smaller of the two, centering the bounding box within the display area in the other dimension.
      */
-    e_zoomFitBBox = 6,
+    e_zoomFitBBox,
     /**
      * @brief	Fit the entire width of the page's bounding box within the display area when display the page.
      *
      * @details	If this is used, that means the contents of the page should be magnified
      *			just enough to fit the entire width of the page's bounding box within the display area.
      */
-    e_zoomFitBHorz = 7,
+    e_zoomFitBHorz,
     /**
      * @brief	Fit the entire height of the page's bounding box within the display area when display the page.
      *
      * @details	If this is used, that means the contents of the page should be magnified
      *			just enough to fit the entire height of the page's bounding box within the display area.
      */
-    e_zoomFitBVert = 8
+    e_zoomFitBVert
 };
 
 /**
@@ -293,11 +319,11 @@ enum FS_ZOOMMODE {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_MODULENAME {
+typedef NS_ENUM(NSUInteger, FSModuleName) {
     /** @brief	Standard module. */
     e_moduleNameStandard = 0,
     /** @brief	Annotation module. */
-    e_moduleNameAnnotation = 1,
+    e_moduleNameAnnotation,
 };
 
 /**
@@ -305,15 +331,15 @@ enum FS_MODULENAME {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_MODULERIGHT {
+typedef NS_ENUM(NSInteger, FSModuleRight) {
     /** @brief	Module right: unknown. */
     e_moduleRightUnknown = -1,
     /** @brief	Module right: no right. */
     e_moduleRightNone = 0,
     /** @brief	Module right: read. */
-    e_moduleRightRead = 1,
+    e_moduleRightRead,
     /** @brief	Module right: write, including read. */
-    e_moduleRightWrite = 2
+    e_moduleRightWrite
 };
 
 /**
@@ -321,13 +347,13 @@ enum FS_MODULERIGHT {
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_DEFAULTAPFLAGS {
+typedef NS_OPTIONS(NSUInteger, FSDefaultAPFlags) {
     /** @brief	Indicates properties {@link FSDefaultAppearance::font} is meaningful. */
-    e_defaultAPFont = 0x0001,
+    e_defaultAPFont =      1 << 0,
     /** @brief	Indicates properties {@link FSDefaultAppearance::textColor} is meaningful. */
-    e_defaultAPTextColor = 0x0002,
+    e_defaultAPTextColor = 1 << 1,
     /** @brief	Indicates property {@link FSDefaultAppearance::fontSize} is meaningful. */
-    e_defaultAPFontSize = 0x0004
+    e_defaultAPFontSize =  1 << 2
 };
 
 /**
@@ -335,25 +361,25 @@ enum FS_DEFAULTAPFLAGS {
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_FONTSTYLES {
+typedef NS_OPTIONS(NSUInteger, FSFontStyles) {
     /** @brief	Font style: fixed pitch. */
-    e_fontStyleFixedPitch = 0x0001,
+    e_fontStyleFixedPitch =  1 << 0,
     /** @brief	Font style: serif. */
-    e_fontStyleSerif = 0x0002,
+    e_fontStyleSerif =       1 << 1,
     /** @brief	Font style: symbolic. */
-    e_fontStyleSymbolic = 0x0004,
+    e_fontStyleSymbolic =    1 << 2,
     /** @brief	Font style: script. */
-    e_fontStyleScript = 0x0008,
+    e_fontStyleScript =      1 << 3,
     /** @brief	Font style: non-symbolic. */
-    e_fontStyleNonSymbolic = 0x0020,
+    e_fontStyleNonSymbolic = 1 << 5,
     /** @brief	Font style: italic. */
-    e_fontStyleItalic = 0x0040,
+    e_fontStyleItalic =      1 << 6,
     /** @brief	Font style: all cap. */
-    e_fontStyleAllCap = 0x10000,
+    e_fontStyleAllCap =      1 << 16,
     /** @brief	Font style: small cap. */
-    e_fontStylesSmallCap = 0x20000,
+    e_fontStylesSmallCap =   1 << 17,
     /** @brief	Font style: force bold. */
-    e_fontStylesBold = 0x40000,
+    e_fontStylesBold =       1 << 18
 };
 
 /**
@@ -361,7 +387,7 @@ enum FS_FONTSTYLES {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_FONTCHARSET {
+typedef NS_ENUM(NSUInteger, FSFontCharSet) {
     /** @brief	Font charset: ANSI (United States, Western Europe). */
     e_fontCharsetANSI = 0,
     /** @brief	Font charset: System default, for unknown or mapping purpose. */
@@ -399,35 +425,35 @@ enum FS_FONTCHARSET {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_STANDARDFONTID {
+typedef NS_ENUM(NSUInteger, FSStandardFontID) {
     /** @brief	Standard font: Courier. */
     e_fontStandardIDCourier = 0,
     /** @brief	Standard font: Courier-Bold. */
-    e_fontStandardIDCourierB = 1,
+    e_fontStandardIDCourierB,
     /** @brief	Standard font: Courier-BoldOblique, Bold italic. */
-    e_fontStandardIDCourierBI = 2,
+    e_fontStandardIDCourierBI,
     /** @brief	Standard font: Courier-Oblique, Italic. */
-    e_fontStandardIDCourierI = 3,
+    e_fontStandardIDCourierI,
     /** @brief	Standard font: Helvetica. */
-    e_fontStandardIDHelvetica = 4,
+    e_fontStandardIDHelvetica,
     /** @brief	Standard font: Helvetica-Bold. */
-    e_fontStandardIDHelveticaB = 5,
+    e_fontStandardIDHelveticaB,
     /** @brief	Standard font: Helvetica-BoldOblique, Bold italic. */
-    e_fontStandardIDHelveticaBI = 6,
+    e_fontStandardIDHelveticaBI,
     /** @brief	Standard font: Helvetica-Oblique, Italic. */
-    e_fontStandardIDHelveticaI = 7,
+    e_fontStandardIDHelveticaI,
     /** @brief	Standard font: Times-Roman. */
-    e_fontStandardIDTimes = 8,
+    e_fontStandardIDTimes,
     /** @brief	Standard font: Times-Bold. */
-    e_fontStandardIDTimesB = 9,
+    e_fontStandardIDTimesB,
     /** @brief	Standard font: Times-BoldItalic. */
-    e_fontStandardIDTimesBI = 10,
+    e_fontStandardIDTimesBI,
     /** @brief	Standard font: Times-Italic. */
-    e_fontStandardIDTimesI = 11,
+    e_fontStandardIDTimesI,
     /** @brief	Standard font: Symbol. */
-    e_fontStandardIDSymbol = 12,
+    e_fontStandardIDSymbol,
     /** @brief	Standard font: ZapfDingbats. */
-    e_fontStandardIDZapfDingbats = 13
+    e_fontStandardIDZapfDingbats
 };
 
 /**
@@ -435,23 +461,23 @@ enum FS_STANDARDFONTID {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_PATHPOINTTYPE {
+typedef NS_ENUM(NSUInteger, FSPathPointType) {
     /** @brief      Indicates that the point is the first point of a figure. */
     e_pointTypeMoveTo = 1,
     /** @brief      Indicates that a line is drawn from the previous point to this point. */
-    e_pointTypeLineTo = 2,
+    e_pointTypeLineTo,
     /** @brief      Indicates that a line is drawn from the previous point to this point,
-     *			and this point will also be connected to the nearest {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo} point before this point,
+     *			and this point will also be connected to the nearest {@link FSPathPointType::e_pointTypeMoveTo} point before this point,
      *			in order to close current figure.
      */
-    e_pointTypeLineToCloseFigure = 3,
+    e_pointTypeLineToCloseFigure,
     /** @brief      Indicates that this point is a control point or ending point for a Bezier spline. */
-    e_pointTypeBezierTo = 4,
+    e_pointTypeBezierTo,
     /** @brief      Indicates that this point is the ending point for a Bezier spline,
-     *			and this point will also be connected to the nearest {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo} point before this point,
+     *			and this point will also be connected to the nearest {@link FSPathPointType::e_pointTypeMoveTo} point before this point,
      *			in order to close current figure.
      */
-    e_pointTypeBezierToCloseFigure = 5
+    e_pointTypeBezierToCloseFigure
 };
 
 /**
@@ -459,13 +485,76 @@ enum FS_PATHPOINTTYPE {
  *
  * @details Values of this enumeration indicate the option of flatten.
  */
-enum FS_FLATTENOPTIONS {
+typedef NS_OPTIONS(NSUInteger, FSFlattenOptions) {
     /** @brief  Flatten contents for all. */
-    e_flattenOptionAll    = 0,
+    e_flattenOptionAll    =  0,
     /** @brief  Flatten a PDF page without annotations.  */
-    e_flattenOptionNoAnnot = 0x0001,
+    e_flattenOptionNoAnnot =    1 << 0,
     /** @brief  Flatten a PDF page without form controls.  */
-    e_flattenOptionNoFormControl = 0x0002
+    e_flattenOptionNoFormControl = 1 << 1
+};
+    
+    
+/**
+ * @brief	Enumeration for user permissions of a PDF document.
+ *
+ * @details	Values of this enumeration can be used alone or in combination.
+ */
+typedef NS_OPTIONS(NSUInteger, FSUserPermissions) {
+    /**
+     * @brief	Print PDF document with normal mode. (Bit 3 in permission value)
+     *
+     * @details	If user wants to print a higher quality level of PDF document, please set current value with {@link FSUserPermissions::e_permPrintHigh} together.
+     */
+    e_permPrint = 1 << 2,
+    /**
+     * @brief	Modify PDF contents. (Bit 4 in permission value)
+     *
+     * @details	If this value is set, user can modify contents of PDF document
+     *			by operations other than those controlled by {@link FSUserPermissions::e_permAnnotForm}, {@link FSUserPermissions::e_permFillForm} and {@link FSUserPermissions::e_permAssemble} values.
+     */
+    e_permModify	= 1 << 3,
+    /**
+     * @brief	Extract PDF contents. (Bit 5 in permission value)
+     *
+     * @details	If this value is set, user can copy or otherwise extract text and graphics from the document
+     *			by operations other than that controlled by {@link FSUserPermissions::e_permExtractAccess} value.
+     */
+    e_permExtract = 1 << 4,
+    /**
+     * @brief	Operate text annotations and fill in interactive form fields. (Bit 6 in permission value)
+     *
+     * @details	If {@link FSUserPermissions::e_permModify} is also set, user can create or modify interactive form fields (including signature fields).
+     */
+    e_permAnnotForm = 1 << 5,
+    /**
+     * @brief	Fill PDF form. (Bit 9 in permission value)
+     *
+     * @details	If this value is set, user can fill in interactive form fields (including signature fields),
+     * 			even if {@link FSUserPermissions::e_permAnnotForm} is not used.
+     */
+    e_permFillForm = 1 << 8,
+    /**
+     * @brief	Disabilities support. (Bit 10 in permission value)
+     *
+     * @details	If this value is set, user can extract text and graphics in support of accessibility to users with disabilities
+     *			or for other purposes.
+     */
+    e_permExtractAccess = 1 << 9,
+    /**
+     * @brief	Assemble PDF document. (Bit 11 in permission value)
+     *
+     * @details	If this value is set, it enables to assemble the document (insert, rotate, or delete pages
+     * 			and create bookmarks or thumbnail images), regardless if {@link FSUserPermissions::e_permModify} is set or not.
+     */
+    e_permAssemble = 1 << 10,
+    /**
+     * @brief	Print PDF document with higher qualities. (Bit 12 in permission value)
+     *
+     * @details	If this value is not set (and {@link FSUserPermissions::e_permPrint} is set), printing is limited to a low-level
+     * 			representation of the appearance, possibly of degraded quality.
+     */
+    e_permPrintHigh = 1 << 11
 };
 
 /**
@@ -473,7 +562,7 @@ enum FS_FLATTENOPTIONS {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_PAGEBOX {
+typedef NS_ENUM(NSUInteger, FSPageBoxType) {
     /**
      * @brief	Media Box for page boundary.
      *
@@ -485,33 +574,33 @@ enum FS_PAGEBOX {
      *
      * @details	The region to which the contents of page are to be clipped (cropped) while displaying or printing.
      */
-    e_pageCropBox = 1,
+    e_pageCropBox,
     /**
      * @brief	Trim Box for page boundary.
      *
      * @details	The region to which the contents of page should be clipped while outputting in a production environment.
      */
-    e_pageTrimBox = 2,
+    e_pageTrimBox,
     /**
      * @brief	Art Box for page boundary.
      *
      * @details	The intended dimensions of a finished page after trimming.
      */
-    e_pageArtBox = 3,
+    e_pageArtBox,
     /**
      * @brief	Bleed Box for page boundary.
      *
      * @details	The extent of page's meaningful content (including potential white space) as intended by page's creator.
      */
-    e_pageBleedBox = 4
+    e_pageBleedBox
 };
-
+    
 /**
  * @brief	Enumeration for markup annotation's state model.
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_ANNOTSTATEMODEL {
+typedef NS_ENUM(NSUInteger, FSAnnotStateModel) {
     /**
      * @brief	Markup annotation state model: marked.
      */
@@ -519,7 +608,7 @@ enum FS_ANNOTSTATEMODEL {
     /**
      * @brief	Markup annotation state model: review.
      */
-    e_annotStateModelReview = 2
+    e_annotStateModelReview
 };
 
 /**
@@ -527,7 +616,7 @@ enum FS_ANNOTSTATEMODEL {
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_ANNOTSTATE {
+typedef NS_ENUM(NSUInteger, FSAnnotState) {
     /**
      * @brief	(Used for {@link FSM_ANNOTSTATEMODEL::e_annotStateModelMarked})
      *			The annotation has been marked by the user.
@@ -537,63 +626,88 @@ enum FS_ANNOTSTATE {
      * @brief	(Used for {@link FSM_ANNOTSTATEMODEL::e_annotStateModelMarked})
      *			The annotation has has not been marked by the user.
      */
-    e_annotStateUnmarked = 2,
+    e_annotStateUnmarked,
     /**
      * @brief	(Used for {@link FSM_ANNOTSTATEMODEL::e_annotStateModelReview})
      *			The user agrees with the change.
      */
-    e_annotStateAccepted = 3,
+    e_annotStateAccepted,
     /**
      * @brief	(Used for {@link FSM_ANNOTSTATEMODEL::e_annotStateModelReview})
      *			The user disagrees with the change.
      */
-    e_annotStateRejected = 4,
+    e_annotStateRejected,
     /**
      * @brief	(Used for {@link FSM_ANNOTSTATEMODEL::e_annotStateModelReview})
      *			The change has been cancelled.
      */
-    e_annotStateCancelled = 5,
+    e_annotStateCancelled,
     /**
      * @brief	(Used for {@link FSM_ANNOTSTATEMODEL::e_annotStateModelReview})
      *			The change has been completed.
      */
-    e_annotStateCompleted = 6,
+    e_annotStateCompleted,
     /**
      * @brief	(Used for {@link FSM_ANNOTSTATEMODEL::e_annotStateModelReview})
      *			The user has indicated nothing about the change.
      */
     e_annotStateNone = 7
 };
-
+    
 /**
  * @brief	Enumeration for some PDF annotation property.
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_ANNOTPROPERTY {
+typedef NS_ENUM(NSUInteger, FSAnnotProperty) {
     /**
      * @brief	Annotation property: modified date.
      */
-    e_annotPropertyModifiedDate		= 0,
+    e_annotPropertyModifiedDate = 0,
     /**
      * @brief	Annotation property: creation date.
      *
      * @details	Only markup annotations can have creation date property.
      */
-    e_annotPropertyCreationDate		= 1,
+    e_annotPropertyCreationDate,
     /**
      * @brief	Annotation property: border color
      */
-    e_annotPropertyBorderColor		= 2,
+    e_annotPropertyBorderColor,
     /**
      * @brief	Annotation property: fill color
      *
      * @details	Only following annotations can have fill color property:<br>
      *			square, circle, free text, line, polygon, polyline.
      */
-    e_annotPropertyFillColor		= 3
+    e_annotPropertyFillColor
 };
-
+    
+/**
+ * @brief Enumeration for the type of the progress.
+ *
+ * @details Values of this enumeration should be used alone.
+ */
+typedef NS_ENUM(NSUInteger, FSProgressType) {
+    /** @brief Parse progress. */
+    e_progressParse,
+    /** @brief Import pages progress */
+    e_progressImportPages,
+    /** @brief Render page progress */
+    e_progressRenderPage,
+    /** @brief Render page quickly progress */
+    e_progressQuickRenderPage,
+    /** @brief Render re-flow page progress */
+    e_progressReflowRenderPage,
+    /** @brief Render page progress */
+    e_progressRenderBitmap,
+    /** @brief Signature sign progress */
+    e_progressSignatureSign,
+    /** @brief Signature verification progress */ 
+    e_progressSignatureVerify,
+    /** @brief Save progress */ 
+    e_progressSave
+};
 /**
  * @brief	Class for catching Objective-C Exceptions in a Swift project.
  */
@@ -679,6 +793,42 @@ enum FS_ANNOTPROPERTY {
 
 @end
     
+
+/**
+ * @brief	Structure for identity properties of current user, which is used for callback function {@link FSActionHandler::getIdentityProperties}.
+ */
+@interface FSProgressive : NSObject
+{
+    void *swigCPtr;
+    BOOL swigCMemOwn;
+}
+-(void*)getCptr;
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+
+/** @brief	Continue a progressive process.
+ *
+ * @return {@link FSProgressState::e_progressFinished FSProgressState::e_progressFinished}
+ *         means the current process is finished successfully.<br>
+ *         {@link FSProgressState::e_progressToBeContinued FSProgressState::e_progressToBeContinued}
+ *         means the current process is suspended, applications need to call this function again,
+ *         {@link FSProgressState::e_progressError FSProgressState::e_progressError} means any error occurs.
+ */
+-(FSProgressState)resume;
+
+/**
+ * @brief Get the rate of progress when start a progressive process,
+ *        see the FSProgressType defined in common head file.
+ *
+ * @return An integer between 0 and 100 (inclusive) indicating the progress.
+ *         -1 means parameter error.
+ */
+-(int)getRateOfProgress;
+
+/** @brief      Free the object. */
+-(void)dealloc;
+
+@end
+    
 /**
  * @brief	Class to represents a callback object for performing PDF actions.
  *
@@ -721,9 +871,9 @@ enum FS_ANNOTPROPERTY {
  *							The value would be stared from 0 and less than page count of the specified document.
  *
  * @return	The rotation of specified page.
- *			Please refer to {@link FS_ROTATION::e_rotation0 FS_ROTATION::e_rotationXXX} values and it should be one of these values.
+ *			Please refer to {@link FSRotation::e_rotation0 FSRotation::e_rotationXXX} values and it should be one of these values.
  */
--(enum FS_ROTATION)getPageRotation:(FSPDFDoc*)pdfDoc pageIndex:(int)pageIndex;
+-(FSRotation)getPageRotation:(FSPDFDoc*)pdfDoc pageIndex:(int)pageIndex;
 
 /**
  * @brief	Optional callback function used to set the rotation value of a page on PDF viewer.
@@ -732,11 +882,11 @@ enum FS_ANNOTPROPERTY {
  * @param[in]	pageIndex	Page index, to specify which page's rotation is to be changed.
  *							The value would be stared from 0 and less than page count of the specified document.
  * @param[in]	rotation	New rotation value.
- *							Please refer to {@link FS_ROTATION::e_rotation0 FS_ROTATION::e_rotationXXX} values and it would be one of these values.
+ *							Please refer to {@link FSRotation::e_rotation0 FSRotation::e_rotationXXX} values and it would be one of these values.
  *
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
  */
--(BOOL)setPageRotation:(FSPDFDoc*)pdfDoc pageIndex:(int)pageIndex rotation:(enum FS_ROTATION)rotation;
+-(BOOL)setPageRotation:(FSPDFDoc*)pdfDoc pageIndex:(int)pageIndex rotation:(FSRotation)rotation;
 
 /**
  * @brief	Optional callback function used to pop up a dialog to show warnings or hints.
@@ -803,7 +953,7 @@ enum FS_ANNOTPROPERTY {
  * @return	A new file specification object.
  *			If there is any error, this function will return <b>nil</b>.
  */
-+(FSFileSpec*)create:(FSPDFDoc*)pdfDoc;
+-(id)initWithPDFDoc:(FSPDFDoc*)pdfDoc;
 
 /**
  * @brief	Create a file specification object.
@@ -814,12 +964,12 @@ enum FS_ANNOTPROPERTY {
  *						<li>If it is a PDF dictionary object, it should be a JavaScript action dictionary.</li>
  *						<li>If it is a PDF reference object, it should refer to a JavaScript action dictionary.</li>
  *						</ul>
- *						This PDF object can be retrieved from {@link FSPDFNameTree} in type {@link FS_NAMETREETYPE::e_nameTreeJavaScript}.
+ *						This PDF object can be retrieved from {@link FSPDFNameTree} in type {@link FSNameTreeType::e_nameTreeJavaScript}.
  *
  * @return	A new file specification object.
  *			If there is any error, this function will return <b>NULL</b>.
  */
-+(FSFileSpec*)create:(FSPDFDoc*)pdfDoc pdfObject:(FSPDFObject*)pdfObject;
+-(id)initWithPDFDoc:(FSPDFDoc*)pdfDoc pdfObject:(FSPDFObject*)pdfObject;
 
 /**
  * @brief	Get the file name.
@@ -850,7 +1000,7 @@ enum FS_ANNOTPROPERTY {
  * @return	A file read object and user can call methods of <CODE>FileRead</CODE> to read the file data.
  *			If there is any error, this function will return <b>nil</b>.
  */
--(FSFileReadCallback*)getFileData;
+-(id<FSFileReadCallback>)getFileData;
 /**
  * @brief	Embed the whole content of a file which is specified by input file path.
  *
@@ -981,20 +1131,20 @@ enum FS_ANNOTPROPERTY {
  * @param[in]	sn		String of sn information, which can be retrieved from "SN=" part in key file "rdk_sn.txt".
  * @param[in]	key		String of key information, which can be retrieved from "Sign=" part in key file "rdk_key.txt".
  *
- * @return	{@link FS_ERRORCODE::e_errSuccess} means success.
- *			{@link FS_ERRORCODE::e_errInvalidLicense} means input license information is invalid.
- *			{@link FS_ERRORCODE::e_errParam} means parameter <i>sn</i> or <i>key</i> is <b>nil</b> or empty string.
+ * @return	{@link FSErrorCode::e_errSuccess} means success.
+ *			{@link FSErrorCode::e_errInvalidLicense} means input license information is invalid.
+ *			{@link FSErrorCode::e_errParam} means parameter <i>sn</i> or <i>key</i> is <b>nil</b> or empty string.
  */
-+(enum FS_ERRORCODE)init: (NSString *)sn key: (NSString *)key;
++(FSErrorCode)init: (NSString *_Nullable)sn key: (NSString *_Nullable)key;
 /**
  * @brief	Reinitialize Foxit PDF SDK Library.
  *
  * @details	When user meets out-of-memory error, user can call this function to reinitialize Foxit PDF SDK Library.
  *
- * @return	{@link FS_ERRORCODE::e_errSuccess} means success.
- *			For more information about error code values, please refer to {@link FS_ERRORCODE::e_errSuccess FS_ERRORCODE::e_errXXX} values.
+ * @return	{@link FSErrorCode::e_errSuccess} means success.
+ *			For more information about error code values, please refer to {@link FSErrorCode::e_errSuccess FSErrorCode::e_errXXX} values.
  */
-+(enum FS_ERRORCODE)reinit;
++(FSErrorCode)reinit;
 /**
  * @brief	Release all resource allocated by Foxit PDF SDK Library.
  *
@@ -1012,11 +1162,11 @@ enum FS_ANNOTPROPERTY {
 /**
  * @brief	Get the authority of a specific module.
  *
- * @param[in]	module	Module name. It should be one of {@link FS_MODULENAME::e_moduleNameStandard FS_MODULENAME::e_moduleNameXXX} values.
+ * @param[in]	module	Module name. It should be one of {@link FSModuleName::e_moduleNameStandard FSModuleName::e_moduleNameXXX} values.
  *
- * @return	The right of specific module. It would be one of {@link FS_MODULERIGHT::e_moduleRightUnknown FS_MODULENAME::e_moduleRightXXX} values.
+ * @return	The right of specific module. It would be one of {@link FSModuleRight::e_moduleRightUnknown FSModuleName::e_moduleRightXXX} values.
  */
-+(enum FS_MODULERIGHT)getModuleRight: (enum FS_MODULENAME)module;
++(FSModuleRight)getModuleRight: (FSModuleName)module;
 /**
  * @brief	Set a customized annotation icon provider to Foxit PDF SDK.
  *
@@ -1057,16 +1207,6 @@ enum FS_ANNOTPROPERTY {
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
  */
 +(BOOL)setActionHandler:(FSActionHandler*)actionHandler;
-
-/**
- * @brief	Register the default signature handler to Foxit PDF SDK for signing and verifying signature.
- *
- * @details	This function should be called before signing or verifying signature process, if user wants to sign or verify signature by default signature handler.
- *			The default signature handler is AdobePPKLite handler: filter is "Adobe.PPKLite", and sub filter is "adbe.pkcs7.detached".
- *
- * @return	<b>YES</b> means success, while <b>NO</b> means failure.
- */
-+(BOOL)registerDefaultSignatureHandler;
 
 /**
  * @brief	Register a third-party handler to Foxit PDF SDK for signing and verifying signature,
@@ -1139,7 +1279,7 @@ enum FS_ANNOTPROPERTY {
  *
  * @return	The new document object.
  */
--(FSPDFDoc*) reloadDoc:(FSPDFDoc*)pdfDoc;
+-(FSPDFDoc* _Nullable) reloadDoc:(FSPDFDoc*)pdfDoc;
 @end
     
     
@@ -1726,25 +1866,25 @@ typedef  FSPointF FSOffset;
  *
  * @param[in]	fontName		The typeface name of the font to be created. It should be in UTF-8 encoding.
  * @param[in]	fontStyles		Font styles.
- *								Please refer to {@link FS_FONTSTYLES::e_fontStyleFixedPitch FS_FONTSTYLES::e_fontStyleXXX} values
+ *								Please refer to {@link FSFontStyles::e_fontStyleFixedPitch FSFontStyles::e_fontStyleXXX} values
  *								and it can be one or a combination of these values.
  * @param[in]	weight			Original font weight. 0 means unspecified.
  * @param[in]	charset			The charset of the font to be created.
- *								Please refer to {@link FS_FONTCHARSET::e_fontCharsetANSI FS_FONTCHARSET::e_fontCharsetXXX} values
+ *								Please refer to {@link FSFontCharSet::e_fontCharsetANSI FSFontCharSet::e_fontCharsetXXX} values
  *								and this should be one of these values.
  *
  * @return A new font object.
  */
-+(FSFont*)create: (NSString*) fontName fontStyles: (unsigned int)fontStyles weight: (int)weight  charset: (enum FS_FONTCHARSET) charset;
+-(id)initWithFontName: (NSString*) fontName fontStyles: (FSFontStyles)fontStyles weight: (int)weight  charset: (FSFontCharSet) charset;
 /**
  * @brief	Create a new standard font by a standard font ID.
  *
  * @param[in]	fontID		Standard font ID of the font to be created.
- *							Please refer to {@link FS_STANDARDFONTID::e_fontStandardIDCourier FS_STANDARDFONTID::e_fontStandardIDXXX} values
+ *							Please refer to {@link FSStandardFontID::e_fontStandardIDCourier FSStandardFontID::e_fontStandardIDXXX} values
  *
  * @return A new font object.If there is any error, this function will return <b>nil</b>.
  */
-+(FSFont*)createStandard :(enum FS_STANDARDFONTID) fontID;
+-(id)initWithStandardFontID :(FSStandardFontID) fontID;
 /**
  * @brief	Retrieve the face name.
  *
@@ -1770,22 +1910,22 @@ typedef  FSPointF FSOffset;
 /**
  * @brief	Flags to indicate which properties of {@link ::FSDefaultAppearance} are meaningful.
  *
- * @details	Please refer to {@link FS_DEFAULTAPFLAGS::e_defaultAPFont FS_DEFAULTAPFLAGS::e_defaultAPXXX} values
+ * @details	Please refer to {@link FSDefaultAPFlags::e_defaultAPFont FSDefaultAPFlags::e_defaultAPXXX} values
  *			and this can be one or a combination of these values. 0 means no property of {@link ::FSDefaultAppearance} is meaningful.
  */
-@property (nonatomic,assign) unsigned int flags;
+@property (nonatomic,assign) FSDefaultAPFlags flags;
 /**
- * @brief	(Useful only when {@link FSDefaultAppearance::flags} includes {@link FS_DEFAULTAPFLAGS::e_defaultAPFont})
+ * @brief	(Useful only when {@link FSDefaultAppearance::flags} includes {@link FSDefaultAPFlags::e_defaultAPFont})
  *			Font for default appearance. It should be a valid ::FSFont object when it is useful.
  */
 @property (nonatomic,retain) FSFont* font;
 /**
- * @brief	(Useful only when {@link FSDefaultAppearance::flags} includes {@link FS_DEFAULTAPFLAGS::e_defaultAPFontSize})
+ * @brief	(Useful only when {@link FSDefaultAppearance::flags} includes {@link FSDefaultAPFlags::e_defaultAPFontSize})
  *			Font size for default appearance. It should be above 0 when it is useful.
  */
 @property (nonatomic,assign) float fontSize;
 /**
- * @brief	(Useful only when {@link FSDefaultAppearance::flags} includes {@link FS_DEFAULTAPFLAGS::e_defaultAPTextColor})
+ * @brief	(Useful only when {@link FSDefaultAppearance::flags} includes {@link FSDefaultAPFlags::e_defaultAPTextColor})
  *			Text color for default appearance. Format: 0xAARRGGBB. Alpha value is ignored and will always be treated as 0xFF internally.
  */
 @property (nonatomic,assign) unsigned int textColor;
@@ -1800,14 +1940,14 @@ typedef  FSPointF FSOffset;
  * @brief	Set value.
  *
  * @param[in]	flags		Flags to indicate which properties of {@link ::FSDefaultAppearance} are meaningful.
- *							Please refer to {@link FS_DEFAULTAPFLAGS::e_defaultAPFont FS_DEFAULTAPFLAGS::e_defaultAPXXX} values
+ *							Please refer to {@link FSDefaultAPFlags::e_defaultAPFont FSDefaultAPFlags::e_defaultAPXXX} values
  *							and this can be one or a combination of these values.
  * @param[in]	font		Font for default appearance. Please ensure this is a valid {@link ::FSFont} object when parameter <i>flags</i> includes {@link
- *                                  FS_DEFAULTAPFLAGS::e_defaultAPFont}.
- * @param[in]	fontSize	Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes {@link FS_DEFAULTAPFLAGS::e_defaultAPFontSize}.
+ *                                  FSDefaultAPFlags::e_defaultAPFont}.
+ * @param[in]	fontSize	Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes {@link FSDefaultAPFlags::e_defaultAPFontSize}.
  * @param[in]	textColor	Text color for default appearance. Format: 0xAARRGGBB. Alpha value is ignored and will always be treated as 0xFF internally.
  */
--(void) set: (unsigned int) flags font: (FSFont*) font fontSize: (float)fontSize textColor: (unsigned int) textColor;
+-(void) set: (FSDefaultAPFlags) flags font: (FSFont*) font fontSize: (float)fontSize textColor: (unsigned int) textColor;
 /** @brief Initialize the object. */
 -(id)init;
 /** @brief Free the object. */
@@ -1838,7 +1978,7 @@ typedef  FSPointF FSOffset;
  * @return	A new empty PDF path object.
  *			If there is any error, this function will return <b>nil</b>.
  */
-+(FSPDFPath*) create;
+-(id)init;
 /**
  * @brief	Get the count of points.
  *
@@ -1862,22 +2002,22 @@ typedef  FSPointF FSOffset;
  *						<i>count</i> is returned by function {@link FSPDFPath::getPointCount}.
  *
  * @return	The type of specified point.
- *			Please refer to {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo FS_PATHPOINTTYPE::e_pointTypeXXX} values and it would be one of them.
+ *			Please refer to {@link FSPathPointType::e_pointTypeMoveTo FSPathPointType::e_pointTypeXXX} values and it would be one of them.
  *			If an error occurs, this function will return 0.
  */
--(enum FS_PATHPOINTTYPE)getPointType : (int) index;
+-(FSPathPointType)getPointType : (int) index;
 /**
  * @brief	Change the value and type of a point specified by index.
  *
  * @param[in]	index			The index of the point. Valid range: 0 to (<i>count</i>-1).<i>count</i> is returned by function {@link FSPDFPath::getPointCount}.
  * @param[in]	point			The point to set, in PDF coordinate system.
  * @param[in]	pointType		The type used to set to the point.
- *								Please refer to {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo FS_PATHPOINTTYPE::e_pointTypeXXX} values
+ *								Please refer to {@link FSPathPointType::e_pointTypeMoveTo FSPathPointType::e_pointTypeXXX} values
  *								and it should be one of them.
  *
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
  */
--(BOOL)setPoint: (int)index  point: (FSPointF*)point pointType: (enum FS_PATHPOINTTYPE)pointType;
+-(BOOL)setPoint: (int)index  point: (FSPointF*)point pointType: (FSPathPointType)pointType;
 /**
  * @brief	Add a point to the end of current PDF path, to start a new figure.
  *
@@ -1916,11 +2056,11 @@ typedef  FSPointF FSOffset;
  *
  * @details	When closing current figure, the last point's type may be changed:
  *			<ul>
- *			<li>If the last point's type is {@link FS_PATHPOINTTYPE::e_pointTypeMoveTo}, that means the last figure just has one point and cannot be closed
+ *			<li>If the last point's type is {@link FSPathPointType::e_pointTypeMoveTo}, that means the last figure just has one point and cannot be closed
  *				and current function will return <b>NO</b>.</li>
- *			<li>If the last point's type is {@link FS_PATHPOINTTYPE::e_pointTypeLineTo}, the type will be changed to {@link FS_PATHPOINTTYPE::e_pointTypeLineToCloseFigure}.</li>
- *			<li>If the last point's type is {@link FS_PATHPOINTTYPE::e_pointTypeLineTo}, the type will be changed to {@link FS_PATHPOINTTYPE::e_pointTypeBezierToCloseFigure}.</li>
- *			<li>If the last point's type is already {@link FS_PATHPOINTTYPE::e_pointTypeLineToCloseFigure} or {@link FS_PATHPOINTTYPE::e_pointTypeBezierToCloseFigure},
+ *			<li>If the last point's type is {@link FSPathPointType::e_pointTypeLineTo}, the type will be changed to {@link FSPathPointType::e_pointTypeLineToCloseFigure}.</li>
+ *			<li>If the last point's type is {@link FSPathPointType::e_pointTypeLineTo}, the type will be changed to {@link FSPathPointType::e_pointTypeBezierToCloseFigure}.</li>
+ *			<li>If the last point's type is already {@link FSPathPointType::e_pointTypeLineToCloseFigure} or {@link FSPathPointType::e_pointTypeBezierToCloseFigure},
  *				that means the last figure has been closed. The type will not be changed and function will still return <b>YES</b>.</li>
  *			</ul>
  *
@@ -1944,28 +2084,19 @@ typedef  FSPointF FSOffset;
 -(void)dealloc;
 
 @end
-
+    
 /**
  * @brief	Class to represent a callback object to do file reading.
  * 
  * @details	All the functions in this class are used as callback functions 
  *			and should be implemented by user, to do file reading in a customized way.
  */
-@interface FSFileReadCallback : NSObject
-{
-    /** @brief SWIG proxy related property, it's deprecated to use it. */
-    void *swigCPtr;
-    /** @brief SWIG proxy related property, it's deprecated to use it. */
-    BOOL swigCMemOwn;
-}
-/** @brief SWIG proxy related function, it's deprecated to use it. */
--(void*)getCptr;
-/** @brief SWIG proxy related function, it's deprecated to use it. */
--(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+@protocol FSFileReadCallback <NSObject>
+@required
 /**
  * @brief	Required callback function used to get the total size of the file.
  *
- * @return	The file size, in bytes. 
+ * @return	The file size, in bytes.
  *			If any error occurs, implementation of this function should return 0.
  */
 -(unsigned long long)getSize;
@@ -1979,10 +2110,23 @@ typedef  FSPointF FSOffset;
  *			If any error occurs, implementation of this function should return <b>nil</b>.
  */
 -(NSData *)readBlock: (unsigned long long)offset size: (unsigned long long)size;
-
-/** @brief Free the object. */
--(void)dealloc;
-
+/**
+ * @brief Enumeration for type of FSFileReadCallback.
+ *
+ * @details Values of this enumeration should be used alone.
+ */
+typedef NS_ENUM(NSUInteger, Type) {
+    /** @brief This means current callback object conforms to {@link FSFileReadCallback} protocol. */
+    e_TypeNormal = 0
+};
+/**
+ * @brief Get the type of file reading callback.
+ *
+ * @note User should not override this function, otherwise there will be unexpected behavior.
+ *
+ * @return The type of current file reading callback. It would always be {@link FSFileReadCallback::e_TypeNormal}.
+ */
+-(Type)getType;
 @end
     
 /**
@@ -2003,6 +2147,8 @@ typedef  FSPointF FSOffset;
 -(void*)getCptr;
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/** @brief Default initialization. */
+-(id)init;
 /**
  * @brief	A callback function used to decide whether current process needs to pause or not.
  *
@@ -2017,6 +2163,8 @@ typedef  FSPointF FSOffset;
 -(void)dealloc;
 
 @end
+    
+NS_ASSUME_NONNULL_END
     
 #ifdef __cplusplus
 }

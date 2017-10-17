@@ -20,15 +20,14 @@
 @class UIExtensionsManager;
 
 /**@brief A tool handler to select texts on the page, or for adding annotations. */
-@interface SelectToolHandler : NSObject<IToolHandler,UIPopoverControllerDelegate,IRotationEventListener,IScrollViewEventListener,IGestureEventListener, IPageEventListener>
-{
+@interface SelectToolHandler : NSObject <IToolHandler, UIPopoverControllerDelegate, IRotationEventListener, IScrollViewEventListener, IGestureEventListener, IPageEventListener> {
     MagnifierView *_magnifierView;
 }
 
 @property (nonatomic, assign) BOOL isEdit;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 - (void)clearSelection;
-- (NSString*)copyText;
+- (NSString *)copyText;
 
 @end

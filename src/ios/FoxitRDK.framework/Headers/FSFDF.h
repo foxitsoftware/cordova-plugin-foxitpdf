@@ -15,6 +15,8 @@
 
 #import "FSCommon.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /*******************************************************************************/
 /* FDF document                                                                */
 /*******************************************************************************/
@@ -24,7 +26,7 @@
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_FDFDOCTYPE {
+typedef NS_ENUM(NSUInteger, FSFDFDocType) {
     /** @brief	FDF document type: FDF. */
     e_fdfDocTypeFDF = 0,
     /** @brief	FDF document type: XFDF. */
@@ -72,14 +74,14 @@ enum FS_FDFDOCTYPE {
  * @brief	Create an empty new FDF/XFDF document.
  *
  * @param[in]	fdfDocType	The FDF document type. It should be one of following values: <br>
- *							{@link FS_FDFDOCTYPE::e_fdfDocTypeFDF}, {@link FS_FDFDOCTYPE::e_fdfDocTypeXFDF}
+ *							{@link FSFDFDocType::e_fdfDocTypeFDF}, {@link FSFDFDocType::e_fdfDocTypeXFDF}
  *
  * @return	A new ::FSFDFDoc object.
  *
  * @exception	e_errParam		Value of input parameter is invalid.
  * @exception	e_errOutOfMemory	Out-of-memory error occurs.
  */
-+(FSFDFDoc*)create: (enum FS_FDFDOCTYPE)fdfDocType;
+-(id)initWithFDFDocType: (FSFDFDocType)fdfDocType;
 
 /**
  * @brief	Load a FDF/XFDF document object from an existing FDF/XFDF file path.
@@ -94,7 +96,7 @@ enum FS_FDFDOCTYPE {
  * @exception	e_errFile			The file specified by input path cannot be found or opened.
  * @exception	e_errOutOfMemory	Out-of-memory error occurs.
  */
-+(FSFDFDoc*)loadFromFilePath: (NSString *)path;
+-(id)initWithFilePath: (NSString *)path;
 
 /**
  * @brief	Load a FDF/XFDF document object from a memory buffer, which contains full data of a FDF/XFDF document.
@@ -107,7 +109,7 @@ enum FS_FDFDOCTYPE {
  * @exception	e_errFormat			Data in input memory does not represent a FDF or XFDF file.
  * @exception	e_errOutOfMemory	Out-of-memory error occurs.
  */
-+(FSFDFDoc*)loadFromMemory: (NSData *)buffer;
+-(id)initWithMemory: (NSData *)buffer;
 
 /**
  * @brief	Load a FDF/XFDF document object with a file read handler.
@@ -121,7 +123,7 @@ enum FS_FDFDOCTYPE {
  * @exception	e_errFormat			Input ::FSFileReadCallback does not access to a FDF or XFDF file.
  * @exception	e_errOutOfMemory	Out-of-memory error occurs.
  */
-+(FSFDFDoc*)loadFromHandler: (FSFileReadCallback *)fileRead;
+-(id)initWithHandler: (id<FSFileReadCallback>)fileRead;
 
 /**
  * @brief	Get the path of related PDF document
@@ -213,3 +215,5 @@ enum FS_FDFDOCTYPE {
 -(void)dealloc;
 
 @end
+
+NS_ASSUME_NONNULL_END

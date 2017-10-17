@@ -10,21 +10,12 @@
  * Review legal.txt for additional license and legal information.
  */
 
-
 #import "FSReorderableCollectionView.h"
 #import "UIView+shake.h"
 
 static NSMutableIndexSet *indexSetFromIndexPaths(NSArray<NSIndexPath *> *indexPaths);
 static NSMutableArray<NSIndexPath *> *indexPathsFromRange(NSRange range);
 static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSet);
-
-@interface WrapperDataSource : NSObject <FSReorderableCollectionViewDataSource>
-
-@property (nonatomic, weak, nullable) id <FSReorderableCollectionViewDataSource> originalDataSource;
-
-+ (WrapperDataSource *_Nonnull)dataSourceWithOriginalDataSource:(id<UICollectionViewDataSource> _Nullable)originalDataSource;
-
-@end
 
 @interface FSReorderableCollectionView ()
 
@@ -42,10 +33,10 @@ static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSe
 
 @dynamic dataSource;
 
-- (instancetype)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout isModifiable:(BOOL)isModifiable{
+- (instancetype)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout isModifiable:(BOOL)isModifiable {
     self = [super initWithFrame:frame collectionViewLayout:layout];
     if (self) {
-        UILongPressGestureRecognizer* longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
+        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
         longPress.delaysTouchesBegan = YES;
         longPress.minimumPressDuration = 0.3f;
         [self addGestureRecognizer:longPress];
@@ -69,115 +60,120 @@ static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSe
 #pragma mark <UICollectionViewDataSource>
 
 - (void)handleLongPressGesture:(UILongPressGestureRecognizer *)gesutre {
-
     if (!self.isModifiable) {
         return;
     }
+    CGPoint pos = [gesutre locationInView:self];
     switch (gesutre.state) {
-        case UIGestureRecognizerStateBegan: {
-            CGPoint pos = [gesutre locationInView:self];
-            NSIndexPath* currentIndexPath = [self indexPathForItemAtPoint:pos];
-            if (currentIndexPath) {
-                UICollectionViewCell* cell = [self cellForItemAtIndexPath:currentIndexPath];
-                [self setupSnapshotViewOfMovingCellAtIndexPath:currentIndexPath withGesturePosition:pos completion:nil];
-                 {
-                     self.originalIndexPathForPlaceholderCell = currentIndexPath;
-                     
-                     if (!cell.isSelected) {
-                         [self selectItemAtIndexPath:currentIndexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
-                     }
-                     NSArray<NSIndexPath *> *selectedIndexPaths = self.indexPathsForSelectedItems;
-                     self.indexSetForDraggingCells = indexSetFromIndexPaths(selectedIndexPaths);
-                     assert(!self.indexPathForPlaceholderCell);
-                     [self deleteItemsAtIndexPaths:selectedIndexPaths];
-                     
-                     self.indexPathForPlaceholderCell = [self indexPathForItemAtPoint:pos] ?: ({
-                         NSIndexPath *lastIndexPath = self.indexPathsForVisibleItems.lastObject;
-                         lastIndexPath
-                         ? [NSIndexPath indexPathForItem:lastIndexPath.item+1 inSection:0]
-                         : [NSIndexPath indexPathForItem:0 inSection:0];
-                     });
-                     [self insertItemsAtIndexPaths:@[ self.indexPathForPlaceholderCell ]];
-                 }
+    case UIGestureRecognizerStateBegan: {
+        NSIndexPath *currentIndexPath = [self indexPathForItemAtPoint:pos];
+        if (currentIndexPath) {
+            UICollectionViewCell *cell = [self cellForItemAtIndexPath:currentIndexPath];
+            [self setupSnapshotViewOfMovingCellAtIndexPath:currentIndexPath withGestureRecognizer:gesutre];
+            {
+                self.originalIndexPathForPlaceholderCell = currentIndexPath;
+
+                if (!cell.selected) {
+                    [self selectItemAtIndexPath:currentIndexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
+                }
+                NSArray<NSIndexPath *> *selectedIndexPaths = self.indexPathsForSelectedItems;
+                self.indexSetForDraggingCells = indexSetFromIndexPaths(selectedIndexPaths);
+                assert(!self.indexPathForPlaceholderCell);
+                [self deleteItemsAtIndexPaths:selectedIndexPaths];
+
+                self.indexPathForPlaceholderCell = [self indexPathForItemAtPoint:pos] ?: ({
+                    NSIndexPath *lastIndexPath = [self indexPathForLastVisibleItem];
+                    lastIndexPath
+                        ? [NSIndexPath indexPathForItem:lastIndexPath.item + 1 inSection:0]
+                        : [NSIndexPath indexPathForItem:0 inSection:0];
+                });
+                [self insertItemsAtIndexPaths:@[ self.indexPathForPlaceholderCell ]];
             }
         }
+    } break;
+
+    case UIGestureRecognizerStateChanged: {
+        self.movingCellSnapshotView.center = pos;
+        assert(self.indexPathForPlaceholderCell);
+        if (!self.indexPathForPlaceholderCell)
             break;
-            
-        case UIGestureRecognizerStateChanged: {
-            CGPoint pos = [gesutre locationInView:self];
-            self.movingCellSnapshotView.center = pos;
-            if(!self.indexPathForPlaceholderCell)
-                break;
-            assert(self.indexPathForPlaceholderCell);
-            NSIndexPath* newIndexPath = [self indexPathForItemAtPoint:pos];
-            if (newIndexPath && ![newIndexPath isEqual:self.indexPathForPlaceholderCell]) {
-                [self moveItemAtIndexPath:self.indexPathForPlaceholderCell toIndexPath:newIndexPath];
-                self.indexPathForPlaceholderCell = newIndexPath;
+        NSIndexPath *newIndexPath = [self indexPathForItemAtPoint:pos];
+        if (newIndexPath && ![newIndexPath isEqual:self.indexPathForPlaceholderCell]) {
+            NSIndexPath *oldIndexPath = self.indexPathForPlaceholderCell;
+            self.indexPathForPlaceholderCell = newIndexPath;
+            [self performBatchUpdates:^{
+                [self moveItemAtIndexPath:oldIndexPath toIndexPath:newIndexPath];
             }
-            
-            if(self.visibleCells.count == 0)
-                break;
-            //autoscroll
-            CGFloat cellHeight = self.visibleCells[0].contentView.bounds.size.height;
-            if (pos.y - self.contentOffset.y < cellHeight && self.contentOffset.y > 1e-3) {
-                [self autoscrollUp];
-            } else if (pos.y  - self.contentOffset.y > self.bounds.size.height - cellHeight) {
-                [self autoscrollDown];
-            } else {
-                [self stopAutoscroll];
-            }
+                           completion:nil];
         }
+
+        if (self.visibleCells.count == 0)
             break;
-            
-        case UIGestureRecognizerStateEnded:
-        case UIGestureRecognizerStateCancelled: {
-            if(!self.indexPathForPlaceholderCell)
-                break;
-            assert(self.indexPathForPlaceholderCell);
-            CGPoint pos = [gesutre locationInView:self];
-            self.movingCellSnapshotView.center = pos;
-            NSIndexPath* newIndexPath = [self indexPathForItemAtPoint:pos];
-            if (newIndexPath && ![newIndexPath isEqual:self.indexPathForPlaceholderCell]) {
-                [self moveItemAtIndexPath:self.indexPathForPlaceholderCell toIndexPath:newIndexPath];
-                self.indexPathForPlaceholderCell = newIndexPath;
-            }
-            
-            NSUInteger originalDestinationIndex = self.indexPathForPlaceholderCell.item == 0 ? 0
-            : [self getOriginalIndexPathForIndexPath:[NSIndexPath indexPathForItem:self.indexPathForPlaceholderCell.item-1 inSection:0]].item + 1;
-            NSMutableArray<NSIndexPath *> *sourceIndexPaths = indexPathsFromIndexSet(self.indexSetForDraggingCells);
-            [self.reorderDelegate reorderableCollectionView:self willMoveItemsAtIndexPaths:sourceIndexPaths toIndex:originalDestinationIndex];
-            [self.dataSource reorderableCollectionView:self moveItemAtIndexPaths:sourceIndexPaths toIndex:originalDestinationIndex];
-            
-            NSIndexPath *indexPathForPlaceholderCell = self.indexPathForPlaceholderCell;
-            self.indexPathForPlaceholderCell = nil;
-            self.originalIndexPathForPlaceholderCell = nil;
-            [self deleteItemsAtIndexPaths:@[ indexPathForPlaceholderCell ]];
-            
-            NSUInteger numDraggingCells = self.indexSetForDraggingCells.count;
-            self.indexSetForDraggingCells = nil;
-            
-            [self insertItemsAtIndexPaths:indexPathsFromRange(NSMakeRange(indexPathForPlaceholderCell.item, numDraggingCells))];
-            
-            [self tearDownSnapshotViewOfMovingCellAtIndexPath:indexPathForPlaceholderCell completion:^{
-                [self.reorderDelegate reorderableCollectionView:self didMoveItemsAtIndexPaths:sourceIndexPaths toIndex:originalDestinationIndex];
-            }];
-            
+        //autoscroll
+        CGFloat cellHeight = self.visibleCells[0].contentView.bounds.size.height;
+        if (pos.y - self.contentOffset.y < cellHeight && self.contentOffset.y > 1e-3) {
+            [self autoscrollUp];
+        } else if (pos.y - self.contentOffset.y > self.bounds.size.height - cellHeight) {
+            [self autoscrollDown];
+        } else {
             [self stopAutoscroll];
         }
+    } break;
+
+    case UIGestureRecognizerStateEnded:
+    case UIGestureRecognizerStateCancelled: {
+        assert(self.indexPathForPlaceholderCell);
+        if (!self.indexPathForPlaceholderCell)
             break;
-            
-        default:
-            break;
+        self.movingCellSnapshotView.center = pos;
+        NSUInteger destinationIndex = ([self indexPathForItemAtPoint:pos] ?: self.indexPathForPlaceholderCell).item;
+
+        NSUInteger originalDestinationIndex = destinationIndex == 0 ? 0
+                                                                    : [self getOriginalIndexPathForIndexPath:[NSIndexPath indexPathForItem:destinationIndex - 1 inSection:0]].item + 1;
+        NSMutableArray<NSIndexPath *> *sourceIndexPaths = indexPathsFromIndexSet(self.indexSetForDraggingCells);
+        [self.reorderDelegate reorderableCollectionView:self willMoveItemsAtIndexPaths:sourceIndexPaths toIndex:originalDestinationIndex];
+        [self.dataSource reorderableCollectionView:self moveItemAtIndexPaths:sourceIndexPaths toIndex:originalDestinationIndex];
+
+        NSIndexPath *indexPathForPlaceholderCell = self.indexPathForPlaceholderCell;
+        self.indexPathForPlaceholderCell = nil;
+        self.originalIndexPathForPlaceholderCell = nil;
+        [self deleteItemsAtIndexPaths:@[ indexPathForPlaceholderCell ]];
+
+        NSUInteger numDraggingCells = self.indexSetForDraggingCells.count;
+        self.indexSetForDraggingCells = nil;
+        [self insertItemsAtIndexPaths:indexPathsFromRange(NSMakeRange(destinationIndex, numDraggingCells))];
+
+        [self tearDownSnapshotViewOfMovingCellAtIndexPath:[NSIndexPath indexPathForItem:destinationIndex inSection:0]
+                                               completion:^{
+                                                   [self.reorderDelegate reorderableCollectionView:self didMoveItemsAtIndexPaths:sourceIndexPaths toIndex:originalDestinationIndex];
+                                               }];
+        [self stopAutoscroll];
+    } break;
+
+    default:
+        break;
     }
 }
 
-- (void)setupSnapshotViewOfMovingCellAtIndexPath:(NSIndexPath *)indexPath withGesturePosition:(CGPoint)position completion:(void(^)())completion {
+- (NSIndexPath *)indexPathForLastVisibleItem {
+    __block NSIndexPath *lastIndexPath = nil;
+    [self.indexPathsForVisibleItems enumerateObjectsUsingBlock:^(NSIndexPath *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+        if (!lastIndexPath || lastIndexPath.item < obj.item) {
+            lastIndexPath = obj;
+        }
+    }];
+    return lastIndexPath;
+}
+
+- (void)setupSnapshotViewOfMovingCellAtIndexPath:(NSIndexPath *)indexPath withGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
     UICollectionViewCell *cell = [self cellForItemAtIndexPath:indexPath];
     assert(cell);
-    UIView *snapshotView = [cell.contentView snapshotViewAfterScreenUpdates:YES];
+    if (!cell) {
+        return;
+    }
+    UIView *snapshotView = [cell.contentView snapshotViewAfterScreenUpdates:NO];
     snapshotView.center = cell.center;
-    snapshotView.tag = indexPath.item;
-    int selectedCount = (int)self.indexPathsForSelectedItems.count;
+    int selectedCount = (int) self.indexPathsForSelectedItems.count;
     if (selectedCount > 1) {
         UILabel *label = [[UILabel alloc] init];
         label.font = [UIFont systemFontOfSize:15];
@@ -189,50 +185,49 @@ static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSe
         [snapshotView addSubview:label];
         [snapshotView sizeToFit];
     }
-    
+
     [UIView animateWithDuration:0.3
-                          delay:0.0
-                        options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowUserInteraction
-                     animations:^{
-                         cell.contentView.alpha = 0.0;
-                         snapshotView.alpha = 0.7;
-                         snapshotView.transform = CGAffineTransformMakeScale(1.1, 1.1);
-                         [snapshotView shakeStatus:YES];
-                         snapshotView.layer.shadowOpacity = 0.7;
-                         snapshotView.center = position;
-                     }
-                     completion:^(BOOL finished) {
-                         if (completion) {
-                             completion();
-                         }
-                     }];
-    
+        delay:0.0
+        options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowUserInteraction
+        animations:^{
+            snapshotView.alpha = 0.7;
+            snapshotView.transform = CGAffineTransformMakeScale(1.1, 1.1);
+            [snapshotView shakeStatus:YES];
+            snapshotView.layer.shadowOpacity = 0.7;
+            snapshotView.center = [gestureRecognizer locationInView:self];
+        }
+        completion:^(BOOL finished) {
+            if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+                snapshotView.center = [gestureRecognizer locationInView:self];
+            }
+        }];
+
     [self addSubview:snapshotView];
-    [self bringSubviewToFront:snapshotView];
     self.movingCellSnapshotView = snapshotView;
 }
 
-- (void)tearDownSnapshotViewOfMovingCellAtIndexPath:(NSIndexPath *)indexPath completion:(void(^)())completion {
+- (void)tearDownSnapshotViewOfMovingCellAtIndexPath:(NSIndexPath *)indexPath completion:(void (^)())completion {
     UICollectionViewCell *cell = [self cellForItemAtIndexPath:indexPath];
-    if(!cell) return;
     cell.contentView.alpha = 0.0f;
+    [self.movingCellSnapshotView shakeStatus:NO];
     [UIView animateWithDuration:0.3
-                          delay:0
-                        options:0
-                     animations:^{
-                         self.movingCellSnapshotView.transform = CGAffineTransformIdentity;
-                         self.movingCellSnapshotView.frame = (CGRect) {cell.frame.origin, self.movingCellSnapshotView.frame.size};
-                         cell.contentView.alpha = 0.5f;
-                     }
-                     completion:^(BOOL finished) {
-                         [self.movingCellSnapshotView removeFromSuperview];
-                         self.movingCellSnapshotView = nil;
-                         cell.contentView.alpha = 1.0f;
-                         if (completion) {
-                             completion();
-                         }
-                     }
-     ];
+        delay:0
+        options:0
+        animations:^{
+            self.movingCellSnapshotView.transform = CGAffineTransformIdentity;
+            if (cell) {
+                self.movingCellSnapshotView.frame = (CGRect){cell.frame.origin, self.movingCellSnapshotView.frame.size};
+            }
+            cell.contentView.alpha = 0.5f;
+        }
+        completion:^(BOOL finished) {
+            [self.movingCellSnapshotView removeFromSuperview];
+            self.movingCellSnapshotView = nil;
+            cell.contentView.alpha = 1.0f;
+            if (completion) {
+                completion();
+            }
+        }];
 }
 
 - (NSIndexPath *)getOriginalIndexPathForIndexPath:(NSIndexPath *)indexPath {
@@ -246,16 +241,16 @@ static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSe
     NSUInteger index = NSNotFound;
     while (1) {
         if (![self.indexSetForDraggingCells containsIndex:originIndex]) {
-            index = index == NSNotFound ? 0 : (index+1);
+            index = index == NSNotFound ? 0 : (index + 1);
             // ignore placeholder cell
             if (self.indexPathForPlaceholderCell && index == self.indexPathForPlaceholderCell.item) {
-                index ++;
+                index++;
             }
             if (index == indexPath.item) {
                 return [NSIndexPath indexPathForItem:originIndex inSection:0];
             }
         }
-        originIndex ++;
+        originIndex++;
     }
 }
 
@@ -274,7 +269,7 @@ static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSe
         return;
     }
     [self stopAutoscroll];
-//    NSLog(@"begin autoscrolling");
+    //    NSLog(@"begin autoscrolling");
     self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleAutoscroll:)];
     self.isAutoscrollDown = isAutoscrollDown;
     [self.displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
@@ -282,7 +277,7 @@ static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSe
 
 - (void)stopAutoscroll {
     if (self.displayLink) {
-//        NSLog(@"end autoscrolling");
+        //        NSLog(@"end autoscrolling");
         if (!self.displayLink.paused) {
             [self.displayLink invalidate];
         }
@@ -324,16 +319,16 @@ static NSMutableIndexSet *indexSetFromIndexPaths(NSArray<NSIndexPath *> *indexPa
 }
 
 static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSet) {
-    NSMutableArray<NSIndexPath *> *indexPaths = [NSMutableArray<NSIndexPath *>  arrayWithCapacity:indexSet.count];
-    [indexSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+    NSMutableArray<NSIndexPath *> *indexPaths = [NSMutableArray<NSIndexPath *> arrayWithCapacity:indexSet.count];
+    [indexSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *_Nonnull stop) {
         [indexPaths addObject:[NSIndexPath indexPathForItem:idx inSection:0]];
     }];
     return indexPaths;
 }
 
 static NSMutableArray<NSIndexPath *> *indexPathsFromRange(NSRange range) {
-    NSMutableArray<NSIndexPath *> *indexPaths = [NSMutableArray<NSIndexPath *>  arrayWithCapacity:range.length];
-    for (NSUInteger i = range.location; i < range.location + range.length; i ++) {
+    NSMutableArray<NSIndexPath *> *indexPaths = [NSMutableArray<NSIndexPath *> arrayWithCapacity:range.length];
+    for (NSUInteger i = range.location; i < range.location + range.length; i++) {
         [indexPaths addObject:[NSIndexPath indexPathForItem:i inSection:0]];
     }
     return indexPaths;

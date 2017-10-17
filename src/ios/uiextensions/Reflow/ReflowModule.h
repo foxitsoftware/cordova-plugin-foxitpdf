@@ -10,11 +10,11 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import "UIExtensionsSharedHeader.h"
-#import "FSPDFReader.h"
+#import "../Common/UIExtensionsSharedHeader.h"
 
-@interface ReflowModule : NSObject<IGestureEventListener, IStateChangeListener, IDocEventListener, IPageEventListener, IModule>
+@interface ReflowModule : NSObject <IGestureEventListener, IStateChangeListener, IDocEventListener, IPageEventListener, IModule>
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
+- (void)enterReflowMode:(BOOL)flag;
 
 @end

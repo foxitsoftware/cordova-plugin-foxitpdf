@@ -10,22 +10,21 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
 #import "MagnifierView.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-@interface ReplaceToolHandler : NSObject<IToolHandler>
-{
+@interface ReplaceToolHandler : NSObject <IToolHandler> {
     MagnifierView *_magnifierView;
 }
-@property (nonatomic, assign) enum FS_ANNOTTYPE type;
+@property (nonatomic, assign) FSAnnotType type;
 @property (nonatomic, assign) int startPosIndex;
 @property (nonatomic, assign) int endPosIndex;
 @property (nonatomic, strong) NSArray *arraySelectedRect;
 @property (nonatomic, assign) CGRect currentEditRect;
 @property (nonatomic, strong) NSObject *currentVC;
-@property (nonatomic, strong) FSRectF* currentEditPdfRect;
+@property (nonatomic, strong) FSRectF *currentEditPdfRect;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 - (void)clearSelection;
 @end

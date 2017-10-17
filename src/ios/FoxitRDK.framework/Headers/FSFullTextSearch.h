@@ -17,6 +17,7 @@
 
 #import "FSCommon.h"
 
+NS_ASSUME_NONNULL_BEGIN
 /** @brief Callback to received the search result, caller should inherit this class, and implement their own class. */
 @interface FSSearchCallback : NSObject
 {
@@ -68,9 +69,9 @@
  *
  * @return  The document soure object.
  */
-+(FSDocumentsSource*)create: (NSString *)directory;
-/** @brief Default initialization. */
--(id)init;
+-(id)initWithDirectory: (NSString *)directory;
+
+-(id)init NS_UNAVAILABLE;
 
 /** @brief Free the object. */
 -(void)dealloc;
@@ -78,7 +79,7 @@
 @end
 
 /** @brief Rand mode for searching. */
-enum FS_RANKMODE {
+typedef NS_ENUM(NSUInteger, FSRankMode) {
     /** @brief No rank. */
     e_rankNone,
     /** @brief Rank by hit count, in ascending order. */
@@ -100,21 +101,19 @@ enum FS_RANKMODE {
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
 /** @brief Create a full text search object. */
-+(FSFullTextSearch*)create;
+-(id)init;
 /** @brief Set the path of data base , which stores the indexed data. */
 -(void)setDataBasePath:(NSString *)pathOfDataBase;
 /**
- * @brief	Start to index the PDF documents which recevies from the source.
+ * @brief	Start to index the PDF documents which recevies from the source. This is progressive, which means that the job may not finished when it return.
  *
  * @param[in] source    The document source object.
- * @param[in] pause     The pause handler, for progressive indexing.
+ * @param[in] pause     The pause handler, for progressive indexing, could be nil.
  * @param[in] reUpdate  whether re-update the indexed data or not.
  *
- * @return  The current state for progressive indexing.
+ * @return  A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  */
--(enum FS_PROGRESSSTATE)startUpdateIndex: (FSDocumentsSource*)source pause: (FSPauseCallback*)pause reUpdate:(BOOL)reUpdate;
-/** @brief Continue to update the index data. */
--(enum FS_PROGRESSSTATE)continueUpdateIndex;
+-(FSProgressive * _Nullable)startUpdateIndex: (FSDocumentsSource*)source pause: (FSPauseCallback* _Nullable)pause reUpdate:(BOOL)reUpdate;
 /**
  * @brief	Update the specified PDF document.
  *
@@ -132,11 +131,12 @@ enum FS_RANKMODE {
  *
  * @return  YES if success.
  */
--(BOOL)searchOf: (NSString *)matchString RankMode:(enum FS_RANKMODE)rankMode searchCallback: (FSSearchCallback*)searchCallback;
+-(BOOL)searchOf: (NSString *)matchString RankMode:(FSRankMode)rankMode searchCallback: (FSSearchCallback* _Nullable)searchCallback;
 
 /** @brief Free the object. */
 -(void)dealloc;
 
 @end
 
+NS_ASSUME_NONNULL_END
 

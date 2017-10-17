@@ -15,14 +15,14 @@
 
 @protocol IPropertyValueChangedListener;
 
-@interface FontLayout : UIView <UITableViewDataSource,UITableViewDelegate>
+@interface FontLayout : UIView <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, assign) float layoutHeight;
 @property (nonatomic, assign) float mainLayoutHeight;
 
-- (instancetype) initWithFrame:(CGRect)frame;
+- (instancetype)initWithFrame:(CGRect)frame;
 - (long)supportProperty;
-- (void)setCurrentFontName:(NSString*)fontName;
+- (void)setCurrentFontName:(NSString *)fontName;
 - (void)setCurrentFontSize:(int)fontSize;
 - (void)setCurrentListener:(id<IPropertyValueChangedListener>)currentListener;
 - (void)addDivideView;

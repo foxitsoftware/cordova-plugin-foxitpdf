@@ -11,10 +11,12 @@
  */
 
 #import "ReplaceModule.h"
+#import "../../../../libs/uiextensions_src/UIExtensions/SelectTool/SelectToolHandler.h"
+#import "../Common/UIExtensionsSharedHeader.h"
+#import "CaretAnnotHandler.h"
+#import "ReplaceToolHandler.h"
+#import "Utility.h"
 #import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsSharedHeader.h"
-#import "Utility+Demo.h"
-#import "../../../../libs/uiextensions_src/uiextensions/SelectTool/SelectToolHandler.h"
 
 @interface ReplaceModule ()
 
@@ -26,165 +28,148 @@
 @end
 
 @implementation ReplaceModule {
-    FSPDFViewCtrl* __weak _pdfViewCtrl;
-    UIExtensionsManager* __weak _extensionsManager;
-    FSPDFReader* __weak _pdfReader;
-    enum FS_ANNOTTYPE _annotType;
+    FSPDFViewCtrl *__weak _pdfViewCtrl;
+    UIExtensionsManager *__weak _extensionsManager;
+    FSAnnotType _annotType;
 }
 
--(NSString*)getName
-{
+- (NSString *)getName {
     return @"Replace";
 }
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader
-{
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager {
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
-        _pdfReader = pdfReader;
-        self.colors = @[@0x996666,@0xFF3333,@0xFF00FF,@0x9966FF,@0x66CC33,@0x00CCFF,@0xFF9900,@0xFFFFFF,@0xC3C3C3,@0x000000];
+        self.colors = @[ @0x996666, @0xFF3333, @0xFF00FF, @0x9966FF, @0x66CC33, @0x00CCFF, @0xFF9900, @0xFFFFFF, @0xC3C3C3, @0x000000 ];
+        [[CaretAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [[ReplaceToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
         [self loadModule];
     }
     return self;
 }
 
--(void)loadModule
-{
-    _pdfReader.moreToolsBar.replaceClicked = ^(){
+- (void)loadModule {
+    _extensionsManager.moreToolsBar.replaceClicked = ^() {
         _annotType = e_annotCaret;
         [self annotItemClicked];
     };
-    
+
     [_extensionsManager registerAnnotPropertyListener:self];
-    
 }
 
--(void)annotItemClicked
-{
-    SelectToolHandler *select =  (SelectToolHandler*)[_extensionsManager getToolHandlerByName:Tool_Select];
+- (void)annotItemClicked {
+    SelectToolHandler *select = (SelectToolHandler *) [_extensionsManager getToolHandlerByName:Tool_Select];
     [select clearSelection];
-    
+
     id<IToolHandler> toolHandler = [_extensionsManager getToolHandlerByName:Tool_Replace];
     [_extensionsManager setCurrentToolHandler:toolHandler];
-    
-    [_pdfReader changeState:STATE_ANNOTTOOL];
-    [_pdfReader.toolSetBar removeAllItems];
-    
+
+    [_extensionsManager changeState:STATE_ANNOTTOOL];
+    [_extensionsManager.toolSetBar removeAllItems];
+
     TbBaseItem *doneItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"annot_done"] imageSelected:[UIImage imageNamed:@"annot_done"] imageDisable:[UIImage imageNamed:@"annot_done"] background:[UIImage imageNamed:@"annotation_toolitembg"]];
     doneItem.tag = 0;
-    [_pdfReader.toolSetBar addItem:doneItem displayPosition:Position_CENTER];
-    doneItem.onTapClick = ^(TbBaseItem*item){
+    [_extensionsManager.toolSetBar addItem:doneItem displayPosition:Position_CENTER];
+    doneItem.onTapClick = ^(TbBaseItem *item) {
         [_extensionsManager setCurrentToolHandler:nil];
-        [_pdfReader changeState:STATE_EDIT];
+        [_extensionsManager changeState:STATE_EDIT];
     };
-    
-    TbBaseItem* propertyItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"annotation_toolitembg"] imageSelected:[UIImage imageNamed:@"annotation_toolitembg"] imageDisable:[UIImage imageNamed:@"annotation_toolitembg"]];
+
+    TbBaseItem *propertyItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"annotation_toolitembg"] imageSelected:[UIImage imageNamed:@"annotation_toolitembg"] imageDisable:[UIImage imageNamed:@"annotation_toolitembg"]];
     self.propertyItem = propertyItem;
     self.propertyItem.tag = 1;
     [self.propertyItem setInsideCircleColor:[_extensionsManager getPropertyBarSettingColor:e_annotCaret]];
-    [_pdfReader.toolSetBar addItem:self.propertyItem displayPosition:Position_CENTER];
-    self.propertyItem.onTapClick = ^(TbBaseItem* item)
-    {
+    [_extensionsManager.toolSetBar addItem:self.propertyItem displayPosition:Position_CENTER];
+    self.propertyItem.onTapClick = ^(TbBaseItem *item) {
         self.propertyIsShow = YES;
         if (DEVICE_iPHONE) {
             CGRect rect = [item.contentView convertRect:item.contentView.bounds toView:_pdfViewCtrl];
             [_extensionsManager showProperty:e_annotCaret rect:rect inView:_pdfViewCtrl];
-        }
-        else
-        {
+        } else {
             [_extensionsManager showProperty:e_annotCaret rect:item.contentView.bounds inView:item.contentView];
         }
     };
-    
+
     TbBaseItem *continueItem = nil;
-    if (_pdfReader.continueAddAnnot) {
-        continueItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"annot_continue"] imageSelected:[UIImage imageNamed:@"annot_continue"] imageDisable:[UIImage imageNamed:@"annot_continue"]background:[UIImage imageNamed:@"annotation_toolitembg"]];
-    }
-    else
-    {
-        continueItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"annot_single"] imageSelected:[UIImage imageNamed:@"annot_single"] imageDisable:[UIImage imageNamed:@"annot_single"]background:[UIImage imageNamed:@"annotation_toolitembg"]];
+    if (_extensionsManager.continueAddAnnot) {
+        continueItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"annot_continue"] imageSelected:[UIImage imageNamed:@"annot_continue"] imageDisable:[UIImage imageNamed:@"annot_continue"] background:[UIImage imageNamed:@"annotation_toolitembg"]];
+    } else {
+        continueItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"annot_single"] imageSelected:[UIImage imageNamed:@"annot_single"] imageDisable:[UIImage imageNamed:@"annot_single"] background:[UIImage imageNamed:@"annotation_toolitembg"]];
     }
     continueItem.tag = 3;
-    [_pdfReader.toolSetBar addItem:continueItem displayPosition:Position_CENTER];
-    continueItem.onTapClick = ^(TbBaseItem* item)
-    {
+    [_extensionsManager.toolSetBar addItem:continueItem displayPosition:Position_CENTER];
+    continueItem.onTapClick = ^(TbBaseItem *item) {
         for (UIView *view in _pdfViewCtrl.subviews) {
             if (view.tag == 2112) {
                 return;
             }
         }
-        _pdfReader.continueAddAnnot = !_pdfReader.continueAddAnnot;
-        if (_pdfReader.continueAddAnnot) {
+        _extensionsManager.continueAddAnnot = !_extensionsManager.continueAddAnnot;
+        if (_extensionsManager.continueAddAnnot) {
             item.imageNormal = [UIImage imageNamed:@"annot_continue"];
             item.imageSelected = [UIImage imageNamed:@"annot_continue"];
-        }
-        else
-        {
+        } else {
             item.imageNormal = [UIImage imageNamed:@"annot_single"];
             item.imageSelected = [UIImage imageNamed:@"annot_single"];
         }
-        
-        [Utility showAnnotationContinue:_pdfReader.continueAddAnnot pdfViewCtrl:_pdfViewCtrl siblingSubview:_pdfReader.toolSetBar.contentView];
+
+        [Utility showAnnotationContinue:_extensionsManager.continueAddAnnot pdfViewCtrl:_pdfViewCtrl siblingSubview:_extensionsManager.toolSetBar.contentView];
         [self performSelector:@selector(dismissAnnotationContinue) withObject:nil afterDelay:1];
     };
-    
-    TbBaseItem *iconItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"common_read_more"] imageSelected:[UIImage imageNamed:@"common_read_more"] imageDisable:[UIImage imageNamed:@"common_read_more"]background:[UIImage imageNamed:@"annotation_toolitembg"]];
+
+    TbBaseItem *iconItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"common_read_more"] imageSelected:[UIImage imageNamed:@"common_read_more"] imageDisable:[UIImage imageNamed:@"common_read_more"] background:[UIImage imageNamed:@"annotation_toolitembg"]];
     iconItem.tag = 6;
-    [_pdfReader.toolSetBar addItem:iconItem displayPosition:Position_CENTER];
-    iconItem.onTapClick = ^(TbBaseItem* item)
-    {
-        _pdfReader.hiddenMoreToolsBar = NO;
+    [_extensionsManager.toolSetBar addItem:iconItem displayPosition:Position_CENTER];
+    iconItem.onTapClick = ^(TbBaseItem *item) {
+        _extensionsManager.hiddenMoreToolsBar = NO;
     };
-    [Utility showAnnotationType:NSLocalizedStringFromTable(@"kReplaceText", @"FoxitLocalizable", nil) type:e_annotCaret pdfViewCtrl:_pdfViewCtrl  belowSubview:_pdfReader.toolSetBar.contentView];
-    
+    [Utility showAnnotationType:FSLocalizedString(@"kReplaceText") type:e_annotCaret pdfViewCtrl:_pdfViewCtrl belowSubview:_extensionsManager.toolSetBar.contentView];
+
     [self.propertyItem.contentView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.bottom.mas_equalTo(self.propertyItem.contentView.superview.mas_bottom).offset(-5);
         make.right.equalTo(self.propertyItem.contentView.superview.mas_centerX).offset(-15);
         make.width.mas_equalTo(self.propertyItem.contentView.bounds.size.width);
         make.height.mas_equalTo(self.propertyItem.contentView.bounds.size.height);
     }];
-    
+
     [continueItem.contentView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.bottom.mas_equalTo(continueItem.contentView.superview.mas_bottom).offset(-5);
         make.left.equalTo(self.propertyItem.contentView.superview.mas_centerX).offset(15);
         make.width.mas_equalTo(continueItem.contentView.bounds.size.width);
         make.height.mas_equalTo(continueItem.contentView.bounds.size.height);
-        
+
     }];
-    
+
     [doneItem.contentView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.bottom.mas_equalTo(doneItem.contentView.superview.mas_bottom).offset(-5);
         make.right.equalTo(self.propertyItem.contentView.mas_left).offset(-30);
         make.width.mas_equalTo(doneItem.contentView.bounds.size.width);
         make.height.mas_equalTo(doneItem.contentView.bounds.size.height);
-        
+
     }];
-    
+
     [iconItem.contentView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.bottom.mas_equalTo(iconItem.contentView.superview.mas_bottom).offset(-5);
         make.left.equalTo(continueItem.contentView.mas_right).offset(30);
         make.width.mas_equalTo(iconItem.contentView.bounds.size.width);
         make.height.mas_equalTo(iconItem.contentView.bounds.size.height);
-        
+
     }];
 }
 
-- (void)onPropertyBarDismiss
-{
+- (void)onPropertyBarDismiss {
     self.propertyIsShow = NO;
 }
 
--(void)dismissAnnotationContinue
-{
+- (void)dismissAnnotationContinue {
     [Utility dismissAnnotationContinue:_extensionsManager.pdfViewCtrl];
 }
 
 #pragma mark - IAnnotPropertyListener
 
-- (void)onAnnotColorChanged:(unsigned int)color annotType:(enum FS_ANNOTTYPE)annotType
-{
+- (void)onAnnotColorChanged:(unsigned int)color annotType:(FSAnnotType)annotType {
     if (annotType == e_annotCaret) {
         [self.propertyItem setInsideCircleColor:color];
     }

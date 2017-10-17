@@ -10,10 +10,10 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <UIKit/UIKit.h>
-#import <FoxitRDK/FSPDFObjC.h>
 #import "FSReorderableCollectionView.h"
 #import "TbBaseBar.h"
+#import <FoxitRDK/FSPDFObjC.h>
+#import <UIKit/UIKit.h>
 
 @class FSThumbnailViewController;
 @protocol FSPageOrganizerDelegate;
@@ -24,11 +24,11 @@
 
 @property (nonatomic, weak) id<FSThumbnailViewControllerDelegate> delegate;
 @property (nonatomic, weak) id<FSPageOrganizerDelegate> pageManipulationDelegate;
-@property (nonatomic, strong) FSReorderableCollectionView* collectionView;
-@property (nonatomic, strong) FSPDFDoc* document;
+@property (nonatomic, strong) FSReorderableCollectionView *collectionView;
+@property (nonatomic, strong) FSPDFDoc *document;
 @property (nonatomic) BOOL isEditing;
 
-- (instancetype)initWithDocument:(FSPDFDoc*)document;
+- (instancetype)initWithDocument:(FSPDFDoc *)document;
 
 @end
 
@@ -36,7 +36,6 @@
 
 - (void)exitThumbnailViewController:(FSThumbnailViewController *)thumbnailViewController;
 - (void)thumbnailViewController:(FSThumbnailViewController *)thumbnailViewController openPage:(int)page;
-- (void)thumbnailViewController:(FSThumbnailViewController *)thumbnailViewController PagesInserted:(FSPDFDoc*)destDoc;
-- (void)thumbnailViewController:(FSThumbnailViewController *)thumbnailViewController getThumbnailForPageAtIndex:(NSUInteger)index thumbnailSize:(CGSize)thumbnailSize callback:(void(^ __nonnull)(UIImage *thumbnailImage))callback;
+- (void)thumbnailViewController:(FSThumbnailViewController *)thumbnailViewController getThumbnailForPageAtIndex:(NSUInteger)index thumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)())needPause callback:(void (^__nonnull)(UIImage *thumbnailImage))callback;
 
 @end

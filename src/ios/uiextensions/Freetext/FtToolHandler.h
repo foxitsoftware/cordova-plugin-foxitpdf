@@ -10,21 +10,21 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
 #import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-@interface FtToolHandler : NSObject<IToolHandler, IScrollViewEventListener, IRotationEventListener>
-{
+@interface FtToolHandler : NSObject <IToolHandler, IScrollViewEventListener, IRotationEventListener> {
     UITextView *_textView;
     BOOL _isSaved;
     BOOL _keyboardShown;
 }
 
-@property (nonatomic, assign) enum FS_ANNOTTYPE type;
+@property (nonatomic, assign) FSAnnotType type;
 @property (nonatomic, assign) CGPoint freeTextStartPoint;
-@property (nonatomic, assign)BOOL isTypewriterToolbarActive;
+@property (nonatomic, assign) BOOL isTypewriterToolbarActive;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
-- (void)save; //todel
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
+- (void)save;
+- (void)exitWithoutSave;
 
 @end

@@ -10,10 +10,10 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 #import "../Utility/Utility.h"
 #import "PropertyBar.h"
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @interface ColorItem : UIView
 

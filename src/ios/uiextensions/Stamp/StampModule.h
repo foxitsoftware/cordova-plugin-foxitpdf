@@ -12,12 +12,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "UIExtensionsSharedHeader.h"
-#import "FSPDFReader.h"
+#import "../Common/UIExtensionsSharedHeader.h"
 
-@interface StampModule : NSObject<IAnnotPropertyListener, IModule>
+@interface StampModule : NSObject <IAnnotPropertyListener, IModule>
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader;
-
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

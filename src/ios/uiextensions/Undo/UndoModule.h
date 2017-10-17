@@ -10,11 +10,10 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import "UIExtensionsSharedHeader.h"
-#import "FSPDFReader.h"
+#import "../Common/UIExtensionsSharedHeader.h"
 
-@interface UndoModule : NSObject<IFSUndoEventListener>
+@interface UndoModule : NSObject <IFSUndoEventListener>
 
-- (id)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader;
+- (id)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

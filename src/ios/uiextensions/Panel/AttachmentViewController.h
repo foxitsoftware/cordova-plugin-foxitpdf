@@ -13,8 +13,7 @@
 #import "AnnotationListCell.h"
 #import "FileManageBaseViewController.h"
 
-enum MoveFileAlertCheckType
-{
+enum MoveFileAlertCheckType {
     MoveFileAlertCheckType_Ask = 0,
     MoveFileAlertCheckType_Replace = 1,
     MoveFileAlertCheckType_ReplaceAll = 2,
@@ -24,31 +23,31 @@ enum MoveFileAlertCheckType
 };
 typedef enum MoveFileAlertCheckType MoveFileAlertCheckType;
 
-
 @class AttachmentPanel;
 
-@interface AttachmentViewController : UITableViewController<IAnnotEventListener,UIAlertViewDelegate,UITextViewDelegate,UITableViewDelegate,UIDocumentInteractionControllerDelegate, IDocEventListener, IPageEventListener>
-{
+@interface AttachmentViewController : UITableViewController <IAnnotEventListener, UIAlertViewDelegate, UITextViewDelegate, UITableViewDelegate, UIDocumentInteractionControllerDelegate, IDocEventListener, IPageEventListener> {
     BOOL _alertViewFinished;
     MoveFileAlertCheckType _moveFileAlertCheckType;
 }
 @property (atomic, strong) NSMutableArray *allAttachmentsSections;
-@property (nonatomic,strong)AttachmentItem *editAnnoItem;
-@property (nonatomic,strong)NSIndexPath *indexPath;
-@property (nonatomic,assign)BOOL isShowMore;
+@property (nonatomic, strong) AttachmentItem *editAnnoItem;
+@property (nonatomic, strong) NSIndexPath *indexPath;
+@property (nonatomic, assign) BOOL isShowMore;
 @property (nonatomic, strong) NSIndexPath *moreIndexPath;
 
-- (id)initWithStyle:(UITableViewStyle)style extensionsManager:(UIExtensionsManager*)extensionsManager module:(AttachmentPanel*)attachmentPanel;
+- (id)initWithStyle:(UITableViewStyle)style extensionsManager:(UIExtensionsManager *)extensionsManager module:(AttachmentPanel *)attachmentPanel;
 - (void)loadData;
 - (void)clearData;
 // attachment could be a attachment annotation or a document attachment
 - (void)deleteAnnotation:(AnnotationItem *)item;
-- (void)saveAttachment:(AnnotationItem*)item;
+- (void)saveAttachment:(AnnotationItem *)item;
 - (void)addNoteToAnnotation:(AnnotationItem *)item withIndexPath:(NSIndexPath *)indexPath;
 - (void)updateAllAttachments:(AttachmentItem *)attachmentItem operation:(int)operation;
 
-- (void)onDocumentAttachmentAdded:(AttachmentItem*)attachmentItem;
-- (void)onDocumentAttachmentDeleted:(AttachmentItem*)attachmentItem;
-- (void)onDocumentAttachmentModified:(AttachmentItem*)attachmentItem;
+- (void)onDocumentAttachmentAdded:(AttachmentItem *)attachmentItem;
+- (void)onDocumentAttachmentDeleted:(AttachmentItem *)attachmentItem;
+- (void)onDocumentAttachmentModified:(AttachmentItem *)attachmentItem;
+
+- (void)hideCellEditView;
 
 @end

@@ -118,7 +118,7 @@
 //		[dateFormatter setDateStyle:NSDateFormatterShortStyle];
 //		[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 //
-//		_lastUpdatedLabel.text = [NSString stringWithFormat:@"%@: %@", NSLocalizedStringFromTable(@"kLastUpdated", @"FoxitLocalizable", nil), [dateFormatter stringFromDate:date]];
+//		_lastUpdatedLabel.text = [NSString stringWithFormat:@"%@: %@", FSLocalizedString(@"kLastUpdated"), [dateFormatter stringFromDate:date]];
 //        [UserDefaultUtil setEGORefreshLabel:_lastUpdatedLabel.text];
 //	} else {
 //		

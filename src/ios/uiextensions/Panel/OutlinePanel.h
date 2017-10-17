@@ -10,19 +10,18 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-#import <FoxitRDK/FSPDFViewControl.h>
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager+Private.h"
-#import "PanelController.h"
 #import "IPanelSpec.h"
+#import "PanelController.h"
+#import "UIExtensionsManager+Private.h"
+#import <Foundation/Foundation.h>
+#import <FoxitRDK/FSPDFViewControl.h>
+#import <UIKit/UIKit.h>
 
 @protocol IPanelSpec;
 
 /** @brief Outline panel to show the list of all bookmarks in the document. */
-@interface OutlinePanel : NSObject <IPanelSpec,IDocEventListener,IPageEventListener>
+@interface OutlinePanel : NSObject <IPanelSpec, IDocEventListener, IPageEventListener>
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager panelController:(PanelController*)panelController;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager panelController:(FSPanelController *)panelController;
 - (void)load;
 @end

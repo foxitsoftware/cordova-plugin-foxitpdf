@@ -10,14 +10,12 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <Foundation/Foundation.h>
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "../UIExtensionsManager.h"
+#import "../Common/UIExtensionsSharedHeader.h"
 
 /** @brief UI controls for the text search tool. */
-@interface SearchModule : NSObject<IDrawEventListener,IScrollViewEventListener,IGestureEventListener,IDocEventListener,UITableViewDelegate,UITableViewDataSource,UISearchBarDelegate,UIScrollViewDelegate,UIGestureRecognizerDelegate, IModule>
+@interface SearchModule : NSObject <IDrawEventListener, IScrollViewEventListener, IGestureEventListener, IDocEventListener, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, UIScrollViewDelegate, UIGestureRecognizerDelegate, IModule>
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 - (void)load;
 - (void)showSearchBar:(BOOL)show;
 

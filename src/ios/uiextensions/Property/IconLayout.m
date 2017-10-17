@@ -10,11 +10,11 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <UIKit/UIKit.h>
 #import "IconLayout.h"
+#import "ColorUtility.h"
 #import "PropertyBar.h"
 #import "Utility.h"
-#import "ColorUtility.h"
+#import <UIKit/UIKit.h>
 
 @interface IconLayout ()
 
@@ -29,36 +29,34 @@
 
 @implementation IconLayout
 
-
-- (instancetype)initWithFrame:(CGRect)frame iconType:(long)iconType
-{
+- (instancetype)initWithFrame:(CGRect)frame iconType:(long)iconType {
     self = [super initWithFrame:frame];
     if (self) {
         self.currentShowIconType = iconType;
         if (iconType & PROPERTY_ICONTYPE) {
-            self.arrayNames = [[NSArray alloc] initWithObjects:NSLocalizedStringFromTable(@"kIconCheck", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconCircle", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconComment", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconCross", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconHelp", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconInsert", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconKey", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconNewParagraph", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconNote", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconParagraph", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconRightArrow", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconRightPointer", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconStar", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconUpArrow", @"FoxitLocalizable", nil),
-                               NSLocalizedStringFromTable(@"kIconUpLeftArrow", @"FoxitLocalizable", nil), nil];
+            self.arrayNames = [[NSArray alloc] initWithObjects:FSLocalizedString(@"kIconCheck"),
+                                                               FSLocalizedString(@"kIconCircle"),
+                                                               FSLocalizedString(@"kIconComment"),
+                                                               FSLocalizedString(@"kIconCross"),
+                                                               FSLocalizedString(@"kIconHelp"),
+                                                               FSLocalizedString(@"kIconInsert"),
+                                                               FSLocalizedString(@"kIconKey"),
+                                                               FSLocalizedString(@"kIconNewParagraph"),
+                                                               FSLocalizedString(@"kIconNote"),
+                                                               FSLocalizedString(@"kIconParagraph"),
+                                                               FSLocalizedString(@"kIconRightArrow"),
+                                                               FSLocalizedString(@"kIconRightPointer"),
+                                                               FSLocalizedString(@"kIconStar"),
+                                                               FSLocalizedString(@"kIconUpArrow"),
+                                                               FSLocalizedString(@"kIconUpLeftArrow"), nil];
             self.arrayImages = [[NSArray alloc] initWithObjects:@"Check.png", @"ISCircle.png", @"Comment.png", @"Cross.png", @"Help.png", @"Insert.png", @"Key.png", @"New Paragraph.png", @"Note.png", @"Paragraph.png", @"Right Arrow.png", @"Right Pointer.png", @"Star.png", @"Up Arrow.png", @"Up-left Arrow.png", nil];
         }
-        
+
         if (iconType & PROPERTY_ATTACHMENT_ICONTYPE) {
-            self.arrayNames = [[NSArray alloc] initWithObjects:NSLocalizedStringFromTable(@"kGraph", @"FoxitLocalizable", nil),
-                              NSLocalizedStringFromTable(@"kPushpin", @"FoxitLocalizable", nil),
-                              NSLocalizedStringFromTable(@"kPaperclip", @"FoxitLocalizable", nil),
-                              NSLocalizedStringFromTable(@"kTag", @"FoxitLocalizable", nil), nil];
+            self.arrayNames = [[NSArray alloc] initWithObjects:FSLocalizedString(@"kGraph"),
+                                                               FSLocalizedString(@"kPushpin"),
+                                                               FSLocalizedString(@"kPaperclip"),
+                                                               FSLocalizedString(@"kTag"), nil];
             self.arrayImages = [[NSArray alloc] initWithObjects:@"Graph.png", @"Pushpin.png", @"Paperclip.png", @"Tag.png", nil];
         }
 
@@ -71,24 +69,20 @@
     return self;
 }
 
-- (long)supportProperty
-{
+- (long)supportProperty {
     return PROPERTY_ICONTYPE;
 }
 
--(void)setCurrentIconType:(int)type
-{
+- (void)setCurrentIconType:(int)type {
     _currentIconType = type;
     [self scrollToCurrentIcon];
 }
 
--(void)setCurrentListener:(id<IPropertyValueChangedListener>)currentListener
-{
+- (void)setCurrentListener:(id<IPropertyValueChangedListener>)currentListener {
     _currentListener = currentListener;
 }
 
--(void)addDivideView
-{
+- (void)addDivideView {
     for (UIView *view in self.subviews) {
         if (view.tag == 1000) {
             [view removeFromSuperview];
@@ -99,38 +93,35 @@
     divide.backgroundColor = [UIColor colorWithRGBHex:0x5c5c5c];
     divide.alpha = 0.2f;
     [self addSubview:divide];
-    
 }
 
--(void)resetLayout
-{
-    
+- (void)resetLayout {
     for (UIView *view in self.subviews) {
         [view removeFromSuperview];
     }
     if (self.currentShowIconType & PROPERTY_ICONTYPE) {
-        self.arrayNames = [[NSArray alloc] initWithObjects:NSLocalizedStringFromTable(@"kIconCheck", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconCircle", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconComment", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconCross", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconHelp", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconInsert", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconKey", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconNewParagraph", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconNote", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconParagraph", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconRightArrow", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconRightPointer", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconStar", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconUpArrow", @"FoxitLocalizable", nil),
-                           NSLocalizedStringFromTable(@"kIconUpLeftArrow", @"FoxitLocalizable", nil), nil];
+        self.arrayNames = [[NSArray alloc] initWithObjects:FSLocalizedString(@"kIconCheck"),
+                                                           FSLocalizedString(@"kIconCircle"),
+                                                           FSLocalizedString(@"kIconComment"),
+                                                           FSLocalizedString(@"kIconCross"),
+                                                           FSLocalizedString(@"kIconHelp"),
+                                                           FSLocalizedString(@"kIconInsert"),
+                                                           FSLocalizedString(@"kIconKey"),
+                                                           FSLocalizedString(@"kIconNewParagraph"),
+                                                           FSLocalizedString(@"kIconNote"),
+                                                           FSLocalizedString(@"kIconParagraph"),
+                                                           FSLocalizedString(@"kIconRightArrow"),
+                                                           FSLocalizedString(@"kIconRightPointer"),
+                                                           FSLocalizedString(@"kIconStar"),
+                                                           FSLocalizedString(@"kIconUpArrow"),
+                                                           FSLocalizedString(@"kIconUpLeftArrow"), nil];
         self.arrayImages = [[NSArray alloc] initWithObjects:@"Check.png", @"ISCircle.png", @"Comment.png", @"Cross.png", @"Help.png", @"Insert.png", @"Key.png", @"New Paragraph.png", @"Note.png", @"Paragraph.png", @"Right Arrow.png", @"Right Pointer.png", @"Star.png", @"Up Arrow.png", @"Up-left Arrow.png", nil];
     }
     if (self.currentShowIconType & PROPERTY_ATTACHMENT_ICONTYPE) {
-        self.arrayNames = [[NSArray alloc] initWithObjects:NSLocalizedStringFromTable(@"kGraph", @"FoxitLocalizable", nil),
-                          NSLocalizedStringFromTable(@"kPushpin", @"FoxitLocalizable", nil),
-                          NSLocalizedStringFromTable(@"kPaperclip", @"FoxitLocalizable", nil),
-                          NSLocalizedStringFromTable(@"kTag", @"FoxitLocalizable", nil), nil];
+        self.arrayNames = [[NSArray alloc] initWithObjects:FSLocalizedString(@"kGraph"),
+                                                           FSLocalizedString(@"kPushpin"),
+                                                           FSLocalizedString(@"kPaperclip"),
+                                                           FSLocalizedString(@"kTag"), nil];
         self.arrayImages = [[NSArray alloc] initWithObjects:@"Graph.png", @"Pushpin.png", @"Paperclip.png", @"Tag.png", nil];
     }
 
@@ -140,18 +131,15 @@
     self.layoutHeight = 100;
     [self addSubview:self.tableView];
     [self setCurrentIconType:_currentIconType];
-    
 }
 
 #pragma mark -  table view delegate handler
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return 40;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    int newIconType = (int)indexPath.row;
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    int newIconType = (int) indexPath.row;
     if (_currentListener) {
         if (self.currentShowIconType & PROPERTY_ICONTYPE) {
             [_currentListener onProperty:PROPERTY_ICONTYPE changedFrom:[NSNumber numberWithInt:_currentIconType] to:[NSNumber numberWithInt:newIconType]];
@@ -159,7 +147,6 @@
         if (self.currentShowIconType & PROPERTY_ATTACHMENT_ICONTYPE) {
             [_currentListener onProperty:PROPERTY_ATTACHMENT_ICONTYPE changedFrom:[NSNumber numberWithInt:_currentIconType] to:[NSNumber numberWithInt:newIconType]];
         }
-
     }
     _currentIconType = newIconType;
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
@@ -168,21 +155,17 @@
 
 #pragma mark -  table view datasource handler
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return self.arrayNames.count;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     static NSString *CellIdentifier = @"CellIcon";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil)
-    {
+    if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
         //1. icon
-        UIImageView *imageViewIcon = [[UIImageView alloc] initWithFrame:CGRectMake(ITEMLRSPACE,(cell.frame.size.height - 26) / 2,26,26)];
+        UIImageView *imageViewIcon = [[UIImageView alloc] initWithFrame:CGRectMake(ITEMLRSPACE, (cell.frame.size.height - 26) / 2, 26, 26)];
         [cell.contentView addSubview:imageViewIcon];
         //2. label
         UILabel *labelIconName = [[UILabel alloc] initWithFrame:CGRectMake(ITEMLRSPACE + imageViewIcon.frame.size.width + 20, 0, cell.frame.size.width - ITEMLRSPACE - imageViewIcon.frame.size.width - 20, cell.frame.size.height)];
@@ -194,20 +177,16 @@
     UILabel *labelIconName = [cell.contentView.subviews objectAtIndex:1];
     imageViewIcon.image = [UIImage imageNamed:[_arrayImages objectAtIndex:indexPath.row]];
     labelIconName.text = [_arrayNames objectAtIndex:indexPath.row];
-    
-    if (_currentIconType == (int)indexPath.row)
-    {
+
+    if (_currentIconType == (int) indexPath.row) {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
-    }
-    else
-    {
+    } else {
         cell.accessoryType = UITableViewCellAccessoryNone;
     }
     return cell;
 }
 
-- (void)scrollToCurrentIcon
-{
+- (void)scrollToCurrentIcon {
     NSIndexPath *indexPath = nil;
     indexPath = [NSIndexPath indexPathForRow:_currentIconType inSection:0];
     [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionMiddle animated:NO];

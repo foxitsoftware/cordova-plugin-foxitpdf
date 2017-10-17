@@ -12,17 +12,16 @@
 
 #import <Foundation/Foundation.h>
 
-#import "UIExtensionsSharedHeader.h"
-#import "FSPDFReader.h"
+#import "../Common/UIExtensionsSharedHeader.h"
 
 @protocol IHandlerEventListener <NSObject>
 
--(void)onToolHandlerChanged:(id<IToolHandler>) lastTool currentTool:(id<IToolHandler>)currentTool;
+- (void)onToolHandlerChanged:(id<IToolHandler>)lastTool currentTool:(id<IToolHandler>)currentTool;
 
 @end
 
-@interface SignatureModule : NSObject<IDocEventListener,IToolEventListener, IStateChangeListener, IModule>
+@interface SignatureModule : NSObject <IDocEventListener, IToolEventListener, IStateChangeListener, IModule>
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

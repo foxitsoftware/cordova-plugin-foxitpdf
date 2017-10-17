@@ -14,24 +14,26 @@
  */
 
 #import "FSCommon.h"
+
+NS_ASSUME_NONNULL_BEGIN
 /**
  * @brief   Enumeration for PDF graphics object type.
  *
  * @details Values of this enumeration should be used alone.
  */
-enum FS_GRAPHICSOBJECTTYPE {
+typedef NS_ENUM(NSUInteger, FSGraphicsObjectType) {
     /** @brief	Represents all graphics object types, only used as filter. */
     e_graphicsObjTypeAll = 0,
     /** @brief  Text graphics object. */
-    e_graphicsObjTypeText = 1,
+    e_graphicsObjTypeText,
     /** @brief  Path graphics object. */
-    e_graphicsObjTypePath = 2,
+    e_graphicsObjTypePath,
     /** @brief  Image graphics object. */
-    e_graphicsObjTypeImage = 3,
+    e_graphicsObjTypeImage,
     /** @brief  Shading graphics object. */
-    e_graphicsObjTypeShading = 4,
+    e_graphicsObjTypeShading,
     /** @brief  Form XObject graphics object. */
-    e_graphicsObjTypeFormXObject = 5
+    e_graphicsObjTypeFormXObject
 };
 
 /**
@@ -39,7 +41,7 @@ enum FS_GRAPHICSOBJECTTYPE {
  *
  * @details Values of this enumeration should be used alone.
  */
-enum FS_FILLMODE {
+typedef NS_ENUM(NSUInteger, FSFillMode) {
     /** @brief  Fill mode: none. */
     e_fillModeNone = 0,
     /**
@@ -48,14 +50,14 @@ enum FS_FILLMODE {
      * @details Represent a fill mode in which the system fills this area between odd-numbered and even-numbered polygon
      *          sides on each scan line.
      */
-    e_fillModeAlternate = 1,
+    e_fillModeAlternate,
     /**
      * @brief   Winding fill mode.
      *
      * @details Represent a fill mode in which the system uses a direction in which a figure is drawn to determine
      *          whether to fill an area.
      */
-    e_fillModeWinding = 2
+    e_fillModeWinding
 };
 
 /**
@@ -63,7 +65,7 @@ enum FS_FILLMODE {
  *
  * @details Values of this enumeration should be used alone.
  */
-enum FS_RENDERBLENDMODE {
+typedef NS_ENUM(NSUInteger, FSRenderBlendMode) {
     /**
      * @brief   Selecting source color and ignoring backdrop color.
      *
@@ -77,35 +79,35 @@ enum FS_RENDERBLENDMODE {
      * @details Here is the formula :<br>
      *          B(Cb, Cs) = Cb * Cs.
      */
-    e_renderBlendMultiply = 1,
+    e_renderBlendMultiply,
     /**
      * @brief   Multiply complements of backdrop by source color values, and then complement the result.
      *
      * @details Here is the formula :<br>
      *          B(Cb, Cs) = 1 - [(1 - Cb) * (1 - Cs)] = Cb + Cs - Cb * Cs.
      */
-    e_renderBlendScreen = 2,
+    e_renderBlendScreen,
     /**
      * @brief   Multiply or screens colors, depending on backdrop color value.
      *
      * @details Here is the formula :<br>
      *          B(Cb, Cs) = HardLight(Cs, Cb).
      */
-    e_renderBlendOverlay = 3,
+    e_renderBlendOverlay,
     /**
      * @brief   Select darker one of backdrop and source colors.
      *
      * @details Here is the formula :<br>
      *          B(Cb, Cs) = min(Cb, Cs).
      */
-    e_renderBlendDarken = 4,
+    e_renderBlendDarken,
     /**
      * @brief   Select lighter one of backdrop and source colors.
      *
      * @details Here is the formula :<br>
      *          B(Cb, Cs) = max(Cb, Cs).
      */
-    e_renderBlendLighten = 5,
+    e_renderBlendLighten,
     /**
      * @brief   Brightens backdrop color to reflect source colors.
      *
@@ -115,7 +117,7 @@ enum FS_RENDERBLENDMODE {
      *          - min(1, Cb / (1 - Cs))     if Cs < 1 <br>
      *          - 1                         if Cs = 1
      */
-    e_renderBlendColorDodge = 6,
+    e_renderBlendColorDodge,
     /**
      * @brief   Darkens backdrop color to reflect the source color.
      *
@@ -125,7 +127,7 @@ enum FS_RENDERBLENDMODE {
      *          - 1 - min(1, (1 - Cb) / Cs) if Cs > 0 <br>
      *          - 0                         if Cs = 0
      */
-    e_renderBlendColorBurn = 7,
+    e_renderBlendColorBurn,
     /**
      * @brief   Multiply or screens colors, depending on source color value.
      *
@@ -134,7 +136,7 @@ enum FS_RENDERBLENDMODE {
      *          - Multiply(Cb, 2 * Cs)      if Cs <= 0.5 <br>
      *          - Screen(Cb, 2 * Cs - 1)    if Cs > 0.5
      */
-    e_renderBlendHardlight = 8,
+    e_renderBlendHardlight,
     /**
      * @brief   Darkens or lightens colors, depending on source color value.
      *
@@ -146,14 +148,14 @@ enum FS_RENDERBLENDMODE {
      *          - ((16 * x - 12) * x + 4) * x           if x <= 0.25 <br>
      *          - sqrt(x)                               if x > 0.25
      */
-    e_renderBlendSoftlight = 9,
+    e_renderBlendSoftlight,
     /**
      * @brief   Subtracts the darker of the two constituent colors from lighter colors.
      *
      * @details Here is the formula :<br>
      *          B(Cb, Cs) = |Cb - Cs|.
      */
-    e_renderBlendDifference = 10,
+    e_renderBlendDifference,
     /**
      * @brief   Creates a color with the hue of the source color, and the saturation and luminosity of the backdrop color.
      *
@@ -197,7 +199,7 @@ enum FS_RENDERBLENDMODE {
  * @details Values of this enumeration should be used alone.
  *          The line join style specifies the shape to be used at the corners of paths that are stroked.
  */
-enum FS_LINEJOINTYPE {
+typedef NS_ENUM(NSUInteger, FSLineJoinStyle) {
     /**
      * @brief   Miter line join type.
      *
@@ -210,13 +212,13 @@ enum FS_LINEJOINTYPE {
      * @details An arc of a circle with a diameter equal to the line width is drawn around the point where the two segments meet,
      *          connecting the outer edges of the strokes for the two segments.
      */
-    e_lineJoinRound = 1,
+    e_lineJoinRound,
     /**
      * @brief   Bevel line join type.
      *
      * @details The two segments are finished with butt caps and the resulting notch beyond the end of the segments is filled with a triangle.
      */
-    e_lineJoinBevel = 2
+    e_lineJoinBevel
 };
 
 /**
@@ -226,7 +228,7 @@ enum FS_LINEJOINTYPE {
  *          The line cap style specifies the shape to be used at the ends of open sub-paths (and dashes, if any)
  *           when they are stroked.
  */
-enum FS_LINECAPTYPE {
+typedef NS_ENUM(NSUInteger, FSLineCapStyle) {
     /**
      * @brief   The Butt Line Cap Type.
      *
@@ -238,13 +240,13 @@ enum FS_LINECAPTYPE {
      *
      * @details A semicircular arc with a diameter equal to the line width is drawn around the endpoint and filled in.
      */
-    e_lineCapRound = 1,
+    e_lineCapRound,
     /**
      * @brief   The Projecting Square Line Cap Type.
      *
      * @details The stroke continues beyond the endpoint of the path for a distance equal to half the line width and is squared off.
      */
-    e_lineCapSquare = 2
+    e_lineCapSquare
 };
 
 /**
@@ -260,9 +262,9 @@ enum FS_LINECAPTYPE {
 /**
  * @brief   Blend mode for transparent imaging model.
  *
- * @details Please refer to {@link FS_RENDERBLENDMODE::e_renderBlendNormal FS_RENDERBLENDMODE::e_renderBlendXXX} values and it should be one of these values.
+ * @details Please refer to {@link FSRenderBlendMode::e_renderBlendNormal FSRenderBlendMode::e_renderBlendXXX} values and it should be one of these values.
  */
-@property (nonatomic,assign) enum FS_RENDERBLENDMODE blendMode;
+@property (nonatomic,assign) FSRenderBlendMode blendMode;
 /**
  * @brief   Line width.
  *
@@ -273,9 +275,9 @@ enum FS_LINECAPTYPE {
  * @brief   Line join style
  *
  * @details The line join style specifies the shape to be used at the corners of paths that are stroked.
- *          Please refer to {@link FS_LINEJOINTYPE::e_lineJoinMiter FS_LINEJOINTYPE::e_lineJoinXXX} values and it should be one of these values.
+ *          Please refer to {@link FSLineJoinStyle::e_lineJoinMiter FSLineJoinStyle::e_lineJoinXXX} values and it should be one of these values.
  */
-@property (nonatomic,assign) enum FS_LINEJOINTYPE lineJoin;
+@property (nonatomic,assign) FSLineJoinStyle lineJoin;
 /**
  * @brief   The miter limit for line join.
  *
@@ -290,20 +292,15 @@ enum FS_LINECAPTYPE {
  * @brief   Line cap style.
  *
  * @details The line cap style specifies the shape to be used at the ends of open sub-paths (and dashes, if any) when they are stroked.
- *          Please refer to {@link FS_LINECAPTYPE::e_lineCapButt FS_LINECAPTYPE::e_lineCapXXX} values and it should be one of these values.
+ *          Please refer to {@link FSLineCapStyle::e_lineCapButt FSLineCapStyle::e_lineCapXXX} values and it should be one of these values.
  */
-@property (nonatomic,assign) enum FS_LINECAPTYPE lineCap;
+@property (nonatomic,assign) FSLineCapStyle lineCap;
 /** @brief  Dash phase for line dash pattern.*/
 @property (nonatomic,assign) float dashPhase;
 /**
- * @brief   Set a NSArray object that represents the dash patterns, with at most 16 valid elements.
+ * @brief A dash array that represents the dash patterns.
  *
- * @param[in]   value   Dash patterns.
- *
- * @details The value of useful elements in this array should not be negative.<br>
- *          In this array, an element with integer value -1 means that all the elements before this element are useful,
- *          and this element with the rest will be ignored.<br>
- *          If no element's value is -1, that means all of 16 elements are useful.
+ * @details The value of elements in this array should not be negative.<br>
  */
 @property (nonatomic,retain) NSArray<NSNumber *>* dashes;
 
@@ -313,26 +310,27 @@ enum FS_LINECAPTYPE {
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
 
 /**
- * @brief   Set value.
+ * @brief Set value.
  *
- * @param[in]   blendMode       Blend mode for transparent imaging model.
- *                              Please refer to {@link FS_RENDERBLENDMODE::e_renderBlendNormal FS_RENDERBLENDMODE::e_renderBlendXXX} values and it should be one of these values.
- * @param[in]   lineWidth       Line width. If 0 is set to this, it will be treated as 1 by default.
- * @param[in]   lineJoin        Line join style.
- *                              Please refer to {@link FS_LINEJOINTYPE::e_lineJoinMiter FS_LINEJOINTYPE::e_lineJoinXXX} values and it should be one of these values.
- * @param[in]   miterLimit      The miter limit for line join.
- * @param[in]   lineCap         Line cap style.
- *                              Please refer to {@link FS_LINECAPTYPE::e_lineCapButt FS_LINECAPTYPE::e_lineCapXXX} values and it should be one of these values.
- * @param[in]   dashPhase       Dash phase for line dash pattern.
- * @param[in]   dashes          A float array that represents the dash patterns, with at most 16 valid elements.
- *                              The value of useful elements in this array should not be negative.<br>
- *                              In this array, an element with integer value -1 means that all the elements before this element are useful,
- *                              and this element with the rest will be ignored.<br>
- *                              If no element's value is -1, that means all of 16 elements are useful.
+ * @param[in] blendMode   Blend mode for transparent imaging model. Please refer to
+ *                         {@link FSRenderBlendMode::e_renderBlendNormal FSRenderBlendMode::e_renderBlendXXX}
+ *                         values and it should be one of these values.
+ * @param[in] lineWidth   Line width. If 0 is set to this, it will be treated as 1 by default.
+ * @param[in] lineJoin    Line join style. Please refer to
+ *                         {@link FSLineJoinStyle::e_lineJoinMiter FSLineJoinStyle::e_lineJoinXXX}
+ *                         values and it should be one of these values.
+ * @param[in] miterLimit  The miter limit for line join.
+ * @param[in] lineCap     Line cap style. Please refer to
+ *                         {@link FSLineCapStyle::e_lineCapButt FSLineCapStyle::e_lineCapXXX}
+ *                         values and it should be one of these values.
+ * @param[in] dashPhase   Dash phase for line dash pattern.
+ * @param[in] dashes       A dash array that represents the dash patterns. The value of each element in this array
+ *                         should not be negative.
+ * @param[in] dashCount   The count of elements in dash array.
  *
- * @return  None.
+ * @return None.
  */
--(void)set: (enum FS_RENDERBLENDMODE)blendMode lineWidth: (float)lineWidth lineJoin: (enum FS_LINEJOINTYPE)lineJoin miterLimit: (float)miterLimit lineCap: (enum FS_LINECAPTYPE)lineCap dashPhase: (float)dashPhase dashes: (NSArray<NSNumber *>*)dashes;
+-(void)set: (FSRenderBlendMode)blendMode lineWidth: (float)lineWidth lineJoin: (FSLineJoinStyle)lineJoin miterLimit: (float)miterLimit lineCap: (FSLineCapStyle)lineCap dashPhase: (float)dashPhase dashes: (float *)dashes dashCount: (int)dashCount;
 
 -(id)init;
 
@@ -447,7 +445,7 @@ enum FS_LINECAPTYPE {
  * @exception   e_errUnknown    Any unknown error occurs.
  */
 -(BOOL)removeItem: (NSString *)tagName;
--(id)init;
+- (id)init NS_UNAVAILABLE;
 
 -(void)dealloc;
 
@@ -484,10 +482,10 @@ enum FS_LINECAPTYPE {
  * @brief   Get the type of current graphics object.
  *
  * @return  Graphics object type.
- *          Please refer to {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeText FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeXXX} values and it would be one of these values
- *          except {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeAll}.
+ *          Please refer to {@link FSGraphicsObjectType::e_graphicsObjTypeText FSGraphicsObjectType::e_graphicsObjTypeXXX} values and it would be one of these values
+ *          except {@link FSGraphicsObjectType::e_graphicsObjTypeAll}.
  */
--(enum FS_GRAPHICSOBJECTTYPE)getType;
+-(FSGraphicsObjectType)getType;
 /**
  * @brief   Get the rectangle of current graphics object.
  *
@@ -521,9 +519,9 @@ enum FS_LINECAPTYPE {
  * @brief   Set the stroke color.
  *
  * @details Text, path, and form XObject can have this property.
- *          If current graphics object is {@link FS_GRAPHICSOBJECTTYPE::e_graphicsObjTypeText} and the text mode is {@link FS_TEXTMODE::e_textModeFill},
+ *          If current graphics object is {@link FSGraphicsObjectType::e_graphicsObjTypeText} and the text mode is {@link FSTextMode::e_textModeFill},
  *          the stroke color will not effect for the text graphics object.<br>
- *          If try to set stroke color for rest unsupported types, {@link FS_ERRORCODE::e_errUnsupported} will be thrown.
+ *          If try to set stroke color for rest unsupported types, {@link FSErrorCode::e_errUnsupported} will be thrown.
  *
  * @param[in]   color   New color value, in format 0xAARRGGBB.
  *
@@ -536,7 +534,7 @@ enum FS_LINECAPTYPE {
  * @brief   Set the fill color.
  *
  * @details Text, path, and form XObject can have this property.
- *          If try to set fill color for rest unsupported types, {@link FS_ERRORCODE::e_errUnsupported} will be thrown.<br>
+ *          If try to set fill color for rest unsupported types, {@link FSErrorCode::e_errUnsupported} will be thrown.<br>
  *
  * @param[in]   color   New color value, in format 0xAARRGGBB.
  *
@@ -597,7 +595,7 @@ enum FS_LINECAPTYPE {
  * @brief   Set graph state.
  *
  * @details Form XObjet, path and text object can have this property.
- *          If try to set graph state to rest unsupported types, {@link FS_ERRORCODE::e_errUnsupported} will be thrown.<br>
+ *          If try to set graph state to rest unsupported types, {@link FSErrorCode::e_errUnsupported} will be thrown.<br>
  *
  * @param[in]   graphState  New graph state.
  *
@@ -633,23 +631,23 @@ enum FS_LINECAPTYPE {
  *                      <i>count</i> is returned by function {@link FSPDFGraphicsObject::getClipPath:}.
  *
  * @return  Fill mode.
- *          Please refer to {@link FS_FILLMODE::e_fillModeNone FS_FILLMODE::e_fillModeXXX} values and it would be one of these values.
+ *          Please refer to {@link FSFillMode::e_fillModeNone FSFillMode::e_fillModeXXX} values and it would be one of these values.
  *
  * @exception   e_errParam  Value of any input parameter is invalid.
  */
--(enum FS_FILLMODE)getClipPathFillMode: (int)index;
+-(FSFillMode)getClipPathFillMode: (int)index;
 /**
  * @brief   Add a path for clipping.
  *
  * @param[in]   path        Path data to be added to current graphics object.
  * @param[in]   fillMode    Fill mode for parameter <i>path</i>.
- *                          Please refer to {@link FS_FILLMODE::e_fillModeNone FS_FILLMODE::e_fillModeXXX} values and it should be one of these values.
+ *                          Please refer to {@link FSFillMode::e_fillModeNone FSFillMode::e_fillModeXXX} values and it should be one of these values.
  *
  * @return  <b>YES</b> means success, while <b>NO</b> means failure.
  *
  * @exception   e_errParam     Value of input parameter is invalid.
  */
--(BOOL)addClipPath: (FSPDFPath*)path fillMode: (enum FS_FILLMODE)fillMode;
+-(BOOL)addClipPath: (FSPDFPath*)path fillMode: (FSFillMode)fillMode;
 /**
  * @brief   Remove a path clip by index.
  *
@@ -711,7 +709,7 @@ enum FS_LINECAPTYPE {
 /**
  * @brief   Set clip rectangle.
  *
- * @details New clip rectangle will be set with fill mode {@link FS_FILLMODE::e_fillModeWinding} by default.
+ * @details New clip rectangle will be set with fill mode {@link FSFillMode::e_fillModeWinding} by default.
  *
  * @param[in]   clipRect    New clip rectangle.
  *
@@ -730,7 +728,7 @@ enum FS_LINECAPTYPE {
  * @return  A marked content object.
  */
 -(FSPDFMarkedContent*)getMarkedContent;
--(id)init;
+- (id)init NS_UNAVAILABLE;
 
 -(void)dealloc;
 
@@ -741,23 +739,23 @@ enum FS_LINECAPTYPE {
  *
  * @details Values of this enumeration should be used alone.
  */
-enum FS_TEXTMODE {
+typedef NS_ENUM(NSUInteger, FSTextMode) {
     /** @brief  Text mode: fill text. */
     e_textModeFill = 0,
     /** @brief  Text mode: stroke text. */
-    e_textModeStroke = 1,
+    e_textModeStroke,
     /** @brief  Text mode: fill and stroke text. */
-    e_textModeFillStroke = 2,
+    e_textModeFillStroke,
     /** @brief  Text mode: neither fill nor stroke text, to make it invisible. */
-    e_textModeInvisible = 3,
+    e_textModeInvisible,
     /** @brief  Text mode: fill text and add to path for clipping. */
-    e_textModeFillClip = 4,
+    e_textModeFillClip,
     /** @brief  Text mode: stroke text and add to path for clipping. */
-    e_textModeStrokeClip = 5,
+    e_textModeStrokeClip,
     /** @brief  Text mode: fill and stroke text, and add to path for clipping. */
-    e_textModeFillStrokeClip = 6,
+    e_textModeFillStrokeClip,
     /** @brief  Text mode: add text to path for clipping. */
-    e_textModeClip = 7
+    e_textModeClip
 };
 
 /**
@@ -783,13 +781,13 @@ enum FS_TEXTMODE {
  * @param[in]   charSpace       (Version 1) Character spacing.
  * @param[in]   wordSpace       (Version 1) Word spacing (only apply to space character).
  * @param[in]   textMode        (Version 1) Text rendering mode.
- *                              Please refer to {@link FS_TEXTMODE::e_textModeFill FS_TEXTMODE::e_textModeXXX} values and it should be one of these values.
+ *                              Please refer to {@link FSTextMode::e_textModeFill FSTextMode::e_textModeXXX} values and it should be one of these values.
  * @param[in]   originPosition  (Version 1) The origin point, in PDF coordinate system.
  * @param[in]   textMatrix   (Version 1) Text transformation matrix.
  *
  * @return  None.
  */
--(void)set: (unsigned int)version font: (FSFont*)font fontSize: (float)fontSize charSpace: (float)charSpace wordSpace: (float)wordSpace textMode: (enum FS_TEXTMODE)textMode originPosition: (FSPointF*)originPosition textMatrix: (NSArray<NSNumber*>*)textMatrix;
+-(void)set: (unsigned int)version font: (FSFont*)font fontSize: (float)fontSize charSpace: (float)charSpace wordSpace: (float)wordSpace textMode: (FSTextMode)textMode originPosition: (FSPointF*)originPosition textMatrix: (NSArray<NSNumber *> *)textMatrix;
 /**
  * @brief   Version of this structure. Currently, only 1 is valid.
  *
@@ -820,13 +818,13 @@ enum FS_TEXTMODE {
 /**
  * @brief   Text rendering mode.
  *
- * @details Please refer to {@link FS_TEXTMODE::e_textModeFill FS_TEXTMODE::e_textModeXXX} values and it should be one of these values.
+ * @details Please refer to {@link FSTextMode::e_textModeFill FSTextMode::e_textModeXXX} values and it should be one of these values.
  */
-@property (nonatomic,assign) enum FS_TEXTMODE textMode;
+@property (nonatomic,assign) FSTextMode textMode;
 /** @brief   The origin point, in PDF coordinate system.*/
 @property (nonatomic,retain) FSPointF* originPosition;
-/** @brief   Text transformation matrix.*/
-@property (nonatomic,retain) NSArray<NSNumber*>* textMatrix;
+/** @brief   Text transformation matrix with a size of 4.*/
+@property (nonatomic,retain) NSArray<NSNumber *> *textMatrix;
 
 -(id)init;
 
@@ -926,7 +924,9 @@ enum FS_TEXTMODE {
  * @see FSPDFGraphicsObject
  */
 @interface FSPDFPathObject : FSPDFGraphicsObject
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
 /**
  * @brief   Create a path graphics object.
@@ -941,23 +941,23 @@ enum FS_TEXTMODE {
  * @brief   Get fill mode.
  *
  * @return  Fill mode.
- *          Please refer to {@link FS_FILLMODE::e_fillModeNone FS_FILLMODE::e_fillModeXXX} values and it would be one of these values.
+ *          Please refer to {@link FSFillMode::e_fillModeNone FSFillMode::e_fillModeXXX} values and it would be one of these values.
  *
  * @exception   e_errInvalidType    Type of current graphics object is incorrect.
  */
--(enum FS_FILLMODE)getFillMode;
+-(FSFillMode)getFillMode;
 /**
  * @brief   Set fill mode.
  *
  * @param[in]   fillMode    Fill mode.
- *                          Please refer to {@link FS_FILLMODE::e_fillModeNone FS_FILLMODE::e_fillModeXXX} values and it would be one of these values.
+ *                          Please refer to {@link FSFillMode::e_fillModeNone FSFillMode::e_fillModeXXX} values and it would be one of these values.
  *
  * @return  None.
  *
  * @exception   e_errParam          Value of any input parameter is invalid.
  * @exception   e_errInvalidType    Type of current graphics object is incorrect.
  */
--(void)setFillMode: (enum FS_FILLMODE)fillMode;
+-(void)setFillMode: (FSFillMode)fillMode;
 /**
  * @brief   Get stroke state
  *
@@ -1021,7 +1021,9 @@ enum FS_TEXTMODE {
  * @see FSPDFGraphicsObject
  */
 @interface FSPDFFormXObject : FSPDFGraphicsObject
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
 /**
  * @brief   Create a form XObject.
@@ -1071,7 +1073,7 @@ enum FS_TEXTMODE {
  * @exception   e_errUnknown        Any unknown error occurs.
  */
 -(BOOL)importPageContent: (FSPDFPage*)srcPage isAnnotsIncluded: (BOOL)isAnnotsIncluded;
--(id)init;
+- (id)init NS_UNAVAILABLE;
 
 -(void)dealloc;
 
@@ -1086,7 +1088,9 @@ enum FS_TEXTMODE {
  * @see FSPDFGraphicsObject
  */
 @interface FSPDFShadingObject : FSPDFGraphicsObject
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
 /**
  * @brief   Get the PDF object, a PDF dictionary or a PDF stream object.
@@ -1097,7 +1101,7 @@ enum FS_TEXTMODE {
  * @exception   e_errInvalidType    Type of current graphics object is incorrect.
  */
 -(FSPDFObject*)getPDFObject;
--(id)init;
+- (id)init NS_UNAVAILABLE;
 
 -(void)dealloc;
 
@@ -1108,21 +1112,21 @@ enum FS_TEXTMODE {
  *
  * @details Values of this enumeration should be used alone.
  */
-enum FS_IMAGECOLORSPACE {
+typedef NS_ENUM(NSUInteger, FSImageColorSpace) {
     /** @brief  Color space: Invalid. */
     e_imgColorSpaceInvalid = 0,
     /** @brief  Color space: DeviceGray. */
-    e_imgColorSpaceDeviceGray = 1,
+    e_imgColorSpaceDeviceGray,
     /** @brief  Color space: DeviceRGB. */
-    e_imgColorSpaceDeviceRGB = 2,
+    e_imgColorSpaceDeviceRGB,
     /** @brief  Color space: DeviceCMYK. */
-    e_imgColorSpaceDeviceCMYK = 3,
+    e_imgColorSpaceDeviceCMYK,
     /** @brief  Color space: CalGray. */
-    e_imgColorSpaceCalGray = 4,
+    e_imgColorSpaceCalGray,
     /** @brief  Color space: CalRGB. */
-    e_imgColorSpaceCalRGB = 5,
+    e_imgColorSpaceCalRGB,
     /** @brief  Color space: Lab. */
-    e_imgColorSpaceLab = 6,
+    e_imgColorSpaceLab,
     /** @brief  Color space: Separation. */
     e_imgColorSpaceSeparation = 8,
     /** @brief  Color space: DeviceN. */
@@ -1148,7 +1152,9 @@ enum FS_IMAGECOLORSPACE {
  * @see FSPDFGraphicsObject
  */
 @interface FSPDFImageObject : FSPDFGraphicsObject
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
 /**
  * @brief   Create a new empty image graphics object.
@@ -1168,44 +1174,49 @@ enum FS_IMAGECOLORSPACE {
  *
  * @param[in]   bitmap  New bitmap.
  * @param[in]   mask    Mask bitmap. It can be <b>nil</b>.
- *                      If this is valid, its format should be {@link FS_DIBFORMAT::e_dib8bppMask}. <br>
+ *                      If this is valid, its format should be {@link FSDIBFormat::e_dib8bppMask}. <br>
  *                      This is useful only when parameter <i>bitmap</i> does not have an alpha channel.
  *
  * @return  None
  *
  * @exception   e_errInvalidType    Type of current graphics object is incorrect.
  */
--(void)setBitmap: (FSBitmap*)bitmap mask: (FSBitmap*)mask;
+-(void)setBitmap: (FSBitmap*)bitmap mask: (FSBitmap* _Nullable)mask;
+
 /**
- * @brief   Clone the bitmap.
+ * @brief Clone the bitmap from current image graphics object.
  *
- * @details Currently, only support to clone bitmap in following formats:<br>
- *          {@link FS_DIBFORMAT::e_dib8bppMask}, {@link FS_DIBFORMAT::e_dibRgb}, {@link FS_DIBFORMAT::e_dibRgb32},
- *          {@link FS_DIBFORMAT::e_dibArgb}.<br>
- *          For other unsupported DIB format, this function will return <b>nil</b>.
+ * @details Currently, if the bitmap of current image graphics object is just one of following formats,
+ *          the bitmap can be cloned.:<br>
+ *          {@link foxit::e_dib8bppMask FSDIBFormat::e_dib8bppMask},
+ *          {@link foxit::e_dib8bpp FSDIBFormat::e_dib8bpp},
+ *          {@link foxit::e_dibRgb FSDIBFormat::e_dibRgb}, {@link foxit::e_dibRgb32 FSDIBFormat::e_dibRgb32},
+ *          {@link foxit::e_dibArgb FSDIBFormat::e_dibArgb}.<br>
+ *          For other unsupported DIB format, this function will return <b>NULL</b>.
  *
- * @param[in]   page                PDF page. Please ensure that current image graphics object just belongs to this page.
+ * @param[in] graphics_objects  A FSPDFGraphicsObjects object. It could be a PDF page. It should not be <b>NULL</b>.
+ *                              Please ensure that current image graphics object just belongs to
+ *                              this FSPDFGraphicsObjects object.
  *
- * @return  The new cloned bitmap object.
- *          <b>nil</b> means the bitmap's DIB format is not supported.
+ * @return The new cloned bitmap object.
+ *         If not use the returned bitmap object any more, please remember to release it.
+ *         <b>NULL</b> means the bitmap's DIB format is not supported.
  *
- * @exception   e_errParam          Value of input parameter is invalid.
- * @exception   e_errOutOfMemory    Out-of-memory error occurs.
- * @exception   e_errInvalidType    Type of current graphics object is incorrect.
- * @exception   e_errUnknown        Any unknown error occurs.
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
  */
 -(FSBitmap*)cloneBitmap: (FSPDFPage*)page;
 /**
  * @brief   Get color space.
  *
  * @return  Color space.
- *          Please refer to {@link FS_IMAGECOLORSPACE::e_imgColorSpaceDeviceGray FS_IMAGECOLORSPACE::e_imgColorSpaceXXX} values
+ *          Please refer to {@link FSImageColorSpace::e_imgColorSpaceDeviceGray FSImageColorSpace::e_imgColorSpaceXXX} values
  *          and it would be one of these values.
  *
  * @exception   e_errInvalidType    Type of current graphics object is incorrect.
  * @exception   e_errUnknown        Any unknown error occurs.
  */
--(enum FS_IMAGECOLORSPACE)getColorSpace;
+-(FSImageColorSpace)getColorSpace;
 /**
  * @brief   Get image stream.
  *
@@ -1215,8 +1226,10 @@ enum FS_IMAGECOLORSPACE {
  * @exception   e_errInvalidType    Type of current graphics object is incorrect.
  */
 -(FSPDFStream*)getStream;
--(id)init;
 
 -(void)dealloc;
 
 @end
+
+NS_ASSUME_NONNULL_END
+

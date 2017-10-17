@@ -10,20 +10,19 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
 #import "UIExtensionsManager+Private.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
 @protocol IAnnotHandler;
 @protocol IGestureEventListener;
 @protocol IPropertyBarListener;
 
 /**@brief A text markup annotation handler to handle events between itself and the page. */
-@interface MKAnnotHandler : NSObject<IAnnotHandler,UIPopoverControllerDelegate, IScrollViewEventListener,IGestureEventListener, IRotationEventListener, IPropertyBarListener>
-
+@interface MKAnnotHandler : NSObject <IAnnotHandler, UIPopoverControllerDelegate, IScrollViewEventListener, IGestureEventListener, IRotationEventListener, IPropertyBarListener>
 
 @property (nonatomic, strong) UINavigationController *currentVC;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

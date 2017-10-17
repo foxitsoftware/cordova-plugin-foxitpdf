@@ -22,6 +22,7 @@ extern "C" {
 #import "FSCommon.h"
 #import "FSFDF.h"
 #import "FSAction.h"
+#import "FSPDFAnnot.h"
 #import "FSRender.h"
 #import "FSPDFDoc.h"
 #import "FSPDFForm.h"
@@ -34,6 +35,67 @@ extern "C" {
 #import "FSPressureSenseInk.h"
 #import "FSPDFLayer.h"
 #import "FSFullTextSearch.h"
+#import "FSWatermark.h"
+    
+    // for back comparability of enum types
+    typedef FSActionType FS_ACTIONTYPE;
+    typedef FSAnnotFlags FS_ANNOTFLAGS;
+    typedef FSAnnotProperty FS_ANNOTPROPERTY;
+    typedef FSAnnotState FS_ANNOTSTATE;
+    typedef FSAnnotStateModel FS_ANNOTSTATEMODEL;
+    typedef FSAnnotType FS_ANNOTTYPE;
+    typedef FSBitmapInterpolationFlag FS_BITMAPINTERPOLATIONFLAG;
+    typedef FSBookmarkPosition FS_BOOKMARKPOSITION;
+    typedef FSBookmarkStyle FS_BOOKMARKSTYLE;
+    typedef FSBorderStyle FS_BORDERSTYLE;
+    typedef FSCalcMarginMode FS_CALCMARGINMODE;
+    typedef FSCipherType FS_CIPHERTYPE;
+    typedef FSDefaultAPFlags FS_DEFAULTAPFLAGS;
+    typedef FSDIBFormat FS_DIBFORMAT;
+    typedef FSDigestAlgorithm FS_DIGEST_ALGORITHM;
+    typedef FSDisplayMode FS_DISPLAYMODE;
+    typedef FSEncryptType FS_ENCRYPTTYPE;
+    typedef FSErrorCode FS_ERRORCODE;
+    typedef FSFDFDocType FS_FDFDOCTYPE;
+    typedef FSFillMode FS_FILLMODE;
+    typedef FSFlattenOptions FS_FLATTENOPTIONS;
+    typedef FSFontCharSet FS_FONTCHARSET;
+    typedef FSFontStyles FS_FONTSTYLES;
+    typedef FSFormFieldFlags FS_FORMFIELDFLAGS;
+    typedef FSFormFieldType FS_FORMFIELDTYPE;
+    typedef FSGraphicsObjectType FS_GRAPHICSOBJECTTYPE;
+    typedef FSHighLightingMode FS_HIGHLIGHTINGMODE;
+    typedef FSImageColorSpace FS_IMAGECOLORSPACE;
+    typedef FSImportFlags FS_IMPORTFLAGS;
+    typedef FSLayerUsageState FS_LAYERUSAGESTATE;
+    typedef FSLayerUsageType FS_LAYERUSAGETYPE;
+    typedef FSLineCapStyle FS_LINECAPTYPE;
+    typedef FSLineJoinStyle FS_LINEJOINTYPE;
+    typedef FSSignatureFlags FS_SIGNATUREAPFLAGS;
+    typedef FSDeviceType FS_DEVICETYPE;
+    typedef FSModuleName FS_MODULENAME;
+    typedef FSModuleRight FS_MODULERIGHT;
+    typedef FSNameTreeType FS_NAMETREETYPE;
+    typedef FSPageBoxType FS_PAGEBOX;
+    typedef FSPageParseFlag FS_PAGEPARSEFLAG;
+    typedef FSPasswordType FS_PASSWORDTYPE;
+    typedef FSPathPointType FS_PATHPOINTTYPE;
+    typedef FSPDFObjectType FS_PDFOBJECTTYPE;
+    typedef FSProgressState FS_PROGRESSSTATE;
+    typedef FSRankMode FS_RANKMODE;
+    typedef FSReflowFlags FS_REFLOWFLAGS;
+    typedef FSRenderBlendMode FS_RENDERBLENDMODE;
+    typedef FSRenderColorMode FS_RENDERCOLORMODE;
+    typedef FSRenderContentFlag FS_RENDERCONTENTFLAG;
+    typedef FSRotation FS_ROTATION;
+    typedef FSSaveFlags FS_SAVEFLAGS;
+    typedef FSSearchFlags FS_SEARCHFLAG;
+    typedef FSSignatureKeyName FS_SIGNATUREKEYNAME;
+    typedef FSSignatureStates FS_SIGNATURESTATES;
+    typedef FSStandardFontID FS_STANDARDFONTID;
+    typedef FSTextMode FS_TEXTMODE;
+    typedef FSUserPermissions FS_USERPERMISSIONS;
+    typedef FSZoomMode FS_ZOOMMODE;
     
 #ifdef __cplusplus
 }

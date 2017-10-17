@@ -15,6 +15,7 @@
 
 #import "FSCommon.h"
 
+NS_ASSUME_NONNULL_BEGIN
 /************************************************************************************************
  *														 form       							*
  ************************************************************************************************/
@@ -24,23 +25,23 @@
  *
  * @details	Values of this enumeration should be used alone.
  */
-enum FS_FORMFIELDTYPE {
+typedef NS_ENUM(NSUInteger, FSFormFieldType) {
     /** @brief	Form field type: unknown. */
     e_formFieldUnknownType = 0,
     /** @brief	Form field type: push button. */
-    e_formFieldPushButton = 1,
+    e_formFieldPushButton,
     /** @brief	Form field type: check box. */
-    e_formFieldCheckBox = 2,
+    e_formFieldCheckBox,
     /** @brief	Form field type: radio button. */
-    e_formFieldRadioButton = 3,
+    e_formFieldRadioButton,
     /** @brief	Form field type: combo box. */
-    e_formFieldComboBox = 4,
+    e_formFieldComboBox,
     /** @brief	Form field type: list box. */
-    e_formFieldListBox = 5,
+    e_formFieldListBox,
     /** @brief	Form field type: text field. */
-    e_formFieldTextField = 6,
+    e_formFieldTextField,
     /** @brief	Form field type: signature field. */
-    e_formFieldSignature = 7
+    e_formFieldSignature
 };
 
 /**
@@ -48,7 +49,7 @@ enum FS_FORMFIELDTYPE {
  *
  * @details	Values of this enumeration can be used alone or in a combination.
  */
-enum FS_FORMFIELDFLAGS {
+typedef NS_OPTIONS(NSUInteger, FSFormFieldFlags) {
     /** @brief	The field is read only and no editing is allowed. */
     e_formFieldFlagReadonly		= 0x01,
     /** @brief	The field must have a value at the time it is exported by a submit-form action. */
@@ -216,131 +217,402 @@ enum FS_FORMFIELDFLAGS {
 
 @end
 
-/**
- * @brief	Class to access a form field.
- *
- * @details	In a PDF document, form fields appear on any combination of pages and all of them make up a single, global interactive form spanning the entire document.
- *			Function {@link FSForm::getField:index:} can use to get a form field from interactive form.
- *			This class offers functions to get some information/properties of a form field, and also offers functions to get form control from form field.
- *
- * @see	FSForm
- */
-@interface FSFormField : NSObject
-{
-    /** @brief SWIG proxy related property, it's deprecated to use it. */
+
+/** @brief Class representing the data of an option in list box or combo box. */
+@interface FSChoiceOption : NSObject {
     void *swigCPtr;
-    /** @brief SWIG proxy related property, it's deprecated to use it. */
     BOOL swigCMemOwn;
 }
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+-(id)init;
+-(id)initWithOption: (FSChoiceOption*)option;
+-(void)set: (NSString *)optionValue optionLabel: (NSString *)optionLabel selected: (BOOL)selected defaultSelected: (BOOL)defaultSelected;
+/** @brief The option string value, in UTF-8 encoding. */
+@property (nonatomic, copy) NSString *optionValue;
+/** @brief The displayed string value for the option, in UTF-8 encoding. */
+@property (nonatomic, copy) NSString *optionLabel;
+/** @brief Whether the option is selected. */
+@property (nonatomic, assign) BOOL selected;
+/** @brief Whether the option is selected by default. */
+@property (nonatomic, assign) BOOL defaultSelected;
 
-/**
- * @brief	Get the field type.
- *
- * @return	Form field type.
- *			Please refer to {@link FSM_FORMFIELDTYPE::e_formFieldUnknownType FSM_FORMFIELDTYPE::e_formFieldXXX} values and it would be one of these values.
- */
--(enum FS_FORMFIELDTYPE)getType;
-
-/**
- * @brief	Get the field flags.
- *
- * @return	Form field flags.
- *			Please refer to {@link FSM_FORMFIELDFLAGS::e_formFieldFlagReadonly FSM_FORMFIELDFLAGS::e_formFieldXXX} values and it would be one of a combination of these values.
- */
--(enum FS_FORMFIELDFLAGS)getFlags;
-
-/**
- * @brief	Get field name.
- *
- * @return	Field name string, in UTF-8 encoding.
- *			If there is any error, this function will return an empty string.
- */
--(NSString *)getName;
-
-/**
- * @brief	Get default value of current form field.
- *
- * @return	Default value string, in UTF-8 encoding.
- *			If there is any error, this function will return an empty string.
- */
--(NSString *)getDefaultValue;
-
-/**
- * @brief	Get value of current form field.
- *
- * @return	Value string, in UTF-8 encoding.
- *			If there is any error, this function will return an empty string.
- */
--(NSString *)getValue;
-
-/**
- * @brief	Get count of form controls in a specified PDF page.
- *
- * @param[in]	page		The PDF page object. It should not be <b>nil</b>.
- *
- * @return	The count of the form controls in the specified PDF page.
- */
--(int)getControlCount: (FSPDFPage*)page;
-
-/**
- * @brief	Get a form control by index, in a specified PDF page.
- *
- * @param[in]	page		The PDF page object. It should not be <b>nil</b>.
- * @param[in]	index		Form control index. Valid range: from 0 to (<i>count</i>-1).
- *							<i>count</i> is returned by function {@link FSFormField::getControlCount:} with same parameter <i>page</i>.
- *
- * @return	A form control object.
- *			If no form control can be found or there is any error, this function will return <b>nil</b>.
- */
--(FSFormControl*)getControl: (FSPDFPage*)page index: (int)index;
-
-/**
- * @brief	Reset data in the field to its default value.
- *
- * @return	<b>YES</b> means reseting operation is successful, while <b>NO</b> means failure.
- */
--(BOOL)reset;
-
-/** @brief Free the object. */
 -(void)dealloc;
 
 @end
 
 /**
- * @brief	Class to access a form control.
+ * In a PDF document, form fields appear on any combination of pages and all of them make up a single,
+ * global interactive form spanning the entire document. Function {@link FSForm::GetField} can use to
+ * get a form field from interactive form. This class offers functions to get some information/properties of
+ * a form field, reset the form field to its default value, and get form control from form field.<br>
+ * When a form fiels's type is {@link FSFormFieldType::e_formFieldSignature FSFormFieldType::e_formFieldSignature},
+ * the form field object is a FSSignature object in fact.
  *
- * @details	In Foxit PDF SDK, a form control is also treated as a widget annotation, so class ::FSFormField is derived from class ::FSAnnot and can access to annotation's common properties.<br>
- *			So a form control object can be retrieved by following methods:
- *			<ul>
- *			<li>from a form field, use function {@link FSFormField::getControl:index:}, as a form control directly.</li>
- *			<li>from a PDF page, use functions {@link FSPDFPage::getAnnot:}, {@link FSPDFPage::getAnnotAtPos:tolerance:}, or {@link FSPDFPage::getAnnotAtDevicePos:position:tolerance:},
- *				as a widget annot.</li>
- *			</ul>
- *			Specially, when the related field type is {@link FSM_FORMFIELDTYPE::e_formFieldSignature}, the essential class of this form control is ::FSSignature.
- *
- * @see	FSFormField
- * @see	FSAnnot
- * @see	FSSignature
+ * @see FSForm
+ * @see FSSignature
  */
-@interface FSFormControl : FSAnnot
+@interface FSFormField : NSObject {
+    void *swigCPtr;
+    BOOL swigCMemOwn;
+}
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/**
+ * @brief Get field type.
+ *
+ * @return Form field type. Please refer to {@link FSFormFieldType::e_formFieldUnknownType FSFormFieldType::e_formFieldXXX}
+ *         values and it would be one of these values.
+ */
+-(FSFormFieldType)getType;
+/**
+ * @brief Get field flags.
+ *
+ * @details Field flags specifies various characteristics of a form field.
+ *
+ * @return Form field flags. Please refer to
+ *         {@link FSFormFieldFlags::e_formFieldFlagReadonly FSFormFieldFlags::e_formFieldFlagXXX} values and it would be
+ *         one of a combination of these values.
+ */
+-(FSFormFieldFlags)getFlags;
+/**
+ * @brief Set field flags.
+ *
+ * @details Field flags specifies various characteristics of a form field.
+ *
+ * @param[in] flags  New form field flags. Please refer to
+ *                   {@link FSFormFieldFlags::e_formFieldFlagReadonly FSFormFieldFlags::e_formFieldFlagXXX}
+ *                   values and it would be one of a combination of these values.
+ *
+ * @return None.
+ */
+-(void)setFlags: (FSFormFieldFlags)flags;
+/**
+ * @brief Get field name.
+ *
+ * @return Field name string, in UTF-8 encoding.
+ */
+-(NSString*)getName;
+/**
+ * @brief Get default value.
+ *
+ * @details Applicable for all fields except push button.
+ *          For field types that are not applicable, an empty string will be returned.
+ *
+ * @return Default value string, in UTF-8 encoding.
+ *         If there is any error, this function will return an empty string.
+ */
+-(NSString*)getDefaultValue;
+/**
+ * @brief Set default value.
+ *
+ * @details Applicable for all fields except push button.
+ *          For field types that are not applicable, this function will do nothing.
+ *
+ * @param[in] value  New default value string, in UTF-8 encoding. It should not be <b>NULL</b> or empty.
+ *
+ * @return None.
+ */
+-(void)setDefualtValue: (NSString *)value;
+/**
+ * @brief Get value.
+ *
+ * @details Applicable for all fields except push button.
+ *          For field types that are not applicable, an empty string will be returned.
+ *
+ * @return Value string, in UTF-8 encoding.
+ */
+-(NSString*)getValue;
+/**
+ * @brief Set value.
+ *
+ * @details Applicable for all fields except push button.
+ *          For field types that are not applicable, this function will do nothing.
+ *
+ * @param[in] value  New value string, in UTF-8 encoding. It should not be <b>NULL</b> or empty.
+ *
+ * @return None.
+ */
+-(void)setValue: (NSString *)value;
+/**
+ * @brief Get the alignment value
+ *
+ * @details Alignment is a property for variable text. And it is only useful for text field and list box,
+ *          which may contain variable text as their content.<br>
+ *          If a specific text field or list box has its own alignment value,
+ *          the document-wide default alignment value will be ignored; otherwise, the document-wide
+ *          default alignment value will be used for the specific text field or list box.
+ *
+ * @return The alignment value. Please refer to {@link FSAlignment::e_alignmentLeft FSAlignment::e_alignmentXXX} values
+ *         and it would be one of these values.
+ */
+-(FSAlignment)getAlignment;
+/**
+ * @brief Set alignment property of a form, as a document-wide default value. (Not support signature field)
+ *
+ * @details Alignment is a property for variable text. And it is only useful for text field and list box,
+ *          which may contain variable text as their content.<br>
+ *          If a specific text field or list box has its own alignment value,
+ *          the document-wide default alignment value will be ignored; otherwise, the document-wide
+ *          default alignment value will be used for the specific text field or list box.<br>
+ *          If current form field is a signature field, this function will do nothing.
+ *
+ * @param[in] alignment  The new default alignment type of variable text. Please refer to
+ *                       {@link FSAlignment::e_alignmentLeft FSAlignment::e_alignmentXXX} values and it should be
+ *                       one of these values. <br>
+ *                       If other values is used to set, {@link FSAlignment::e_alignmentLeft  FSAlignment::e_alignmentLeft}
+ *                       will be used by default.
+ *
+ * @return None.
+ */
+-(void)setAlignment: (FSAlignment)alignment;
+/**
+ * @brief Get alternate name.
+ *
+ * @details An alternate field name to be used in place of the actual field name wherever the field must be
+ *          identified in the user interface (such as in error or status messages referring to the field).
+ *          This text is also useful when extracting the document's contents in support of accessibility to
+ *          users with disabilities or for other purposes.<br>
+ *          If current form field is a signature field, this function will do nothing.
+ *
+ * @return The alternate name, in UTF-8 encoding.
+ */
+-(NSString*)getAlternateName;
+/**
+ * @brief Set alternate name. (Not support signature field)
+ *
+ * @details An alternate field name to be used in place of the actual field name wherever the field must be
+ *          identified in the user interface (such as in error or status messages referring to the field).
+ *          This text is also useful when extracting the document's contents in support of accessibility to
+ *          users with disabilities or for other purposes.<br>
+ *          If current form field is a signature field, this function will do nothing.
+ *
+ * @param[in] alternate_name  A new alternate name string, in UTF-8 encoding. It should not be <b>NULL</b> or empty.
+ */
+-(void)setAlternateName: (NSString *)alternate_name;
+/**
+ * @brief Get the default appearance data.
+ *
+ * @return The default appearance data.
+ */
+-(FSDefaultAppearance*)getDefaultAppearance;
+/**
+ * @brief Set default appearance data.
+ *
+ * @param[in] default_ap  The new default appearance.{@link FSDefaultAppearance::flags} can be used to decide
+ *                        which information is/are to be updated with the new data; for those no updated data,
+ *                        they will keep to use old data.
+ *
+ * @return None.
+ */
+-(void)setDefaultAppearance: (FSDefaultAppearance*)appearance;
+/**
+ * @brief Get mapping name
+ *
+ * @details Mapping name is to be used when exporting interactive form field data from the document.
+ *
+ * @return The mapping name, in UTF-8 encoding.
+ */
+-(NSString*)getMappingName;
+/**
+ * @brief Get maximum length of the field's text, in characters.
+ *
+ * @details Applicable for text fields. For field types that are not applicable, this function will return 0.
+ *
+ * @return The maximum length of the field's text.
+ */
+-(void)setMappingName: (NSString *)name;
+/**
+ * @brief Set maximum length of the field's text, in characters.
+ *
+ * @details Applicable for text fields. For field types that are not applicable, this function will do nothing.
+ *          If current form field is a signature field, this function will do nothing.
+ *
+ * @param[in] max_length  New maximum length of the field's text. It should be non-negative.
+ */
+-(int)getMaxLength;
+/**
+ * @brief Set maximum length of the field's text, in characters.
+ *
+ * @details Applicable for text fields. For field types that are not applicable, this function will do nothing.
+ *          If current form field is a signature field, this function will do nothing.
+ *
+ * @param[in] max_length  New maximum length of the field's text. It should be non-negative.
+ */
+-(void)setMaxLength: (int)max_length;
+/**
+ * @brief Get options of list box or combo box.
+ *
+ * @details Applicable for list box and combo box. For field types that are not applicable,
+ *          this function will return an empty array.
+ *
+ * @return An array that contains the options.
+ */
+-(NSArray<FSChoiceOption *> *)getOptions;
+/**
+ * @brief Set options of list box or combo box.
+ *
+ * @details Applicable for list box and combo box. For field types that are not applicable,
+ *          this function will do nothing.
+ *
+ * @param[in] option_array  An array of options which is to be set to list box or combo box.
+ *
+ * @return None.
+ */
+-(void)setOptions: (NSArray<FSChoiceOption *> *)option_array;
+/**
+ * @brief Get top index of option for scrollable list boxes.
+ *
+ * @details Applicable for list box. For field types that are not applicable,
+ *          this function will return 0.<br>
+ *          Top index of option is the the index of the first option visible in the list.
+ *
+ * @return The index of first item which is in visible scope of list box.
+ */
+-(int)getTopVisibleIndex;
+/**
+ * @brief Set top index for scrollable list boxes.
+ *
+ * @details Applicable for list box. For field types that are not applicable,
+ *          this function will do nothing.<br>
+ *          Top index of option is the the index of the first option visible in the list.
+ *
+ * @param[in] index  The index of the first option visible in the list.
+ *
+ * @return None.
+ */
+-(void)setTopVisibleIndex: (int)index;
+/**
+ * @brief Get count of form controls.
+ *
+ * @return The count of the form controls.
+ */
+-(int)getControlCount;
+/**
+ * @brief Get a form control by index.
+ *
+ * @param[in] index  Form control index. Valid range: from 0 to (<i>count</i>-1).
+ *                   <i>count</i> is returned by function {@link FSFormField::GetControlCount} with
+ *                   same parameter <i>page</i>.
+ *
+ * @return A form control object.
+ */
+-(FSFormControl*)getControl: (int)index;
+/**
+ * @brief Reset data in current field to its default value. (Not support signature field)
+ *
+ * @return <b>true</b> means success, while <b>false</b> means failure.
+ */
+-(BOOL)reset;
+
+-(void)dealloc;
+
+@end
 
 /**
- * @brief	Get the related form field.
+ * Foxit PDF SDK defines "form control" to associate form field with its related widget annotations.
+ * A form field may have one or more form controls, and each form control is associated with a widget annotation.
+ * A form control object can be retrieved by following functions:
+ * <ul>
+ * <li>from a form, please use function {@link FSForm::GetControl}.</li>
+ * <li>from a form field, please use functions {@link FSFormField::GetControl}.</li>
+ * </ul>
+ * Form control also offers functions to get related form field object and widget annotation object. <br>
+ * Function {@link FSForm::AddControl} can be used to add a new form control to a form field, and function
+ * {@link FSForm::RemoveControl} can be used to remove a form control.
  *
- * @return	The related form field object.
- *			If no related form field can be found or there is any error, this function will return <b>nil</b>.
+ * @see FSFormControl
+ * @see FSFormField
+ */
+@interface FSFormControl : NSObject {
+    void *swigCPtr;
+    BOOL swigCMemOwn;
+}
+
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/**
+ * @brief Get the related form field.
+ *
+ * @return The related form field object.
  */
 -(FSFormField*)getField;
+/**
+ * @brief Get the related widget annotation.
+ *
+ * @return The related widget annotation.
+ */
+-(FSWidget*)getWidget;
+/**
+ * @brief Get the index of current form control among all the controls of related form field.
+ *
+ * @return The index of the form control.
+ */
+-(int)getIndex;
+/**
+ * @brief Get export mapping name.
+ *
+ * @details Applicable for check box and radio button as related form field.
+ *          If related form field is other field type, this function will return an empty string.
+ *
+ * @return The export mapping name, in UTF-8 encoding.
+ */
+-(NSString*)getExportValue;
+/**
+ * @brief Set export mapping name.
+ *
+ * @details Applicable for check box and radio button as related form field.
+ *          If related form field is other field type, this function will do nothing.
+ *
+ * @param[in] value  The new export mapping name, in UTF-8 encoding. It should not be <b>NULL</b> and empty.
+ */
+-(void)setExportValue: (NSString *)value;
+/**
+ * @brief Check if the current form control is checked when related form field is check box or radio button.
+ *
+ * @details Applicable for check box and radio button as related form field.
+ *          If related form field is other field type, this function will return <b>false</b>.
+ *
+ * @return <b>true</b> means checked, and <b>false</b> means not checked.
+ */
+-(BOOL)isChecked;
+/**
+ * @brief Set the check state of current form control when related form field is check box or radio button.
+ *
+ * @details Applicable for check box and radio button as related form field.
+ *          If related form field is other field type, this function will do nothing.
+ *
+ * @param[in] checked  <b>true</b> means checked, and <b>false</b> means not checked.
+ *
+ * @return None.
+ */
+-(void)setChecked: (BOOL)checked;
+/**
+ * @brief Check if the current form control is checked by default when related form field is check box or
+ *        radio button.
+ *
+ * @details Applicable for check box and radio button as related form field.
+ *          If related form field is other field type, this function will return <b>false</b>.
+ *
+ * @return <b>true</b> means checked by default, and <b>false</b> means not checked by default.
+ */
+-(BOOL)isDefaultChecked;
+/**
+ * @brief Set the default check state of current form control when related form field is check box or radio button.
+ *
+ * @details Applicable for check box and radio button as related form field.
+ *          If related form field is other field type, this function will do nothing.
+ *
+ * @param[in] checked  <b>true</b> means checked by default, and <b>false</b> means not checked by default.
+ */
+-(void)setDefaultChecked: (BOOL)checked;
 
-/** @brief Free the object. */
 -(void)dealloc;
 
 @end
@@ -487,7 +759,7 @@ enum FS_FORMFIELDFLAGS {
  * @return	A form filler object.
  *			If there is any error, this function will return <b>nil</b>.
  */
-+(FSFormFiller*)create: (FSForm*)form assist: (FSFormFillerAssist*)assist;
+- (FSFormFiller *)initWithForm:(FSForm *)form assist:(FSFormFillerAssist *)assist;
 
 /**
  * @brief	Draw the currently focused form control on the page.
@@ -581,3 +853,4 @@ enum FS_FORMFIELDFLAGS {
 
 @end
 
+NS_ASSUME_NONNULL_END

@@ -10,9 +10,9 @@
  * Review legal.txt for additional license and legal information.
  */
 
+#import "../Utility/Utility.h"
 #import <Foundation/Foundation.h>
 #import <UIKIt/UIKit.h>
-#import "../Utility/Utility.h"
 
 @interface OpacityItem : UIView
 

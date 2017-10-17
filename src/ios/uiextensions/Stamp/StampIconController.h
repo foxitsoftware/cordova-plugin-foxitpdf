@@ -10,9 +10,9 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <UIKit/UIKit.h>
 #import "SegmentView.h"
 #import "UIExtensionsManager.h"
+#import <UIKit/UIKit.h>
 
 typedef void (^SelectIconHandler)(int icon);
 
@@ -24,11 +24,11 @@ typedef void (^SelectIconHandler)(int icon);
 
 @end
 
-@interface StampIconController : UIViewController <SegmentDelegate,UITableViewDelegate,UITableViewDataSource>
+@interface StampIconController : UIViewController <SegmentDelegate, UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, assign) int currentIcon;
 @property (nonatomic, copy) SelectIconHandler selectHandler;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

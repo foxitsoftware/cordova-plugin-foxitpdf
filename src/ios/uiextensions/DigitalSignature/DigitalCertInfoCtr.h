@@ -10,8 +10,9 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <UIKit/UIKit.h>
+#import "Defines.h"
 #import "DigitalSignatureCom.h"
+#import <UIKit/UIKit.h>
 
 @interface DigitalCertInfoCtr : UITableViewController
 - (void)setDigitalCertInfoData:(CERT_INFO *)cert_info;

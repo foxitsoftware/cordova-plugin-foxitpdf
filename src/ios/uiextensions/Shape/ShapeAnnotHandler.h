@@ -10,23 +10,22 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
-#import "UIExtensionsManager+Private.h"
 #import "PropertyBar.h"
+#import "UIExtensionsManager+Private.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
 // circle and rectangle
 
-@interface ShapeAnnotHandler : NSObject<IAnnotHandler,IPropertyBarListener,IRotationEventListener,IGestureEventListener, IScrollViewEventListener, IAnnotPropertyListener>
-{
+@interface ShapeAnnotHandler : NSObject <IAnnotHandler, IPropertyBarListener, IRotationEventListener, IGestureEventListener, IScrollViewEventListener, IAnnotPropertyListener> {
     EDIT_ANNOT_RECT_TYPE _editType;
-    
+
     float _minWidth;
     float _minHeight;
 }
 
 @property (nonatomic, strong) UIViewController *replyVC;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

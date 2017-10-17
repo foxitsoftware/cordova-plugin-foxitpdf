@@ -23,32 +23,30 @@
 
 @end
 
-@implementation FSThumbnailCell 
+@implementation FSThumbnailCell
 
-- (id)init
-{
+- (id)init {
     return [self initWithFrame:CGRectZero];
 }
 
-- (id)initWithFrame:(CGRect)frame
-{
+- (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
         // Initialization code
         self.isEditing = NO;
         self.alwaysHideCheckBox = NO;
-        
+
         self.contentView.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        
+
         [self addSubviews];
         [self addButtons];
-        
+
         //swipe gestures
         self.swipeRightGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipeRightGesture:)];
         self.swipeRightGesture.enabled = NO;
         [self addGestureRecognizer:self.swipeRightGesture];
         self.swipeRightGesture.delegate = self;
-        
+
         self.swipeLeftGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipeLeftGesture:)];
         self.swipeLeftGesture.enabled = NO;
         self.swipeLeftGesture.delegate = self;
@@ -65,12 +63,12 @@
     self.imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.imageView.contentMode = UIViewContentModeScaleAspectFit;
     [self.contentView addSubview:self.imageView];
-    
+
     UIImageView *imagePageNmuberBackground = [[UIImageView alloc] init];
     imagePageNmuberBackground.frame = ({
         CGFloat width = 60;
         CGFloat height = 20;
-        CGFloat x = (self.bounds.size.width-width) / 2;
+        CGFloat x = (self.bounds.size.width - width) / 2;
         CGFloat bottomInset = 5;
         CGFloat y = self.frame.size.height - height - bottomInset;
         CGRectMake(x, y, width, height);
@@ -79,7 +77,7 @@
     imagePageNmuberBackground.alpha = 0.8;
     imagePageNmuberBackground.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     [self.contentView addSubview:imagePageNmuberBackground];
-    
+
     self.labelNumber = [[UILabel alloc] init];
     self.labelNumber.frame = CGRectMake(0, self.frame.size.height - 25, self.frame.size.width, 20);
     self.labelNumber.font = [UIFont systemFontOfSize:16];
@@ -97,7 +95,7 @@
     [self.contentView addSubview:self.deleteBtn];
     [self.contentView addSubview:self.insertPrevBtn];
     [self.contentView addSubview:self.insertNextBtn];
-    
+
     [self.rotateRightBtn addTarget:self action:@selector(onRotateRightBtnClicked) forControlEvents:UIControlEventTouchUpInside];
     [self.rotateLeftBtn addTarget:self action:@selector(onRotateLeftBtnClicked) forControlEvents:UIControlEventTouchUpInside];
     [self.deleteBtn addTarget:self action:@selector(onDeleteBtnClicked) forControlEvents:UIControlEventTouchUpInside];
@@ -107,30 +105,29 @@
 
 - (void)updateButtonFramesWithThumbnailWidth:(CGFloat)thumbnailWidth {
     CGRect frame = self.checkBtn.frame;
-    frame.origin.x = floorf((float)(self.bounds.size.width - thumbnailWidth) / 2);
+    frame.origin.x = floorf((float) (self.bounds.size.width - thumbnailWidth) / 2);
     self.checkBtn.frame = frame;
-    
-    frame.origin.x = self.checkBtn.frame.origin.x + thumbnailWidth/2 - 30;
-    frame.origin.y = self.bounds.size.height/2 - 13;
+
+    frame.origin.x = self.checkBtn.frame.origin.x + thumbnailWidth / 2 - 30;
+    frame.origin.y = self.bounds.size.height / 2 - 13;
     self.insertPrevBtn.frame = frame;
-    
-    frame.origin.x = self.checkBtn.frame.origin.x + thumbnailWidth/2 + 4;
+
+    frame.origin.x = self.checkBtn.frame.origin.x + thumbnailWidth / 2 + 4;
     self.insertNextBtn.frame = frame;
-    
-    frame.origin.x = self.checkBtn.frame.origin.x + thumbnailWidth/2 - 46;
+
+    frame.origin.x = self.checkBtn.frame.origin.x + thumbnailWidth / 2 - 46;
     self.rotateLeftBtn.frame = frame;
-    
-    frame.origin.x = self.checkBtn.frame.origin.x + thumbnailWidth/2 - 13;
+
+    frame.origin.x = self.checkBtn.frame.origin.x + thumbnailWidth / 2 - 13;
     self.rotateRightBtn.frame = frame;
-    
-    frame.origin.x = self.checkBtn.frame.origin.x + thumbnailWidth/2 + 20;
+
+    frame.origin.x = self.checkBtn.frame.origin.x + thumbnailWidth / 2 + 20;
     self.deleteBtn.frame = frame;
 }
 
 #pragma mark - Properties getter/setter
 
-- (UIButton *)checkBtn
-{
+- (UIButton *)checkBtn {
     if (_checkBtn == nil) {
         UIButton *button = [[UIButton alloc] init];
         button.frame = CGRectMake(0, 0, 26, 26);
@@ -143,8 +140,7 @@
     return _checkBtn;
 }
 
-- (UIButton *)rotateLeftBtn
-{
+- (UIButton *)rotateLeftBtn {
     if (_rotateLeftBtn == nil) {
         UIButton *button = [[UIButton alloc] init];
         [button setImage:[UIImage imageNamed:@"thumb_rotate_left"] forState:UIControlStateNormal];
@@ -154,8 +150,7 @@
     return _rotateLeftBtn;
 }
 
-- (UIButton *)rotateRightBtn
-{
+- (UIButton *)rotateRightBtn {
     if (_rotateRightBtn == nil) {
         UIButton *button = [[UIButton alloc] init];
         [button setImage:[UIImage imageNamed:@"thumb_rotate_right"] forState:UIControlStateNormal];
@@ -165,8 +160,7 @@
     return _rotateRightBtn;
 }
 
-- (UIButton *)deleteBtn
-{
+- (UIButton *)deleteBtn {
     if (_deleteBtn == nil) {
         UIButton *button = [[UIButton alloc] init];
         [button setImage:[UIImage imageNamed:@"thumb_delete2"] forState:UIControlStateNormal];
@@ -176,8 +170,7 @@
     return _deleteBtn;
 }
 
-- (UIButton *)insertPrevBtn
-{
+- (UIButton *)insertPrevBtn {
     if (_insertPrevBtn == nil) {
         UIButton *button = [[UIButton alloc] init];
         [button setImage:[UIImage imageNamed:@"thumb_insert_prev"] forState:UIControlStateNormal];
@@ -187,8 +180,7 @@
     return _insertPrevBtn;
 }
 
-- (UIButton *)insertNextBtn
-{
+- (UIButton *)insertNextBtn {
     if (_insertNextBtn == nil) {
         UIButton *button = [[UIButton alloc] init];
         [button setImage:[UIImage imageNamed:@"thumb_insert_next"] forState:UIControlStateNormal];
@@ -198,8 +190,7 @@
     return _insertNextBtn;
 }
 
-- (void)showLeftBtns
-{
+- (void)showLeftBtns {
     self.rotateLeftBtn.hidden = NO;
     self.rotateRightBtn.hidden = NO;
     self.deleteBtn.hidden = NO;
@@ -207,52 +198,51 @@
     [self.delegate didShowEditButtonsInCell:self];
 }
 
-- (void)showRightBtns
-{
+- (void)showRightBtns {
     self.insertNextBtn.hidden = NO;
     self.insertPrevBtn.hidden = NO;
     [self dismissLeftBtns];
     [self.delegate didShowEditButtonsInCell:self];
 }
 
-- (void)dismissLeftBtns
-{
+- (void)dismissLeftBtns {
     self.rotateLeftBtn.hidden = YES;
     self.rotateRightBtn.hidden = YES;
     self.deleteBtn.hidden = YES;
 }
 
-- (void)dismissRightBtns
-{
+- (void)dismissRightBtns {
     self.insertNextBtn.hidden = YES;
     self.insertPrevBtn.hidden = YES;
 }
 
-- (void)setIsEditing:(BOOL)isEditing
-{
+- (void)setIsEditing:(BOOL)isEditing {
     [self setIsEditing:isEditing animated:NO];
 }
 
-- (void)setIsEditing:(BOOL)isEditing animated:(BOOL)animated
-{
+- (void)setIsEditing:(BOOL)isEditing animated:(BOOL)animated {
     if (_isEditing == isEditing) {
         return;
     }
     _isEditing = isEditing;
     if (animated) {
-        [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionBeginFromCurrentState animations:^{
-            self.checkBtn.alpha = isEditing && (!self.alwaysHideCheckBox ? 1 : 0);
-        } completion:^(BOOL finished) {
-            self.checkBtn.alpha = isEditing && (!self.alwaysHideCheckBox ? 1 : 0);
-            [self.checkBtn.superview bringSubviewToFront:self.checkBtn];
-        }];
+        [UIView animateWithDuration:0.3
+            delay:0
+            options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionBeginFromCurrentState
+            animations:^{
+                self.checkBtn.alpha = isEditing && (!self.alwaysHideCheckBox ? 1 : 0);
+            }
+            completion:^(BOOL finished) {
+                self.checkBtn.alpha = isEditing && (!self.alwaysHideCheckBox ? 1 : 0);
+                [self.checkBtn.superview bringSubviewToFront:self.checkBtn];
+            }];
     } else {
         self.checkBtn.alpha = isEditing && (!self.alwaysHideCheckBox ? 1 : 0);
     }
-    
+
     self.swipeLeftGesture.enabled = isEditing;
     self.swipeRightGesture.enabled = isEditing;
-    
+
     if (!isEditing) {
         [self dismissLeftBtns];
         [self dismissRightBtns];
@@ -262,14 +252,13 @@
 
 - (void)setSelected:(BOOL)selected {
     [super setSelected:selected];
-    
+
     [self updateVisualAppearanceForSelected:selected];
 }
 
 #pragma mark - public methods
 
-- (void)prepareForReuse
-{
+- (void)prepareForReuse {
     self.delegate = nil;
     self.tag = 0;
     self.isEditing = NO;
@@ -278,35 +267,41 @@
     self.contentView.alpha = 1.0f;
     self.backgroundColor = [UIColor clearColor];
     self.imageView.image = nil;
+    [self.contentView.subviews enumerateObjectsUsingBlock:^(__kindof UIView *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+        if ([obj isKindOfClass:[UIActivityIndicatorView class]]) {
+            [obj removeFromSuperview];
+            *stop = YES;
+        }
+    }];
 }
 
-# pragma mark - button click events
+#pragma mark - button click events
 
--(void)onRotateRightBtnClicked {
+- (void)onRotateRightBtnClicked {
     if (self.delegate) {
         [self.delegate cell:self rotateClockwise:YES];
     }
 }
 
--(void)onRotateLeftBtnClicked {
+- (void)onRotateLeftBtnClicked {
     if (self.delegate) {
         [self.delegate cell:self rotateClockwise:NO];
     }
 }
 
--(void)onDeleteBtnClicked {
+- (void)onDeleteBtnClicked {
     if (self.delegate) {
         [self.delegate deleteCell:self];
     }
 }
 
--(void)onInsertPrevBtnClicked {
+- (void)onInsertPrevBtnClicked {
     if (self.delegate) {
         [self.delegate cell:self insertBeforeOrAfter:YES];
     }
 }
 
--(void)onInsertNextBtnClicked {
+- (void)onInsertNextBtnClicked {
     if (self.delegate) {
         [self.delegate cell:self insertBeforeOrAfter:NO];
     }
@@ -314,8 +309,7 @@
 
 #pragma mark - private methods
 
-- (void)updateVisualAppearanceForSelected:(BOOL)selected
-{
+- (void)updateVisualAppearanceForSelected:(BOOL)selected {
     if (self.checkBtn.selected != selected) {
         self.checkBtn.selected = selected;
     }
@@ -325,13 +319,11 @@
 
 #pragma mark - Swipe Gesture
 
-- (void)handleSwipeRightGesture:(UISwipeGestureRecognizer *)swipeGesture
-{
+- (void)handleSwipeRightGesture:(UISwipeGestureRecognizer *)swipeGesture {
     [self showLeftBtns];
 }
 
-- (void)handleSwipeLeftGesture:(UISwipeGestureRecognizer *)swipeGesture
-{
+- (void)handleSwipeLeftGesture:(UISwipeGestureRecognizer *)swipeGesture {
     [self showRightBtns];
 }
 

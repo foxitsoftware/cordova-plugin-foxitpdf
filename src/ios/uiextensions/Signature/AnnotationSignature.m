@@ -17,16 +17,14 @@
 
 @implementation AnnotationSignature
 
-- (void)initValue
-{
-    self.name  = nil;
+- (void)initValue {
+    self.name = nil;
     self.rectSigPart = CGRectZero;
     self.color = DEFAULT_COLOR;
     self.diameter = DEFAULT_DIAMETER;
 }
 
-- (id)init
-{
+- (id)init {
     self = [super init];
     if (self) {
         // Custom initialization
@@ -35,8 +33,7 @@
     return self;
 }
 
-+ (AnnotationSignature *)createWithDefaultOptionForPageIndex:(int)pageIndex rect:(FSRectF*)rect
-{
++ (AnnotationSignature *)createWithDefaultOptionForPageIndex:(int)pageIndex rect:(FSRectF *)rect {
     AnnotationSignature *annot = [[AnnotationSignature alloc] init];
     annot.pageIndex = pageIndex;
     annot.rect = rect;
@@ -61,7 +58,7 @@
 
 - (id)initWithCoder:(NSCoder *)decoder {
     self = [super init];
-    if(self) {
+    if (self) {
         [self initValue];
         self.name = [decoder decodeObjectForKey:@"name"];
         self.rectSigPart = [decoder decodeCGRectForKey:@"rectSigPart"];
@@ -71,52 +68,44 @@
         self.certPasswd = [decoder decodeObjectForKey:@"certPasswd"];
         self.certMD5 = [decoder decodeObjectForKey:@"certMD5"];
     }
-    
+
     return self;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
     self.name = nil;
 }
 
-+ (NSMutableArray*)getSignatureArray
-{
++ (NSMutableArray *)getSignatureArray {
     NSMutableArray *array = nil;
     NSData *data = [[NSUserDefaults standardUserDefaults] valueForKey:SETTING_SIGNATURE];
-    if (data && data.length > 0)
-    {
+    if (data && data.length > 0) {
         array = [NSMutableArray arrayWithArray:[NSKeyedUnarchiver unarchiveObjectWithData:data]];
-    }
-    else
-    {
+    } else {
         array = [NSMutableArray array];
     }
-    
+
     return array;
 }
 
-+ (void)saveSignature:(NSArray*)array
-{
++ (void)saveSignature:(NSArray *)array {
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:array];
     [[NSUserDefaults standardUserDefaults] setObject:data forKey:SETTING_SIGNATURE];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-+ (NSMutableArray*)getSignatureList
-{
++ (NSMutableArray *)getSignatureList {
     NSMutableArray *ret = [NSMutableArray array];
     NSArray *array = [AnnotationSignature getSignatureArray];
     [array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         AnnotationSignature *sig = obj;
         [ret addObject:sig.name];
     }];
-    
+
     return ret;
 }
 
-+ (NSMutableArray*)getCertSignatureList
-{
++ (NSMutableArray *)getCertSignatureList {
     NSMutableArray *ret = [NSMutableArray array];
     NSArray *array = [AnnotationSignature getSignatureArray];
     [array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -125,12 +114,11 @@
             [ret addObject:sig.name];
         }
     }];
-    
+
     return ret;
 }
 
-+ (UIImage*)getSignatureImage:(NSString*)name
-{
++ (UIImage *)getSignatureImage:(NSString *)name {
     if (name == nil) {
         return nil;
     }
@@ -138,8 +126,7 @@
     return [UIImage imageWithContentsOfFile:[SIGNATURE_PATH stringByAppendingPathComponent:name]];
 }
 
-+ (NSData*)getSignatureData:(NSString*)name
-{
++ (NSData *)getSignatureData:(NSString *)name {
     if (name == nil) {
         return nil;
     }
@@ -147,15 +134,13 @@
     return [NSData dataWithContentsOfFile:[SIGNATURE_PATH stringByAppendingPathComponent:name]];
 }
 
-+ (void)setSignatureImage:(NSString*)name img:(UIImage*)img
-{
++ (void)setSignatureImage:(NSString *)name img:(UIImage *)img {
     name = [name stringByAppendingString:@"_i"];
     NSData *data = UIImagePNGRepresentation(img);
     [data writeToFile:[SIGNATURE_PATH stringByAppendingPathComponent:name] atomically:YES];
 }
 
-+ (void)setCertFileToSiganatureSpace:(NSString *)name path:(NSString *)path
-{
++ (void)setCertFileToSiganatureSpace:(NSString *)name path:(NSString *)path {
     NSFileManager *fileM = [NSFileManager defaultManager];
     NSString *newPath = [SIGNATURE_PATH stringByAppendingPathComponent:name];
     NSError *error;
@@ -165,138 +150,114 @@
     [fileM copyItemAtPath:path toPath:newPath error:&error];
 }
 
-+ (NSData*)getSignatureDib:(NSString*)name
-{
++ (NSData *)getSignatureDib:(NSString *)name {
     name = [name stringByAppendingString:@"_d"];
     return [NSData dataWithContentsOfFile:[SIGNATURE_PATH stringByAppendingPathComponent:name]];
 }
 
-+ (void)setSignatureDib:(NSString*)name data:(NSData*)data
-{
++ (void)setSignatureDib:(NSString *)name data:(NSData *)data {
     name = [name stringByAppendingString:@"_d"];
     [data writeToFile:[SIGNATURE_PATH stringByAppendingPathComponent:name] atomically:YES];
 }
 
-+ (void)removeSignatureResource:(NSString*)name
-{
++ (void)removeSignatureResource:(NSString *)name {
     NSFileManager *file = [[NSFileManager alloc] init];
     NSString *imgPath = [SIGNATURE_PATH stringByAppendingPathComponent:[name stringByAppendingString:@"_i"]];
     NSString *dibPath = [SIGNATURE_PATH stringByAppendingPathComponent:[name stringByAppendingString:@"_d"]];
     [file removeItemAtPath:imgPath error:nil];
     [file removeItemAtPath:dibPath error:nil];
-    }
+}
 
-+ (AnnotationSignature*)getSignature:(NSString*)name
-{
++ (AnnotationSignature *)getSignature:(NSString *)name {
     __block AnnotationSignature *ret = nil;
     NSArray *array = [AnnotationSignature getSignatureArray];
     [array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         AnnotationSignature *sig = obj;
-        if ([sig.name isEqualToString:name])
-        {
+        if ([sig.name isEqualToString:name]) {
             ret = sig;
             *stop = YES;
         }
     }];
-    
+
     return ret;
 }
 
-- (NSString*)add
-{
+- (NSString *)add {
     self.name = [Utility getUUID];
-    
+
     NSMutableArray *array = [AnnotationSignature getSignatureArray];
     [array addObject:self];
-    
+
     [AnnotationSignature saveSignature:array];
-    
-    if (array.count == 1)
-    {
+
+    if (array.count == 1) {
         [AnnotationSignature setSignatureSelected:self.name];
     }
-    
+
     return self.name;
 }
 
-- (void)update
-{
+- (void)update {
     NSMutableArray *array = [AnnotationSignature getSignatureArray];
-    for (int i = 0; i < array.count; i++)
-    {
+    for (int i = 0; i < array.count; i++) {
         AnnotationSignature *sig = [array objectAtIndex:i];
-        if ([sig.name isEqualToString:self.name])
-        {
+        if ([sig.name isEqualToString:self.name]) {
             [array replaceObjectAtIndex:i withObject:self];
             break;
         }
     }
-    
+
     [AnnotationSignature saveSignature:array];
 }
 
-- (void)remove
-{
+- (void)remove {
     NSMutableArray *array = [AnnotationSignature getSignatureArray];
-    for (int i = 0; i < array.count; i++)
-    {
+    for (int i = 0; i < array.count; i++) {
         AnnotationSignature *sig = [array objectAtIndex:i];
-        if ([sig.name isEqualToString:self.name])
-        {
+        if ([sig.name isEqualToString:self.name]) {
             [array removeObject:sig];
             break;
         }
     }
-    
+
     [AnnotationSignature saveSignature:array];
-    
+
     NSString *selectedName = [AnnotationSignature getSignatureSelected];
-    if ([selectedName isEqualToString:self.name])
-    {
-        if (array.count == 0)
-        {
+    if ([selectedName isEqualToString:self.name]) {
+        if (array.count == 0) {
             [AnnotationSignature setSignatureSelected:@""];
-        }
-        else
-        {
+        } else {
             AnnotationSignature *sig = [array objectAtIndex:0];
             [AnnotationSignature setSignatureSelected:sig.name];
         }
     }
 }
 
-+ (AnnotationSignature*)getSignatureOption
-{
++ (AnnotationSignature *)getSignatureOption {
     AnnotationSignature *option = nil;
     NSData *data = [[NSUserDefaults standardUserDefaults] valueForKey:SETTING_SIGNATURE_OPTION];
-    if (data && data.length > 0)
-    {
+    if (data && data.length > 0) {
         option = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-    }
-    else
-    {
+    } else {
         option = [[AnnotationSignature alloc] init];
         option.color = DEFAULT_COLOR;
         option.diameter = DEFAULT_DIAMETER;
     }
-    
+
     return option;
 }
 
-- (void)setOption
-{
+- (void)setOption {
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self];
     [[NSUserDefaults standardUserDefaults] setObject:data forKey:SETTING_SIGNATURE_OPTION];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-+ (NSString*)getSignatureSelected
-{
++ (NSString *)getSignatureSelected {
     return [[NSUserDefaults standardUserDefaults] valueForKey:SETTING_SIGNATURE_SELECTED];
 }
 
-+ (void)setSignatureSelected:(NSString*)name
-{
++ (void)setSignatureSelected:(NSString *)name {
     [[NSUserDefaults standardUserDefaults] setObject:name forKey:SETTING_SIGNATURE_SELECTED];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }

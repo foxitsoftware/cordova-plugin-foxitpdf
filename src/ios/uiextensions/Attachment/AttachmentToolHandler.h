@@ -10,12 +10,12 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
 #import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-@interface AttachmentToolHandler : NSObject<IToolHandler>
+@interface AttachmentToolHandler : NSObject <IToolHandler>
 
-@property (nonatomic, assign) enum FS_ANNOTTYPE type;
+@property (nonatomic, assign) FSAnnotType type;
 @property (nonatomic, strong) NSObject *currentVC;
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 @end

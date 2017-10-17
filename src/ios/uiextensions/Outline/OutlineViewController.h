@@ -10,22 +10,19 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <UIKit/UIKit.h>
-#import <FoxitRDK/FSPDFObjC.h>
 #import "../Panel/PanelController.h"
+#import <FoxitRDK/FSPDFObjC.h>
+#import <UIKit/UIKit.h>
 
-typedef void (^GetBookmarkFinishHandler)(NSMutableArray* bookmark);
+typedef void (^GetBookmarkFinishHandler)(NSMutableArray *bookmark);
 
 @interface OutlineButton : UIButton
 
-@property(nonatomic,strong)NSIndexPath *indexPath;
+@property (nonatomic, strong) NSIndexPath *indexPath;
 
 @end
 
-
 typedef void (^OutlineGotoPageHandler)(int page);
-
-static NSInteger numberofPush = 0;
 
 /** @brief The view controller for bookmarks. */
 @interface OutlineViewController : UITableViewController
@@ -34,9 +31,9 @@ static NSInteger numberofPush = 0;
 @property (copy, nonatomic) OutlineGotoPageHandler outlineGotoPageHandler;
 @property (assign, nonatomic) BOOL hasParentOutline;
 
-- (id)initWithStyle:(UITableViewStyle)style pdfViewCtrl:(FSPDFViewCtrl*)pdfViewCtrl panelController:(PanelController*)panelController;
-- (NSArray*)getBookmark:(FSBookmark*)parentBookmark;
-- (NSArray*)getOutline:(FSBookmark*)bookmark;
+- (id)initWithStyle:(UITableViewStyle)style pdfViewCtrl:(FSPDFViewCtrl *)pdfViewCtrl panelController:(FSPanelController *)panelController;
+- (NSArray *)getBookmark:(FSBookmark *)parentBookmark;
+- (NSArray *)getOutline:(FSBookmark *)bookmark;
 - (void)getOutline:(FSBookmark *)bookmark getOutlineFinishHandler:(GetBookmarkFinishHandler)getOutlineFinishHandler;
 - (void)loadData:(FSBookmark *)parentBookmark;
 - (void)clearData;

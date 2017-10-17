@@ -11,20 +11,20 @@
  */
 
 #import "SelectToolHandler.h"
-#import "NoteDialog.h"
+#import "FtToolHandler.h"
+#import "MagnifierView.h"
 #import "MenuControl.h"
 #import "MenuItem.h"
+#import "NoteDialog.h"
 #import "Preference.h"
-#import "UIExtensionsManager+Private.h"
-#import "MagnifierView.h"
-#import "FtToolHandler.h"
 #import "SignToolHandler.h"
+#import "UIExtensionsManager+Private.h"
 
 @interface SelectToolHandler () <IDocEventListener>
 
 @property (nonatomic, assign) BOOL isTextSelect;
 @property (nonatomic, assign) int currentPageIndex;
-@property (nonatomic, strong) FSPointF* currentPoint;
+@property (nonatomic, strong) FSPointF *currentPoint;
 @property (nonatomic, assign) int startPosIndex;
 @property (nonatomic, assign) int endPosIndex;
 @property (nonatomic, strong) NSArray *arraySelectedRect;
@@ -33,15 +33,14 @@
 @end
 
 @implementation SelectToolHandler {
-    UIExtensionsManager* _extensionsManager;
-    FSPDFViewCtrl* _pdfViewCtrl;
-    TaskServer* _taskServer;
+    UIExtensionsManager *_extensionsManager;
+    FSPDFViewCtrl *_pdfViewCtrl;
+    TaskServer *_taskServer;
 }
 
 @synthesize type = _type;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager
-{
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager {
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
@@ -57,60 +56,49 @@
     return self;
 }
 
-- (NSArray*)_getTextRects:(FSPDFTextSelect*)fstextPage start:(int)start end:(int)end
-{
-    int count = ABS(end-start)+1;
+- (NSArray *)_getTextRects:(FSPDFTextSelect *)fstextPage start:(int)start end:(int)end {
+    int count = ABS(end - start) + 1;
     start = MIN(start, end);
     __block NSMutableArray *ret = [NSMutableArray array];
-    
+
     Task *task = [[Task alloc] init];
-    task.run = ^(){
-        if (fstextPage != nil)
-        {
+    task.run = ^() {
+        if (fstextPage != nil) {
             int rectCount = [fstextPage getTextRectCount:start count:count];
-            for (int i = 0; i < rectCount; i++)
-            {
-                FSRectF* dibRect = [fstextPage getTextRect:i];
-                if (dibRect.getLeft == dibRect.getRight || dibRect.getTop == dibRect.getBottom)
-                {
+            for (int i = 0; i < rectCount; i++) {
+                FSRectF *dibRect = [fstextPage getTextRect:i];
+                if (dibRect.getLeft == dibRect.getRight || dibRect.getTop == dibRect.getBottom) {
                     continue;
                 }
-                
-                enum FS_ROTATION direction = [fstextPage getBaselineRotation:i];
-                NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:dibRect]],[NSNumber numberWithInt:direction],nil];
-                
+
+                FSRotation direction = [fstextPage getBaselineRotation:i];
+                NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:dibRect]], [NSNumber numberWithInt:direction], nil];
+
                 [ret addObject:array];
             }
-            
+
             //merge rects if possible
-            if (ret.count > 1)
-            {
+            if (ret.count > 1) {
                 int i = 0;
-                while (i < ret.count-1)
-                {
+                while (i < ret.count - 1) {
                     int j = i + 1;
-                    while (j < ret.count)
-                    {
-                        FSRectF* rect1 = [Utility CGRect2FSRectF:[[[ret objectAtIndex:i] objectAtIndex:0] CGRectValue]];
-                        FSRectF* rect2 = [Utility CGRect2FSRectF:[[[ret objectAtIndex:j] objectAtIndex:0] CGRectValue]];
-                        
+                    while (j < ret.count) {
+                        FSRectF *rect1 = [Utility CGRect2FSRectF:[[[ret objectAtIndex:i] objectAtIndex:0] CGRectValue]];
+                        FSRectF *rect2 = [Utility CGRect2FSRectF:[[[ret objectAtIndex:j] objectAtIndex:0] CGRectValue]];
+
                         int direction1 = [[[ret objectAtIndex:i] objectAtIndex:1] intValue];
                         int direction2 = [[[ret objectAtIndex:j] objectAtIndex:1] intValue];
                         BOOL adjcent = NO;
-                        if (direction1 == direction2)
-                        {
+                        if (direction1 == direction2) {
                             adjcent = NO;
                         }
-                        if(adjcent)
-                        {
-                            FSRectF* rectResult = [[FSRectF alloc] init];
+                        if (adjcent) {
+                            FSRectF *rectResult = [[FSRectF alloc] init];
                             [rectResult set:MIN([rect1 getLeft], [rect2 getLeft]) bottom:MAX([rect1 getTop], [rect2 getTop]) right:MAX([rect1 getRight], [rect2 getRight]) top:MIN([rect1 getBottom], [rect2 getBottom])];
-                            NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:rectResult]],[NSNumber numberWithInt:direction1],nil];
+                            NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:rectResult]], [NSNumber numberWithInt:direction1], nil];
                             [ret replaceObjectAtIndex:i withObject:array];
                             [ret removeObjectAtIndex:j];
-                                                    }
-                        else
-                        {
+                        } else {
                             j++;
                         }
                     }
@@ -118,61 +106,54 @@
                 }
             }
         }
-        
+
     };
     [_taskServer executeSync:task];
     return ret;
 }
 
 //get word range of string, including space
-- (NSArray*)getUnitWordBoundary:(NSString*)str
-{
+- (NSArray *)getUnitWordBoundary:(NSString *)str {
     NSMutableArray *array = [NSMutableArray array];
     CFStringTokenizerRef tokenizer = CFStringTokenizerCreate(kCFAllocatorDefault,
-                                                             (CFStringRef)str,
+                                                             (CFStringRef) str,
                                                              CFRangeMake(0, [str length]),
                                                              kCFStringTokenizerUnitWordBoundary,
                                                              NULL);
     CFStringTokenizerTokenType tokenType = kCFStringTokenizerTokenNone;
-    while ((tokenType = CFStringTokenizerAdvanceToNextToken(tokenizer)) != kCFStringTokenizerTokenNone)
-    {
+    while ((tokenType = CFStringTokenizerAdvanceToNextToken(tokenizer)) != kCFStringTokenizerTokenNone) {
         CFRange tokenRange = CFStringTokenizerGetCurrentTokenRange(tokenizer);
         NSRange range = NSMakeRange(tokenRange.location, tokenRange.length);
         [array addObject:[NSValue valueWithRange:range]];
     }
-    if (tokenizer)
-    {
+    if (tokenizer) {
         CFRelease(tokenizer);
     }
     return array;
 }
 
-- (NSRange)getWordByTextIndex:(int)index textPage:(FSPDFTextSelect*)fstextPage
-{
+- (NSRange)getWordByTextIndex:(int)index textPage:(FSPDFTextSelect *)fstextPage {
     __block NSRange retRange = NSMakeRange(index, 1);
-    
+
     int pageTotalCharCount = 0;
-    
+
     if (fstextPage != nil) {
         pageTotalCharCount = [fstextPage getCharCount];
     }
-    
+
     int startIndex = MAX(0, index - 25);
-    int endIndex = MIN(pageTotalCharCount-1, index + 25);
+    int endIndex = MIN(pageTotalCharCount - 1, index + 25);
     index -= startIndex;
-    
-    NSString *str = [fstextPage getChars:MIN(startIndex,endIndex) count:ABS(endIndex-startIndex)+1];
+
+    NSString *str = [fstextPage getChars:MIN(startIndex, endIndex) count:ABS(endIndex - startIndex) + 1];
     NSArray *array = [self getUnitWordBoundary:str];
     [array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         NSRange range = [obj rangeValue];
-        if (NSLocationInRange(index, range))
-        {
+        if (NSLocationInRange(index, range)) {
             NSString *tmp = [str substringWithRange:range];
-            if ([tmp isEqualToString:@" "])
-            {
+            if ([tmp isEqualToString:@" "]) {
                 NSUInteger nextIndex = idx + 1;
-                if (nextIndex < array.count)
-                {
+                if (nextIndex < array.count) {
                     range = [[array objectAtIndex:nextIndex] rangeValue];
                 }
             }
@@ -182,81 +163,69 @@
     }];
 
     return retRange;
-    
 }
 
-- (int)getCharIndexAtPos:(int)pageIndex point:(CGPoint)point
-{
-    FSPointF* dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
-    FSPDFTextSelect* textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
-    return (int)[textPage getIndexAtPos:dibPoint.x y:dibPoint.y tolerance:5];
+- (int)getCharIndexAtPos:(int)pageIndex point:(CGPoint)point {
+    FSPointF *dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
+    FSPDFTextSelect *textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
+    return (int) [textPage getIndexAtPos:dibPoint.x y:dibPoint.y tolerance:5];
 }
 
-- (NSArray*)getCurrentSelectRects:(int)pageIndex
-{
+- (NSArray *)getCurrentSelectRects:(int)pageIndex {
     NSMutableArray *retArray = [NSMutableArray array];
     __block CGRect unionRect = CGRectZero;
-    
-    FSPDFTextSelect* textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
-    NSArray* array = [self _getTextRects:textPage start:self.startPosIndex end:self.endPosIndex];
+
+    FSPDFTextSelect *textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
+    NSArray *array = [self _getTextRects:textPage start:self.startPosIndex end:self.endPosIndex];
     [array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         CGRect rect = [[obj objectAtIndex:0] CGRectValue];
         [retArray addObject:[NSValue valueWithCGRect:rect]];
-        if (CGRectEqualToRect(unionRect, CGRectZero))
-        {
+        if (CGRectEqualToRect(unionRect, CGRectZero)) {
             unionRect = rect;
-        }
-        else
-        {
+        } else {
             unionRect = CGRectUnion(unionRect, rect);
         }
     }];
-   
-    self.currentEditPdfRect  = [Utility CGRect2FSRectF:unionRect];
+
+    self.currentEditPdfRect = [Utility CGRect2FSRectF:unionRect];
     return retArray;
 }
 
-- (void)clearSelection
-{
+- (void)clearSelection {
     self.startPosIndex = -1;
     self.endPosIndex = -1;
     self.arraySelectedRect = nil;
 }
 
--(BOOL)isEnabled
-{
+- (BOOL)isEnabled {
     return YES;
 }
 
--(void)onActivate
-{
+- (void)onActivate {
 }
 
--(void)onDeactivate
-{
+- (void)onDeactivate {
     if (self.isEdit && [_extensionsManager.menuControl isMenuVisible]) {
         [_extensionsManager.menuControl hideMenu];
     }
 }
 
 // PageView Gesture+Touch
-- (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer {
     if (_extensionsManager.currentAnnot) {
         [_extensionsManager setCurrentAnnot:nil];
     }
-    
+
     if ([self handleLongPressAndPan:pageIndex gestureRecognizer:recognizer]) {
         return YES;
     }
-    
+
     return NO;
 }
 
-- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer {
     id<IToolHandler> originToolHandler = _extensionsManager.currentToolHandler;
-    if ([_extensionsManager getCurrentToolHandler] == self) {
+    if (_extensionsManager.currentToolHandler == self) {
         [_extensionsManager setCurrentToolHandler:nil];
     }
     if (!self.isEdit) {
@@ -268,42 +237,36 @@
     if (_extensionsManager.currentAnnot) {
         [_extensionsManager setCurrentAnnot:nil];
     }
-    
+
     self.isEdit = NO;
     [self clearSelection];
     [_pdfViewCtrl refresh:CGRectZero pageIndex:pageIndex needRender:NO];
     return YES;
 }
 
-- (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer {
     if (!self.isEdit) {
         return NO;
     }
-    if([self handleLongPressAndPan:pageIndex gestureRecognizer:recognizer])
-    {
+    if ([self handleLongPressAndPan:pageIndex gestureRecognizer:recognizer]) {
         return YES;
     }
-    MenuControl* annotMenu = _extensionsManager.menuControl;
-    if ([annotMenu isMenuVisible])
-    {
+    MenuControl *annotMenu = _extensionsManager.menuControl;
+    if ([annotMenu isMenuVisible]) {
         [annotMenu hideMenu];
     }
     return NO;
 }
 
-- (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer
-{
-    if ([_extensionsManager getCurrentToolHandler] != self
-        || _extensionsManager.currentAnnot) {
+- (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer {
+    if (_extensionsManager.currentToolHandler != self || _extensionsManager.currentAnnot) {
         return NO;
     }
     if (self.isEdit) {
         CGPoint point = [gestureRecognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
         int index = [self getCharIndexAtPos:pageIndex point:point];
-        index = [self verifyIndexRange:index count:100];  //is it near start or end dot
-        if (index > -1)
-        {
+        index = [self verifyIndexRange:index count:100]; //is it near start or end dot
+        if (index > -1) {
             return YES;
         }
     }
@@ -311,49 +274,40 @@
 }
 #pragma mark - private methods
 
-- (BOOL)handleLongPressAndPan:(int)pageIndex gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
-{
+- (BOOL)handleLongPressAndPan:(int)pageIndex gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
     CGPoint point = [gestureRecognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
-    if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
-    {
-        MenuControl* annotMenu = _extensionsManager.menuControl;
-        if ([annotMenu isMenuVisible])
-        {
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        MenuControl *annotMenu = _extensionsManager.menuControl;
+        if ([annotMenu isMenuVisible]) {
             [annotMenu hideMenu];
         }
-        if ([gestureRecognizer isKindOfClass:[UILongPressGestureRecognizer class]])  //only start when long press
+        if ([gestureRecognizer isKindOfClass:[UILongPressGestureRecognizer class]]) //only start when long press
         {
-            
             self.currentPageIndex = pageIndex;
             //start a new range of select text
             int index = [self getCharIndexAtPos:pageIndex point:point];
             [self clearSelection];
-            if (index > -1)  //has some selection, make first character selected
+            if (index > -1) //has some selection, make first character selected
             {
                 self.isEdit = YES;
                 self.isTextSelect = YES;
-                FSPDFTextSelect* textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
+                FSPDFTextSelect *textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
                 NSRange range = [self getWordByTextIndex:index textPage:textPage];
-                self.startPosIndex = (int)range.location;
-                self.endPosIndex = (int)(range.location + range.length - 1);
+                self.startPosIndex = (int) range.location;
+                self.endPosIndex = (int) (range.location + range.length - 1);
                 [self showMagnifier:pageIndex index:index point:point];
-                
+
                 [_pdfViewCtrl refresh:pageIndex needRender:NO];
-            }
-            else
-            {
+            } else {
                 self.isTextSelect = NO;
                 return NO;
             }
-        }
-        else if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]])  //pan start is used to drag the dot
+        } else if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) //pan start is used to drag the dot
         {
             int index = [self getCharIndexAtPos:pageIndex point:point];
-            index = [self verifyIndexRange:index count:100];  //is it near start or end dot
-            if (index > -1)
-            {
-                if (index == self.startPosIndex)
-                {
+            index = [self verifyIndexRange:index count:100]; //is it near start or end dot
+            if (index > -1) {
+                if (index == self.startPosIndex) {
                     //when drag dot always make drag end
                     int tmp = self.endPosIndex;
                     self.endPosIndex = self.startPosIndex;
@@ -363,42 +317,33 @@
                 [_pdfViewCtrl refresh:pageIndex needRender:NO];
             }
         }
-    }
-    else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
-    {
+    } else if (gestureRecognizer.state == UIGestureRecognizerStateChanged) {
         if (self.currentPageIndex != pageIndex) {
             return YES;
         }
         //position change, update the selected range
-        if (self.startPosIndex == -1 || self.endPosIndex == -1)
-        {
-            return YES;  //not start successfully
+        if (self.startPosIndex == -1 || self.endPosIndex == -1) {
+            return YES; //not start successfully
         }
         int index = [self getCharIndexAtPos:pageIndex point:point];
-        if (index > -1)
-        {
+        if (index > -1) {
             self.endPosIndex = index;
             [_pdfViewCtrl refresh:pageIndex needRender:NO];
             [self showMagnifier:pageIndex index:index point:point];
             [self moveMagnifier:pageIndex index:index point:point];
         }
         return YES;
-    }
-    else if (gestureRecognizer.state == UIGestureRecognizerStateEnded || gestureRecognizer.state == UIGestureRecognizerStateCancelled)
-    {
+    } else if (gestureRecognizer.state == UIGestureRecognizerStateEnded || gestureRecognizer.state == UIGestureRecognizerStateCancelled) {
         [self closeMagnifier];
         if (self.currentPageIndex != pageIndex) {
             [self showTextMenu:self.currentPageIndex rect:[_pdfViewCtrl convertPdfRectToPageViewRect:self.currentEditPdfRect pageIndex:self.currentPageIndex]];
             return YES;
         }
-        
+
         //getsture end. if have selection, pop up menu to let user choose; otherwise change to none op.
-        if (self.startPosIndex == -1 || self.endPosIndex == -1)
-        {
+        if (self.startPosIndex == -1 || self.endPosIndex == -1) {
             return NO;
-        }
-        else
-        {
+        } else {
             [self getCurrentSelectRects:pageIndex];
             [self showTextMenu:pageIndex rect:[_pdfViewCtrl convertPdfRectToPageViewRect:self.currentEditPdfRect pageIndex:self.currentPageIndex]];
             return YES;
@@ -407,89 +352,82 @@
     return YES;
 }
 
-- (int)verifyIndexRange:(int)index count:(int)count
-{
+- (int)verifyIndexRange:(int)index count:(int)count {
     int ret = -1;
-    if (index == -1)
-    {
+    if (index == -1) {
         ret = index;
-    }
-    else if (index >= self.startPosIndex - count && index <= self.startPosIndex + count)
-    {
+    } else if (index >= self.startPosIndex - count && index <= self.startPosIndex + count) {
         ret = self.startPosIndex;
-    }
-    else if (index >= self.endPosIndex - count && index <= self.endPosIndex + count)
-    {
+    } else if (index >= self.endPosIndex - count && index <= self.endPosIndex + count) {
         ret = self.endPosIndex;
     }
     return ret;
 }
 
-- (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet*)touches withEvent:(UIEvent*)event
-{
+- (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     return NO;
 }
 
-- (BOOL)onPageViewTouchesMoved:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesMoved:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     return NO;
 }
 
-- (BOOL)onPageViewTouchesEnded:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesEnded:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     return NO;
 }
 
-- (BOOL)onPageViewTouchesCancelled:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesCancelled:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     return NO;
 }
 
--(void)showTextMenu:(int)pageIndex rect:(CGRect)rect
-{
+- (void)showTextMenu:(int)pageIndex rect:(CGRect)rect {
     self.currentPageIndex = pageIndex;
     NSMutableArray *array = [NSMutableArray array];
-    MenuItem *copyTextItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kCopyText", @"FoxitLocalizable", nil) object:self action:@selector(copyText)];
-    MenuItem *hightLightItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kHighlight", @"FoxitLocalizable", nil) object:self action:@selector(addHighlight)];
-    MenuItem *squigglyItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kSquiggly", @"FoxitLocalizable", nil) object:self action:@selector(addSquiggly)];
-    MenuItem *strikeOutItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kStrikeout", @"FoxitLocalizable", nil) object:self action:@selector(addStrikeout)];
-    MenuItem *underlineItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kUnderline", @"FoxitLocalizable", nil) object:self action:@selector(addUnderline)];
+    MenuItem *copyTextItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kCopyText") object:self action:@selector(copyText)];
+    MenuItem *hightLightItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kHighlight") object:self action:@selector(addHighlight)];
+    MenuItem *squigglyItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kSquiggly") object:self action:@selector(addSquiggly)];
+    MenuItem *strikeOutItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kStrikeout") object:self action:@selector(addStrikeout)];
+    MenuItem *underlineItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kUnderline") object:self action:@selector(addUnderline)];
 
-    enum FS_PASSWORDTYPE passwordType = [_pdfViewCtrl.currentDoc getPasswordType];
+    FSPasswordType passwordType = [_pdfViewCtrl.currentDoc getPasswordType];
     BOOL isOwner = (passwordType == e_pwdNoPassword || passwordType == e_pwdOwner);
-    
+
     unsigned long allPermission = [_pdfViewCtrl.currentDoc getUserPermissions];
     if (isOwner || (allPermission & e_permExtract) > 0) {
         [array addObject:copyTextItem];
     }
-    
-    if ([Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc])
-    {
-        if(_extensionsManager.modulesConfig.loadAnnotations)
-        {
+
+    if ([Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc]) {
+        if ([_extensionsManager.modulesConfig.tools containsObject:Tool_Highlight]) {
             [array addObject:hightLightItem];
+        }
+        if ([_extensionsManager.modulesConfig.tools containsObject:Tool_Underline]) {
             [array addObject:underlineItem];
+        }
+        if ([_extensionsManager.modulesConfig.tools containsObject:Tool_StrikeOut]) {
             [array addObject:strikeOutItem];
+        }
+        if ([_extensionsManager.modulesConfig.tools containsObject:Tool_Squiggly]) {
             [array addObject:squigglyItem];
         }
     }
 
     if (array.count > 0) {
         CGRect dvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:rect pageIndex:self.currentPageIndex];
-        MenuControl* annotMenu = _extensionsManager.menuControl;
+        MenuControl *annotMenu = _extensionsManager.menuControl;
         annotMenu.menuItems = array;
         [annotMenu setRect:dvRect];
         [annotMenu showMenu];
     }
 }
 
-- (NSString*)copyText;
+- (NSString *)copyText;
 {
     self.isEdit = NO;
     NSMutableString *str = [NSMutableString stringWithFormat:@""];
-    
-    FSPDFTextSelect* textSelect = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:self.currentPageIndex];
-    NSString* selStr = [textSelect getChars:MIN(self.startPosIndex, self.endPosIndex) count:ABS(self.endPosIndex-self.startPosIndex)+1];
+
+    FSPDFTextSelect *textSelect = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:self.currentPageIndex];
+    NSString *selStr = [textSelect getChars:MIN(self.startPosIndex, self.endPosIndex) count:ABS(self.endPosIndex - self.startPosIndex) + 1];
     if (selStr && selStr.length > 0) {
         [str appendString:selStr];
     }
@@ -502,47 +440,40 @@
     return str;
 }
 
--(void)addHighlight
-{
+- (void)addHighlight {
     self.isEdit = NO;
     [self addMarkup:e_annotHighlight];
     [self clearSelection];
 }
 
--(void)addSquiggly
-{
+- (void)addSquiggly {
     self.isEdit = NO;
     [self addMarkup:e_annotSquiggly];
     [self clearSelection];
 }
 
--(void)addStrikeout
-{
+- (void)addStrikeout {
     self.isEdit = NO;
     [self addMarkup:e_annotStrikeOut];
     [self clearSelection];
 }
 
--(void)addUnderline
-{
+- (void)addUnderline {
     self.isEdit = NO;
     [self addMarkup:e_annotUnderline];
     [self clearSelection];
 }
 
-- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController
-{
+- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
     self.isEdit = NO;
     [_pdfViewCtrl refresh:CGRectZero pageIndex:self.currentPageIndex needRender:NO];
 }
 
--(void)addMarkup:(enum FS_ANNOTTYPE)type
-{
-    FSPDFTextSelect* textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:self.currentPageIndex];
-    NSArray* array = [self _getTextRects:textPage start:self.startPosIndex end:self.endPosIndex];
+- (void)addMarkup:(FSAnnotType)type {
+    FSPDFTextSelect *textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:self.currentPageIndex];
+    NSArray *array = [self _getTextRects:textPage start:self.startPosIndex end:self.endPosIndex];
     NSMutableArray *arrayQuads = [NSMutableArray array];
-    for (int i = 0; i < array.count; i++)
-    {
+    for (int i = 0; i < array.count; i++) {
         FSRectF *dibRect = [Utility CGRect2FSRectF:[[[array objectAtIndex:i] objectAtIndex:0] CGRectValue]];
         int direction = [[[array objectAtIndex:i] objectAtIndex:1] intValue];
         CGPoint point1;
@@ -559,8 +490,7 @@
             point3.y = dibRect.bottom;
             point4.x = dibRect.right;
             point4.y = dibRect.bottom;
-        }
-        else if (direction == 1) // test is vertical, left to right
+        } else if (direction == 1) // test is vertical, left to right
         {
             point4.x = dibRect.right;
             point4.y = dibRect.top;
@@ -570,8 +500,7 @@
             point2.y = dibRect.top;
             point1.x = dibRect.left;
             point1.y = dibRect.bottom;
-        }
-        else if (direction == 2) //text is horizontal, right to left
+        } else if (direction == 2) //text is horizontal, right to left
         {
             point4.x = dibRect.left;
             point4.y = dibRect.top;
@@ -581,8 +510,7 @@
             point2.y = dibRect.bottom;
             point1.x = dibRect.right;
             point1.y = dibRect.bottom;
-        }
-        else if (direction == 3) //text is vertical, right to left
+        } else if (direction == 3) //text is vertical, right to left
         {
             point1.x = dibRect.right;
             point1.y = dibRect.top;
@@ -592,84 +520,74 @@
             point3.y = dibRect.top;
             point4.x = dibRect.left;
             point4.y = dibRect.bottom;
-        }
-        else
-        {
+        } else {
             continue;
         }
-        
-        FSQuadPoints* fsqp = [[FSQuadPoints alloc] init];
-        FSPointF* pt1 = [[FSPointF alloc] init];
+
+        FSQuadPoints *fsqp = [[FSQuadPoints alloc] init];
+        FSPointF *pt1 = [[FSPointF alloc] init];
         [pt1 set:point1.x y:point1.y];
-        FSPointF* pt2 = [[FSPointF alloc] init];
+        FSPointF *pt2 = [[FSPointF alloc] init];
         [pt2 set:point2.x y:point2.y];
-        FSPointF* pt3 = [[FSPointF alloc] init];
+        FSPointF *pt3 = [[FSPointF alloc] init];
         [pt3 set:point3.x y:point3.y];
-        FSPointF* pt4 = [[FSPointF alloc] init];
+        FSPointF *pt4 = [[FSPointF alloc] init];
         [pt4 set:point4.x y:point4.y];
         [fsqp setFirst:pt1];
         [fsqp setSecond:pt2];
         [fsqp setThird:pt3];
         [fsqp setFourth:pt4];
         [arrayQuads addObject:fsqp];
-        
-                                            }
-    if (0 == arrayQuads.count) return;
+    }
+    if (0 == arrayQuads.count)
+        return;
     CGRect insetRect = [_pdfViewCtrl convertPdfRectToPageViewRect:self.currentEditPdfRect pageIndex:self.currentPageIndex];
     FSRectF *rect = [_pdfViewCtrl convertPageViewRectToPdfRect:insetRect pageIndex:self.currentPageIndex];
-    
-    FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:self.currentPageIndex];
-    if (!page) return;
-    FSMarkup *annot = (FSMarkup*)[page addAnnot:type rect:rect];
+
+    FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:self.currentPageIndex];
+    if (!page)
+        return;
+    FSMarkup *annot = (FSMarkup *) [page addAnnot:type rect:rect];
     annot.NM = [Utility getUUID];
     annot.author = [SettingPreference getAnnotationAuthor];
     annot.quads = arrayQuads;
     annot.createDate = [NSDate date];
     annot.modifiedDate = [NSDate date];
     annot.flags = e_annotFlagPrint;
-    
+
     unsigned int color = [_extensionsManager getPropertyBarSettingColor:type];
     int opacity = [_extensionsManager getPropertyBarSettingOpacity:type];
-    if (type == e_annotHighlight)
-    {
+    if (type == e_annotHighlight) {
         annot.subject = @"Highlight";
-        self.colors = @[@0xFFFF00,@0xCCFF66,@0x00FFFF,@0x99CCFF,@0x7480FC,@0xCC99FF,@0xFF99FF,@0xFF9999,@0x00CC66,@0x22F3B1];
-        annot.color = [Preference getIntValue:@"Highlight" type:@"Color" defaultValue:0] != 0 ?[Preference getIntValue:@"Highlight" type:@"Color" defaultValue:0] : color;
+        self.colors = @[ @0xFFFF00, @0xCCFF66, @0x00FFFF, @0x99CCFF, @0x7480FC, @0xCC99FF, @0xFF99FF, @0xFF9999, @0x00CC66, @0x22F3B1 ];
+        annot.color = [Preference getIntValue:@"Highlight" type:@"Color" defaultValue:0] != 0 ? [Preference getIntValue:@"Highlight" type:@"Color" defaultValue:0] : color;
         opacity = [Preference getIntValue:@"Highlight" type:@"Opacity" defaultValue:0] != 0 ? [Preference getIntValue:@"Highlight" type:@"Opacity" defaultValue:0] : opacity;
-    }
-    else if (type == e_annotSquiggly)
-    {
+    } else if (type == e_annotSquiggly) {
         annot.subject = @"Squiggly";
-        self.colors = @[@0x33CC00,@0xCCCC00,@0xFF9933,@0x0099CC,@0xBBBBBB,@0x3366FF,@0xCC33FF,@0xCC0099,@0xFF0000,@0x686767];
-        annot.color = [Preference getIntValue:@"Squiggly" type:@"Color" defaultValue:0] != 0 ?[Preference getIntValue:@"Squiggly" type:@"Color" defaultValue:0] : color;
-        opacity = [Preference getIntValue:@"Squiggly" type:@"Opacity" defaultValue:0] != 0 ? [Preference getIntValue:@"Squiggly"type:@"Opacity" defaultValue:0] : opacity;
+        self.colors = @[ @0x33CC00, @0xCCCC00, @0xFF9933, @0x0099CC, @0xBBBBBB, @0x3366FF, @0xCC33FF, @0xCC0099, @0xFF0000, @0x686767 ];
+        annot.color = [Preference getIntValue:@"Squiggly" type:@"Color" defaultValue:0] != 0 ? [Preference getIntValue:@"Squiggly" type:@"Color" defaultValue:0] : color;
+        opacity = [Preference getIntValue:@"Squiggly" type:@"Opacity" defaultValue:0] != 0 ? [Preference getIntValue:@"Squiggly" type:@"Opacity" defaultValue:0] : opacity;
 
-    }
-    else if (type == e_annotStrikeOut)
-    {
+    } else if (type == e_annotStrikeOut) {
         annot.subject = @"Strikeout";
-        self.colors = @[@0xFF3333,@0xFF00FF,@0x9966FF,@0x66CC33,@0x996666,@0xCCCC00,@0xFF9900,@0x00CCFF,@0x00CCCC,@0x000000];
-        annot.color = [Preference getIntValue:@"Strikeout" type:@"Color" defaultValue:0] != 0 ?[Preference getIntValue:@"Strikeout" type:@"Color" defaultValue:0] : color;
-        opacity = [Preference getIntValue:@"Strikeout" type:@"Opacity" defaultValue:0] != 0 ? [Preference getIntValue:@"Strikeout"type:@"Opacity" defaultValue:0] : opacity;
+        self.colors = @[ @0xFF3333, @0xFF00FF, @0x9966FF, @0x66CC33, @0x996666, @0xCCCC00, @0xFF9900, @0x00CCFF, @0x00CCCC, @0x000000 ];
+        annot.color = [Preference getIntValue:@"Strikeout" type:@"Color" defaultValue:0] != 0 ? [Preference getIntValue:@"Strikeout" type:@"Color" defaultValue:0] : color;
+        opacity = [Preference getIntValue:@"Strikeout" type:@"Opacity" defaultValue:0] != 0 ? [Preference getIntValue:@"Strikeout" type:@"Opacity" defaultValue:0] : opacity;
 
-    }
-    else if (type == e_annotUnderline)
-    {
+    } else if (type == e_annotUnderline) {
         annot.subject = @"Underline";
-        self.colors = @[@0x33CC00,@0xCCCC00,@0xFF9933,@0x0099CC,@0xBBBBBB,@0x3366FF,@0xCC33FF,@0xCC0099,@0xFF0000,@0x686767];
-        annot.color = [Preference getIntValue:@"Underline" type:@"Color" defaultValue:0] != 0 ?[Preference getIntValue:@"Underline" type:@"Color" defaultValue:0] : color;
+        self.colors = @[ @0x33CC00, @0xCCCC00, @0xFF9933, @0x0099CC, @0xBBBBBB, @0x3366FF, @0xCC33FF, @0xCC0099, @0xFF0000, @0x686767 ];
+        annot.color = [Preference getIntValue:@"Underline" type:@"Color" defaultValue:0] != 0 ? [Preference getIntValue:@"Underline" type:@"Color" defaultValue:0] : color;
         opacity = [Preference getIntValue:@"Underline" type:@"Opacity" defaultValue:0] != 0 ? [Preference getIntValue:@"Underline" type:@"Opacity" defaultValue:0] : opacity;
     }
-    annot.opacity = opacity/100.0f;
-    
-    if (textPage)
-    {
+    annot.opacity = opacity / 100.0f;
+
+    if (textPage) {
         NSString *tmp = @"";
-        for (int i = 0; i < arrayQuads.count; i++)
-        {
+        for (int i = 0; i < arrayQuads.count; i++) {
             FSQuadPoints *arrayQuad = [arrayQuads objectAtIndex:i];
             FSRectF *rect = [Utility convertToFSRect:arrayQuad.getFirst p2:arrayQuad.getFourth];
-            NSString* text = [textPage getTextInRect:rect];
+            NSString *text = [textPage getTextInRect:rect];
             if (text.length > 0) {
                 tmp = [tmp stringByAppendingString:[textPage getTextInRect:rect]];
             }
@@ -677,87 +595,87 @@
         [annot setContents:tmp];
     }
     [annot resetAppearanceStream];
-    
+
     Task *task = [[Task alloc] init];
-    task.run = ^(){
+    task.run = ^() {
         id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:annot];
         [annotHandler addAnnot:annot];
-        
+
         CGRect cgRect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:self.currentPageIndex];
         cgRect = CGRectInset(cgRect, -20, -20);
-        
+
         [_pdfViewCtrl refresh:cgRect pageIndex:self.currentPageIndex];
         [self clearSelection];
     };
     [_taskServer executeSync:task];
 }
 
--(void)showBlankMenu:(int)pageIndex point:(CGPoint)point
-{
+- (void)showBlankMenu:(int)pageIndex point:(CGPoint)point {
     self.currentPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
     self.currentPageIndex = pageIndex;
     NSMutableArray *array = [NSMutableArray array];
-    MenuItem *commentItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kNote", @"FoxitLocalizable", nil) object:self action:@selector(comment)];
-    MenuItem *typeWriterItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kTypewriter", @"FoxitLocalizable", nil) object:self action:@selector(typeWriter)];
-    MenuItem *signatureItem = [[MenuItem alloc] initWithTitle:NSLocalizedStringFromTable(@"kSignAction", @"FoxitLocalizable", nil) object:self action:@selector(signature)];
+    MenuItem *commentItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kNote") object:self action:@selector(comment)];
+    MenuItem *typeWriterItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kTypewriter") object:self action:@selector(typeWriter)];
+    MenuItem *signatureItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kSignAction") object:self action:@selector(signature)];
+
     
     if ([Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc]) {
-        if(_extensionsManager.modulesConfig.loadAnnotations)
-        {
+        if ([_extensionsManager.modulesConfig.tools containsObject:Tool_Note]) {
             [array addObject:commentItem];
+        }
+        if ([_extensionsManager.modulesConfig.tools containsObject:Tool_Freetext]) {
             [array addObject:typeWriterItem];
         }
     }
-    if([Utility canAddSignToDocument:_pdfViewCtrl.currentDoc])
-    {
-        if(_extensionsManager.modulesConfig.loadSignature)
+    if ([Utility canAddSignToDocument:_pdfViewCtrl.currentDoc]) {
+        if (_extensionsManager.modulesConfig.loadSignature)
             [array addObject:signatureItem];
     }
 
-    if(array.count > 0)
-    {
+    if (array.count > 0) {
         CGRect dvRect = CGRectMake(point.x, point.y, 2, 2);
         dvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:dvRect pageIndex:pageIndex];
-        MenuControl* annotMenu = _extensionsManager.menuControl;
+        MenuControl *annotMenu = _extensionsManager.menuControl;
         annotMenu.menuItems = array;
         [annotMenu setRect:dvRect];
         [annotMenu showMenu];
     }
 }
 
--(void)comment
-{
+- (void)comment {
     self.isEdit = NO;
-    self.colors = @[@0xFF9F40,@0x8080FF,@0xBAE94C,@0xFFF160,@0xC3C3C3,@0xFF4C4C,@0x669999,@0xC72DA1,@0x996666,@0x000000];
+    self.colors = @[ @0xFF9F40, @0x8080FF, @0xBAE94C, @0xFFF160, @0xC3C3C3, @0xFF4C4C, @0x669999, @0xC72DA1, @0x996666, @0x000000 ];
     unsigned int color = [_extensionsManager getPropertyBarSettingColor:e_annotNote];
 
     float pageWidth = [_pdfViewCtrl getPageViewWidth:self.currentPageIndex];
     float pageHeight = [_pdfViewCtrl getPageViewHeight:self.currentPageIndex];
 
-    float scale = pageWidth/1000.0;
+    float scale = pageWidth / 1000.0;
     CGPoint pvPoint = [_pdfViewCtrl convertPdfPtToPageViewPt:self.currentPoint pageIndex:self.currentPageIndex];
-    
-    if(pvPoint.x > pageWidth-NOTE_ANNOTATION_WIDTH*scale*2) pvPoint.x = pageWidth-NOTE_ANNOTATION_WIDTH*scale*2;
-    if(pvPoint.y > pageHeight-NOTE_ANNOTATION_WIDTH*scale*2) pvPoint.y = pageHeight-NOTE_ANNOTATION_WIDTH*scale*2;
-    
-    CGRect rect = CGRectMake(pvPoint.x - NOTE_ANNOTATION_WIDTH*scale/2, pvPoint.y - NOTE_ANNOTATION_WIDTH*scale/2, NOTE_ANNOTATION_WIDTH*scale, NOTE_ANNOTATION_WIDTH*scale);
+
+    if (pvPoint.x > pageWidth - NOTE_ANNOTATION_WIDTH * scale * 2)
+        pvPoint.x = pageWidth - NOTE_ANNOTATION_WIDTH * scale * 2;
+    if (pvPoint.y > pageHeight - NOTE_ANNOTATION_WIDTH * scale * 2)
+        pvPoint.y = pageHeight - NOTE_ANNOTATION_WIDTH * scale * 2;
+
+    CGRect rect = CGRectMake(pvPoint.x - NOTE_ANNOTATION_WIDTH * scale / 2, pvPoint.y - NOTE_ANNOTATION_WIDTH * scale / 2, NOTE_ANNOTATION_WIDTH * scale, NOTE_ANNOTATION_WIDTH * scale);
     FSRectF *dibRect = [_pdfViewCtrl convertPageViewRectToPdfRect:rect pageIndex:self.currentPageIndex];
-    
-    [NoteDialog setViewCtrl: _pdfViewCtrl];
-    [[NoteDialog defaultNoteDialog] show:nil replyAnnots:nil];
-    
-    [NoteDialog defaultNoteDialog].noteEditDone = ^()
-    {
-        FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:self.currentPageIndex];
-        if (!page) return;
-        
-        FSNote* note = (FSNote*)[page addAnnot:e_annotNote rect:dibRect];
+
+    NoteDialog *noteDialog = [[NoteDialog alloc] init];
+    [noteDialog show:nil replyAnnots:nil title:nil];
+
+    noteDialog.noteEditDone = ^(NoteDialog *dialog) {
+        FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:self.currentPageIndex];
+        if (!page)
+            return;
+
+        FSNote *note = (FSNote *) [page addAnnot:e_annotNote rect:dibRect];
         note.color = color;
         int opacity = [_extensionsManager getPropertyBarSettingOpacity:e_annotNote];
-        note.opacity = opacity/100.0f;
+        note.opacity = opacity / 100.0f;
         note.icon = _extensionsManager.noteIcon;
         note.author = [SettingPreference getAnnotationAuthor];
-        note.contents = [[NoteDialog defaultNoteDialog] getContent];
+        note.contents = [dialog getContent];
         note.NM = [Utility getUUID];
         note.lineWidth = 2;
         note.modifiedDate = [NSDate date];
@@ -770,10 +688,9 @@
     }
 }
 
--(void)typeWriter
-{
+- (void)typeWriter {
     self.isEdit = NO;
-    FtToolHandler *toolHandler = (FtToolHandler*)[_extensionsManager getToolHandlerByName:Tool_Freetext];
+    FtToolHandler *toolHandler = (FtToolHandler *) [_extensionsManager getToolHandlerByName:Tool_Freetext];
     [_extensionsManager setCurrentToolHandler:toolHandler];
     toolHandler.freeTextStartPoint = [_pdfViewCtrl convertPdfPtToPageViewPt:self.currentPoint pageIndex:self.currentPageIndex];
     [toolHandler onPageViewTap:self.currentPageIndex recognizer:nil];
@@ -783,81 +700,71 @@
     }
 }
 
--(void)signature
-{
+- (void)signature {
     self.isEdit = NO;
-    SignToolHandler *toolHandler = (SignToolHandler*)[_extensionsManager getToolHandlerByName:Tool_Signature];
+    SignToolHandler *toolHandler = (SignToolHandler *) [_extensionsManager getToolHandlerByName:Tool_Signature];
     [_extensionsManager setCurrentToolHandler:toolHandler];
     toolHandler.isAdded = NO;
     toolHandler.signatureStartPoint = [_pdfViewCtrl convertPdfPtToPageViewPt:self.currentPoint pageIndex:self.currentPageIndex];
     [toolHandler onPageViewTap:self.currentPageIndex recognizer:nil];
 }
 
--(void)onDraw:(int)pageIndex inContext:(CGContextRef)context
-{
+- (void)onDraw:(int)pageIndex inContext:(CGContextRef)context {
     if (pageIndex != self.currentPageIndex) {
         return;
     }
-    
+
     if (self.isEdit && self.isTextSelect) {
         if (self.startPosIndex == -1 || self.endPosIndex == -1) {
             return;
         }
-        
+
         self.arraySelectedRect = [self getCurrentSelectRects:pageIndex];
-        [self.arraySelectedRect enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
-         {
-             CGRect selfRect = [obj CGRectValue];
-             FSRectF *docRect = [Utility CGRect2FSRectF:selfRect];
-             CGRect pvRect = [_pdfViewCtrl convertPdfRectToPageViewRect:docRect pageIndex:pageIndex];
-             
-             UIColor* highlightColor = _extensionsManager.selectionHighlightColor;
-             CGFloat red, green, blue, alpha;
-             [highlightColor getRed:&red green:&green blue:&blue alpha:&alpha];
-             CGContextSetRGBFillColor(context, red, green, blue, alpha);
-             CGContextFillRect(context, pvRect);
-             
-             //draw the drag dot
-             if (idx == 0)
-             {
-                 UIImage *dragDot = [UIImage imageNamed:@"annotation_dragdot.png"];
-                 CGRect leftCursor = CGRectMake((int)(pvRect.origin.x-7.5), (int)(pvRect.origin.y-12), 15, 17);
-                 [dragDot drawAtPoint:leftCursor.origin];
-             }
-             if (idx+1 == self.arraySelectedRect.count)
-             {
-                 UIImage *dragDot = [UIImage imageNamed:@"annotation_dragdot.png"];
-                 CGRect rightCursor = CGRectMake((int)(pvRect.origin.x+pvRect.size.width-7.5), (int)(pvRect.origin.y+pvRect.size.height-5), 15, 17);
-                 [dragDot drawAtPoint:rightCursor.origin];
-             }
-         }];
+        [self.arraySelectedRect enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            CGRect selfRect = [obj CGRectValue];
+            FSRectF *docRect = [Utility CGRect2FSRectF:selfRect];
+            CGRect pvRect = [_pdfViewCtrl convertPdfRectToPageViewRect:docRect pageIndex:pageIndex];
+
+            UIColor *highlightColor = _extensionsManager.selectionHighlightColor;
+            CGFloat red, green, blue, alpha;
+            [highlightColor getRed:&red green:&green blue:&blue alpha:&alpha];
+            CGContextSetRGBFillColor(context, red, green, blue, alpha);
+            CGContextFillRect(context, pvRect);
+
+            //draw the drag dot
+            if (idx == 0) {
+                UIImage *dragDot = [UIImage imageNamed:@"annotation_dragdot.png"];
+                CGRect leftCursor = CGRectMake((int) (pvRect.origin.x - 7.5), (int) (pvRect.origin.y - 12), 15, 17);
+                [dragDot drawAtPoint:leftCursor.origin];
+            }
+            if (idx + 1 == self.arraySelectedRect.count) {
+                UIImage *dragDot = [UIImage imageNamed:@"annotation_dragdot.png"];
+                CGRect rightCursor = CGRectMake((int) (pvRect.origin.x + pvRect.size.width - 7.5), (int) (pvRect.origin.y + pvRect.size.height - 5), 15, 17);
+                [dragDot drawAtPoint:rightCursor.origin];
+            }
+        }];
     }
 }
 
--(unsigned int)color
-{
+- (unsigned int)color {
     return [_extensionsManager getPropertyBarSettingColor:self.type];
 }
 
--(void)setColor:(unsigned int)color
-{
+- (void)setColor:(unsigned int)color {
     [_extensionsManager setAnnotColor:color annotType:self.type];
 }
 
--(int)opacity
-{
+- (int)opacity {
     return [_extensionsManager getAnnotOpacity:self.type];
 }
 
--(void)setOpacity:(int)opacity
-{
+- (void)setOpacity:(int)opacity {
     return [_extensionsManager setAnnotOpacity:opacity annotType:self.type];
 }
 
 #pragma mark - IPageEventListener
 
-- (void)onPageChanged:(int)oldIndex currentIndex:(int)currentIndex
-{
+- (void)onPageChanged:(int)oldIndex currentIndex:(int)currentIndex {
     if (oldIndex != currentIndex) {
         if (!self.isEdit) {
             return;
@@ -865,10 +772,9 @@
         if (_extensionsManager.currentAnnot) {
             [_extensionsManager setCurrentAnnot:nil];
         }
-        
-        MenuControl* annotMenu = _extensionsManager.menuControl;
-        if ([annotMenu isMenuVisible])
-        {
+
+        MenuControl *annotMenu = _extensionsManager.menuControl;
+        if ([annotMenu isMenuVisible]) {
             [annotMenu hideMenu];
         }
         self.isEdit = NO;
@@ -881,30 +787,25 @@
 
 #pragma mark IRotationEventListener
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
-{
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     [self dismissAnnotMenu];
 }
 
--(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
     [self showAnnotMenu];
 }
 
 #pragma mark IGestureEventListener
 
-- (BOOL)onTap:(UITapGestureRecognizer *)recognizer
-{
+- (BOOL)onTap:(UITapGestureRecognizer *)recognizer {
     return NO;
 }
 
-- (BOOL)onLongPress:(UILongPressGestureRecognizer *)recognizer
-{
+- (BOOL)onLongPress:(UILongPressGestureRecognizer *)recognizer {
     return NO;
 }
 
-- (void)onScrollViewWillBeginDragging:(UIScrollView *)scrollView
-{
+- (void)onScrollViewWillBeginDragging:(UIScrollView *)scrollView {
     [self dismissAnnotMenu];
 }
 
@@ -913,54 +814,46 @@
     [self showAnnotMenu];
 }
 
-- (void)onScrollViewWillBeginDecelerating:(UIScrollView *)scrollView
-{
+- (void)onScrollViewWillBeginDecelerating:(UIScrollView *)scrollView {
     [self dismissAnnotMenu];
 }
 
-- (void)onScrollViewDidEndDecelerating:(UIScrollView *)scrollView
-{
+- (void)onScrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     [self showAnnotMenu];
 }
 
-- (void)onScrollViewWillBeginZooming:(UIScrollView *)scrollView
-{
+- (void)onScrollViewWillBeginZooming:(UIScrollView *)scrollView {
     [self dismissAnnotMenu];
-    
 }
 
-- (void)onScrollViewDidEndZooming:(UIScrollView *)scrollView
-{
+- (void)onScrollViewDidEndZooming:(UIScrollView *)scrollView {
     [self showAnnotMenu];
 }
 
-- (void)showAnnotMenu
-{
+- (void)showAnnotMenu {
     if (self.isEdit) {
         double delayInSeconds = .05;
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            MenuControl* annotMenu = _extensionsManager.menuControl;
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
+            MenuControl *annotMenu = _extensionsManager.menuControl;
             if (self.isTextSelect) {
                 CGRect dvRect = [_pdfViewCtrl convertPdfRectToPageViewRect:self.currentEditPdfRect pageIndex:self.currentPageIndex];
                 dvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:dvRect pageIndex:self.currentPageIndex];
-                
+
                 CGRect rectDisplayView = [[_pdfViewCtrl getDisplayView] bounds];
-                if(CGRectIsEmpty(dvRect) || CGRectIsNull(CGRectIntersection(dvRect, rectDisplayView)))
+                if (CGRectIsEmpty(dvRect) || CGRectIsNull(CGRectIntersection(dvRect, rectDisplayView)))
                     return;
-                
+
                 [annotMenu setRect:dvRect];
                 [annotMenu showMenu];
-            }
-            else
-            {
+            } else {
                 CGPoint dvPoint = [_pdfViewCtrl convertPdfPtToPageViewPt:self.currentPoint pageIndex:self.currentPageIndex];
                 CGRect dvRect = CGRectMake(dvPoint.x, dvPoint.y, 2, 2);
-                
+
                 CGRect rectDisplayView = [[_pdfViewCtrl getDisplayView] bounds];
-                if(CGRectIsEmpty(dvRect) || CGRectIsNull(CGRectIntersection(dvRect, rectDisplayView)))
+                if (CGRectIsEmpty(dvRect) || CGRectIsNull(CGRectIntersection(dvRect, rectDisplayView)))
                     return;
-                
+
                 dvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:dvRect pageIndex:self.currentPageIndex];
                 [annotMenu setRect:dvRect];
                 [annotMenu showMenu];
@@ -969,12 +862,10 @@
     }
 }
 
-- (void)dismissAnnotMenu
-{
+- (void)dismissAnnotMenu {
     if (self.isEdit) {
-        MenuControl* annotMenu = _extensionsManager.menuControl;
-        if ([annotMenu isMenuVisible])
-        {
+        MenuControl *annotMenu = _extensionsManager.menuControl;
+        if ([annotMenu isMenuVisible]) {
             [annotMenu hideMenu];
         }
     }
@@ -982,14 +873,11 @@
 
 #pragma mark - Magnifier
 
-- (void)showMagnifier:(int)pageIndex index:(int)index point:(CGPoint)point
-{
-    if(_magnifierView == nil)
-    {
-        FSPDFTextSelect* textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
-        NSArray* array = [self _getTextRects:textPage start:index end:index+1];
-        if (array.count > 0)
-        {
+- (void)showMagnifier:(int)pageIndex index:(int)index point:(CGPoint)point {
+    if (_magnifierView == nil) {
+        FSPDFTextSelect *textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
+        NSArray *array = [self _getTextRects:textPage start:index end:index + 1];
+        if (array.count > 0) {
             FSRectF *dibRect = [Utility CGRect2FSRectF:[[[array objectAtIndex:0] objectAtIndex:0] CGRectValue]];
             CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:dibRect pageIndex:pageIndex];
             point = CGPointMake(point.x, CGRectGetMidY(rect));
@@ -1002,12 +890,10 @@
     }
 }
 
-- (void)moveMagnifier:(int)pageIndex index:(int)index point:(CGPoint)point
-{
-    FSPDFTextSelect* textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
-    NSArray* array = [self _getTextRects:textPage start:index end:index+1];
-    if (array.count > 0)
-    {
+- (void)moveMagnifier:(int)pageIndex index:(int)index point:(CGPoint)point {
+    FSPDFTextSelect *textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
+    NSArray *array = [self _getTextRects:textPage start:index end:index + 1];
+    if (array.count > 0) {
         FSRectF *dibRect = [Utility CGRect2FSRectF:[[[array objectAtIndex:0] objectAtIndex:0] CGRectValue]];
         CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:dibRect pageIndex:pageIndex];
         point = CGPointMake(point.x, CGRectGetMidY(rect));
@@ -1017,21 +903,18 @@
     [_magnifierView setNeedsDisplay];
 }
 
-- (void)closeMagnifier
-{
+- (void)closeMagnifier {
     [_magnifierView removeFromSuperview];
-        _magnifierView = nil;
+    _magnifierView = nil;
 }
 
--(NSString*)getName
-{
+- (NSString *)getName {
     return Tool_Select;
 }
 
 #pragma mark IDocEventListener
 
-- (void)onDocWillClose:(FSPDFDoc* )document
-{
+- (void)onDocWillClose:(FSPDFDoc *)document {
     self.isEdit = NO;
     [self clearSelection];
 }

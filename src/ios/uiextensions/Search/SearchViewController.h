@@ -10,12 +10,12 @@
  * Review legal.txt for additional license and legal information.
  */
 
+#import "Defines.h"
 #import <UIKit/UIKit.h>
 
-typedef void (^SearchbyClickedHandler)(int type);  //1: Google; 2: wifi
+typedef void (^SearchbyClickedHandler)(int type); //1: Google; 2: wifi
 
-@interface SearchbyViewController : UITableViewController
-{
+@interface SearchbyViewController : UITableViewController {
     NSArray *_titles;
 }
 

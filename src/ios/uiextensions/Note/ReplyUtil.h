@@ -10,13 +10,13 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <Foundation/Foundation.h>
 #import "UIExtensionsManager+Private.h"
+#import <Foundation/Foundation.h>
 #import <FoxitRDK/FSPDFViewControl.h>
 
 /**@brief A utility class for a reply. */
 @interface ReplyUtil : NSObject
 
-+ (void)getReplysInDocument:(FSPDFDoc* )document annot:(FSAnnot*)rootAnnot replys:(NSMutableArray*)replys;
++ (void)getReplysInDocument:(FSPDFDoc *)document annot:(FSAnnot *)rootAnnot replys:(NSMutableArray *)replys;
 
 @end

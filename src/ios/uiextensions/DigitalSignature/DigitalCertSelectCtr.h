@@ -12,7 +12,7 @@
 
 #import <UIKit/UIKit.h>
 
-typedef void(^CERTOPERATORBLOCK)(NSString *path,NSString *passwd,NSString *md5);
+typedef void (^CERTOPERATORBLOCK)(NSString *path, NSString *passwd, NSString *md5);
 
 @interface DigitalCertSelectCtr : UITableViewController
 

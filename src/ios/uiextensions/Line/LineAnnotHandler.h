@@ -10,29 +10,27 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
-#import "UIExtensionsManager+Private.h"
 #import "PropertyBar.h"
+#import "UIExtensionsManager+Private.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-typedef enum
-{
+typedef enum {
     EDITANNOT_LINE_TYPE_UNKNOWN = -1,
     EDITANNOT_LINE_TYPE_START_POINT = 0,
     EDITANNOT_LINE_TYPE_END_POINT,
     EDITANNOT_LINE_TYPE_FULL,
 } EDITANNOT_LINE_TYPE;
 
-@interface LineAnnotHandler : NSObject<IAnnotHandler,IPropertyBarListener,IRotationEventListener,IGestureEventListener, IScrollViewEventListener, IAnnotPropertyListener>
-{
+@interface LineAnnotHandler : NSObject <IAnnotHandler, IPropertyBarListener, IRotationEventListener, IGestureEventListener, IScrollViewEventListener, IAnnotPropertyListener> {
     EDITANNOT_LINE_TYPE _editType;
 }
 
 @property (nonatomic, strong) FSAnnot *editAnnot;
-@property (nonatomic, strong) FSPointF* startPoint;
-@property (nonatomic, strong) FSPointF* endPoint;
+@property (nonatomic, strong) FSPointF *startPoint;
+@property (nonatomic, strong) FSPointF *endPoint;
 @property (nonatomic, strong) UIViewController *replyVC;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

@@ -22,28 +22,9 @@
 @property (nonatomic, assign) CGFloat difference;
 @end
 
-static FSPDFViewCtrl* _pdfViewCtrl = nil;
-
 @implementation NoteDialog
 
-+ (void)setViewCtrl:(FSPDFViewCtrl*)pdfViewCtrl
-{
-    _pdfViewCtrl = pdfViewCtrl;
-}
-
-+(NoteDialog*)defaultNoteDialog
-{
-    static NoteDialog *instance;
-    
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instance = [[NoteDialog alloc] init];
-    });
-    return instance;
-}
-
--(void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     self.difference = 0;
     self.view.backgroundColor = [UIColor colorWithRGBHex:0xfffbdb];
@@ -53,96 +34,90 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
     if ([UIViewController instancesRespondToSelector:@selector(automaticallyAdjustsScrollViewInsets)]) {
         self.automaticallyAdjustsScrollViewInsets = NO;
     }
-    
+
     self.textViewNote = [[UITextView alloc] init];
     self.textViewNote.font = [UIFont systemFontOfSize:15.0f];
     self.textViewNote.translatesAutoresizingMaskIntoConstraints = NO;
     [NSTimer scheduledTimerWithTimeInterval:0.3 target:self selector:@selector(setFrame) userInfo:nil repeats:NO];
     self.textViewNote.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.textViewNote.inputAccessoryView = nil;
-    
+
     [self.view addSubview:self.textViewNote];
     if (OS_ISVERSION7) {
         self.textViewNote.delegate = self;
     }
-    
+
     [self.textViewNote becomeFirstResponder];
 }
 
-- (void)setFrame{
+- (void)setFrame {
     self.textViewNote.backgroundColor = [UIColor clearColor];
-   
+
     if (DEVICE_iPHONE) {
+        CGSize rootViewSize = self.view.window.rootViewController.view.bounds.size; // todo wei self.view.bounds.size?
+
         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
-            self.textViewNote.frame = CGRectMake(0, 0, SCREENHEIGHT, SCREENWIDTH - 64);
-          
-        }else{
-            self.textViewNote.frame = CGRectMake(0, 0, SCREENWIDTH, SCREENHEIGHT - 64);
-                if([UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].bounds.size.height ==  414 * 736){
-                    self.textViewNote.frame = self.view.bounds;
-                }
+            self.textViewNote.frame = CGRectMake(0, 0, rootViewSize.height, rootViewSize.width - 64);
+
+        } else {
+            self.textViewNote.frame = CGRectMake(0, 0, rootViewSize.width, rootViewSize.height - 64);
+            if ([UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].bounds.size.height == 414 * 736) {
+                self.textViewNote.frame = self.view.bounds;
+            }
         }
-    }else{
+    } else {
         self.textViewNote.frame = self.view.bounds;
     }
-    
 }
 
--(void)viewWillAppear:(BOOL)animated
-{
+- (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:YES];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWasShown:) name:UIKeyboardDidShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWasHidden:) name:UIKeyboardDidHideNotification object:nil];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
 }
 
--(void)viewWillDisappear:(BOOL)animated
-{
+- (void)viewWillDisappear:(BOOL)animated {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidHideNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [super viewWillDisappear:animated];
 }
 
--(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
     [self adjustTextFrame];
 }
 
--(void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
-{
+- (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     navigationController.navigationBar.tag = 1;
     navigationController.navigationBar.barTintColor = [UIColor colorWithRGBHex:0xF2FAFAFA];
     if (viewController == self) {
         [self viewWillAppear:NO];
-        if (self.navigationItem.titleView != nil)
-        {
-            UIView *titleView = (UIView*)self.navigationItem.titleView;
-            UILabel *titleLabel = (UILabel*)[titleView viewWithTag:2];
-            if (titleLabel)
-            {
-                titleLabel.text = NSLocalizedStringFromTable(@"kNote", @"FoxitLocalizable", nil);
+        if (self.navigationItem.titleView != nil) {
+            UIView *titleView = (UIView *) self.navigationItem.titleView;
+            UILabel *titleLabel = (UILabel *) [titleView viewWithTag:2];
+            if (titleLabel) {
+                titleLabel.text = self.title ?: FSLocalizedString(@"kNote");
             }
         }
     }
 }
 
 #pragma mark - Private methods
-- (void)initNavigationBar
-{
+- (void)initNavigationBar {
     UIButton *buttonCancel = [UIButton buttonWithType:UIButtonTypeCustom];
     buttonCancel.frame = CGRectMake(0.0f, 0.0f, 55.0f, 32.0f);
-    [buttonCancel setTitle:NSLocalizedStringFromTable(@"kCancel", @"FoxitLocalizable", nil) forState:UIControlStateNormal];
+    [buttonCancel setTitle:FSLocalizedString(@"kCancel") forState:UIControlStateNormal];
     buttonCancel.titleLabel.font = [UIFont boldSystemFontOfSize:15.0f];
     buttonCancel.titleLabel.textAlignment = NSTextAlignmentLeft;
     [buttonCancel setTitleColor:[UIColor colorWithRed:0.15 green:0.62 blue:0.84 alpha:1] forState:UIControlStateNormal];
     [buttonCancel setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
     [buttonCancel addTarget:self action:@selector(cancelAction:) forControlEvents:UIControlEventTouchUpInside];
     [self.navigationItem addLeftBarButtonItem:[[UIBarButtonItem alloc] initWithCustomView:buttonCancel]];
-    
+
     self.buttonDone = [UIButton buttonWithType:UIButtonTypeCustom];
     self.buttonDone.frame = CGRectMake(0.0f, 0.0f, 55.0f, 32.0f);
-    [self.buttonDone setTitle:NSLocalizedStringFromTable(@"kSave", @"FoxitLocalizable", nil) forState:UIControlStateNormal];
+    [self.buttonDone setTitle:FSLocalizedString(@"kSave") forState:UIControlStateNormal];
     self.buttonDone.titleLabel.font = [UIFont boldSystemFontOfSize:15.0f];
     [self.buttonDone setTitleColor:[UIColor colorWithRed:0.15 green:0.62 blue:0.84 alpha:1] forState:UIControlStateNormal];
     self.buttonDone.titleLabel.textAlignment = NSTextAlignmentRight;
@@ -151,15 +126,13 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
     [self.buttonDone addTarget:self action:@selector(doneAction:) forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem *barDone = [[UIBarButtonItem alloc] initWithCustomView:self.buttonDone];
     [self.navigationItem addRightBarButtonItem:barDone];
-    
-    if (!self.navigationItem.titleView)
-    {
+
+    if (!self.navigationItem.titleView) {
         CGRect titleViewFrame = CGRectMake(0.0, 0.0, 200.0, 44.0f);
         CGRect indicatorFrame = CGRectMake(180.f, 12.0f, 20.0f, 20.0f);
         CGRect titleFrame = CGRectMake(0.0f, 0.0f, 180.0f, 44.0f);
         UIFont *titleFont = [UIFont boldSystemFontOfSize:18.0f];
-        if (DEVICE_iPHONE)
-        {
+        if (DEVICE_iPHONE) {
             indicatorFrame = CGRectMake(160.f, 12.0f, 20.0f, 20.0f);
             titleFrame = CGRectMake(0.0f, 0.0f, 160.0f, 44.0f);
             titleFont = [UIFont boldSystemFontOfSize:15.0f];
@@ -180,224 +153,199 @@ static FSPDFViewCtrl* _pdfViewCtrl = nil;
         [titleView addSubview:titleLabel];
         [titleView addSubview:actIndicatorView];
         self.navigationItem.titleView = titleView;
-                            }
-    
-    if (self.navigationItem.titleView != nil)
-    {
-        UIView *titleView = (UIView *)self.navigationItem.titleView;
-        UILabel *titleLabel = (UILabel *)[titleView viewWithTag:2];
-        if (titleLabel)
-        {
-            titleLabel.text = NSLocalizedStringFromTable(@"kNote", @"FoxitLocalizable", nil);
+    }
+
+    if (self.navigationItem.titleView != nil) {
+        UIView *titleView = (UIView *) self.navigationItem.titleView;
+        UILabel *titleLabel = (UILabel *) [titleView viewWithTag:2];
+        if (titleLabel) {
+            titleLabel.text = self.title ?: FSLocalizedString(@"kNote");
         }
     }
 }
 
-- (void)show:(FSAnnot*)rootAnnot replyAnnots:(NSArray*)replyAnnots;
-{
+- (void)show:(FSAnnot *)rootAnnot replyAnnots:(NSArray *)replyAnnots title:(NSString *)title {
+    self.title = title;
     self.rootAnnot = rootAnnot;
     [self initNavigationBar];
     dispatch_async(dispatch_get_main_queue(), ^{
-    self.buttonDone.enabled = NO;
+        self.buttonDone.enabled = NO;
     });
-    
+
     _textViewNote.text = @"";
     [self.textViewNote becomeFirstResponder];
-    
+
     UINavigationController *fileInfoNavCtr = [[UINavigationController alloc] initWithRootViewController:self];
     fileInfoNavCtr.delegate = self;
     fileInfoNavCtr.modalPresentationStyle = UIModalPresentationFormSheet;
     fileInfoNavCtr.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    
+
     UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
-    [rootViewController presentViewController:fileInfoNavCtr animated:YES completion:^{
-        
-    }];
+    [rootViewController presentViewController:fileInfoNavCtr
+                                     animated:YES
+                                   completion:^{
+
+                                   }];
 }
 
-- (void)dismiss
-{
+- (void)dismiss {
     if ([self.textViewNote isFirstResponder]) {
-       [self.textViewNote resignFirstResponder];
+        [self.textViewNote resignFirstResponder];
     }
-    [self dismissViewControllerAnimated:YES completion:^{
-        self.noteEditCancel = nil;
-        self.noteEditDelete = nil;
-        self.noteEditDone = nil;
-    }];
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                                 self.noteEditCancel = nil;
+                                 self.noteEditDelete = nil;
+                                 self.noteEditDone = nil;
+                             }];
 }
 
 #pragma mark - event handlers
 
-- (void)doneAction:(id)sender
-{
+- (void)doneAction:(id)sender {
     if (self.noteEditDone) {
-        self.noteEditDone();
+        self.noteEditDone(self);
     }
     [self dismiss];
 }
 
-- (void)deleteAction:(id)sender
-{
+- (void)deleteAction:(id)sender {
     if (self.noteEditDelete) {
-        self.noteEditDelete();
+        self.noteEditDelete(self);
     }
     [self dismiss];
 }
 
-- (void)cancelAction:(id)sender
-{
+- (void)cancelAction:(id)sender {
     if (self.noteEditCancel) {
-        self.noteEditCancel();
+        self.noteEditCancel(self);
     }
     [self dismiss];
 }
 
--(NSString *)getContent
-{
+- (NSString *)getContent {
     return _textViewNote.text;
 }
 
-- (void)adjustTextFrame
-{
-    
+- (void)adjustTextFrame {
     if (DEVICE_iPHONE) {
         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
             self.textViewNote.frame = CGRectMake(0, 0, SCREENHEIGHT, SCREENWIDTH - 64);
-        }else{
+        } else {
             self.textViewNote.frame = CGRectMake(0, 0, SCREENWIDTH, SCREENHEIGHT - 64);
-            if ([UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].bounds.size.height ==  414 * 736) {
+            if (SCREENWIDTH * SCREENHEIGHT == 414 * 736) {
                 self.textViewNote.frame = self.view.bounds;
             }
-            
         }
     }
-      if (!DEVICE_iPHONE) {
-          CGRect textViewFrame = _textViewNote.frame;
-          textViewFrame.origin.y = 40 + (OS_ISVERSION7 ? -40 : 0);
+    if (!DEVICE_iPHONE) {
+        CGRect textViewFrame = _textViewNote.frame;
+        textViewFrame.origin.y = 40 + (OS_ISVERSION7 ? -40 : 0);
         textViewFrame.size.height = self.view.bounds.size.height;
-        
+
         if ([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeLeft || [UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeRight) {
             textViewFrame.size.height = self.view.bounds.size.height;
-             _textViewNote.frame = textViewFrame;
+            _textViewNote.frame = textViewFrame;
         }
     }
-   
 }
 
--(void)scrollCaretToVisible
-{
+- (void)scrollCaretToVisible {
     CGRect caretRect = [self.textViewNote caretRectForPosition:self.textViewNote.selectedTextRange.end];
     if (CGRectEqualToRect(caretRect, _oldRect))
         return;
-    
+
     _oldRect = caretRect;
-    
+
     CGRect visibleRect = self.textViewNote.bounds;
     visibleRect.size.height -= self.textViewNote.contentInset.top + self.textViewNote.contentInset.bottom;
     visibleRect.origin.y = self.textViewNote.contentOffset.y;
-    
+
     if (!CGRectContainsRect(visibleRect, caretRect)) {
         CGPoint newOffset = self.textViewNote.contentOffset;
         newOffset.y = MAX((caretRect.origin.y + caretRect.size.height) - visibleRect.size.height + 10, 0);
         [self.textViewNote setContentOffset:newOffset animated:YES];
     }
-    
 }
 
 #pragma mark UITextViewDelegate
 
--(void)textViewDidBeginEditing:(UITextView *)textView
-{
+- (void)textViewDidBeginEditing:(UITextView *)textView {
     _oldRect = [self.textViewNote caretRectForPosition:self.textViewNote.selectedTextRange.end];
     _caretVisibilityTimer = [NSTimer scheduledTimerWithTimeInterval:0.3 target:self selector:@selector(scrollCaretToVisible) userInfo:nil repeats:YES];
 }
 
--(void)textViewDidChange:(UITextView *)textView
-{
+- (void)textViewDidChange:(UITextView *)textView {
     if (textView.text.length > 0) {
         dispatch_async(dispatch_get_main_queue(), ^{
             self.buttonDone.enabled = YES;
         });
-    }
-    else
-    {
+    } else {
         dispatch_async(dispatch_get_main_queue(), ^{
             self.buttonDone.enabled = NO;
         });
     }
 }
 
--(void)textViewDidEndEditing:(UITextView *)textView
-{
+- (void)textViewDidEndEditing:(UITextView *)textView {
     [_caretVisibilityTimer invalidate];
-        _caretVisibilityTimer = nil;
+    _caretVisibilityTimer = nil;
 }
 
 #pragma mark - keyboard notification
 
-- (void)keyboardWasShown:(NSNotification*)aNotification{
-    
+- (void)keyboardWasShown:(NSNotification *)aNotification {
     NSDictionary *info = [aNotification userInfo];
     NSValue *frame = nil;
     frame = [info objectForKey:UIKeyboardFrameBeginUserInfoKey];
     CGRect keyboardFrame = [frame CGRectValue];
     CGRect textViewFrame = _textViewNote.frame;
-    
+
     if (DEVICE_iPHONE) {
         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
-              textViewFrame.size.height = [UIScreen mainScreen].bounds.size.width - keyboardFrame.size.width - 64 - 15;
+            textViewFrame.size.height = [UIScreen mainScreen].bounds.size.width - keyboardFrame.size.width - 64 - 15;
             NSLog(@"%f", [UIScreen mainScreen].bounds.size.width);
-              textViewFrame.size.width = [UIScreen mainScreen].bounds.size.height;
-        }
-        else
-        {
-             textViewFrame.size.height = [UIScreen mainScreen].bounds.size.height - keyboardFrame.size.height - 64 - 15;
-             textViewFrame.size.width = [UIScreen mainScreen].bounds.size.width;
-            if ([UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].bounds.size.height ==  414 * 736) {
-                textViewFrame.size.height = self.view.frame.size.height - keyboardFrame.size.height  - 15;
+            textViewFrame.size.width = [UIScreen mainScreen].bounds.size.height;
+        } else {
+            textViewFrame.size.height = [UIScreen mainScreen].bounds.size.height - keyboardFrame.size.height - 64 - 15;
+            textViewFrame.size.width = [UIScreen mainScreen].bounds.size.width;
+            if ([UIScreen mainScreen].bounds.size.width * [UIScreen mainScreen].bounds.size.height == 414 * 736) {
+                textViewFrame.size.height = self.view.frame.size.height - keyboardFrame.size.height - 15;
                 textViewFrame.size.width = self.view.frame.size.width;
             }
         }
     }
-       if (!DEVICE_iPHONE) {
-        CGFloat bottom = ([UIScreen mainScreen].bounds.size.height - self.view.frame.size.height)/2;
+    if (!DEVICE_iPHONE) {
+        CGFloat bottom = ([UIScreen mainScreen].bounds.size.height - self.view.frame.size.height) / 2;
         CGFloat ySet = keyboardFrame.size.height - bottom;
-        textViewFrame.size.height  = self.view.frame.size.height - ySet - 50;
+        textViewFrame.size.height = self.view.frame.size.height - ySet - 50;
         textViewFrame.size.width = self.view.frame.size.width;
         if ([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeLeft || [UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationLandscapeRight) {
-            textViewFrame.size.height  = self.view.frame.size.height - ySet;
+            textViewFrame.size.height = self.view.frame.size.height - ySet;
         }
     }
 
     _textViewNote.frame = textViewFrame;
 }
 
-- (void)keyboardWasHidden:(NSNotification*)aNotification
-{
+- (void)keyboardWasHidden:(NSNotification *)aNotification {
     CGRect textViewFrame = _textViewNote.frame;
     if (DEVICE_iPHONE) {
         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
-            textViewFrame.size.height = [UIScreen mainScreen].bounds.size.width - 64 ;
-        }
-        else
-        {
+            textViewFrame.size.height = [UIScreen mainScreen].bounds.size.width - 64;
+        } else {
             textViewFrame.size.height = [UIScreen mainScreen].bounds.size.height - 64;
         }
-
     }
-       _difference = 45;
+    _difference = 45;
     if (!DEVICE_iPHONE) {
         textViewFrame.size.height = self.view.frame.size.height;
         _difference = 0;
     }
     _textViewNote.frame = textViewFrame;
-    
-    
 }
 
--(void)dealloc
-{
+- (void)dealloc {
     self.textViewNote = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }

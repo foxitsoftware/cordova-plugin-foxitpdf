@@ -10,14 +10,14 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <Foundation/Foundation.h>
-#import "UIExtensionsManager.h"
 #import "UIExtensionsManager+Private.h"
+#import "UIExtensionsManager.h"
+#import <Foundation/Foundation.h>
 
-@interface ShapeToolHandler : NSObject<IToolHandler>
+@interface ShapeToolHandler : NSObject <IToolHandler>
 
-@property (nonatomic, assign) enum FS_ANNOTTYPE type;
+@property (nonatomic, assign) FSAnnotType type;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

@@ -10,15 +10,15 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
 #import "UIExtensionsManager+Private.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-@interface AttachmentAnnotHandler : NSObject<IAnnotHandler,UIPopoverControllerDelegate,IPropertyBarListener,IRotationEventListener,IScrollViewEventListener,IGestureEventListener,IAnnotPropertyListener,UIDocumentInteractionControllerDelegate>
+@interface AttachmentAnnotHandler : NSObject <IAnnotHandler, UIPopoverControllerDelegate, IPropertyBarListener, IRotationEventListener, IScrollViewEventListener, IGestureEventListener, IAnnotPropertyListener, UIDocumentInteractionControllerDelegate>
 
 @property (nonatomic, strong) UIImage *annotImage;
 @property (nonatomic, strong) NSObject *currentVC;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

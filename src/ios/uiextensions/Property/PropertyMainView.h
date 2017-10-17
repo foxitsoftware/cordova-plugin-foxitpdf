@@ -10,15 +10,15 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <Foundation/Foundation.h>
 #import "PropertyBar.h"
 #import "SegmentView.h"
+#import <Foundation/Foundation.h>
 
 @interface PropertyMainView : UIView <SegmentDelegate>
 
-@property (nonatomic,strong) NSMutableArray *segmentItems;
+@property (nonatomic, strong) NSMutableArray *segmentItems;
 
 - (void)showTab:(Property_TabType)type;
-- (void)addLayoutAtTab:(UIView*)layout tab:(Property_TabType)tab;
+- (void)addLayoutAtTab:(UIView *)layout tab:(Property_TabType)tab;
 
 @end

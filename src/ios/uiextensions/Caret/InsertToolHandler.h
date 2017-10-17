@@ -10,14 +10,14 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
 #import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-@interface InsertToolHandler : NSObject<IToolHandler>
-@property (nonatomic, assign)enum FS_ANNOTTYPE type;
+@interface InsertToolHandler : NSObject <IToolHandler>
+@property (nonatomic, assign) FSAnnotType type;
 @property (nonatomic, strong) NSObject *currentVC;
 @property (nonatomic, assign) BOOL isEdit;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 - (void)clearSelection;
 @end

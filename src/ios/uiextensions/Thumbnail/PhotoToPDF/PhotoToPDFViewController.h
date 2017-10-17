@@ -12,10 +12,10 @@
 
 #import <UIKit/UIKit.h>
 
-typedef void (^ImageCallback) (UIImage *image);
+typedef void (^ImageCallback)(UIImage *image);
 @interface photoToPDFViewController : UIViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate>
 
-@property (nonatomic, strong) UIImagePickerController* mediaController;
+@property (nonatomic, strong) UIImagePickerController *mediaController;
 @property (nonatomic, strong) ImageCallback callback;
 
 - (id)initWithButton:(UIButton *)button;
@@ -23,4 +23,3 @@ typedef void (^ImageCallback) (UIImage *image);
 - (void)openCamera;
 
 @end
-

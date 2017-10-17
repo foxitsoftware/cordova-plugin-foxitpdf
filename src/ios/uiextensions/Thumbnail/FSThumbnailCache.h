@@ -11,8 +11,8 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 #import <FoxitRDK/FSPDFViewControl.h>
+#import <UIKit/UIKit.h>
 
 @class UIExtensionsManager;
 @protocol IAnnotEventListener;
@@ -21,8 +21,8 @@
 
 - (id)initWithUIExtenionsManager:(UIExtensionsManager *)extensionsManager;
 
-- (void)getThumbnailForPageAtIndex:(NSUInteger)index withThumbnailSize:(CGSize)thumbnailSize callback:(void (^ __nonnull)(UIImage *))callback;
+- (void)getThumbnailForPageAtIndex:(NSUInteger)index withThumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)())needPause callback:(void (^__nonnull)(UIImage *))callback;
 - (BOOL)removeThumbnailCacheOfPageAtIndex:(NSUInteger)pageIndex;
-- (void)clearThumbnailCachesForCurrentDocument;
+- (void)clearThumbnailCachesForPDFAtPath:(NSString *)path;
 
 @end

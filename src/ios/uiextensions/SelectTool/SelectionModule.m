@@ -11,33 +11,27 @@
  */
 
 #import "SelectionModule.h"
-#import "UIExtensionsManager+Private.h"
 #import "SelectToolHandler.h"
+#import "UIExtensionsManager+Private.h"
 
-@interface SelectionModule ()
-{
-    UIExtensionsManager* __weak _extensionsManager;
-    FSPDFReader* __weak _pdfReader;
+@interface SelectionModule () {
+    UIExtensionsManager *__weak _extensionsManager;
 }
 @end
 
 @implementation SelectionModule
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader
-{
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager {
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
-        _pdfReader = pdfReader;
         [[SelectToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
     }
     return self;
 }
 
--(NSString*)getName
-{
+- (NSString *)getName {
     return @"Selection";
 }
 
 @end
-

@@ -19,7 +19,7 @@
 
 @property (nonatomic, assign) float layoutHeight;
 
-- (instancetype) initWithFrame:(CGRect)frame;
+- (instancetype)initWithFrame:(CGRect)frame;
 - (long)supportProperty;
 - (void)setCurrentColor:(int)color;
 - (void)setCurrentLineWidth:(int)lineWidth;

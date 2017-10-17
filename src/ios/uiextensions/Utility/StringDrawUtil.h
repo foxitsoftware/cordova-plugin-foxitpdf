@@ -11,10 +11,10 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIFont.h>
-#import <UIKit/UIStringDrawing.h>
 #import <UIKit/NSAttributedString.h>
 #import <UIKit/NSStringDrawing.h>
+#import <UIKit/UIFont.h>
+#import <UIKit/UIStringDrawing.h>
 
 //A utility class specific for string size calculate function for drawing string
 //the font, size is fixed when initialize
@@ -25,8 +25,7 @@
 //the margin for UITextView input. the real text width should be UITextView's width-2*UITextView_Margin
 #define UITextView_Margin 8.0
 
-@interface StringDrawUtil : NSObject
-{
+@interface StringDrawUtil : NSObject {
     UIFont *_font;
 }
 
@@ -69,11 +68,11 @@
 //remove the blank character between keyword which will make it can be found.
 + (NSString *)removeBlankBetweenKeyword:(NSString *)content keyword:(NSString *)keyword;
 
-//used for free text annotation. the string is typed in UITextView and need to get a same wrapped string with "\n" inserted at exactly place. 
+//used for free text annotation. the string is typed in UITextView and need to get a same wrapped string with "\n" inserted at exactly place.
 //use core text to calculate
 - (NSString *)getReturnRefinedString:(NSString *)str forUITextViewWidth:(float)width;
 
 //get word range of string, including space, the best part is it supports all language including Chinese
-+ (NSArray*)getUnitWordBoundary:(NSString*)str;
++ (NSArray *)getUnitWordBoundary:(NSString *)str;
 
 @end

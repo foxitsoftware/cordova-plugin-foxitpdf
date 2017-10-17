@@ -10,22 +10,22 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
+#import "AttachmentViewController.h"
 #import "IPanelSpec.h"
 #import "PanelController.h"
-#import "AttachmentViewController.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
 @class PanelButton;
 
 /** @brief Attachment panel to show the list of all attachments in the document. */
-@interface AttachmentPanel : NSObject<IPanelSpec, IDocEventListener>
+@interface AttachmentPanel : NSObject <IPanelSpec, IDocEventListener>
 
 @property (nonatomic, strong) PanelButton *addButton;
 @property (nonatomic, strong) AttachmentViewController *attachmentCtr;
-@property (nonatomic, strong) PanelController* panelController;
+@property (nonatomic, strong) FSPanelController *panelController;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager panelController:(PanelController*)panelController;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager panelController:(FSPanelController *)panelController;
 - (void)load;
 
 @end

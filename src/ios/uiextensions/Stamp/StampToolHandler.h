@@ -10,15 +10,14 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
 #import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
+@interface StampToolHandler : NSObject <IToolHandler>
 
-@interface StampToolHandler : NSObject<IToolHandler>
-
-@property (nonatomic, assign)enum FS_ANNOTTYPE type;
+@property (nonatomic, assign) FSAnnotType type;
 @property (nonatomic, assign) int stampIcon;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

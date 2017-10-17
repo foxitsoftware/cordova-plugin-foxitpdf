@@ -19,9 +19,9 @@
 
 @property (nonatomic, assign) float layoutHeight;
 
-- (instancetype)initWithFrame:(CGRect)frame propertyBar:(PropertyBar*)propertyBar;
+- (instancetype)initWithFrame:(CGRect)frame propertyBar:(PropertyBar *)propertyBar;
 - (long)supportProperty;
-- (void)setColors:(NSArray*)array;
+- (void)setColors:(NSArray *)array;
 - (void)setCurrentColor:(int)color;
 - (void)setCurrentListener:(id<IPropertyValueChangedListener>)currentListener;
 - (void)addDivideView;

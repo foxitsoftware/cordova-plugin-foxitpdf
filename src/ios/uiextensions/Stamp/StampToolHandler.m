@@ -23,13 +23,12 @@
 @end
 
 @implementation StampToolHandler {
-    UIExtensionsManager* _extensionsManager;
-    FSPDFViewCtrl*  _pdfViewCtrl;
-    TaskServer* _taskServer;
+    UIExtensionsManager *_extensionsManager;
+    FSPDFViewCtrl *_pdfViewCtrl;
+    TaskServer *_taskServer;
 }
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager
-{
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager {
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
@@ -41,70 +40,60 @@
     return self;
 }
 
--(NSString*)getName
-{
+- (NSString *)getName {
     return Tool_Stamp;
 }
 
--(BOOL)isEnabled
-{
+- (BOOL)isEnabled {
     return YES;
 }
 
--(void)onActivate
-{
+- (void)onActivate {
 }
 
--(void)onDeactivate
-{
+- (void)onDeactivate {
 }
 
 // PageView Gesture+Touch
-- (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer {
     return NO;
 }
 
-- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer {
     return YES;
 }
 
-- (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer
-{
+- (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer {
     return NO;
 }
 
-- (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer
-{
-    if ([gestureRecognizer isKindOfClass:[UITapGestureRecognizer class]])
-    {
+- (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer {
+    if ([gestureRecognizer isKindOfClass:[UITapGestureRecognizer class]]) {
         return YES;
     }
     return NO;
-    
 }
 
-- (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet*)touches withEvent:(UIEvent*)event
-{
-    UIView* pageView = [_pdfViewCtrl getPageView:pageIndex];
+- (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
+    UIView *pageView = [_pdfViewCtrl getPageView:pageIndex];
     UITouch *touch = [touches anyObject];
     CGPoint point = [touch locationInView:[_pdfViewCtrl getPageView:pageIndex]];
     CGRect pageRect = [pageView frame];
     CGSize size = pageRect.size;
-    if(point.x > size.width || point.y > size.height || point.x < 0 || point.y < 0)
+    if (point.x > size.width || point.y > size.height || point.x < 0 || point.y < 0)
         return NO;
     CGRect tmpRect = pageView.frame;
-    float scale = tmpRect.size.width/1000;
-    float width = STANDARD_STAMP_WIDTH*scale;
-    float height = STANDARD_STAMP_HEIGHT*scale;
-    
-    CGRect rect = CGRectMake(point.x - width/2.0, point.y - height/2.0, width, height);
-    FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
-    if (!page) return NO;
+    float scale = tmpRect.size.width / 1000;
+    float width = STANDARD_STAMP_WIDTH * scale;
+    float height = STANDARD_STAMP_HEIGHT * scale;
+
+    CGRect rect = CGRectMake(point.x - width / 2.0, point.y - height / 2.0, width, height);
+    FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+    if (!page)
+        return NO;
     float pageWidth = [_pdfViewCtrl getPageViewWidth:pageIndex];
     float pageHeight = [_pdfViewCtrl getPageViewHeight:pageIndex];
-    
+
     if (pageHeight - (rect.origin.y + rect.size.height) < 0) {
         rect.origin.y = pageHeight - height;
     }
@@ -117,13 +106,13 @@
     if (rect.origin.x < 0) {
         rect.origin.x = 0;
     }
-    FSRectF* pdfRect = [_pdfViewCtrl convertPageViewRectToPdfRect:rect pageIndex:pageIndex];
+    FSRectF *pdfRect = [_pdfViewCtrl convertPageViewRectToPdfRect:rect pageIndex:pageIndex];
     self.currentRect = pdfRect;
-    FSAnnot* annot = (FSAnnot*)[page addAnnot:e_annotStamp rect:pdfRect];
+    FSAnnot *annot = (FSAnnot *) [page addAnnot:e_annotStamp rect:pdfRect];
     if (!annot) {
         return NO;
     }
-    self.annot = (FSStamp*)annot;
+    self.annot = (FSStamp *) annot;
     annot.NM = [Utility getUUID];
     annot.author = [SettingPreference getAnnotationAuthor];
     annot.createDate = [NSDate date];
@@ -138,24 +127,24 @@
     return YES;
 }
 
-- (BOOL)onPageViewTouchesMoved:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesMoved:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     if (pageIndex != self.annot.pageIndex) {
         return NO;
     }
-    UIView* pageView = [_pdfViewCtrl getPageView:pageIndex];
+    UIView *pageView = [_pdfViewCtrl getPageView:pageIndex];
     UITouch *touch = [touches anyObject];
     CGPoint point = [touch locationInView:[_pdfViewCtrl getPageView:pageIndex]];
     CGRect tmpRect = pageView.frame;
-    float scale = tmpRect.size.width/1000;
-    float width = STANDARD_STAMP_WIDTH*scale;
-    float height = STANDARD_STAMP_HEIGHT*scale;
-    CGRect rect = CGRectMake(point.x - width/2.0, point.y - height/2.0, width, height);
-    FSPDFPage* page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
-    if (!page) return;
+    float scale = tmpRect.size.width / 1000;
+    float width = STANDARD_STAMP_WIDTH * scale;
+    float height = STANDARD_STAMP_HEIGHT * scale;
+    CGRect rect = CGRectMake(point.x - width / 2.0, point.y - height / 2.0, width, height);
+    FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+    if (!page)
+        return;
     float pageWidth = [_pdfViewCtrl getPageViewWidth:pageIndex];
     float pageHeight = [_pdfViewCtrl getPageViewHeight:pageIndex];
-    
+
     if (pageHeight - (rect.origin.y + rect.size.height) <= 0) {
         rect.origin.y = pageHeight - height;
     }
@@ -168,7 +157,7 @@
     if (rect.origin.x < 0) {
         rect.origin.x = 0;
     }
-    FSRectF* pdfRect = [_pdfViewCtrl convertPageViewRectToPdfRect:rect pageIndex:pageIndex];
+    FSRectF *pdfRect = [_pdfViewCtrl convertPageViewRectToPdfRect:rect pageIndex:pageIndex];
     self.currentRect = pdfRect;
     self.annot.fsrect = pdfRect;
     CGRect newRect = [_pdfViewCtrl convertPdfRectToPageViewRect:pdfRect pageIndex:pageIndex];
@@ -176,28 +165,24 @@
     return YES;
 }
 
-- (BOOL)onPageViewTouchesEnded:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesEnded:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     return [self onTouchEndOrCancelled:pageIndex];
 }
 
-- (BOOL)onPageViewTouchesCancelled:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (BOOL)onPageViewTouchesCancelled:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event {
     return [self onTouchEndOrCancelled:pageIndex];
 }
 
-- (BOOL)onTouchEndOrCancelled:(int)pageIndex
-{
+- (BOOL)onTouchEndOrCancelled:(int)pageIndex {
     self.annot.opacity = 1;
     self.annot.fsrect = _currentRect;
     [self.annot resetAppearanceStream];
     id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByType:self.type];
     [annotHandler addAnnot:self.annot addUndo:YES];
-    return  YES;
+    return YES;
 }
 
--(void)onDraw:(int)pageIndex inContext:(CGContextRef)context
-{
+- (void)onDraw:(int)pageIndex inContext:(CGContextRef)context {
 }
 
 @end

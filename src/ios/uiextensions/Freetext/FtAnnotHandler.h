@@ -10,12 +10,11 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
 #import "UIExtensionsManager+Private.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-@interface FtAnnotHandler : NSObject<IAnnotHandler,UIPopoverControllerDelegate,IPropertyBarListener,IRotationEventListener,IGestureEventListener, IScrollViewEventListener, IAnnotPropertyListener>
-{
+@interface FtAnnotHandler : NSObject <IAnnotHandler, UIPopoverControllerDelegate, IPropertyBarListener, IRotationEventListener, IGestureEventListener, IScrollViewEventListener, IAnnotPropertyListener> {
     UITextView *_textView;
     BOOL _isSaved;
     BOOL _keyboardShown;
@@ -25,6 +24,6 @@
 @property (nonatomic, strong) NSObject *currentVC;
 @property (nonatomic, strong) FSFreeText *editAnnot;
 
-- (id)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (id)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

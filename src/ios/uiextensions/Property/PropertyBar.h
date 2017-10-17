@@ -10,30 +10,30 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <Foundation/Foundation.h>
+#import "../UIExtensionsManager.h"
 #import "ColorItem.h"
-#import "OpacityItem.h"
 #import "ColorLayout.h"
-#import "OpacityLayout.h"
-#import "LineWidthLayout.h"
 #import "FontLayout.h"
 #import "IconLayout.h"
-#import "../UIExtensionsManager.h"
+#import "LineWidthLayout.h"
+#import "OpacityItem.h"
+#import "OpacityLayout.h"
+#import <Foundation/Foundation.h>
 
 #define TABHEIGHT 44
 #define LAYOUTTITLEHEIGHT 20
 #define LAYOUTTBSPACE 15
 #define ITEMLRSPACE 20
 
-static const long  PROPERTY_UNKNOWN = 0x00000000;
-static const long  PROPERTY_COLOR = 0x00000001;
-static const long  PROPERTY_OPACITY = 0x00000002;
-static const long  PROPERTY_LINEWIDTH = 0x00000004;
-static const long  PROPERTY_FONTNAME = 0x00000008;
-static const long  PROPERTY_FONTSIZE = 0x00000010;
-static const long  PROPERTY_ICONTYPE = 0x00000100;
-static const long  PROPERTY_ATTACHMENT_ICONTYPE = 0x00000040;
-static const long  PROPERTY_ALL = 0x0000003F;
+static const long PROPERTY_UNKNOWN = 0x00000000;
+static const long PROPERTY_COLOR = 0x00000001;
+static const long PROPERTY_OPACITY = 0x00000002;
+static const long PROPERTY_LINEWIDTH = 0x00000004;
+static const long PROPERTY_FONTNAME = 0x00000008;
+static const long PROPERTY_FONTSIZE = 0x00000010;
+static const long PROPERTY_ICONTYPE = 0x00000100;
+static const long PROPERTY_ATTACHMENT_ICONTYPE = 0x00000040;
+static const long PROPERTY_ALL = 0x0000003F;
 
 enum Property_TabType {
     TAB_FILL = 100,
@@ -44,11 +44,10 @@ enum Property_TabType {
 
 typedef enum Property_TabType Property_TabType;
 
-
 @protocol IPropertyValueChangedListener <NSObject>
 
 @required
-- (void)onProperty:(long)property changedFrom:(NSValue*)oldValue to:(NSValue*)newValue;
+- (void)onProperty:(long)property changedFrom:(NSValue *)oldValue to:(NSValue *)newValue;
 @end
 
 @protocol IPropertyBarListener <NSObject>
@@ -61,24 +60,24 @@ typedef enum Property_TabType Property_TabType;
 @class FSPDFViewCtrl;
 @protocol IRotationEventListener;
 
-@interface PropertyBar : NSObject <UIPopoverControllerDelegate,IRotationEventListener>
+@interface PropertyBar : NSObject <UIPopoverControllerDelegate, IRotationEventListener>
 
 @property (nonatomic, strong) LineWidthLayout *lineWidthLayout;
-@property (nonatomic,assign) BOOL isShowing;
+@property (nonatomic, assign) BOOL isShowing;
 
-- (instancetype)initWithPDFViewController:(FSPDFViewCtrl*)pdfViewCtrl extensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithPDFViewController:(FSPDFViewCtrl *)pdfViewCtrl extensionsManager:(UIExtensionsManager *)extensionsManager;
 - (void)resetBySupportedItems:(long)items frame:(CGRect)frame;
 
-- (void)setColors:(NSArray*)array;
+- (void)setColors:(NSArray *)array;
 - (void)setProperty:(long)property intValue:(int)value;
 - (void)setProperty:(long)property floatValue:(float)value;
-- (void)setProperty:(long)property stringValue:(NSString*)value;
+- (void)setProperty:(long)property stringValue:(NSString *)value;
 - (void)addListener:(id<IPropertyValueChangedListener>)listener;
 
-- (void)addTabByTitle:(NSString*)title atIndex:(int)tabIndex;
+- (void)addTabByTitle:(NSString *)title atIndex:(int)tabIndex;
 
 - (void)updatePropertyBar:(CGRect)frame;
-- (void)showPropertyBar:(CGRect)frame inView:(UIView*)view viewsCanMove:(NSArray*)views;
+- (void)showPropertyBar:(CGRect)frame inView:(UIView *)view viewsCanMove:(NSArray *)views;
 
 - (void)refreshPropertyLayout;
 - (void)dismissPropertyBar;

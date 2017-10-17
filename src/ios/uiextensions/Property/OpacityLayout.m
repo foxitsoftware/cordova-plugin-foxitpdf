@@ -11,11 +11,11 @@
  */
 
 #import "OpacityLayout.h"
-#import <UIKit/UIKit.h>
+#import "ColorUtility.h"
+#import "Const.h"
 #import "PropertyBar.h"
 #import "Utility.h"
-#import "Const.h"
-#import "ColorUtility.h"
+#import <UIKit/UIKit.h>
 
 @interface OpacityLayout ()
 
@@ -30,13 +30,12 @@
 
 @implementation OpacityLayout
 
-
 - (instancetype)initWithFrame:(CGRect)frame;
 {
     self = [super initWithFrame:frame];
     if (self) {
         self.title = [[UILabel alloc] initWithFrame:CGRectMake(20, 3, frame.size.width, LAYOUTTITLEHEIGHT)];
-        self.title.text = NSLocalizedStringFromTable(@"kOpacity", @"FoxitLocalizable", nil);
+        self.title.text = FSLocalizedString(@"kOpacity");
         self.title.textColor = [UIColor colorWithRGBHex:0x5c5c5c];
         self.title.font = [UIFont systemFontOfSize:11.0f];
         self.items = [NSMutableArray array];
@@ -46,67 +45,57 @@
     return self;
 }
 
--(long)supportProperty
-{
+- (long)supportProperty {
     return PROPERTY_OPACITY;
 }
 
-- (void)setCurrentOpacity:(int)opacity
-{
+- (void)setCurrentOpacity:(int)opacity {
     _currentOpacity = opacity;
     for (OpacityItem *item in self.items) {
         if (item.opacity == opacity) {
             [item setSelected:YES];
-        }
-        else
-        {
+        } else {
             [item setSelected:NO];
         }
     }
 }
 
-- (void)setCurrentListener:(id<IPropertyValueChangedListener>)listener
-{
+- (void)setCurrentListener:(id<IPropertyValueChangedListener>)listener {
     _currentListener = listener;
 }
 
--(void)addOpacityItem
-{
+- (void)addOpacityItem {
     int itemWidth = 32;
     if (DEVICE_iPHONE) {
-        
-         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation))
-         {
-              self.screenWidth = [UIScreen mainScreen].bounds.size.height;
-         }
-         else
-         {
-             self.screenWidth = [UIScreen mainScreen].bounds.size.width;
-         }
-        int divideWidth = (_screenWidth - ITEMLRSPACE*2 - itemWidth*4)/3;
+        self.screenWidth = CGRectGetWidth(self.frame);
+        //         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation))
+        //         {
+        //              self.screenWidth = _pdfViewCtrl.bounds.size.height;
+        //         }
+        //         else
+        //         {
+        //             self.screenWidth = _pdfViewCtrl.bounds.size.width;
+        //         }
+        int divideWidth = (_screenWidth - ITEMLRSPACE * 2 - itemWidth * 4) / 3;
         for (int i = 0; i < 4; i++) {
-            CGRect itemFrame = CGRectMake(ITEMLRSPACE + i*itemWidth + i*divideWidth, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE, itemWidth, itemWidth + 15);
+            CGRect itemFrame = CGRectMake(ITEMLRSPACE + i * itemWidth + i * divideWidth, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE, itemWidth, itemWidth + 15);
             OpacityItem *item = [[OpacityItem alloc] initWithFrame:itemFrame];
-            [item setOpacity:25*(i+1)];
-            item.callback = ^(long property,int value)
-            {
+            [item setOpacity:25 * (i + 1)];
+            item.callback = ^(long property, int value) {
                 [_currentListener onProperty:property changedFrom:[NSNumber numberWithInt:_currentOpacity] to:[NSNumber numberWithInt:value]];
                 [self setCurrentOpacity:value];
             };
             [self addSubview:item];
             [self.items addObject:item];
         }
-    }
-    else
-    {
+    } else {
         float screenWidth = self.frame.size.width;
-        int divideWidth = (screenWidth - ITEMLRSPACE*2 - itemWidth*4)/3;
+        int divideWidth = (screenWidth - ITEMLRSPACE * 2 - itemWidth * 4) / 3;
         for (int i = 0; i < 4; i++) {
-            CGRect itemFrame = CGRectMake(ITEMLRSPACE + i*itemWidth + i*divideWidth, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE, itemWidth, itemWidth + 15);
+            CGRect itemFrame = CGRectMake(ITEMLRSPACE + i * itemWidth + i * divideWidth, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE, itemWidth, itemWidth + 15);
             OpacityItem *item = [[OpacityItem alloc] initWithFrame:itemFrame];
-            [item setOpacity:25*(i+1)];
-            item.callback = ^(long property,int value)
-            {
+            [item setOpacity:25 * (i + 1)];
+            item.callback = ^(long property, int value) {
                 [_currentListener onProperty:property changedFrom:[NSNumber numberWithInt:_currentOpacity] to:[NSNumber numberWithInt:value]];
                 [self setCurrentOpacity:value];
             };
@@ -114,11 +103,10 @@
             [self.items addObject:item];
         }
     }
-    self.layoutHeight = itemWidth + 15 + LAYOUTTITLEHEIGHT + LAYOUTTBSPACE*2;
+    self.layoutHeight = itemWidth + 15 + LAYOUTTITLEHEIGHT + LAYOUTTBSPACE * 2;
 }
 
--(void)addDivideView
-{
+- (void)addDivideView {
     for (UIView *view in self.subviews) {
         if (view.tag == 1000) {
             [view removeFromSuperview];
@@ -129,16 +117,15 @@
     divide.backgroundColor = [UIColor colorWithRGBHex:0x5c5c5c];
     divide.alpha = 0.2f;
     [self addSubview:divide];
-    }
+}
 
-- (void)resetLayout
-{
+- (void)resetLayout {
     for (UIView *view in self.subviews) {
         [view removeFromSuperview];
     }
-    
+
     self.title = [[UILabel alloc] initWithFrame:CGRectMake(20, 3, self.frame.size.width, LAYOUTTITLEHEIGHT)];
-    self.title.text = NSLocalizedStringFromTable(@"kOpacity", @"FoxitLocalizable", nil);
+    self.title.text = FSLocalizedString(@"kOpacity");
     self.title.textColor = [UIColor colorWithRGBHex:0x5c5c5c];
     self.title.font = [UIFont systemFontOfSize:11.0f];
     [self addSubview:self.title];

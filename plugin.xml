@@ -21,10 +21,6 @@
         <framework custom="true" src="src/ios/FoxitRDK.framework"/>
         <source-file src="src/ios/uiextensions"/>
         <source-file src="src/ios/uiextensions_config.json"/>
-        <source-file src="src/ios/FSShowViewController.h"/>
-        <source-file src="src/ios/FSShowViewController.m"/>
-        <source-file src="src/ios/FSStackBottomViewController.h"/>
-        <source-file src="src/ios/FSStackBottomViewController.m"/>
     </platform>
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">

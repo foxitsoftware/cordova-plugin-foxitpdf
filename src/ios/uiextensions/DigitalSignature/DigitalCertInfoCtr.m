@@ -11,8 +11,8 @@
  */
 
 #import "DigitalCertInfoCtr.h"
-#import "Masonry.h"
 #import "ColorUtility.h"
+#import "Masonry.h"
 
 @interface DigitalCertInfoCell : UITableViewCell
 @property (nonatomic, strong) UILabel *certInfoKey;
@@ -21,8 +21,7 @@
 
 @implementation DigitalCertInfoCell
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
-{
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
         self.certInfoKey = [[UILabel alloc] init];
         self.certInfoKey.textAlignment = NSTextAlignmentLeft;
@@ -33,20 +32,20 @@
         self.certInfoValue.numberOfLines = 0;
         [self addSubview:self.certInfoKey];
         [self addSubview:self.certInfoValue];
-        
+
         [self.certInfoKey mas_makeConstraints:^(MASConstraintMaker *make) {
             make.left.mas_equalTo(self.mas_left).offset(10);
             make.centerY.mas_equalTo(self.mas_centerY);
         }];
-        
+
         [self.certInfoValue mas_makeConstraints:^(MASConstraintMaker *make) {
             make.right.mas_equalTo(self.mas_right).offset(-10);
             make.centerY.mas_equalTo(self.mas_centerY);
             make.left.mas_equalTo(self.certInfoKey.mas_right).offset(10);
         }];
-        
+
         UIView *divideView = [[UIView alloc] init];
-        divideView.backgroundColor = [UIColor colorWithRed:0xE2/255.0f green:0xE2/255.0f blue:0xE2/255.0f alpha:1];
+        divideView.backgroundColor = [UIColor colorWithRed:0xE2 / 255.0f green:0xE2 / 255.0f blue:0xE2 / 255.0f alpha:1];
         [self addSubview:divideView];
         [divideView mas_makeConstraints:^(MASConstraintMaker *make) {
             make.left.mas_equalTo(divideView.superview.mas_left).offset(10);
@@ -70,8 +69,7 @@
 @end
 
 @implementation DigitalCertInfoCtr
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     UIBarButtonItem *leftButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"common_back_black"] style:UIBarButtonItemStyleBordered target:self action:@selector(dismissVC)];
     self.navigationItem.leftBarButtonItem = leftButton;
@@ -79,80 +77,74 @@
     self.maxKeyWidth = [self caculateMaxKeyWidth];
 }
 
-- (void)viewWillAppear:(BOOL)animated
-{
+- (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
 }
 
-- (CGFloat)caculateMaxKeyWidth
-{
+- (CGFloat)caculateMaxKeyWidth {
     float maxWidth = 0;
-    NSMutableParagraphStyle* paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-    CGSize size = [NSLocalizedStringFromTable(@"kCertSerialNum", @"FoxitLocalizable", nil) boundingRectWithSize:CGSizeMake(300, 64) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14], NSParagraphStyleAttributeName:paragraphStyle} context:nil].size;
+    CGSize size = [FSLocalizedString(@"kCertSerialNum") boundingRectWithSize:CGSizeMake(300, 64) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14], NSParagraphStyleAttributeName : paragraphStyle} context:nil].size;
     if (maxWidth < size.width + 1) {
         maxWidth = size.width + 1;
     }
-    size = [NSLocalizedStringFromTable(@"kCertIssuer", @"FoxitLocalizable", nil) boundingRectWithSize:CGSizeMake(300, 64) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14], NSParagraphStyleAttributeName:paragraphStyle} context:nil].size;
+    size = [FSLocalizedString(@"kCertIssuer") boundingRectWithSize:CGSizeMake(300, 64) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14], NSParagraphStyleAttributeName : paragraphStyle} context:nil].size;
     if (maxWidth < size.width + 1) {
         maxWidth = size.width + 1;
     }
-    size = [NSLocalizedStringFromTable(@"kCertStartTime", @"FoxitLocalizable", nil) boundingRectWithSize:CGSizeMake(300, 64) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14], NSParagraphStyleAttributeName:paragraphStyle} context:nil].size;
+    size = [FSLocalizedString(@"kCertStartTime") boundingRectWithSize:CGSizeMake(300, 64) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14], NSParagraphStyleAttributeName : paragraphStyle} context:nil].size;
     if (maxWidth < size.width + 1) {
         maxWidth = size.width + 1;
     }
-    size = [NSLocalizedStringFromTable(@"kCertEndTime", @"FoxitLocalizable", nil) boundingRectWithSize:CGSizeMake(300, 64) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14], NSParagraphStyleAttributeName:paragraphStyle} context:nil].size;
+    size = [FSLocalizedString(@"kCertEndTime") boundingRectWithSize:CGSizeMake(300, 64) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14], NSParagraphStyleAttributeName : paragraphStyle} context:nil].size;
     if (maxWidth < size.width + 1) {
         maxWidth = size.width + 1;
     }
-    size = [NSLocalizedStringFromTable(@"kCertEmail", @"FoxitLocalizable", nil) boundingRectWithSize:CGSizeMake(300, 64) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:14], NSParagraphStyleAttributeName:paragraphStyle} context:nil].size;
+    size = [FSLocalizedString(@"kCertEmail") boundingRectWithSize:CGSizeMake(300, 64) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14], NSParagraphStyleAttributeName : paragraphStyle} context:nil].size;
     if (maxWidth < size.width + 1) {
         maxWidth = size.width + 1;
     }
     return maxWidth;
 }
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return 5;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     static NSString *certInfoCellIndentifier = @"certInfoCellIndentifier";
     DigitalCertInfoCell *cell = [[DigitalCertInfoCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:certInfoCellIndentifier];
     [cell.certInfoKey mas_updateConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(self.maxKeyWidth);
     }];
     if (indexPath.row == 0) {
-        cell.certInfoKey.text = NSLocalizedStringFromTable(@"kCertSerialNum", @"FoxitLocalizable", nil);
+        cell.certInfoKey.text = FSLocalizedString(@"kCertSerialNum");
         cell.certInfoValue.text = self.certSerialNum;
-    }else if (indexPath.row == 1){
-        cell.certInfoKey.text = NSLocalizedStringFromTable(@"kCertIssuer", @"FoxitLocalizable", nil);
+    } else if (indexPath.row == 1) {
+        cell.certInfoKey.text = FSLocalizedString(@"kCertIssuer");
         cell.certInfoValue.text = self.certPublisher;
-    }else if (indexPath.row == 2){
-        cell.certInfoKey.text = NSLocalizedStringFromTable(@"kCertStartTime", @"FoxitLocalizable", nil);
+    } else if (indexPath.row == 2) {
+        cell.certInfoKey.text = FSLocalizedString(@"kCertStartTime");
         cell.certInfoValue.text = self.certStartDate;
-    }else if (indexPath.row == 3){
-        cell.certInfoKey.text = NSLocalizedStringFromTable(@"kCertEndTime", @"FoxitLocalizable", nil);
+    } else if (indexPath.row == 3) {
+        cell.certInfoKey.text = FSLocalizedString(@"kCertEndTime");
         cell.certInfoValue.text = self.certEndDate;
-    }else if (indexPath.row == 4){
-        cell.certInfoKey.text = NSLocalizedStringFromTable(@"kCertEmail", @"FoxitLocalizable", nil);
+    } else if (indexPath.row == 4) {
+        cell.certInfoKey.text = FSLocalizedString(@"kCertEmail");
         cell.certInfoValue.text = self.certEmailInfo;
     }
     return cell;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
-{
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
     return 40;
 }
 
@@ -160,7 +152,7 @@
     UIView *headerView = [[UIView alloc] init];
     headerView.backgroundColor = [UIColor colorWithRGBHex:0xEFEFF4];
     UILabel *sectionTitle = [[UILabel alloc] init];
-    sectionTitle.text = NSLocalizedStringFromTable(@"kCertInfo", @"FoxitLocalizable", nil);
+    sectionTitle.text = FSLocalizedString(@"kCertInfo");
     sectionTitle.font = [UIFont boldSystemFontOfSize:16];
     sectionTitle.textColor = [UIColor blackColor];
     [headerView addSubview:sectionTitle];
@@ -171,13 +163,11 @@
     return headerView;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return 64.0;
 }
 
-- (void)setDigitalCertInfoData:(CERT_INFO *)cert_info
-{
+- (void)setDigitalCertInfoData:(CERT_INFO *)cert_info {
     self.certSerialNum = cert_info.certSerialNum;
     self.certPublisher = cert_info.certPublisher;
     self.certStartDate = cert_info.certStartDate;
@@ -185,8 +175,7 @@
     self.certEmailInfo = cert_info.certEmailInfo;
 }
 
-- (void)dismissVC
-{
+- (void)dismissVC {
     [self.navigationController popViewControllerAnimated:YES];
 }
 

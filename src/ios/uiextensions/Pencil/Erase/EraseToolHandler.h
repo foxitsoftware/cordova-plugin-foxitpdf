@@ -10,27 +10,25 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
 #import "UIExtensionsManager+Private.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-@interface EraseToolHandler : NSObject<IToolHandler>
-{
+@interface EraseToolHandler : NSObject <IToolHandler> {
     int _radius;
     BOOL _isChanged;
     CGRect _allRect;
     int _changedPointCount;
-    
-    
+
     BOOL _isBegin;
     BOOL _isMoving;
     BOOL _isZooming;
     CGPoint _lastPoint;
     CGRect _lastRect;
-    FSRectF* _penclRect;
+    FSRectF *_penclRect;
 }
-@property (nonatomic, assign)enum FS_ANNOTTYPE type;
+@property (nonatomic, assign) FSAnnotType type;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end

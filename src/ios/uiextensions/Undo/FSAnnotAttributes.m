@@ -14,45 +14,42 @@
 #import "FSAnnotExtent.h"
 #import "Utility.h"
 
-
-static BOOL stringsEqual(NSString* str1, NSString* str2) {
+static BOOL stringsEqual(NSString *str1, NSString *str2) {
     return (str1 == nil && str2 == nil) || [str1 isEqualToString:str2];
 }
 
 @implementation FSAnnotAttributes
 
-+(instancetype)attributesWithAnnot:(FSAnnot *)annot
-{
++ (instancetype)attributesWithAnnot:(FSAnnot *)annot {
     switch (annot.type) {
-        case e_annotNote:
-            return [[FSNoteAttributes alloc] initWithAnnot:(FSNote*)annot];
-        case e_annotCaret:
-            return [[FSCaretAttributes alloc] initWithAnnot:(FSCaret*)annot];
-        case e_annotStrikeOut:
-        case e_annotHighlight:
-        case e_annotSquiggly:
-        case e_annotUnderline:
-            return [[FSTextMarkupAttributes alloc] initWithAnnot:(FSTextMarkup*)annot];
-        case e_annotLine:
-            return [[FSLineAttributes alloc] initWithAnnot:(FSLine*)annot];
-        case e_annotInk:
-            return [[FSInkAttributes alloc] initWithAnnot:(FSInk*)annot];
-        case e_annotStamp:
-            return [[FSStampAttributes alloc] initWithAnnot:(FSStamp*)annot];
-        case e_annotCircle:
-        case e_annotSquare:
-            return [[FSShapeAttributes alloc] initWithAnnot:annot];
-        case e_annotFreeText:
-            return [[FSFreeTextAttributes alloc] initWithAnnot:annot];
-        case e_annotFileAttachment:
-            return [[FSFileAttachmentAttributes alloc] initWithAnnot:annot];
-        default:
-            return [[FSAnnotAttributes alloc] initWithAnnot:annot];
+    case e_annotNote:
+        return [[FSNoteAttributes alloc] initWithAnnot:(FSNote *) annot];
+    case e_annotCaret:
+        return [[FSCaretAttributes alloc] initWithAnnot:(FSCaret *) annot];
+    case e_annotStrikeOut:
+    case e_annotHighlight:
+    case e_annotSquiggly:
+    case e_annotUnderline:
+        return [[FSTextMarkupAttributes alloc] initWithAnnot:(FSTextMarkup *) annot];
+    case e_annotLine:
+        return [[FSLineAttributes alloc] initWithAnnot:(FSLine *) annot];
+    case e_annotInk:
+        return [[FSInkAttributes alloc] initWithAnnot:(FSInk *) annot];
+    case e_annotStamp:
+        return [[FSStampAttributes alloc] initWithAnnot:(FSStamp *) annot];
+    case e_annotCircle:
+    case e_annotSquare:
+        return [[FSShapeAttributes alloc] initWithAnnot:annot];
+    case e_annotFreeText:
+        return [[FSFreeTextAttributes alloc] initWithAnnot:annot];
+    case e_annotFileAttachment:
+        return [[FSFileAttachmentAttributes alloc] initWithAnnot:annot];
+    default:
+        return [[FSAnnotAttributes alloc] initWithAnnot:annot];
     }
 }
 
-- (instancetype)initWithAnnot:(FSAnnot *)annot
-{
+- (instancetype)initWithAnnot:(FSAnnot *)annot {
     if (self = [super init]) {
         self.pageIndex = annot.pageIndex;
         self.type = annot.type;
@@ -68,8 +65,7 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     return self;
 }
 
-- (void)resetAnnot:(FSAnnot *)annot
-{
+- (void)resetAnnot:(FSAnnot *)annot {
     annot.NM = self.NM;
     annot.author = self.author;
     annot.fsrect = self.rect;
@@ -80,25 +76,23 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     annot.flags = self.flags;
 }
 
-- (BOOL)isEqualToAttributes:(FSAnnotAttributes*)attributes
-{
+- (BOOL)isEqualToAttributes:(FSAnnotAttributes *)attributes {
     return self.type == attributes.type &&
-    [Utility rectEqualToRect:self.rect rect:attributes.rect] &&
-    stringsEqual(self.author , attributes.author) &&
-    self.color == attributes.color &&
-    self.opacity == attributes.opacity &&
-    [self.creationDate compare:attributes.creationDate] == NSOrderedSame &&
-    [self.modificationDate compare:attributes.modificationDate] == NSOrderedSame &&
-    self.flags == attributes.flags;
+           [Utility rectEqualToRect:self.rect
+                               rect:attributes.rect] &&
+           stringsEqual(self.author, attributes.author) &&
+           self.color == attributes.color &&
+           self.opacity == attributes.opacity &&
+           [self.creationDate compare:attributes.creationDate] == NSOrderedSame &&
+           [self.modificationDate compare:attributes.modificationDate] == NSOrderedSame &&
+           self.flags == attributes.flags;
 }
 
 @end
 
-
 @implementation FSNoteAttributes
 
-- (instancetype)initWithAnnot:(FSNote *)note
-{
+- (instancetype)initWithAnnot:(FSNote *)note {
     assert(note.type == e_annotNote);
     if (self = [super initWithAnnot:note]) {
         self.icon = note.icon;
@@ -108,8 +102,7 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     return self;
 }
 
-- (void)resetAnnot:(FSNote *)annot
-{
+- (void)resetAnnot:(FSNote *)annot {
     assert(annot.type == e_annotNote);
     [super resetAnnot:annot];
     annot.icon = self.icon;
@@ -117,34 +110,31 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     [annot resetAppearanceStream];
 }
 
-- (BOOL)isEqualToAttributes:(FSNoteAttributes*)attributes
-{
+- (BOOL)isEqualToAttributes:(FSNoteAttributes *)attributes {
     return [attributes class] == [self class] &&
-    self.icon == attributes.icon &&
-    stringsEqual(self.contents , attributes.contents) &&
-    [super isEqualToAttributes:attributes];
+           self.icon == attributes.icon &&
+           stringsEqual(self.contents, attributes.contents) &&
+           [super isEqualToAttributes:attributes];
 }
 
 @end
 
 @implementation FSCaretAttributes
 
-- (instancetype)initWithAnnot:(FSCaret *)caret
-{
+- (instancetype)initWithAnnot:(FSCaret *)caret {
     assert(caret.type == e_annotCaret);
     if (self = [super initWithAnnot:caret]) {
         self.contents = caret.contents;
         self.subject = caret.subject;
         self.intent = caret.intent;
         self.innerRect = [caret getInnerRect];
-        FSPDFDictionary* dict = [caret getDict];
+        FSPDFDictionary *dict = [caret getDict];
         self.rotation = [dict hasKey:@"Rotate"] ? [[dict getElement:@"Rotate"] getInteger] : 0;
     }
     return self;
 }
 
-- (void)resetAnnot:(FSCaret *)annot
-{
+- (void)resetAnnot:(FSCaret *)annot {
     assert(annot.type == e_annotCaret);
     annot.contents = self.contents;
     annot.subject = self.subject;
@@ -157,23 +147,20 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     [annot resetAppearanceStream]; // neccessary?
 }
 
-- (BOOL)isEqualToAttributes:(FSCaretAttributes *)attributes
-{
+- (BOOL)isEqualToAttributes:(FSCaretAttributes *)attributes {
     return [attributes class] == [self class] &&
-    self.rotation == attributes.rotation &&
-    [super isEqualToAttributes:attributes] &&
-    stringsEqual(self.contents , attributes.contents) &&
-    stringsEqual(self.intent , attributes.intent) &&
-    stringsEqual(self.subject , attributes.subject);
+           self.rotation == attributes.rotation &&
+           [super isEqualToAttributes:attributes] &&
+           stringsEqual(self.contents, attributes.contents) &&
+           stringsEqual(self.intent, attributes.intent) &&
+           stringsEqual(self.subject, attributes.subject);
 }
 
 @end
 
-
 @implementation FSTextMarkupAttributes
-    
-- (instancetype)initWithAnnot:(FSTextMarkup *)markup
-{
+
+- (instancetype)initWithAnnot:(FSTextMarkup *)markup {
     if (self = [super initWithAnnot:markup]) {
         self.quads = markup.quads;
         self.subject = markup.subject;
@@ -181,9 +168,8 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     }
     return self;
 }
-    
-- (void)resetAnnot:(FSTextMarkup *)annot
-{
+
+- (void)resetAnnot:(FSTextMarkup *)annot {
     [super resetAnnot:annot];
     annot.quads = self.quads;
     annot.subject = self.subject;
@@ -191,13 +177,12 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     [annot resetAppearanceStream];
 }
 
-- (BOOL)isEqualToAttributes:(FSTextMarkupAttributes *)attributes
-{
+- (BOOL)isEqualToAttributes:(FSTextMarkupAttributes *)attributes {
     BOOL (^isQuadsEqual)() = ^BOOL {
         if (self.quads.count != attributes.quads.count) {
             return NO;
         }
-        for (int i = 0; i < self.quads.count; i ++) {
+        for (int i = 0; i < self.quads.count; i++) {
             if (![Utility quadsEqualToQuads:self.quads[i] quads:attributes.quads[i]]) {
                 return NO;
             }
@@ -205,17 +190,16 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
         return YES;
     };
     return [super isEqualToAttributes:attributes] &&
-    stringsEqual(self.contents , attributes.contents) &&
-    stringsEqual(self.subject , attributes.subject) &&
-    isQuadsEqual();
+           stringsEqual(self.contents, attributes.contents) &&
+           stringsEqual(self.subject, attributes.subject) &&
+           isQuadsEqual();
 }
-    
+
 @end
 
 @implementation FSLineAttributes
 
-- (instancetype)initWithAnnot:(FSLine *)line
-{
+- (instancetype)initWithAnnot:(FSLine *)line {
     if (self = [super initWithAnnot:line]) {
         self.lineWidth = line.lineWidth;
         self.subject = line.subject;
@@ -231,11 +215,10 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     }
     return self;
 }
-    
-- (void)resetAnnot:(FSLine *)annot
-{
+
+- (void)resetAnnot:(FSLine *)annot {
     [super resetAnnot:annot];
-    
+
     annot.lineWidth = self.lineWidth;
     annot.subject = self.subject;
     annot.contents = self.contents;
@@ -254,37 +237,39 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     [annot resetAppearanceStream];
 }
 
-- (BOOL)isEqualToAttributes:(FSLineAttributes *)attributes
-{
+- (BOOL)isEqualToAttributes:(FSLineAttributes *)attributes {
     return self.class == attributes.class &&
-    stringsEqual(self.contents, attributes.contents) &&
-    fabsf(self.lineWidth - attributes.lineWidth) < 1e-4 &&
-    [Utility pointEqualToPoint:self.startPoint point:attributes.startPoint] &&
-    [Utility pointEqualToPoint:self.endPoint point:attributes.endPoint] &&
-    stringsEqual(self.startPointStyle , attributes.startPointStyle) &&
-    stringsEqual(self.endPointStyle , attributes.endPointStyle) &&
-    self.fillColor == attributes.fillColor &&
-    [Utility pointEqualToPoint:self.captionOffset point:attributes.captionOffset] &&
-    stringsEqual(self.intent , attributes.intent) &&
-    [super isEqualToAttributes:attributes];
+           stringsEqual(self.contents, attributes.contents) &&
+           fabsf(self.lineWidth - attributes.lineWidth) < 1e-4 &&
+           [Utility pointEqualToPoint:self.startPoint
+                                point:attributes.startPoint] &&
+           [Utility pointEqualToPoint:self.endPoint
+                                point:attributes.endPoint] &&
+           stringsEqual(self.startPointStyle, attributes.startPointStyle) &&
+           stringsEqual(self.endPointStyle, attributes.endPointStyle) &&
+           self.fillColor == attributes.fillColor &&
+           [Utility pointEqualToPoint:self.captionOffset
+                                point:attributes.captionOffset] &&
+           stringsEqual(self.intent, attributes.intent) &&
+           [super isEqualToAttributes:attributes];
 }
 
 @end
 
 @implementation FSInkAttributes
 
-- (instancetype)initWithAnnot:(FSInk *)ink
-{
+- (instancetype)initWithAnnot:(FSInk *)ink {
     if (self = [super initWithAnnot:ink]) {
         self.lineWidth = ink.lineWidth;
         self.inkList = [Utility cloneInkList:[ink getInkList]];
+        if(!self.inkList)
+            return nil;
         self.contents = ink.contents;
     }
     return self;
 }
 
-- (void)resetAnnot:(FSInk *)annot
-{
+- (void)resetAnnot:(FSInk *)annot {
     [super resetAnnot:annot];
     annot.lineWidth = self.lineWidth;
     [annot setInkList:self.inkList];
@@ -292,21 +277,20 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     [annot resetAppearanceStream];
 }
 
-- (BOOL)isEqualToAttributes:(FSInkAttributes *)attributes
-{
+- (BOOL)isEqualToAttributes:(FSInkAttributes *)attributes {
     return self.class == attributes.class &&
-    fabsf(self.lineWidth - attributes.lineWidth) < 1e-4 &&
-    stringsEqual(self.contents, attributes.contents) &&
-    [super isEqualToAttributes:attributes] &&
-    [Utility inkListEqualToInkList:self.inkList inkList:attributes.inkList];
+           fabsf(self.lineWidth - attributes.lineWidth) < 1e-4 &&
+           stringsEqual(self.contents, attributes.contents) &&
+           [super isEqualToAttributes:attributes] &&
+           [Utility inkListEqualToInkList:self.inkList
+                                  inkList:attributes.inkList];
 }
 
 @end
 
 @implementation FSStampAttributes
 
-- (instancetype)initWithAnnot:(FSStamp *)stamp
-{
+- (instancetype)initWithAnnot:(FSStamp *)stamp {
     if (self = [super initWithAnnot:stamp]) {
         self.iconName = [stamp getIconName];
         self.contents = stamp.contents;
@@ -314,8 +298,7 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     return self;
 }
 
-- (void)resetAnnot:(FSStamp *)annot
-{
+- (void)resetAnnot:(FSStamp *)annot {
     [super resetAnnot:annot];
     if ([Utility isValidIconName:self.iconName annotType:self.type]) {
         [annot setIconName:self.iconName];
@@ -323,23 +306,21 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
         annot.icon = 0; // default icon type
     }
     annot.contents = self.contents;
-    
+
     [annot resetAppearanceStream];
 }
 
-- (BOOL)isEqualToAttributes:(FSStampAttributes *)attributes
-{
-    return stringsEqual(self.iconName , attributes.iconName) &&
-    stringsEqual(self.contents, attributes.contents) &&
-    [super isEqualToAttributes:attributes];
+- (BOOL)isEqualToAttributes:(FSStampAttributes *)attributes {
+    return stringsEqual(self.iconName, attributes.iconName) &&
+           stringsEqual(self.contents, attributes.contents) &&
+           [super isEqualToAttributes:attributes];
 }
 
 @end
 
 @implementation FSShapeAttributes
 
-- (instancetype)initWithAnnot:(FSAnnot *)annot
-{
+- (instancetype)initWithAnnot:(FSAnnot *)annot {
     if (self = [super initWithAnnot:annot]) {
         self.lineWidth = annot.lineWidth;
         self.subject = annot.subject;
@@ -348,8 +329,7 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     return self;
 }
 
-- (void)resetAnnot:(FSAnnot *)annot
-{
+- (void)resetAnnot:(FSAnnot *)annot {
     [super resetAnnot:annot];
     annot.lineWidth = self.lineWidth;
     annot.subject = self.subject;
@@ -357,25 +337,23 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     [annot resetAppearanceStream];
 }
 
-- (BOOL)isEqualToAttributes:(FSShapeAttributes *)attributes
-{
+- (BOOL)isEqualToAttributes:(FSShapeAttributes *)attributes {
     return fabsf(self.lineWidth - attributes.lineWidth) < 1e-4 &&
-    stringsEqual(self.contents, attributes.contents) &&
-    stringsEqual(self.subject , attributes.subject) &&
-    [super isEqualToAttributes:attributes];
+           stringsEqual(self.contents, attributes.contents) &&
+           stringsEqual(self.subject, attributes.subject) &&
+           [super isEqualToAttributes:attributes];
 }
 
 @end
 
 @implementation FSFreeTextAttributes
 
-- (instancetype)initWithAnnot:(FSFreeText *)annot
-{
+- (instancetype)initWithAnnot:(FSFreeText *)annot {
     if (self = [super initWithAnnot:annot]) {
         self.contents = annot.contents;
         self.subject = annot.subject;
         self.intent = annot.intent;
-        FSDefaultAppearance* ap = [annot getDefaultAppearance];
+        FSDefaultAppearance *ap = [annot getDefaultAppearance];
         self.fontName = [ap.font getName];
         self.defaultAppearanceFlags = ap.flags;
         self.fontSize = ap.fontSize;
@@ -384,20 +362,19 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     return self;
 }
 
-- (void)resetAnnot:(FSFreeText *)annot
-{
+- (void)resetAnnot:(FSFreeText *)annot {
     [super resetAnnot:annot];
     annot.contents = self.contents;
     annot.subject = self.subject;
     annot.intent = self.intent;
     {
-        FSDefaultAppearance* ap = [(FSFreeText*)annot getDefaultAppearance];
+        FSDefaultAppearance *ap = [(FSFreeText *) annot getDefaultAppearance];
         ap.flags = self.defaultAppearanceFlags;
         int fontID = [Utility toStandardFontID:self.fontName];
         if (fontID == -1) {
-            ap.font = [FSFont create:self.fontName fontStyles:0 weight:0 charset:e_fontCharsetDefault];
+            ap.font = [[FSFont alloc] initWithFontName:self.fontName fontStyles:0 weight:0 charset:e_fontCharsetDefault];
         } else {
-            ap.font = [FSFont createStandard:fontID];
+            ap.font = [[FSFont alloc] initWithStandardFontID:fontID];
         }
         ap.fontSize = self.fontSize;
         ap.textColor = self.textColor;
@@ -406,23 +383,21 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     [annot resetAppearanceStream];
 }
 
-- (BOOL)isEqualToAttributes:(FSFreeTextAttributes *)attributes
-{
+- (BOOL)isEqualToAttributes:(FSFreeTextAttributes *)attributes {
     return self.class == attributes.class &&
-    self.textColor == attributes.textColor &&
-    self.fontSize == attributes.fontSize &&
-    self.defaultAppearanceFlags == attributes.defaultAppearanceFlags &&
-    stringsEqual(self.fontName , attributes.fontName) &&
-    stringsEqual(self.contents , attributes.contents) &&
-    [super isEqualToAttributes:attributes];
+           self.textColor == attributes.textColor &&
+           self.fontSize == attributes.fontSize &&
+           self.defaultAppearanceFlags == attributes.defaultAppearanceFlags &&
+           stringsEqual(self.fontName, attributes.fontName) &&
+           stringsEqual(self.contents, attributes.contents) &&
+           [super isEqualToAttributes:attributes];
 }
 
 @end
 
 @implementation FSFileAttachmentAttributes
 
-- (instancetype)initWithAnnot:(FSFileAttachment *)annot
-{
+- (instancetype)initWithAnnot:(FSFileAttachment *)annot {
     if (self = [super initWithAnnot:annot]) {
         self.iconName = [annot getIconName];
         self.fileName = [[annot getFileSpec] getFileName];
@@ -437,19 +412,18 @@ static BOOL stringsEqual(NSString* str1, NSString* str2) {
     return self;
 }
 
-- (void)resetAnnot:(FSFileAttachment *)annot
-{
+- (void)resetAnnot:(FSFileAttachment *)annot {
     [super resetAnnot:annot];
     [annot setIconName:self.iconName];
     annot.contents = self.contents;
-    
+
     if ([[NSFileManager defaultManager] fileExistsAtPath:self.attachmentPath]) {
-        FSFileSpec* attachFile = [FSFileSpec create:[[annot getPage] getDocument]];
+        FSFileSpec *attachFile = [[FSFileSpec alloc] initWithPDFDoc:[[annot getPage] getDocument]];
         if (self.fileName) {
             [attachFile setFileName:self.fileName];
         }
         if (attachFile && [attachFile embed:self.attachmentPath]) {
-            [attachFile setCreationDateTime:self.fileCreationTime ];
+            [attachFile setCreationDateTime:self.fileCreationTime];
             [attachFile setModifiedDateTime:self.fileModificationTime];
             [annot setFileSpec:attachFile];
         }

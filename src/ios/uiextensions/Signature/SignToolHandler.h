@@ -10,22 +10,21 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
 #import "../DigitalSignature/DigitalSignatureCom.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
 @protocol IToolHandler;
 @protocol IRotationEventListener;
 @class AnnotationSignature;
 @class UIExtensionsManager;
 
-typedef void (^onDocChanging)(NSString* newDocPath);
-typedef NSString* (^onGetDocPath)();
+typedef void (^onDocChanging)(NSString *newDocPath);
+typedef NSString * (^onGetDocPath)();
 
-@interface SignToolHandler : NSObject<IToolHandler,IRotationEventListener, IDocEventListener>
-{
-    FSRectF* _signatureRect;
+@interface SignToolHandler : NSObject <IToolHandler, IRotationEventListener, IDocEventListener> {
+    FSRectF *_signatureRect;
     CGSize _signatureOriginalSize;
-    
+
     float _maxWidth;
     float _minWidth;
     float _maxHeight;
@@ -39,15 +38,15 @@ typedef NSString* (^onGetDocPath)();
 @property (nonatomic, copy) onDocChanging docChanging;
 @property (nonatomic, copy) onGetDocPath getDocPath;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
--(void)changedSignImage;
--(void)signList;
-- (void)onDocWillClose:(FSPDFDoc* )document;
--(void)delete;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
+- (void)changedSignImage;
+- (void)signList;
+- (void)onDocWillClose:(FSPDFDoc *)document;
+- (void) delete;
 
-- (FSSignature*) createSignature:(FSPDFPage*)page withParam:(DIGITALSIGNATURE_PARAM *)param;
-- (BOOL) signSignature:(FSSignature*)sign withParam:(DIGITALSIGNATURE_PARAM *)param;
-- (BOOL) verifyDigitalSignature:(NSString*)fileName signature:(FSSignature*)signature status:(int *)status;
-- (void) initSignature:(FSSignature*)sign withParam:(DIGITALSIGNATURE_PARAM *)param;
+- (FSSignature *)createSignature:(FSPDFPage *)page withParam:(DIGITALSIGNATURE_PARAM *)param;
+- (BOOL)signSignature:(FSSignature *)sign withParam:(DIGITALSIGNATURE_PARAM *)param;
+- (FSSignatureStates)verifyDigitalSignature:(NSString *)fileName signature:(FSSignature *)signature;
+- (void)initSignature:(FSSignature *)sign withParam:(DIGITALSIGNATURE_PARAM *)param;
 - (void)openCreateSign;
 @end

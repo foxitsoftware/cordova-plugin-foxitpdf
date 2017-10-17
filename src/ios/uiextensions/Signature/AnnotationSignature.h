@@ -10,15 +10,15 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
 #import "UIExtensionsManager+Private.h"
+#import "UIExtensionsManager.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 
-#define SETTING_SIGNATURE  @"Annotation_Signature"
-#define SETTING_SIGNATURE_OPTION  @"Annotation_Signature_Option"
-#define SETTING_SIGNATURE_SELECTED  @"Annotation_Signature_Selected"
+#define SETTING_SIGNATURE @"Annotation_Signature"
+#define SETTING_SIGNATURE_OPTION @"Annotation_Signature_Option"
+#define SETTING_SIGNATURE_SELECTED @"Annotation_Signature_Selected"
 
-@interface AnnotationSignature: NSObject
+@interface AnnotationSignature : NSObject
 
 @property (nonatomic, copy) NSString *name;
 @property (nonatomic, copy) NSString *contents;
@@ -30,33 +30,33 @@
 @property (nonatomic, assign) int pageIndex;
 @property (nonatomic, assign) int color;
 @property (nonatomic, assign) int opacity;
-@property (nonatomic, strong) FSRectF* rect;
-@property (nonatomic, strong) NSString* author;
-@property (nonatomic, strong) FSAnnot* signature;
-@property (nonatomic, strong) FSBitmap* dib;
+@property (nonatomic, strong) FSRectF *rect;
+@property (nonatomic, strong) NSString *author;
+@property (nonatomic, strong) FSAnnot *signature;
+@property (nonatomic, strong) FSBitmap *dib;
 @property (nonatomic, strong) NSData *data;
 
-+ (AnnotationSignature *)createWithDefaultOptionForPageIndex:(int)pageIndex rect:(FSRectF*)rect;
++ (AnnotationSignature *)createWithDefaultOptionForPageIndex:(int)pageIndex rect:(FSRectF *)rect;
 
-+ (NSMutableArray*)getSignatureList;
++ (NSMutableArray *)getSignatureList;
 
-+ (UIImage*)getSignatureImage:(NSString*)name;
-+ (void)setSignatureImage:(NSString*)name img:(UIImage*)img;
++ (UIImage *)getSignatureImage:(NSString *)name;
++ (void)setSignatureImage:(NSString *)name img:(UIImage *)img;
 + (void)setCertFileToSiganatureSpace:(NSString *)name path:(NSString *)path;
 
-+ (NSData*)getSignatureData:(NSString*)name;
-+ (NSData*)getSignatureDib:(NSString*)name;
-+ (void)setSignatureDib:(NSString*)name data:(NSData*)data;
-+ (void)removeSignatureResource:(NSString*)name;
-+ (AnnotationSignature*)getSignature:(NSString*)name;
-- (NSString*)add;
++ (NSData *)getSignatureData:(NSString *)name;
++ (NSData *)getSignatureDib:(NSString *)name;
++ (void)setSignatureDib:(NSString *)name data:(NSData *)data;
++ (void)removeSignatureResource:(NSString *)name;
++ (AnnotationSignature *)getSignature:(NSString *)name;
+- (NSString *)add;
 - (void)update;
 - (void)remove;
 
-+ (AnnotationSignature*)getSignatureOption;
++ (AnnotationSignature *)getSignatureOption;
 - (void)setOption;
-+ (NSString*)getSignatureSelected;
-+ (void)setSignatureSelected:(NSString*)name;
++ (NSString *)getSignatureSelected;
++ (void)setSignatureSelected:(NSString *)name;
 
-+ (NSMutableArray*)getCertSignatureList;
++ (NSMutableArray *)getCertSignatureList;
 @end

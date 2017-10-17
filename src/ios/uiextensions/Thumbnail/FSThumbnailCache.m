@@ -11,10 +11,9 @@
  */
 
 #import "FSThumbnailCache.h"
-#import "Utility.h"
-#import "UIExtensionsManager.h"
 #import "UIExtensionsManager+private.h"
-#import "FSPDFReader.h"
+#import "UIExtensionsManager.h"
+#import "Utility.h"
 
 NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
 
@@ -37,20 +36,19 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
     return self;
 }
 
-- (void)getThumbnailForPageAtIndex:(NSUInteger)index withThumbnailSize:(CGSize)thumbnailSize callback:(void (^ __nonnull)(UIImage *))callback {
+- (void)getThumbnailForPageAtIndex:(NSUInteger)index withThumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)())needPause callback:(void (^__nonnull)(UIImage *))callback {
     NSString *thumbnailPath = [self getThumbnailPathForPageAtIndex:index withThumbnailSize:thumbnailSize];
     if (!thumbnailPath) {
         callback(nil);
         return;
     }
-    
+
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    @synchronized (self) {
+    @synchronized(self) {
         if ([fileManager fileExistsAtPath:thumbnailPath]) {
             UIImage *image = [[UIImage alloc] initWithContentsOfFile:thumbnailPath];
             CGFloat mainScale = [[UIScreen mainScreen] scale];
-            if (image && fabs(image.size.width/mainScale-thumbnailSize.width) < 1.0f
-                && fabs(image.size.height/mainScale-thumbnailSize.height) < 1.0f) {
+            if (image && fabs(image.size.width / mainScale - thumbnailSize.width) < 1.0f && fabs(image.size.height / mainScale - thumbnailSize.height) < 1.0f) {
                 callback(image);
                 return;
             } else if (![fileManager removeItemAtPath:thumbnailPath error:nil]) {
@@ -61,16 +59,16 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
     }
     FSPDFPage *page = nil;
     @try {
-        page = [self.document getPage:(int)index];
+        page = [self.document getPage:(int) index];
     } @catch (NSException *exception) {
         NSLog(@"%@", exception.description);
         callback(nil);
         return;
     }
-    
-    UIImage *thumbnailImage = [Utility drawPage:page targetSize:thumbnailSize shouldDrawAnnotation:YES isNightMode:NO];
+
+    UIImage *thumbnailImage = [Utility drawPage:page targetSize:thumbnailSize shouldDrawAnnotation:YES isNightMode:NO needPause:needPause];
     if (thumbnailImage) {
-        @synchronized (self) {
+        @synchronized(self) {
             [UIImagePNGRepresentation(thumbnailImage) writeToFile:thumbnailPath atomically:YES];
         }
     }
@@ -78,10 +76,10 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
 }
 
 - (BOOL)removeThumbnailCacheOfPageAtIndex:(NSUInteger)pageIndex {
-    NSString *fileName = [NSString stringWithFormat:@"%d.png", (int)pageIndex];
+    NSString *fileName = [NSString stringWithFormat:@"%d.png", (int) pageIndex];
     NSString *filePath = [self.thumbnailDirectory stringByAppendingPathComponent:fileName];
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    @synchronized (self) {
+    @synchronized(self) {
         if ([fileManager fileExistsAtPath:filePath]) {
             return [fileManager removeItemAtPath:filePath error:nil];
         }
@@ -89,9 +87,9 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
     return YES;
 }
 
-- (void)clearThumbnailCachesForCurrentDocument {
-    @synchronized (self) {
-        NSString *directory = [self thumbnailDirectory];
+- (void)clearThumbnailCachesForPDFAtPath:(NSString *)path {
+    @synchronized(self) {
+        NSString *directory = [self thumbnailDirectoryForPDFAtPath:path];
         if (!directory) {
             return;
         }
@@ -105,39 +103,39 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
 
 #pragma mark <IPageEventListener>
 
-- (void)onPagesRemoved:(NSArray<NSNumber*>*)indexes {
+- (void)onPagesRemoved:(NSArray<NSNumber *> *)indexes {
     if (indexes.count == 0) {
         return;
     }
     NSIndexSet *indexSet = indexSetFromArray(indexes);
-    [indexSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+    [indexSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *_Nonnull stop) {
         [self removeThumbnailCacheOfPageAtIndex:idx];
     }];
-    for (NSUInteger i = indexSet.firstIndex+1; i < [self.document getPageCount]; i ++) {
+    for (NSUInteger i = indexSet.firstIndex + 1; i < [self.document getPageCount]; i++) {
         NSUInteger numPrevPagesRemoved = [indexSet countOfIndexesInRange:NSMakeRange(0, i)];
-        [self moveThumbnailOfPageAtIndex:i toIndex:i-numPrevPagesRemoved];
+        [self moveThumbnailOfPageAtIndex:i toIndex:i - numPrevPagesRemoved];
     }
 }
 
-- (void)onPagesMoved:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex {
+- (void)onPagesMoved:(NSArray<NSNumber *> *)indexes dstIndex:(int)dstIndex {
     if (indexes.count == 0) {
         return;
     }
     NSArray<NSNumber *> *resultPageIndexes = [self getReorderedPageIndexesAfterMovingPagesAtIndexes:indexes toIndex:dstIndex];
     // move file to intermediate file first
-    [resultPageIndexes enumerateObjectsUsingBlock:^(NSNumber * _Nonnull oldPageIndex, NSUInteger idx, BOOL * _Nonnull stop) {
+    [resultPageIndexes enumerateObjectsUsingBlock:^(NSNumber *_Nonnull oldPageIndex, NSUInteger idx, BOOL *_Nonnull stop) {
         if (idx == oldPageIndex.unsignedIntegerValue) {
             return;
         }
         [self moveThumbnailOfPageAtIndex:oldPageIndex.unsignedIntegerValue withPrefix:nil toIndex:idx withPrefix:@"temp"];
     }];
-    [resultPageIndexes enumerateObjectsUsingBlock:^(NSNumber * _Nonnull newPageIndex, NSUInteger idx, BOOL * _Nonnull stop) {
+    [resultPageIndexes enumerateObjectsUsingBlock:^(NSNumber *_Nonnull newPageIndex, NSUInteger idx, BOOL *_Nonnull stop) {
         [self moveThumbnailOfPageAtIndex:newPageIndex.unsignedIntegerValue withPrefix:@"temp" toIndex:newPageIndex.unsignedIntegerValue withPrefix:nil];
     }];
 }
 
-- (void)onPagesRotated:(NSArray<NSNumber*>*)indexes rotation:(int)rotation {
-    [indexes enumerateObjectsUsingBlock:^(NSNumber * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+- (void)onPagesRotated:(NSArray<NSNumber *> *)indexes rotation:(int)rotation {
+    [indexes enumerateObjectsUsingBlock:^(NSNumber *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
         [self removeThumbnailCacheOfPageAtIndex:obj.unsignedIntegerValue];
     }];
 }
@@ -146,29 +144,29 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
     if (range.location == NSNotFound || range.length == 0) {
         return;
     }
-    for (NSInteger i = [self.document getPageCount] - 1; i >= (NSInteger)range.location; i --) {
-        [self moveThumbnailOfPageAtIndex:i toIndex:i+range.length];
+    for (NSInteger i = [self.document getPageCount] - 1; i >= (NSInteger) range.location; i--) {
+        [self moveThumbnailOfPageAtIndex:i toIndex:i + range.length];
     }
 }
 
 #pragma mark <IAnnotEventListener>
 
-- (void)onAnnotAdded:(FSPDFPage* )page annot:(FSAnnot*)annot {
+- (void)onAnnotAdded:(FSPDFPage *)page annot:(FSAnnot *)annot {
     [self removeThumbnailCacheOfPageAtIndex:[page getIndex]];
 }
 
-- (void)onAnnotDeleted:(FSPDFPage* )page annot:(FSAnnot*)annot {
+- (void)onAnnotDeleted:(FSPDFPage *)page annot:(FSAnnot *)annot {
     [self removeThumbnailCacheOfPageAtIndex:[page getIndex]];
 }
 
-- (void)onAnnotModified:(FSPDFPage* )page annot:(FSAnnot*)annot {
+- (void)onAnnotModified:(FSPDFPage *)page annot:(FSAnnot *)annot {
     [self removeThumbnailCacheOfPageAtIndex:[page getIndex]];
 }
 
 #pragma mark private methods
 
 - (NSString *)getThumbnailPathForPageAtIndex:(NSUInteger)index withThumbnailSize:(CGSize)thumbnailSize {
-    NSString *thumbnailPath = [self.thumbnailDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.png", (int)index]];
+    NSString *thumbnailPath = [self.thumbnailDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.png", (int) index]];
     NSFileManager *fileManager = [NSFileManager defaultManager];
     if (![fileManager fileExistsAtPath:thumbnailPath]) {
         return thumbnailPath;
@@ -184,14 +182,17 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
     }
     return thumbnailPath;
 }
-
 - (NSString *)thumbnailDirectory {
+    return [self thumbnailDirectoryForPDFAtPath:self.documentPath];
+}
+
+- (NSString *)thumbnailDirectoryForPDFAtPath:(NSString *)path {
     NSString *thumbnailDirectory = [[DOCUMENT_PATH stringByDeletingLastPathComponent] stringByAppendingString:@"/Library/Data/PDFCache/Thumbnail/"];
-    NSString *documentUUID = [Utility getStringMD5:self.documentPath];
+    NSString *documentUUID = [Utility getStringMD5:path];
     assert(documentUUID);
     thumbnailDirectory = [thumbnailDirectory stringByAppendingPathComponent:documentUUID];
-    
-    NSFileManager* fileManager = [NSFileManager defaultManager];
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
     if (![fileManager fileExistsAtPath:thumbnailDirectory]) {
         if (![fileManager createDirectoryAtPath:thumbnailDirectory withIntermediateDirectories:YES attributes:nil error:nil]) {
             return nil;
@@ -210,12 +211,12 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
         return YES;
     }
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    
-    NSString *sourceFileName = [NSString stringWithFormat:@"%@%d.png", sourcePrefix?:@"", (int)sourceIndex];
+
+    NSString *sourceFileName = [NSString stringWithFormat:@"%@%d.png", sourcePrefix ?: @"", (int) sourceIndex];
     NSString *sourceFilePath = [self.thumbnailDirectory stringByAppendingPathComponent:sourceFileName];
-    @synchronized (self) {
+    @synchronized(self) {
         if ([fileManager fileExistsAtPath:sourceFilePath]) {
-            NSString *destinationFileName = [NSString stringWithFormat:@"%@%d.png", destinationPrefix?:@"", (int)destinationIndex];
+            NSString *destinationFileName = [NSString stringWithFormat:@"%@%d.png", destinationPrefix ?: @"", (int) destinationIndex];
             NSString *destinationFilePath = [self.thumbnailDirectory stringByAppendingPathComponent:destinationFileName];
             //        NSLog(@"move %@ to %@", sourceFileName, destinationFileName);
             if ([fileManager fileExistsAtPath:destinationFilePath]) {
@@ -231,21 +232,21 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
 - (NSArray<NSNumber *> *)getReorderedPageIndexesAfterMovingPagesAtIndexes:(NSArray<NSNumber *> *)indexes toIndex:(NSUInteger)destinationIndex {
     NSUInteger pageCount = [self.document getPageCount];
     NSMutableArray<NSNumber *> *resultPageIndexes = [NSMutableArray<NSNumber *> arrayWithCapacity:pageCount];
-    for (NSUInteger i = 0; i < pageCount; i ++) {
+    for (NSUInteger i = 0; i < pageCount; i++) {
         [resultPageIndexes addObject:@(i)];
     }
-    
+
     void (^movePage)(NSUInteger _sourceIndex, NSUInteger _destinatinoIndex) = ^(NSUInteger _sourceIndex, NSUInteger _destinatinoIndex) {
         if (_sourceIndex != _destinatinoIndex) {
             NSNumber *page = resultPageIndexes[_sourceIndex];
             [resultPageIndexes removeObject:page];
             if (_destinatinoIndex > _sourceIndex) {
-                _destinatinoIndex --;
+                _destinatinoIndex--;
             }
             [resultPageIndexes insertObject:page atIndex:_destinatinoIndex];
         }
     };
-    
+
     NSUInteger currentDestinationIndex = destinationIndex;
     NSMutableArray<NSNumber *> *mutableSourceIndexes = indexes.mutableCopy;
     while (mutableSourceIndexes.count > 0) {
@@ -253,20 +254,20 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
         [mutableSourceIndexes removeObjectAtIndex:0];
         movePage(currentSourceIndex, currentDestinationIndex);
         //update source indexes
-        for (NSUInteger i = 0; i < mutableSourceIndexes.count; i ++) {
+        for (NSUInteger i = 0; i < mutableSourceIndexes.count; i++) {
             NSInteger sourceIndex = mutableSourceIndexes[i].unsignedIntegerValue;
             assert(sourceIndex != currentSourceIndex);
             if (currentSourceIndex < sourceIndex && sourceIndex < currentDestinationIndex) {
-                mutableSourceIndexes[i] = [NSNumber numberWithUnsignedInteger:sourceIndex-1];
+                mutableSourceIndexes[i] = [NSNumber numberWithUnsignedInteger:sourceIndex - 1];
             } else if (currentDestinationIndex <= sourceIndex && sourceIndex < currentSourceIndex) {
-                mutableSourceIndexes[i] = [NSNumber numberWithUnsignedInteger:sourceIndex+1];
+                mutableSourceIndexes[i] = [NSNumber numberWithUnsignedInteger:sourceIndex + 1];
             }
         }
         //update destination index
         if (currentSourceIndex < currentDestinationIndex) {
-            currentDestinationIndex --;
+            currentDestinationIndex--;
         }
-        currentDestinationIndex ++;
+        currentDestinationIndex++;
     }
     return resultPageIndexes;
 }
@@ -276,7 +277,7 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
 }
 
 - (NSString *)documentPath {
-    return self.extensionsManager.pdfReader.filePath;
+    return self.extensionsManager.pdfViewCtrl.filePath;
 }
 
 @end

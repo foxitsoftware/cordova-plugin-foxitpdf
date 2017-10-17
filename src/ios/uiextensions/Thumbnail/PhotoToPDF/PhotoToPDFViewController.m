@@ -17,18 +17,15 @@
 
 @implementation photoToPDFViewController
 
-
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
 }
 
-- (id)initWithButton:(UIButton *)button
-{
+- (id)initWithButton:(UIButton *)button {
     self = [super init];
     if (self) {
         self.mediaController = [[UIImagePickerController alloc] init];
-        
+
         self.mediaController.delegate = self;
         self.mediaController.popoverPresentationController.sourceRect = button.bounds;
         self.mediaController.popoverPresentationController.sourceView = button;
@@ -36,11 +33,10 @@
     return self;
 }
 
-- (void)openAlbum
-{
-    if ( [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary] ) {
+- (void)openAlbum {
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
         self.mediaController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-        
+
         [self presentViewController:self.mediaController animated:NO completion:nil];
     } else {
         [[UIApplication sharedApplication].keyWindow.rootViewController dismissViewControllerAnimated:NO completion:nil];
@@ -49,12 +45,11 @@
     }
 }
 
-- (void)openCamera
-{
-    if ( [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera] ) {
+- (void)openCamera {
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
         self.mediaController.sourceType = UIImagePickerControllerSourceTypeCamera;
         self.mediaController.showsCameraControls = YES;
-        
+
         [self presentViewController:self.mediaController animated:NO completion:nil];
     } else {
         [[UIApplication sharedApplication].keyWindow.rootViewController dismissViewControllerAnimated:NO completion:nil];
@@ -63,18 +58,16 @@
     }
 }
 
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info
-{
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *, id> *)info {
     [self dismissViewControllerAnimated:YES completion:nil];
     [[UIApplication sharedApplication].keyWindow.rootViewController dismissViewControllerAnimated:NO completion:nil];
     if (self.callback) {
-        UIImage* uiImage = (UIImage *)[info objectForKey:UIImagePickerControllerOriginalImage];
+        UIImage *uiImage = (UIImage *) [info objectForKey:UIImagePickerControllerOriginalImage];
         self.callback(uiImage);
     }
 }
 
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
-{
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     [[UIApplication sharedApplication].keyWindow.rootViewController dismissViewControllerAnimated:NO completion:nil];
 }
 

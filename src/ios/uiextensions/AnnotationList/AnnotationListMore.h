@@ -11,26 +11,36 @@
  */
 
 #import <Foundation/Foundation.h>
-
+#import <UIKit/UIKit.h>
 
 @class ReplyTableViewController;
 @class PanelHost;
+@class AnnotationListMore;
+
+@protocol AnnotationListMoreDelegate <NSObject>
+
+@optional
+- (void)annotationListMoreReply:(AnnotationListMore *)annotationListMore;
+- (void)annotationListMoreEdit:(AnnotationListMore *)annotationListMore;
+- (void)annotationListMoreDescript:(AnnotationListMore *)annotationListMore;
+- (void)annotationListMoreDelete:(AnnotationListMore *)annotationListMore;
+- (void)annotationListMoreRename:(AnnotationListMore *)annotationListMore;
+- (void)annotationListMoreSave:(AnnotationListMore *)annotationListMore;
+
+@end
 
 /** @brief The 'more' button view on the annotation list cell.*/
 @interface AnnotationListMore : UIView
 
-@property(nonatomic,strong)NSIndexPath *indexPath;
-@property(nonatomic,strong)UIButton *replyButton;
-@property(nonatomic,strong)UIButton *noteButton;
-@property(nonatomic,strong)UIButton *deleteButton;
-@property(nonatomic,strong)UIButton *renameButton;
-@property(nonatomic,strong)UIButton *saveButton;
-@property(nonatomic,strong)UIView *bottomView;
-@property(nonatomic,strong)UIView *gestureView;
+@property (nonatomic, strong) UIButton *replyButton;
+@property (nonatomic, strong) UIButton *noteButton;
+@property (nonatomic, strong) UIButton *descriptionButton;
+@property (nonatomic, strong) UIButton *deleteButton;
+@property (nonatomic, strong) UIButton *renameButton;
+@property (nonatomic, strong) UIButton *saveButton;
 
-@property (nonatomic, strong)AnnotationListMore* delegate;
-- (id)initWithFrame:(CGRect)frame superView:(UIView*)superView delegate:(id)delegate isBookMark:(BOOL)enable isMenu:(BOOL)isMenu;
-- (id)initWithFrame:(CGRect)frame superView:(UIView*)superView delegate:(id)delegate isBookMark:(BOOL)enable isMenu:(BOOL)isMenu isAttachment:(BOOL)isAttachment;
-- (void)setCellViewHidden:(BOOL)hidden isMenu:(BOOL)menu;
-- (void)tapGuest:(UIGestureRecognizer *)guest;
+@property (nonatomic, weak) id<AnnotationListMoreDelegate> delegate;
+
+- (id)initWithOrigin:(CGPoint)origin height:(CGFloat)height canRename:(BOOL)canRename canEditContent:(BOOL)canEditContent canDescript:(BOOL)canDescript canDelete:(BOOL)canDelete canReply:(BOOL)canReply canSave:(BOOL)canSave;
+
 @end

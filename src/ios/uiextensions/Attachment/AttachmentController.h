@@ -11,10 +11,11 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "AnnotationItem.h"
 
 @interface AttachmentController : UIViewController
 
 @property (nonatomic, assign) BOOL isShowing;
 
-- (BOOL)openDocument:(NSString*)filePath;
+- (BOOL)openDocument:(AttachmentItem *)attachmentItem;
 @end

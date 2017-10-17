@@ -13,21 +13,20 @@
 #import "UIExtensionsManager+Private.h"
 #import <FoxitRDK/FSPDFViewControl.h>
 
-#import "OutlineViewController.h"
 #import "ColorUtility.h"
 #import "MASConstraintMaker.h"
-#import "View+MASAdditions.h"
+#import "OutlineViewController.h"
 #import "PanelController.h"
+#import "View+MASAdditions.h"
 #import <QuartzCore/QuartzCore.h>
-
 
 @implementation OutlineButton
 
 @end
 
-@interface OutlineViewController() {
-    FSPDFViewCtrl* _pdfViewCtrl;
-    PanelController* _panelController;
+@interface OutlineViewController () {
+    FSPDFViewCtrl *_pdfViewCtrl;
+    FSPanelController *_panelController;
 }
 
 - (void)refreshInterface;
@@ -39,75 +38,65 @@
 @synthesize outlineGotoPageHandler = _outlineGotoPageHandler;
 @synthesize hasParentOutline;
 
-- (id)initWithStyle:(UITableViewStyle)style pdfViewCtrl:(FSPDFViewCtrl*)pdfViewCtrl panelController:(PanelController*)panelController
-{
+- (id)initWithStyle:(UITableViewStyle)style pdfViewCtrl:(FSPDFViewCtrl *)pdfViewCtrl panelController:(FSPanelController *)panelController {
     self = [super initWithStyle:style];
-    if (self) 
-    {
+    if (self) {
         _pdfViewCtrl = pdfViewCtrl;
         _panelController = panelController;
         _arrayOutlines = [[NSMutableArray alloc] init];
         _outlineGotoPageHandler = nil;
         if ([self.tableView respondsToSelector:@selector(setSeparatorInset:)]) {
-            [self.tableView setSeparatorInset:UIEdgeInsetsMake(0,10,0,0)];
+            [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 10, 0, 0)];
         }
-        
+        [self loadData:nil];
     }
     return self;
 }
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     [self refreshInterface];
 }
 
--(void)viewDidLayoutSubviews
-{
+- (void)viewDidLayoutSubviews {
     if ([self.tableView respondsToSelector:@selector(setSeparatorInset:)]) {
-        [self.tableView setSeparatorInset:UIEdgeInsetsMake(0,10,0,0)];
+        [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 10, 0, 0)];
     }
-    
+
     if ([self.tableView respondsToSelector:@selector(setLayoutMargins:)]) {
-        [self.tableView setLayoutMargins:UIEdgeInsetsMake(0,10,0,0)];
+        [self.tableView setLayoutMargins:UIEdgeInsetsMake(0, 10, 0, 0)];
     }
 }
 
--(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
     if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
-        [cell setSeparatorInset:UIEdgeInsetsMake(0,10,0,0)];
+        [cell setSeparatorInset:UIEdgeInsetsMake(0, 10, 0, 0)];
     }
-    
+
     if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
-        [cell setLayoutMargins:UIEdgeInsetsMake(0,10,0,0)];
+        [cell setLayoutMargins:UIEdgeInsetsMake(0, 10, 0, 0)];
     }
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
 #pragma mark - Table view data source
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return self.hasParentOutline ? (_arrayOutlines.count+1) : _arrayOutlines.count;
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.hasParentOutline ? (_arrayOutlines.count + 1) : _arrayOutlines.count;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     return 60;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (self.hasParentOutline && indexPath.row == 0) {
         UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         UIImageView *backImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"panel_outline_comeback"]];
@@ -116,7 +105,7 @@
         backLabel.textColor = [UIColor grayColor];
         backLabel.text = @"...";
         [cell.contentView addSubview:backLabel];
-        
+
         [backImageView mas_makeConstraints:^(MASConstraintMaker *make) {
             make.centerY.equalTo(cell.contentView.mas_centerY);
             make.left.mas_equalTo(15);
@@ -130,27 +119,25 @@
         cell.accessoryType = UITableViewCellAccessoryNone;
         return cell;
     }
-    
+
     static NSString *cellIdentifier = @"outlineCellIdentifier";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
-    if (cell == nil) 
-    {
+    if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
         cell.backgroundColor = [UIColor clearColor];
         OutlineButton *detailButton = [OutlineButton buttonWithType:UIButtonTypeCustom];
         detailButton.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin;
         [detailButton addTarget:self action:@selector(detailOutline:) forControlEvents:UIControlEventTouchUpInside];
-        detailButton.frame = CGRectMake(cell.frame.size.width-48, 0, 48, 40);
-        detailButton.center = CGPointMake(detailButton.center.x, cell.frame.size.height/2);
+        detailButton.frame = CGRectMake(cell.frame.size.width - 48, 0, 48, 40);
+        detailButton.center = CGPointMake(detailButton.center.x, cell.frame.size.height / 2);
         detailButton.tag = 30;
         [cell addSubview:detailButton];
     }
-    OutlineButton *button = (OutlineButton *)[cell viewWithTag:30];
+    OutlineButton *button = (OutlineButton *) [cell viewWithTag:30];
     button.indexPath = indexPath;
-    int bookmarkIndex = (int)indexPath.row;
-    if (self.hasParentOutline)
-    {
-        bookmarkIndex --;
+    int bookmarkIndex = (int) indexPath.row;
+    if (self.hasParentOutline) {
+        bookmarkIndex--;
     }
     FSBookmark *bookmarkItem = [_arrayOutlines objectAtIndex:bookmarkIndex];
     cell.textLabel.text = [bookmarkItem getTitle];
@@ -161,48 +148,41 @@
     return cell;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    if (self.hasParentOutline && indexPath.row == 0)  //go to parent outline
+    if (self.hasParentOutline && indexPath.row == 0) //go to parent outline
     {
         [self.navigationController popViewControllerAnimated:YES];
-        numberofPush-= 1;
-    }
-    else 
-    {
+    } else {
         _panelController.isHidden = YES;
-        FSBookmark *bookmarkItem = [_arrayOutlines objectAtIndex:self.hasParentOutline?(indexPath.row-1):indexPath.row];
-        FSDestination* dest = [bookmarkItem getDestination];
-        if (nil == dest) return;
-        FSPointF* point = [[FSPointF alloc] init];
+        FSBookmark *bookmarkItem = [_arrayOutlines objectAtIndex:self.hasParentOutline ? (indexPath.row - 1) : indexPath.row];
+        FSDestination *dest = [bookmarkItem getDestination];
+        if (nil == dest)
+            return;
+        FSPointF *point = [[FSPointF alloc] init];
         [point set:[dest getLeft] y:[dest getTop]];
         [_pdfViewCtrl gotoPage:[dest getPageIndex] withDocPoint:point animated:NO];
-            }
+    }
 }
 
-- (void)detailOutline:(id)sender
-{
-    numberofPush+= 1;
-    OutlineButton *button = (OutlineButton *)sender;
+- (void)detailOutline:(id)sender {
+    OutlineButton *button = (OutlineButton *) sender;
     OutlineViewController *subOutlineViewCtrl = [[OutlineViewController alloc] initWithStyle:UITableViewStylePlain pdfViewCtrl:_pdfViewCtrl panelController:_panelController];
     subOutlineViewCtrl.hasParentOutline = YES;
-    FSBookmark *bookmarkItem = [_arrayOutlines objectAtIndex:self.hasParentOutline?(button.indexPath.row-1):button.indexPath.row];
+    FSBookmark *bookmarkItem = [_arrayOutlines objectAtIndex:self.hasParentOutline ? (button.indexPath.row - 1) : button.indexPath.row];
     [subOutlineViewCtrl loadData:bookmarkItem];
     subOutlineViewCtrl.outlineGotoPageHandler = self.outlineGotoPageHandler;
     [self.navigationController pushViewController:subOutlineViewCtrl animated:YES];
-    }
+}
 
 #pragma mark - methods
 
-- (NSArray*)getBookmark:(FSBookmark*)parentBookmark
-{
+- (NSArray *)getBookmark:(FSBookmark *)parentBookmark {
     NSMutableArray *array = [NSMutableArray array];
-    FSBookmark* bmChild = [parentBookmark getFirstChild];
-    if (bmChild)
-    {
+    FSBookmark *bmChild = [parentBookmark getFirstChild];
+    if (bmChild) {
         [array addObject:bmChild];
-        FSBookmark* bmNext = [bmChild getNextSibling];
+        FSBookmark *bmNext = [bmChild getNextSibling];
         while (bmNext) {
             [array addObject:bmNext];
             bmNext = [bmNext getNextSibling];
@@ -212,68 +192,54 @@
 }
 
 /** @brief Receive all the children of specified bookmark. */
-- (NSArray*)getOutline:(FSBookmark*)bookmark
-{
-    __block BOOL needRelease = NO;
-    __block NSArray *ret = [NSArray array];
-    
-    if (bookmark == nil)
-    {
+- (NSArray *)getOutline:(FSBookmark *)bookmark {
+
+    if (bookmark == nil) {
         bookmark = [[_pdfViewCtrl getDoc] getFirstBookmark];
-        needRelease = YES;
     }
 
-    ret = [self getBookmark:bookmark];
-    return ret;
+    return [self getBookmark:bookmark];
 }
 
-- (void)getOutline:(FSBookmark *)bookmark getOutlineFinishHandler:(GetBookmarkFinishHandler)getOutlineFinishHandler
-{
+- (void)getOutline:(FSBookmark *)bookmark getOutlineFinishHandler:(GetBookmarkFinishHandler)getOutlineFinishHandler {
     getOutlineFinishHandler = [getOutlineFinishHandler copy];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSArray *bookmarks = [self getOutline:bookmark];
         //here get the bookmark array with bookmarkName, pageIndex and nativeBookmark assigned, but bookmarkIndexes is not assigned yet
         NSMutableArray *fixedBookmarks = [NSMutableArray array];
-        for (int i = 0; i < bookmarks.count; i++)
-        {
+        for (int i = 0; i < bookmarks.count; i++) {
             FSBookmark *bookmarkItem = [bookmarks objectAtIndex:i];
             [fixedBookmarks addObject:bookmarkItem];
         }
-        if (getOutlineFinishHandler)
-        {
+        if (getOutlineFinishHandler) {
             dispatch_sync(dispatch_get_main_queue(), ^{
                 getOutlineFinishHandler(fixedBookmarks);
             });
         }
-        
-            });
+
+    });
 }
 
-- (void)loadData:(FSBookmark *)parentBookmark
-{
-    [self getOutline:parentBookmark getOutlineFinishHandler:^(NSMutableArray *bookmark) {
-                _arrayOutlines = bookmark;
-        [self.tableView reloadData];
-    }];
+- (void)loadData:(FSBookmark *)parentBookmark {
+    [self getOutline:parentBookmark
+        getOutlineFinishHandler:^(NSMutableArray *bookmark) {
+            _arrayOutlines = bookmark;
+            [self.tableView reloadData];
+        }];
 }
 
-- (void)clearData
-{
+- (void)clearData {
     [_arrayOutlines removeAllObjects];
-    for (NSInteger i = 0; i < numberofPush; i++) {
-        [self.navigationController popViewControllerAnimated:NO];
-    }
-    numberofPush = 0;
+    [self.navigationController popToRootViewControllerAnimated:NO];
     [self.tableView reloadData];
 }
 
 #pragma mark - Private methods
 
-- (void)refreshInterface
-{
-    UIView *view = [[UIView alloc]init];
+- (void)refreshInterface {
+    UIView *view = [[UIView alloc] init];
     view.backgroundColor = [UIColor clearColor];
     [self.tableView setTableFooterView:view];
-    }
+}
 
 @end

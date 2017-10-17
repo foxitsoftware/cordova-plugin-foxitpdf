@@ -10,17 +10,18 @@
  * Review legal.txt for additional license and legal information.
  */
 
+#import "Defines.h"
 #import <UIKit/UIKit.h>
-typedef enum
-{
+
+typedef enum {
     UNIVERSAL_EDIT_STYLE_SINGLE,
     UNIVERSAL_EDIT_STYLE_MULTIPLE
-} UNIVERSAL_EDIT_STYLE; 
+} UNIVERSAL_EDIT_STYLE;
 
 typedef void (^UniversalEditingDone)(NSString *text);
 typedef void (^UniversalEditingCancel)(void);
 
-@interface UniversalEditViewController : UITableViewController<UITextViewDelegate,UITextFieldDelegate>
+@interface UniversalEditViewController : UITableViewController <UITextViewDelegate, UITextFieldDelegate>
 
 @property (assign, nonatomic) UNIVERSAL_EDIT_STYLE editStyle;
 @property (assign, nonatomic) BOOL autoIntoEditing;

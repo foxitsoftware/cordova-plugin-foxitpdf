@@ -11,40 +11,39 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <openssl/sha.h>
 #import <FoxitRDK/FSPDFObjC.h>
+#import <openssl/sha.h>
 
 // FS_DigestData
-class FS_DigestData
-{
-public:
-    FS_DigestData(){}
-    ~FS_DigestData(){}
-public:
-    FSSignature* m_pSig;
-    void* m_file;
-    const unsigned int* m_pByteRangeArray;
+class FS_DigestData {
+  public:
+    FS_DigestData() {}
+    ~FS_DigestData() {}
+
+  public:
+    FSSignature *m_pSig;
+    void *m_file;
+    const unsigned int *m_pByteRangeArray;
     unsigned int m_sizeofArray;
 };
 
 //FS_DigestContext
-class FS_DigestContext
-{
-public:
+class FS_DigestContext {
+  public:
     FS_DigestContext();
     ~FS_DigestContext();
-public:
+
+  public:
     //Initialize and Finalize functions.
-    void	Initialize();
-    void	Release();
-    
+    void Initialize();
+    void Release();
+
     //Set variable m_pDigestData.
-    BOOL	SetData(void* file, const unsigned int* byteRangeArray, unsigned int sizeofArray);
+    BOOL SetData(void *file, const unsigned int *byteRangeArray, unsigned int sizeofArray);
     //Get variable m_pDigestData.
-    BOOL	GetData(FS_DigestData*& data);
-    
-public:
-    FS_DigestData* m_pDigestData;
+    BOOL GetData(FS_DigestData *&data);
+
+  public:
+    FS_DigestData *m_pDigestData;
     SHA_CTX m_sSHA_CTX;
 };
-

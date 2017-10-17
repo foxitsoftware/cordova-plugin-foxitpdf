@@ -10,12 +10,10 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import "UIExtensionsSharedHeader.h"
-#import "FSPDFReader.h"
+#import "../Common/UIExtensionsSharedHeader.h"
 
-@interface AttachmentModule : NSObject<IDocEventListener,IAnnotPropertyListener, IModule>
+@interface AttachmentModule : NSObject <IDocEventListener, IAnnotPropertyListener, IModule>
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 @end
-

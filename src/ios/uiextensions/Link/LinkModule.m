@@ -11,33 +11,27 @@
  */
 
 #import "LinkModule.h"
-#import "UIExtensionsManager+Private.h"
 #import "LinkAnnotHandler.h"
+#import "UIExtensionsManager+Private.h"
 
-@interface LinkModule ()
-{
-    UIExtensionsManager* __weak _extensionsManager;
-    FSPDFReader* __weak _pdfReader;
+@interface LinkModule () {
+    UIExtensionsManager *__weak _extensionsManager;
 }
 @end
 
 @implementation LinkModule
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader
-{
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager {
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
-        _pdfReader = pdfReader;
         [[LinkAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
     }
     return self;
 }
 
--(NSString*)getName
-{
+- (NSString *)getName {
     return @"Link";
 }
 
 @end
-

@@ -10,34 +10,31 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <FoxitRDK/FSPDFViewControl.h>
 #import "MagnifierView.h"
+#import <FoxitRDK/FSPDFViewControl.h>
 @class UIExtensionsManager;
 @protocol IToolHandler;
 
 /**@brief A text markup tool handler to handle its own events. */
-@interface MKToolHandler : NSObject<IToolHandler>
-{
+@interface MKToolHandler : NSObject <IToolHandler> {
     MagnifierView *_magnifierView;
 }
 
-@property (nonatomic, assign)enum FS_ANNOTTYPE type;
+@property (nonatomic, assign) FSAnnotType type;
 
 @property (nonatomic, assign) int startPosIndex;
 @property (nonatomic, assign) int endPosIndex;
-@property (nonatomic, strong) NSArray *arraySelectedRect;
-@property (nonatomic, assign) CGRect currentEditRect;
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
 - (int)getCharIndexAtPos:(int)pageIndex point:(CGPoint)point;
 
--(NSArray*)getCurrentSelectRects:(int)pageIndex;
--(void)clearSelection;
+- (NSArray *)getCurrentSelectRects:(int)pageIndex;
+- (void)clearSelection;
 
--(void)showMagnifier:(int)pageIndex index:(int)index point:(CGPoint)point;
--(void)moveMagnifier:(int)pageIndex index:(int)index point:(CGPoint)point;
--(void)closeMagnifier;
-- (NSArray*)getAnnotationQuad:(FSTextMarkup *)annot;
+- (void)showMagnifier:(int)pageIndex index:(int)index point:(CGPoint)point;
+- (void)moveMagnifier:(int)pageIndex index:(int)index point:(CGPoint)point;
+- (void)closeMagnifier;
+- (NSArray *)getAnnotationQuad:(FSTextMarkup *)annot;
 
 @end

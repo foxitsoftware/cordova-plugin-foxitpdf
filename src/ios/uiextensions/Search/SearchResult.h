@@ -15,18 +15,18 @@
 /** @brief The result search info. */
 @interface SearchInfo : NSObject
 
-@property (nonatomic,strong ) NSString       *snippet;
-@property (nonatomic,assign ) int            keywordLocation;
-@property (nonatomic,strong ) NSMutableArray *rects;
-@property (nonatomic, strong) NSString       *rtText;
-@property (nonatomic, assign) float          rtHeight;
+@property (nonatomic, strong) NSString *snippet;
+@property (nonatomic, assign) int keywordLocation;
+@property (nonatomic, strong) NSMutableArray *rects;
+@property (nonatomic, strong) NSString *rtText;
+@property (nonatomic, assign) float rtHeight;
 
 @end
 
 /** @brief All the found result for the current text search. */
 @interface SearchResult : NSObject
 
-@property (nonatomic,assign) int index;
-@property (nonatomic,strong) NSMutableArray *infos;
+@property (nonatomic, assign) int index;
+@property (nonatomic, strong) NSMutableArray *infos;
 
 @end

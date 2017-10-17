@@ -16,18 +16,15 @@
 
 @implementation ReplyUtil
 
-+ (void)getReplysInDocument:(FSPDFDoc* )document annot:(FSAnnot*)rootAnnot replys:(NSMutableArray*)replys
-{
-    if(![rootAnnot isMarkup])
++ (void)getReplysInDocument:(FSPDFDoc *)document annot:(FSAnnot *)rootAnnot replys:(NSMutableArray *)replys {
+    if (![rootAnnot isMarkup])
         return;
-    int countOfReplies = [(FSMarkup*)rootAnnot getReplyCount];
-    for(int i=0; i<countOfReplies; i++)
-    {
-        FSNote* reply = [(FSMarkup*)rootAnnot getReply:i];
-        for(FSNote* note in replys)
-        {
+    int countOfReplies = [(FSMarkup *) rootAnnot getReplyCount];
+    for (int i = 0; i < countOfReplies; i++) {
+        FSNote *reply = [(FSMarkup *) rootAnnot getReply:i];
+        for (FSNote *note in replys) {
             //Loop detect!
-            if([note.NM isEqualToString:reply.NM])
+            if ([note.NM isEqualToString:reply.NM])
                 return;
         }
         [replys addObject:reply];

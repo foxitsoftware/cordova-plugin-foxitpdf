@@ -10,25 +10,31 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <UIKit/UIKit.h>
 #import "AnnotationListMore.h"
 #import "Const.h"
+#import <UIKit/UIKit.h>
+
 @interface ReadingBookmarkButton : UIButton
-@property(nonatomic,assign)id object;
+@property (nonatomic, assign) id object;
 @end
+
+@class ReadingBookmarkListCell;
 
 @protocol ReadingBookmarkListCellDelegate <NSObject>
 
-- (void)setViewHidden:(ReadingBookmarkButton *)button;
+- (void)readingBookmarkListCellWillShowEditView:(ReadingBookmarkListCell *)cell;
+- (void)readingBookmarkListCellDidShowEditView:(ReadingBookmarkListCell *)cell;
+- (void)readingBookmarkListCellDelete:(ReadingBookmarkListCell *)cell;
+- (void)readingBookmarkListCellRename:(ReadingBookmarkListCell *)cell;
 
 @end
 
-
 @interface ReadingBookmarkListCell : UITableViewCell
+
 @property (nonatomic, strong) ReadingBookmarkButton *detailButton;
 @property (nonatomic, strong) UILabel *pageLabel;
 @property (nonatomic, strong) AnnotationListMore *editView;
-@property (nonatomic, strong)NSIndexPath *indexPath;
-@property (nonatomic, assign)id<ReadingBookmarkListCellDelegate>delegate;
-- (void)setEditViewHiden:(ReadingBookmarkButton *)sender;
+@property (nonatomic, assign) BOOL editViewHidden;
+@property (nonatomic, assign) id<ReadingBookmarkListCellDelegate> delegate;
+
 @end

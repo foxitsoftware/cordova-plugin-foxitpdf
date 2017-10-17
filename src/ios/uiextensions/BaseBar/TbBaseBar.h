@@ -10,19 +10,16 @@
  * Review legal.txt for additional license and legal information.
  */
 
+#import "TbBaseItem.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "TbBaseItem.h"
 
-
-typedef enum TB_Orientation
-{
+typedef enum TB_Orientation {
     Orientation_HORIZONTAL,
     Orientation_VERTICAL,
 } TB_Orientation;
 
-typedef enum TB_Position
-{
+typedef enum TB_Position {
     Position_LT,
     Position_CENTER,
     Position_RB,
@@ -41,11 +38,13 @@ typedef enum TB_Position
 @property (nonatomic, assign) BOOL top;
 @property (nonatomic, assign) BOOL hasDivide;
 
-- (BOOL)addItem:(TbBaseItem*)item displayPosition:(TB_Position)position;
+- (TbBaseItem*)getItem:(int)tag;
+- (BOOL)addItem:(TbBaseItem *)item displayPosition:(TB_Position)position;
 - (BOOL)removeItemByIndex:(int)tag displayPosition:(TB_Position)position;
-- (BOOL)removeItem:(TbBaseItem*)item;
+- (BOOL)removeItem:(TbBaseItem *)item;
 - (BOOL)removeAllItems;
 - (BOOL)removeLtItems;
 - (BOOL)removeCenterItems;
 - (BOOL)removeRbItems;
+
 @end

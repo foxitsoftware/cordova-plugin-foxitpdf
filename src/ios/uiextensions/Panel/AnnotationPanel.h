@@ -10,23 +10,22 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <Foundation/Foundation.h>
-#import <FoxitRDK/FSPDFViewControl.h>
-#import "UIExtensionsManager.h"
 #import "IPanelSpec.h"
 #import "PanelController.h"
+#import "UIExtensionsManager.h"
+#import <Foundation/Foundation.h>
+#import <FoxitRDK/FSPDFViewControl.h>
 
 @protocol IPanelSpec;
 @protocol IAppModule;
 @class AnnotationListViewController;
 
 /** @brief Annotation panel to show the list of all annotations in the document. */
-@interface AnnotationPanel : NSObject<IPanelSpec,IDocEventListener>
+@interface AnnotationPanel : NSObject <IPanelSpec, IDocEventListener>
 @property (nonatomic, strong) UIButton *editButton;
 @property (nonatomic, strong) AnnotationListViewController *annotationCtrl;
-@property (nonatomic, strong) PanelController* panelController;
+@property (nonatomic, strong) FSPanelController *panelController;
 
-
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager panelController:(PanelController*)panelController;
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager panelController:(FSPanelController *)panelController;
 - (void)load;
 @end

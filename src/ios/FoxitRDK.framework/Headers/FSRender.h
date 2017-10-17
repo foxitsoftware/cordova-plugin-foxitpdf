@@ -17,6 +17,41 @@
 
 @class FSLayerContext;
 
+NS_ASSUME_NONNULL_BEGIN
+
+/**
+ * @brief Enumeration for image type.
+ *
+ * @details Values of this enumeration should be used alone.
+ */
+typedef NS_ENUM(NSInteger, FSImageType) {
+    /** @brief Unknown image type. */
+    e_imageTypeUnknown = -1,
+    /**
+     * @brief No image type.
+     *
+     * @note This is only for a newly constructed empty FSImage object.
+     */
+    e_imageTypeNone = 0,
+    /** @brief Image type is BMP. */
+    e_imageTypeBMP = 1,
+    /** @brief Image type is JPG or JPeg. */
+    e_imageTypeJPG = 2,
+    /** @brief Image type is PNG. */
+    e_imageTypePNG = 3,
+    /** @brief Image type is GIF. */
+    e_imageTypeGIF = 4,
+    /** @brief Image type is TIF or TIFF. */
+    e_imageTypeTIF = 5,
+    /** @brief Image type is JPX or JPeg-2000. */
+    e_imageTypeJPX = 6,
+    /**
+     * @brief Image type is JBIG2.
+     * @note Currently, only few functions in class FSImage support this type.
+     */
+    e_imageTypeJBIG2 = 8
+};
+
 /************************************************************************************************
  *									Render   													*
  *************************************************************************************************/
@@ -52,8 +87,8 @@
  * @param[in]	width		Width of a bitmap, in pixels. This should be above 0.
  * @param[in]	height		Height of a bitmap, in pixels. This should be above 0.
  * @param[in]	format		Bitmap format type.
- *							Please refere to {@link FS_DIBFORMAT::e_dibRgb FS_DIBFORMAT::e_dibXXX} values and it should be one of these values,
- *							except {@link FS_DIBFORMAT::e_dibInvalid}.
+ *							Please refere to {@link FSDIBFormat::e_dibRgb FSDIBFormat::e_dibXXX} values and it should be one of these values,
+ *							except {@link FSDIBFormat::e_dibInvalid}.
  * @param[in]	buffer		A buffer that specifies bitmap data.<br>
  *							If it is not <b>nil</b>, this function will use the parameter <i>buffer</i> to initialize a bitmap.
  *							Please keep the buffer valid during the life-cycle of the bitmap.<br>
@@ -63,7 +98,15 @@
  *
  * @return	A new bitmap instance.
  */
-+(FSBitmap*)create: (int)width height: (int)height format: (enum FS_DIBFORMAT)format buffer: (unsigned char *)buffer pitch: (int)pitch;
+-(id)initWithWidth: (int)width height: (int)height format: (FSDIBFormat)format buffer: (unsigned char * _Nullable)buffer pitch: (int)pitch;
+/**
+ * @brief	Create a bitmap.
+ *
+ * @param[in]	image		A UIImage object.
+ *
+ * @return	A new bitmap instance.
+ */
+-(FSBitmap*)initWithUIImage: (UIImage*)image;
 /**
  * @brief	Clone current bitmap, with specified clip rectangle.
  *
@@ -77,7 +120,7 @@
  *
  * @return	A new bitmap as clone result.
  */
--(FSBitmap*)clone: (FSRectI*)clip;
+-(FSBitmap*)clone: (FSRectI* _Nullable)clip;
 /**
  * @brief	Get bitmap width.
  *
@@ -119,9 +162,9 @@
  * @brief	Get bitmap format.
  *
  * @return	Format value.
- *			Please refer to {@link FS_DIBFORMAT::e_dibInvalid FS_DIBFORMAT::e_dibXXX} values and this would be one of these values.
+ *			Please refer to {@link FSDIBFormat::e_dibInvalid FSDIBFormat::e_dibXXX} values and this would be one of these values.
  */
--(enum FS_DIBFORMAT)getFormat;
+-(FSDIBFormat)getFormat;
 /**
  * @brief	Fill current bitmap with a specified color.
  *
@@ -129,7 +172,7 @@
  * @param[in]	rect		Rectangle that specifies a region in bitmap, where the color will be filled.
  *							This can be <b>nil</b>, which means to fill the whole bitmap.
  */
--(void)fillRect: (unsigned int)color rect: (FSRectI*)rect;
+-(void)fillRect: (unsigned int)color rect: (FSRectI* _Nullable)rect;
 
 /** @brief Free the object. */
 -(void)dealloc;
@@ -140,7 +183,7 @@
  *
  * @details	Values of this enumeration can be used alone.
  */
-enum FS_RENDERCOLORMODE {
+typedef NS_ENUM(NSUInteger, FSRenderColorMode) {
     /** @brief	Normal color mode. */
     e_colorModeNormal = 0,
     /** @brief	Map a color value to the color range defined by a background color and a foreground color. */
@@ -152,11 +195,11 @@ enum FS_RENDERCOLORMODE {
  *
  * @details	Values of this enumeration can be used alone or in combination.
  */
-enum FS_RENDERCONTENTFLAG {
+typedef NS_OPTIONS(NSUInteger, FSRenderContentFlag) {
     /** @brief	If set, page content will be rendered. */
-    e_renderPage = 0x01,
+    e_renderPage = 1 << 0,
     /** @brief	If set, annotations will be rendered. */
-    e_renderAnnot = 0x02
+    e_renderAnnot = 1 << 1
 };
 
 /**
@@ -164,7 +207,7 @@ enum FS_RENDERCONTENTFLAG {
  *
  * @details	Values of this enumeration can be used alone.
  */
-enum FS_DEVICETYPE {
+typedef NS_ENUM(NSUInteger, FSDeviceType) {
     /** @brief	Device type: printer. */
     e_deviceTypePrinter = 0,
     /** @brief	Device type: display device. */
@@ -209,7 +252,7 @@ enum FS_DEVICETYPE {
  *
  * @return	A new renderer object.
  */
-+(FSRenderer*)create: (FSBitmap*)bitmap rgbOrder: (BOOL)rgbOrder;
+-(id _Nullable)initWithBitmap: (FSBitmap*)bitmap rgbOrder: (BOOL)rgbOrder;
 /**
  * @brief	Create a renderer object from device context.
  *
@@ -218,86 +261,97 @@ enum FS_DEVICETYPE {
  *
  * @return	A new renderer object.
  */
-+(FSRenderer*)createFromContext: (CGContextRef)context deviceType: (enum FS_DEVICETYPE)deviceType;
++(FSRenderer* _Nullable)createFromContext: (CGContextRef)context deviceType: (FSDeviceType)deviceType;
+
 /**
- * @brief	Start rendering a PDF page.
+ * @brief Start to quickly render a PDF page, mainly for thumbnail purpose.This is progressive, which means that the job may not finished when it return.
  *
- * @details	It will take a long time to render a page with complex or large contents, so Foxit PDF SDK uses a progressive process to do this.<br>
- * 			If the rendering is not finished, please call function {@link FSRenderer::continueRender} to continue the rendering until it is finished.
+ * @details This function is mainly used for render a page for thumbnail purpose.
+ *          The rendered content will not be completed: all the annotations will be ignored, event if
+ *          flag {@link foxit::e_renderAnnot FSRenderContentFlag::e_renderAnnot} is set by function
+ *          {@link FSRenderer::SetRenderContentFlags}; text content will become blurred and
+ *          will be replace by pixel point.<br>
+ *          It may still take a long time to do this quick rendering when page has complex or large contents,
+ *          so Foxit PDF SDK uses a progressive process to do this.
  *
- * @param[in]	page		A PDF page. It should be parsed.
- * @param[in]	matrix		The transformation matrix used for rendering, which is usually returned by function {@link FSPDFPage::getDisplayMatrix:yPos:xSize:ySize:rotate:}.
- *							If this is <b>nil</b>, a matrix [1 0 0 1 0 0] will be used instead.
- * @param[out]	pause		Pause object which decides if the rendering process needs to be paused.
- *							This can be <b>nil</b> which means not to pause during the rendering process.
- *							If this is not <b>nil</b>, it should be a valid pause object implemented by user.
+ * @param[in] page    A PDF page. It should not be <b>NULL</b> and should have been parsed.
+ * @param[in] matrix  The transformation matrix used for rendering, which is usually returned by function
+ *                    {@link FSPDFPage::GetDisplayMatrix}.
+ * @param[in] pause   Pause callback object which decides if the rendering process needs to be paused.
+ *                    This can be <b>NULL</b> which means not to pause during the rendering process.
+ *                    If this is not <b>NULL</b>, it should be a valid pause object implemented by user.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the rendering is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the rendering process is not finished yet
- *			and function {@link FSRenderer::continueRender} should be called to continue the process.<br>
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  */
--(enum FS_PROGRESSSTATE)startRender: (FSPDFPage*)page matrix: (FSMatrix*)matrix pause: (FSPauseCallback*)pause;
+-(FSProgressive * _Nullable)startQuickRender: (FSPDFPage *)page matrix: (FSMatrix *)matrix pause: (FSPauseCallback* _Nullable)pause;
+
 /**
- * @brief	Start rendering a reflow page.
+ * @brief Start to render a PDF page.This is progressive, which means that the job may not finished when it return.
  *
- * @details	It will take a long time to render a reflow page with complex or large contents, so Foxit PDF SDK uses a progressive process to do this.<br>
- * 			If the rendering is not finished, please call function {@link FSRenderer::continueRender} to continue the rendering until it is finished.
+ * @details It may take a long time to render a page with complex or large contents, so Foxit PDF SDK uses
+ *          a progressive process to do this.
  *
- * @param[in]	reflowPage		A reflow page. It should be parsed.
- * @param[in]	matrix			The transformation matrix used for rendering, which is usually returned by function {@link FSReflowPage::getDisplayMatrix:offsetY:}.
- * @param[in]	pause			Pause object which decides if the rendering process needs to be paused.
- *								This can be <b>nil</b> which means not to pause during the rendering process.
- *								If this is not <b>nil</b>, it should be a valid pause object implemented by user.
+ * @param[in] page    A PDF page. It should not be <b>NULL</b>.
+ *                    If only to render annotations (that means only
+ *                    {@link foxit::e_renderAnnot FSRenderContentFlag::e_renderAnnot} is set by function
+ *                    {@link FSRenderer::SetRenderContentFlags}), there is no need to parse the input page;
+ *                    otherwise the input page should have been parsed.
+ * @param[in] matrix  The transformation matrix used for rendering, which is usually returned by function
+ *                    {@link FSPDFPage::GetDisplayMatrix}.
+ * @param[in] pause   Pause callback object which decides if the rendering process needs to be paused.
+ *                    This can be <b>NULL</b> which means not to pause during the rendering process.
+ *                    If this is not <b>NULL</b>, it should be a valid pause object implemented by user.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the rendering is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the rendering process is not finished yet
- *			and function {@link FSRenderer::continueRender} should be called to continue the process.<br>
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  *
- * @exception	e_errParam		Value of input parameter1 is invalid.
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
  */
--(enum FS_PROGRESSSTATE)startRenderReflowPage: (FSReflowPage*)reflowPage matrix: (FSMatrix*) matrix pause: (FSPauseCallback*)pause;
+-(FSProgressive * _Nullable)startRender: (FSPDFPage*)page matrix: (FSMatrix*)matrix pause: (FSPauseCallback* _Nullable)pause;
+
 /**
- * @brief	Start rendering a bitmap.
+ * @brief Start to render a reflow page to current renderer's related device object.This is progressive, which means that the job may not finished when it return.
  *
- * @details	It will take a long time to render a bitmap with complex or large contents, so Foxit PDF SDK uses a progressive process to do this.<br>
- *			If the rendering is not finished, please call function {@link FSRenderer::continueRender} to continue the rendering until it is finished.
+ * @details It will take a long time to render a reflow page with complex or large contents, so Foxit PDF SDK uses
+ *          a progressive process to do this.<br>
+ *          If the rendering is not finished, please call function {@link FSRenderer::ContinueRender} to
+ *          continue the rendering until it is finished.
  *
- * @param[in]	bitmap			A bitmap. It should be valid.
- * @param[in]	matrix			The transformation matrix used for rendering. This matrix is used as image matrix: <br>
- *								assume that <i>h</i> is image height, <i>w</i> is image width, and then matrix [w 0 0 h 0 0] will produce an identical image.
- * @param[in]	clipRect		Clip rectangle of the render device. This can be <b>nil</b>.
- * @param[in]	interpolation	Bitmap interpolation flags.
- *								Please refere to {@link FS_BITMAPINTERPOLATIONFLAG::e_interpolationDownsample FS_BITMAPINTERPOLATIONFLAG::e_interpolationXXX} values
- *								and this can be one or a combination of these values.
- *								This can be 0.
- * @param[in]	pause			Pause object which decides if the rendering process needs to be paused.
- *								This can be <b>nil</b> which means not to pause during the rendering process.
- *								If this is not <b>nil</b>, it should be a valid pause object implemented by user.
+ * @param[in] reflow_page  A reflow page. It should be parsed.
+ * @param[in] matrix       The transformation matrix used for rendering, which is usually returned by function
+ *                         {@link FSReflowPage::GetDisplayMatrix}.
+ * @param[in] pause        Pause callbackobject which decides if the rendering process needs to be paused.
+ *                         This can be <b>NULL</b> which means not to pause during the rendering process.
+ *                         If this is not <b>NULL</b>, it should be a valid pause object implemented by user.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the rendering is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the rendering process is not finished yet
- *			and function {@link FSRenderer::continueRender} should be called to continue the process.<br>
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
- *
- * @exception	e_errParam			Value of input parameter is invalid.
- v
- * @exception	e_errOutOfMemory	Out-of-memory error occurs.
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  */
--(enum FS_PROGRESSSTATE)startRenderBitmap: (FSBitmap*)bitmap matrix: (FSMatrix*)matrix clipRect: (FSRectI*)clipRect interpolation: (int)interpolation pause: (FSPauseCallback*)pause;
+-(FSProgressive * _Nullable)startRenderReflowPage: (FSReflowPage*)reflowPage matrix: (FSMatrix*) matrix pause: (FSPauseCallback* _Nullable)pause;
 /**
- * @brief	Continue rendering process.
+ * @brief Start to render a bitmap to current renderer's related device object.This is progressive, which means that the job may not finished when it return.
  *
- * @return	{@link FS_PROGRESSSTATE::e_progressFinished} means the rendering is finished successfully.<br>
- *			{@link FS_PROGRESSSTATE::e_progressToBeContinued} means the rendering process is not finished yet
- *			and function {@link FSRenderer::continueRender} should be called to continue the process.<br>
- *			{@link FS_PROGRESSSTATE::e_progressError} means any error occurs.
+ * @details It will take a long time to render a bitmap with complex or large contents, so Foxit PDF SDK uses
+ *          a progressive process to do this.<br>
+ *          If the rendering is not finished, please call function {@link FSRenderer::ContinueRender} to
+ *          continue the rendering until it is finished.
  *
- * @exception	e_errOutOfMemory	Out-of-memory error occurs.
- * @exception	e_errUnknown		Any unknown error occurs.
+ * @param[in] bitmap         A bitmap. It should be valid.
+ *                           User should ensure the bitmap to keep valid until current rendering process is finished.
+ * @param[in] matrix         The transformation matrix used for rendering. This matrix is used as image matrix: <br>
+ *                           assume that <i>h</i> is image height, <i>w</i> is image width, and then matrix
+ *                           [w 0 0 h 0 0] will produce an identical image.
+ * @param[in] clip_rect      Clip rectangle of the render device. This can be <b>NULL</b>.
+ * @param[in] interpolation  Bitmap interpolation flags. Please refer to
+ *                           {@link FSBitmapInterpolationFlag::e_interpolationDownsample FSBitmapInterpolationFlag::e_interpolationXXX}
+ *                           values and this can be one or a combination of these values. This can be 0.
+ * @param[in] pause          Pause callback object which decides if the rendering process needs to be paused.
+ *                           This can be <b>NULL</b> which means not to pause during the rendering process.
+ *                           If this is not <b>NULL</b>, it should be a valid pause object implemented by user.
+ *
+ * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  */
--(enum FS_PROGRESSSTATE)continueRender;
+-(FSProgressive * _Nullable)startRenderBitmap: (FSBitmap*)bitmap matrix: (FSMatrix*)matrix clipRect: (FSRectI*)clipRect interpolation: (FSBitmapInterpolationFlag)interpolation pause: (FSPauseCallback* _Nullable)pause;
+
 /**
  * @brief	Render a specified annotation.
  *
@@ -313,13 +367,13 @@ enum FS_DEVICETYPE {
 /**
  * @brief	Set render flag to decide what content will be rendered.
  *
- * @details	If this function is not called, default value ({@link FS_RENDERCONTENTFLAG::e_renderPage} | {@link FS_RENDERCONTENTFLAG::e_renderAnnot}) will be used.
+ * @details	If this function is not called, default value ({@link FSRenderContentFlag::e_renderPage} | {@link FSRenderContentFlag::e_renderAnnot}) will be used.
  *
  * @param[in]	renderContentFlag		Render content flags.
- *										Please refere to {@link FS_RENDERCONTENTFLAG::e_renderPage FS_RENDERCONTENTFLAG::e_renderXXX} values
+ *										Please refere to {@link FSRenderContentFlag::e_renderPage FSRenderContentFlag::e_renderXXX} values
  *										and this should be one or a combination of these values.
  */
--(void)setRenderContent: (unsigned int)renderContentFlag;
+-(void)setRenderContent: (FSRenderContentFlag)renderContentFlag;
 /**
  * @brief	Decide whether to transform annotation icon or not when display.
  *
@@ -344,18 +398,18 @@ enum FS_DEVICETYPE {
 /**
  * @brief	Set color mode.
  *
- * @details	If this function is not called, default value {@link FS_RENDERCOLORMODE::e_colorModeNormal} will be used.
+ * @details	If this function is not called, default value {@link FSRenderColorMode::e_colorModeNormal} will be used.
  *
  * @param[in]	colorMode	Color mode value. It should be one of following values:
  *							<ul>
- *							<li>{@link FS_RENDERCOLORMODE::e_colorModeNormal} means normal color mode.</li>
- *							<li>{@link FS_RENDERCOLORMODE::e_colorModeMapping} means map a color value to the color range defined by a background color and a foreground color.
+ *							<li>{@link FSRenderColorMode::e_colorModeNormal} means normal color mode.</li>
+ *							<li>{@link FSRenderColorMode::e_colorModeMapping} means map a color value to the color range defined by a background color and a foreground color.
  *								If this mode is used, please call function {@link FSRenderer::setMappingModeColors:foreColor:} to set "background color" and "foreground color".</li>
  *							</ul>
  */
--(void)setColorMode: (enum FS_RENDERCOLORMODE)colorMode;
+-(void)setColorMode: (FSRenderColorMode)colorMode;
 /**
- * @brief	Set background color and foreground color when color mode is set {@link FS_RENDERCOLORMODE::e_colorModeMapping}.
+ * @brief	Set background color and foreground color when color mode is set {@link FSRenderColorMode::e_colorModeMapping}.
  *
  * @param[in]	backColor		The background color.
  * @param[in]	foreColor		The foreground color.
@@ -375,4 +429,238 @@ enum FS_DEVICETYPE {
 -(void)dealloc;
 
 @end
+
+/**
+ * @brief Class to access an image.
+ *
+ * @details Foxit PDF SDK offers following image types:<br>
+ *          <ul>
+ *          <li>BMP: bitmap image format. It only support single frame.
+ *              Foxit PDF SDK supports to load image from a BMP image file,
+ *              get some basic information, access to its bitmap, change its bitmap and save it as an image file.
+ *          </li>
+ *          <li>JPG: joint photographic experts group image format. It only support single frame.
+ *              Foxit PDF SDK supports to load image from a JPG image file,
+ *              get some basic information, access to its bitmap, change its bitmap and save it as an image file.
+ *          </li>
+ *          <li>PNG: portable network graphics image format. It only support single frame.
+ *              Foxit PDF SDK supports to load image from a PNG image file,
+ *              get some basic information, access to its bitmap, change its bitmap and save it as an image file.
+ *          </li>
+ *          <li>GIF: graphics interchange format. It supports multiple frames.
+ *              Foxit PDF SDK supports to load image from a GIF image file, get its size,
+ *              access to its bitmap, change its bitmap and save it as an image file.
+ *          </li>
+ *          <li>TIF: tagged image file format. It supports multiple frames.
+ *              Foxit PDF SDK supports to load image from a TIF image file, get some basic information,
+ *              access to its bitmap, change its bitmap and save it as an image file.
+ *          </li>
+ *          <li>JPX: JPEG-2000 image format. It only support single frame.
+ *              Foxit PDF SDK supports to load image from a JPX image file, get its size,
+ *              access to its bitmap, change its bitmap and save it as an image file.
+ *          </li>
+ *          <li>JBIG2: JBIG2 image format. It only support single frame.
+ *              Foxit PDF SDK supports to load image from a JBIG2 image file,
+ *              get its size, and save it as an image file.
+ *              Foxit PDF SDK does not support to access to its frame bitmap yet.
+ *          </li>
+ *          </ul>
+ */
+@interface FSImage : NSObject
+{
+    /** @brief SWIG proxy related property, it's deprecated to use it. */
+    void *swigCPtr;
+    /** @brief SWIG proxy related property, it's deprecated to use it. */
+    BOOL swigCMemOwn;
+}
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+
+/**
+ * @brief Construct an empty image.
+ *
+ * @return A new FSImage object.
+ */
+-(FSImage *)init;
+
+/**
+ * @brief Construct image from an existing image file path.
+ *
+ * @param[in] path  A full path of an existing image file path, including file name and extension.
+ *                  It should be in UTF-8 encoding and should not be <b>NULL</b> or "empty".
+ *
+ * @return A new FSImage object.
+ */
+-(FSImage *)initWithFilePath: (NSString *)path;
+
+/**
+ * @brief Construct image with a memory buffer.
+ *
+ * @param[in] buffer  A memory buffer. The image file data should be fully loaded in this memory buffer.
+ *                    It should not be <b>NULL</b>.
+ *
+ * @return A new FSImage object.
+ */
+-(FSImage *)initWithBuffer: (NSData *)buffer;
+
+/**
+ * @brief Construct image with a file read handler.
+ *
+ * @param[in] file_read  Pointer to a FSFileReadCallback object which is implied by user to load image.
+ *
+ * @return A new FSImage object.
+ */
+-(FSImage *)initWithFileRead: (id<FSFileReadCallback>)fileRead;
+
+/**
+ * @brief Get image type.
+ *
+ * @details If current image is created by function {@link FSImage::Create},
+ *          its type would be {@link FSImageType::e_imageTypeNone FSImageType::e_imageTypeNone}.
+ *
+ * @return Image type.
+ *         Please refer to {@link FSImageType::e_imageTypeUnknown FSImageType::e_imageTypeXXX}
+ *         values and it would be one of these values.
+ */
+-(FSImageType)getType;
+
+/**
+ * @brief Get image width.
+ *
+ * @details If the image has multiple frames,
+ *          usually the first frame's size will be treated as the image size.
+ *
+ * @return Image width.
+ */
+-(int)getWidth;
+
+/**
+ * @brief Get image height.
+ *
+ * @details If the image has multiple frames,
+ *          usually the first frame's size will be treated as the image size.
+ *
+ * @return Image height.
+ */
+-(int)getHeight;
+
+/**
+ * @brief Get frame count.
+ *
+ * @details Currently,
+ *          this function does not support
+ *          {@link FSEventFlag::e_eventFlagShiftKey FSEventFlag::e_eventFlagXXX}.
+ *
+ * @return The frame count.
+ */
+-(int)getFrameCount;
+
+/**
+ * @brief Get a frame bitmap, specified by index.
+ *
+ * @details This function can only support to get frame bitmap in following formats:<br>
+ *          {@link FSDIBFormat::e_dib8bppMask FSDIBFormat::e_dib8bppMask},
+ *          {@link FSDIBFormat::e_dib8bppMask FSDIBFormat::e_dib8bpp},
+ *          {@link FSDIBFormat::e_dibRgb FSDIBFormat::e_dibRgb},
+ *          {@link FSDIBFormat::e_dibRgb32 FSDIBFormat::e_dibRgb32},
+ *          {@link FSDIBFormat::e_dibArgb FSDIBFormat::e_dibArgb}.<br>
+ *          For other unsupported DIB format, this function will return <b>NULL</b>.
+ *
+ * @param[in] index  Index of the frame. Valid range: from 0 to (<i>count</i>-1).
+ *                   <i>count</i> is returned by function {@link FSImage::GetFrameCount}.
+ *
+ * @return The frame bitmap.
+ *      If there is any error, this function will return <b>NULL</b>.
+ *      User should not release this bitmap.
+ */
+-(FSBitmap*)getFrameBitmap: (int)index;
+
+/**
+ * @brief Get DPI for X-axis.(Default:96)
+ *
+ * @details Currently, this method does not support
+ *          {@link FSImageType::e_imageTypeJPX FSImageType::e_imageTypeJPX},
+ *          {@link FSImageType::e_imageTypeGIF FSImageType::e_imageTypeGIF}
+ *
+ * @return DPI value for X-axis.
+ */
+-(int)getXDPI;
+
+/**
+ * @brief Get DPI for Y-axis.(Default:96)
+ *
+ * @details Currently, this method does not support
+ *          {@link FSImageType::e_imageTypeJPX FSImageType::e_imageTypeJPX},
+ *          {@link FSImageType::e_imageTypeGIF FSImageType::e_imageTypeGIF}
+ *
+ * @return DPI value for Y-axis.
+ */
+-(int)getYDPI;
+
+/**
+ * @brief Add a bitmap as a frame.
+ *
+ * @details Currently, this function does not support
+ *          {@link FSEventFlag::e_eventFlagShiftKey FSEventFlag::e_eventFlagXXX},
+ *          {@link FSImageType::e_imageTypeUnknown FSImageType::e_imageTypeUnknown} .<br>
+ *          For supporting image types:
+ *          <ul>
+ *          <li>If current image's type is {@link FSImageType::e_imageTypeTIF FSImageType::e_imageTypeTIF},
+ *              {@link FSImageType::e_imageTypeGIF FSImageType::e_imageTypeGIF} or
+ *              {@link FSImageType::e_imageTypeNone FSImageType::e_imageTypeNone},
+ *              this function will add the new bitmap to be the new last frame.
+ *          </li>
+ *          <li>If current image's type is one of other types, which only contains single frame,
+ *              this function will use the new bitmap to replace the first frame.</li>
+ *          </ul>
+ *
+ * @param[in] bitmap  A bitmap as a frame to be added or set.
+ *
+ * @return <b>TRUE</b> means success, while <b>FALSE</b> means failure.
+ */
+-(BOOL)addFrame: (FSBitmap*)bitmap;
+
+/**
+ * @brief Set DPI for X-axis and Y-axis.
+ *
+ * @details Currently, this method does not support
+ *         {@link FSImageType::e_imageTypeJPX FSImageType::e_imageTypeJPX},
+ *         {@link FSImageType::e_imageTypeGIF FSImageType::e_imageTypeGIF}.
+ *
+ * @param[in] x_dpi  DPI for X-axis. It should be above 0.
+ * @param[in] y_dpi  DPI for Y-axis. It should be above 0.
+ *
+ * @return None.
+ */
+-(void)setDPIs: (int)x_dpi y_dpi: (int)y_dpi;
+
+/**
+ * @brief Save current image as an image file.
+ *
+ * @details If the type of current image is
+ *          {@link FSImageType::e_imageTypeTIF FSImageType::e_imageTypeTIF},
+ *          {@link FSImageType::e_imageTypeGIF FSImageType::e_imageTypeGIF} or
+ *          {@link FSImageType::e_imageTypeNone FSImageType::e_imageTypeNone},
+ *          and the saved image file type does not support multiply frames,
+ *          only the first frame of current image will be saved to the image file.<br>
+ *          For a newly created image, by function {@link FSImage::Create},
+ *          please ensure to add at least valid frame bitmap to it before using this function;
+ *          otherwise this function will fail.
+ *
+ * @param[in] file_path  A full path of the saved image file, including file name and extension.
+ *                            It should be in UTF-8 encoding and should not be <b>NULL</b> or empty.<br>
+ *                            Currently, this function supports following extension names:<br>:
+ *                            .bmp, .jpg, .jpeg, .png, .tif, .tiff, .jpx, .jp2.
+ *
+ * @return <b>TRUE</b> means success, while <b>FALSE</b> means failure.
+ */
+-(BOOL)saveAs: (NSString *)file_path;
+
+-(void)dealloc;
+
+@end
+
+NS_ASSUME_NONNULL_END
 

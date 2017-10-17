@@ -11,76 +11,71 @@
  */
 
 #import "ReadingBookmarkPanel.h"
-#import "PanelHost.h"
+#import "AlertView.h"
+#import "ColorUtility.h"
 #import "IPanelSpec.h"
-#import "UIExtensionsManager+Private.h"
+#import "PanelController+private.h"
+#import "PanelHost.h"
+#import "ReadingBookmarkModule.h"
 #import "ReadingBookmarkViewController.h"
 #import "TbBaseBar.h"
-#import "AlertView.h"
-#import "UniversalEditViewController.h"
 #import "UIButton+EnlargeEdge.h"
-#import "ColorUtility.h"
+#import "UIExtensionsManager+Private.h"
+#import "UniversalEditViewController.h"
 
-
-@interface ReadingBookmarkPanel ()
-{
-    FSPDFViewCtrl* _pdfViewControl;
-    UIExtensionsManager* _extensionsManager;
-    PanelController* _panelController;
+@interface ReadingBookmarkPanel () {
+    FSPDFViewCtrl *_pdfViewCtrl;
+    UIExtensionsManager *_extensionsManager;
+    FSPanelController *_panelController;
 }
 
-@property (nonatomic, strong) UIView* toolbar;
-@property (nonatomic, strong) UIView* contentView;
-@property (nonatomic, strong) PanelButton* button;
+@property (nonatomic, strong) UIView *toolbar;
+@property (nonatomic, strong) UIView *contentView;
+@property (nonatomic, strong) PanelButton *button;
 @property (nonatomic, strong) ReadingBookmarkViewController *bookmarkCtrl;
 @end
 
 @implementation ReadingBookmarkPanel
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager panelController:(PanelController*)panelController
-{
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager panelController:(FSPanelController *)panelController {
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
-        _pdfViewControl = extensionsManager.pdfViewCtrl;
+        _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         _panelController = panelController;
         UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(0, 25, 180, 25)];
         title.backgroundColor = [UIColor clearColor];
         title.textAlignment = NSTextAlignmentCenter;
         title.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        title.text = NSLocalizedStringFromTable(@"kBookmark", @"FoxitLocalizable", nil);
+        title.text = FSLocalizedString(@"kBookmark");
         title.textColor = [UIColor blackColor];
-        self.toolbar = [[UIView alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 64)];
+        self.toolbar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, _pdfViewCtrl.bounds.size.width, 64)];
         self.toolbar.backgroundColor = [UIColor whiteColor];
         self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        self.contentView = [[UIView alloc]initWithFrame:CGRectMake(0, 107, DEVICE_iPHONE ? SCREENWIDTH :300, [UIScreen mainScreen].bounds.size.height - 107)];
+        self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, 107, DEVICE_iPHONE ? CGRectGetWidth(_pdfViewCtrl.bounds) : 300, _pdfViewCtrl.bounds.size.height - 107)];
         self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.contentView.backgroundColor = [UIColor clearColor];
         self.button = [PanelButton buttonWithType:UIButtonTypeCustom];
         self.button.spec = self;
         self.button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
-        
-        self.bookmarkCtrl = [[ReadingBookmarkViewController alloc] initWithStyle:UITableViewStylePlain pdfViewCtrl:_pdfViewControl panelController:_panelController];
+
+        self.bookmarkCtrl = [[ReadingBookmarkViewController alloc] initWithStyle:UITableViewStylePlain pdfViewCtrl:_pdfViewCtrl panelController:_panelController];
         _bookmarkCtrl.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         _bookmarkCtrl.view.backgroundColor = [UIColor clearColor];
-        _bookmarkCtrl.bookmarkGotoPageHandler = ^(int page)
-        {
-            
+        _bookmarkCtrl.bookmarkGotoPageHandler = ^(int page) {
+
         };
-        _bookmarkCtrl.bookmarkSelectionHandler = ^()
-        {
-            
-            
+        _bookmarkCtrl.bookmarkSelectionHandler = ^() {
+
         };
-        
-        _bookmarkCtrl.bookmarkDeleteHandler = ^()
-        {
-            [[NSNotificationCenter defaultCenter]postNotificationName:UPDATEBOOKMARK object:nil];
+
+        _bookmarkCtrl.bookmarkDeleteHandler = ^() {
+            [[NSNotificationCenter defaultCenter] postNotificationName:UPDATEBOOKMARK object:nil];
         };
-        self.editButton = [[UIButton alloc] initWithFrame:CGRectMake(self.toolbar.frame.size.width -65, 20, 55, 35)];
+        self.editButton = [[UIButton alloc] initWithFrame:CGRectMake(self.toolbar.frame.size.width - 65, 20, 55, 35)];
         [_editButton addTarget:self action:@selector(clearBookmark:) forControlEvents:UIControlEventTouchUpInside];
-        [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
-        [_editButton setTitle:NSLocalizedStringFromTable(@"kClear", @"FoxitLocalizable", nil) forState:UIControlStateNormal];
+        [_editButton setTitleColor:[UIColor colorWithRed:0 / 255.f green:150.f / 255.f blue:212.f / 255.f alpha:1] forState:UIControlStateNormal];
+        [_editButton setTitle:FSLocalizedString(@"kClear") forState:UIControlStateNormal];
         _editButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [_editButton setEnlargedEdge:ENLARGE_EDGE];
 
@@ -89,21 +84,21 @@
         backgroundView.userInteractionEnabled = YES;
         [backgroundView addGestureRecognizer:tapG];
         [self.toolbar addSubview:backgroundView];
-        
+
         UIButton *cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 32, 12, 12)];
         [cancelButton addTarget:self action:@selector(cancelBookmark) forControlEvents:UIControlEventTouchUpInside];
         cancelButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
         [cancelButton setBackgroundImage:[UIImage imageNamed:@"panel_cancel.png"] forState:UIControlStateNormal];
-        
+
         _bookmarkCtrl.view.frame = self.contentView.bounds;
         [self.contentView addSubview:_bookmarkCtrl.view];
-        title.center = CGPointMake(self.toolbar.bounds.size.width/2, title.center.y);
-        
-        UIView *divideView = [[UIView alloc] initWithFrame:CGRectMake(0, 106, [UIScreen mainScreen].bounds.size.width, [Utility realPX:1.0f])];
+        title.center = CGPointMake(self.toolbar.bounds.size.width / 2, title.center.y);
+
+        UIView *divideView = [[UIView alloc] initWithFrame:CGRectMake(0, 106, _pdfViewCtrl.bounds.size.width, [Utility realPX:1.0f])];
         divideView.backgroundColor = [UIColor colorWithRGBHex:0xe6e6e6];
-        divideView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth |UIViewAutoresizingFlexibleRightMargin;
+        divideView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleRightMargin;
         [self.toolbar addSubview:divideView];
-        
+
         [self.toolbar addSubview:title];
         [self.toolbar addSubview:_editButton];
         if (DEVICE_iPHONE) {
@@ -113,52 +108,48 @@
     return self;
 }
 
-- (void)cancelBookmark
-{
+- (void)cancelBookmark {
     _panelController.isHidden = YES;
 }
 
-- (void)clearBookmark:(id)sender
-{
-    if ([_bookmarkCtrl getBookmarkCount] >0)
-    {
-        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm" message:@"kClearBookmark" buttonClickHandler:^(UIView *alertView, int buttonIndex) {
-            if (buttonIndex == 1) { // no
-            } else if (buttonIndex == 0) { // yes
-                [_bookmarkCtrl clearData:YES];
-                [[NSNotificationCenter defaultCenter]postNotificationName:UPDATEBOOKMARK object:nil];
-            }
-        } cancelButtonTitle:@"kYes" otherButtonTitles:@"kNo", nil];
+- (void)clearBookmark:(id)sender {
+    if ([_bookmarkCtrl getBookmarkCount] > 0) {
+        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm"
+                                                        message:@"kClearBookmark"
+                                             buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                 if (buttonIndex == 1) {        // no
+                                                 } else if (buttonIndex == 0) { // yes
+                                                     [_bookmarkCtrl clearData:YES];
+                                                     [[NSNotificationCenter defaultCenter] postNotificationName:UPDATEBOOKMARK object:nil];
+                                                 }
+                                             }
+                                              cancelButtonTitle:@"kYes"
+                                              otherButtonTitles:@"kNo", nil];
         [alertView show];
     }
 }
 
--(void)load
-{
-    [_pdfViewControl registerDocEventListener:self];
-    [_pdfViewControl registerPageEventListener:self];
+- (void)load {
+    [_pdfViewCtrl registerDocEventListener:self];
+    [_pdfViewCtrl registerPageEventListener:self];
     [_panelController.panel addSpec:self];
     _panelController.panel.currentSpace = self;
 }
 
--(void)unload
-{
+- (void)unload {
 }
 
-- (void)editBookMark
-{
+- (void)editBookMark {
     _bookmarkCtrl.isContentEditing = !_bookmarkCtrl.isContentEditing;
 }
 
--(void) reloadData
-{
+- (void)reloadData {
     [_bookmarkCtrl loadData];
 }
 
-#pragma  mark --- IDocEventListener
+#pragma mark--- IDocEventListener
 
-- (void)onDocOpened:(FSPDFDoc* )document error:(int)error
-{
+- (void)onDocOpened:(FSPDFDoc *)document error:(int)error {
     [_bookmarkCtrl clearData:NO];
     [_bookmarkCtrl loadData];
     if (![Utility canAssembleDocument:document]) {
@@ -166,155 +157,129 @@
             self.editButton.enabled = NO;
             self.editButton.hidden = YES;
         });
-    }else{
+    } else {
         dispatch_async(dispatch_get_main_queue(), ^{
             self.editButton.enabled = YES;
             self.editButton.hidden = NO;
-            [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
+            [_editButton setTitleColor:[UIColor colorWithRed:0 / 255.f green:150.f / 255.f blue:212.f / 255.f alpha:1] forState:UIControlStateNormal];
         });
     }
 }
 
-- (void)onDocWillClose:(FSPDFDoc* )document
-{
+- (void)onDocWillClose:(FSPDFDoc *)document {
     if (self.bookmarkCtrl.currentVC) {
         if ([self.bookmarkCtrl.currentVC isKindOfClass:[UINavigationController class]]) {
-            [(UINavigationController*)self.bookmarkCtrl.currentVC dismissViewControllerAnimated:NO completion:nil];
+            [(UINavigationController *) self.bookmarkCtrl.currentVC dismissViewControllerAnimated:NO completion:nil];
         }
 
-        else if ([self.bookmarkCtrl.currentVC isKindOfClass:[UniversalEditViewController class]])
-        {
-            [(UniversalEditViewController *)self.bookmarkCtrl.currentVC dismissViewControllerAnimated:NO completion:nil];
+        else if ([self.bookmarkCtrl.currentVC isKindOfClass:[UniversalEditViewController class]]) {
+            [(UniversalEditViewController *) self.bookmarkCtrl.currentVC dismissViewControllerAnimated:NO completion:nil];
         }
 
-        else if([self.bookmarkCtrl.currentVC isKindOfClass:[AlertView class]])
-        {
-            [(AlertView *)self.bookmarkCtrl.currentVC dismissWithClickedButtonIndex:0 animated:NO];
-        }
-        else if ([self.bookmarkCtrl.currentVC isKindOfClass:[TSAlertView class]])
-        {
-            [(TSAlertView *)self.bookmarkCtrl.currentVC dismissWithClickedButtonIndex:0 animated:NO];
+        else if ([self.bookmarkCtrl.currentVC isKindOfClass:[AlertView class]]) {
+            [(AlertView *) self.bookmarkCtrl.currentVC dismissWithClickedButtonIndex:0 animated:NO];
+        } else if ([self.bookmarkCtrl.currentVC isKindOfClass:[TSAlertView class]]) {
+            [(TSAlertView *) self.bookmarkCtrl.currentVC dismissWithClickedButtonIndex:0 animated:NO];
         }
     }
 }
 
-- (void)onDocClosed:(FSPDFDoc* )document error:(int)error
-{
+- (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
     dispatch_async(dispatch_get_main_queue(), ^{
         self.editButton.enabled = YES;
-        [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
+        [_editButton setTitleColor:[UIColor colorWithRed:0 / 255.f green:150.f / 255.f blue:212.f / 255.f alpha:1] forState:UIControlStateNormal];
     });
 }
 
-- (void)onDocWillSave:(FSPDFDoc* )document
-{
+- (void)onDocWillSave:(FSPDFDoc *)document {
 }
 
 #pragma mark IPageEventListener
-- (void)onPagesWillRemove:(NSArray<NSNumber*>*)indexes
-{
+- (void)onPagesWillRemove:(NSArray<NSNumber *> *)indexes {
 }
 
-- (void)onPagesWillMove:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex
-{
+- (void)onPagesWillMove:(NSArray<NSNumber *> *)indexes dstIndex:(int)dstIndex {
 }
 
-- (void)onPagesWillRotate:(NSArray<NSNumber*>*)indexes rotation:(int)rotation
-{
+- (void)onPagesWillRotate:(NSArray<NSNumber *> *)indexes rotation:(int)rotation {
 }
 
-- (void)onPagesRemoved:(NSArray<NSNumber*>*)indexes
-{
-    FSPDFDoc* doc = _pdfViewControl.currentDoc;
+- (void)onPagesRemoved:(NSArray<NSNumber *> *)indexes {
+    FSPDFDoc *doc = _pdfViewCtrl.currentDoc;
     int count = [doc getReadingBookmarkCount];
-    for (int i = count - 1 ; i > -1; i--) {
-        FSReadingBookmark* rb = [doc getReadingBookmark:i];
+    for (int i = count - 1; i > -1; i--) {
+        FSReadingBookmark *rb = [doc getReadingBookmark:i];
         int index = [rb getPageIndex];
         if (-1 == index) {
             [doc removeReadingBookmark:rb];
         }
     }
-    
+
     [_bookmarkCtrl clearData:NO];
     [_bookmarkCtrl loadData];
-    
+
     dispatch_async(dispatch_get_main_queue(), ^{
         self.editButton.enabled = YES;
-        [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
+        [_editButton setTitleColor:[UIColor colorWithRed:0 / 255.f green:150.f / 255.f blue:212.f / 255.f alpha:1] forState:UIControlStateNormal];
     });
 }
 
-- (void)onPagesMoved:(NSArray<NSNumber*>*)indexes dstIndex:(int)dstIndex
-{
+- (void)onPagesMoved:(NSArray<NSNumber *> *)indexes dstIndex:(int)dstIndex {
     [_bookmarkCtrl clearData:NO];
     [_bookmarkCtrl loadData];
-    
+
     dispatch_async(dispatch_get_main_queue(), ^{
         self.editButton.enabled = YES;
-        [_editButton setTitleColor:[UIColor colorWithRed:0/255.f green:150.f/255.f blue:212.f/255.f alpha:1] forState:UIControlStateNormal];
+        [_editButton setTitleColor:[UIColor colorWithRed:0 / 255.f green:150.f / 255.f blue:212.f / 255.f alpha:1] forState:UIControlStateNormal];
     });
 }
 
-- (void)onPagesRotated:(NSArray<NSNumber*>*)indexes rotation:(int)rotation
-{
+- (void)onPagesRotated:(NSArray<NSNumber *> *)indexes rotation:(int)rotation {
 }
 
--(int)getTag
-{
-    return 1;
+- (int)getTag {
+    return FSPanelTagReadingBookmark;
 }
 
--(PanelButton*)getButton
-{
+- (PanelButton *)getButton {
     return self.button;
 }
 
--(UIView*)getTopToolbar
-{
+- (UIView *)getTopToolbar {
     return self.toolbar;
 }
 
--(UIView*)getContentView
-{
+- (UIView *)getContentView {
     return self.contentView;
 }
 
--(void)onActivated
-{
+- (void)onActivated {
 }
 
--(void)onDeactivated
-{
+- (void)onDeactivated {
+    [self.bookmarkCtrl hideCellEditView];
 }
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     return YES;
-    
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application
-{
+- (void)applicationWillResignActive:(UIApplication *)application {
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
+- (void)applicationDidEnterBackground:(UIApplication *)application {
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
+- (void)applicationWillEnterForeground:(UIApplication *)application {
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application
-{
+- (void)applicationDidBecomeActive:(UIApplication *)application {
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application
-{
+- (void)applicationWillTerminate:(UIApplication *)application {
 }
 
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
-{
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
 }
 
 @end

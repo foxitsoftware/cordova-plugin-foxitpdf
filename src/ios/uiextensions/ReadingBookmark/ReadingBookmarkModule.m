@@ -11,65 +11,111 @@
  */
 
 #import "ReadingBookmarkModule.h"
+#import "PanelController+private.h"
 #import "UIExtensionsManager+Private.h"
 
-@interface ReadingBookmarkModule ()
-{
-    UIExtensionsManager* __weak _extensionsManager;
-    FSPDFReader* __weak _pdfReader;
+@interface ReadingBookmarkModule () {
+    UIExtensionsManager *__weak _extensionsManager;
 }
 @end
 
 @implementation ReadingBookmarkModule
 
-- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager*)extensionsManager pdfReader:(FSPDFReader*)pdfReader
-{
+- (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager {
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
-        _pdfReader = pdfReader;
         [self loadModule];
     }
     return self;
 }
 
--(void)loadModule
-{
+- (void)loadModule {
     //Adding reading bookmark button.
-    if(_extensionsManager.modulesConfig.loadReadingBookmark)
-    {
-        _pdfReader.bookmarkItem = [TbBaseItem createItemWithImage:[UIImage imageNamed:@"readview_bookmark.png"] imageSelected:[UIImage imageNamed:@"readview_bookmarkselect.png"] imageDisable:nil];
-        _pdfReader.bookmarkItem.tag = 100;
-        _pdfReader.bookmarkItem.onTapClick = ^(TbBaseItem *item){
-            if ([_extensionsManager currentAnnot]) {
-                [_extensionsManager setCurrentAnnot:nil];
-            }
-            FSPDFViewCtrl* pdfViewCtrl = _extensionsManager.pdfViewCtrl;
-            int currentPage = [pdfViewCtrl getCurrentPage];
-            if ([pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO) {
-                currentPage = currentPage / 2 * 2;
-            }
-            FSReadingBookmark* bookmark = [_pdfReader getReadingBookMarkAtPage:currentPage];
-            if (!bookmark)
-            {
-                [pdfViewCtrl.currentDoc insertReadingBookmark:-1 title:[NSString stringWithFormat:@"%@ %d", NSLocalizedStringFromTable(@"kPage", @"FoxitLocalizable", nil), currentPage+1] pageIndex:currentPage];
-                _pdfReader.bookmarkItem.selected = YES;
-            } else
-            {
-                [pdfViewCtrl.currentDoc removeReadingBookmark:bookmark];
-                _pdfReader.bookmarkItem.selected = NO;
-            }
-            [_pdfReader.panelController reloadReadingBookmarkPanel];
-            
-        };
-        [_pdfReader.topToolbar addItem:_pdfReader.bookmarkItem displayPosition:Position_RB];
+    if (_extensionsManager.modulesConfig.loadReadingBookmark) {
+        self.bookmarkButton = [Utility createButtonWithImage:[UIImage imageNamed:@"readview_bookmark.png"]];
+        [self.bookmarkButton setImage:[UIImage imageNamed:@"readview_bookmarkselect.png"] forState:UIControlStateSelected];
+        [self.bookmarkButton setImage:nil forState:UIControlStateDisabled];
+        self.bookmarkButton.tag = FS_TOPBAR_ITEM_BOOKMARK_TAG;
+        [self.bookmarkButton addTarget:self action:@selector(onClickBookmarkButton:) forControlEvents:UIControlEventTouchUpInside];
+
+        _extensionsManager.topToolbar.items = ({
+            UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:self.bookmarkButton];
+            item.tag = FS_TOPBAR_ITEM_BOOKMARK_TAG;
+            NSMutableArray *items = (_extensionsManager.topToolbar.items ?: @[]).mutableCopy;
+            [items addObject:item];
+            items;
+        });
+
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateBookmarkButtonState) name:UPDATEBOOKMARK object:nil];
+        [_extensionsManager.pdfViewCtrl registerDocEventListener:self];
+        [_extensionsManager.pdfViewCtrl registerPageEventListener:self];
+        [_extensionsManager.pdfViewCtrl registerLayoutChangedEventListener:self];
     }
 }
 
--(NSString*)getName
-{
+- (NSString *)getName {
     return @"ReadingBookmark";
 }
 
-@end
+- (void)onClickBookmarkButton:(UIButton *)button {
+    if ([_extensionsManager currentAnnot]) {
+        [_extensionsManager setCurrentAnnot:nil];
+    }
+    FSPDFViewCtrl *pdfViewCtrl = _extensionsManager.pdfViewCtrl;
+    int currentPage = [pdfViewCtrl getCurrentPage];
+    if ([pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO) {
+        currentPage = currentPage / 2 * 2;
+    }
+    FSReadingBookmark *bookmark = [Utility getReadingBookMarkAtPage:pdfViewCtrl.currentDoc page:currentPage];
+    if (!bookmark) {
+        [pdfViewCtrl.currentDoc insertReadingBookmark:-1 title:[NSString stringWithFormat:@"%@ %d", FSLocalizedString(@"kPage"), currentPage + 1] pageIndex:currentPage];
+        self.bookmarkButton.selected = YES;
+    } else {
+        [pdfViewCtrl.currentDoc removeReadingBookmark:bookmark];
+        self.bookmarkButton.selected = NO;
+    }
+    [_extensionsManager.panelController reloadReadingBookmarkPanel];
+}
 
+- (void)updateBookmarkButtonState {
+    FSPDFViewCtrl* pdfViewCtrl = _extensionsManager.pdfViewCtrl;
+    int currentPage = [pdfViewCtrl getCurrentPage];
+    if ([pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO) {
+        currentPage = currentPage / 2 * 2;
+    }
+    FSReadingBookmark *bookmark = [Utility getReadingBookMarkAtPage:pdfViewCtrl.currentDoc page:currentPage];
+    self.bookmarkButton.selected = bookmark ? YES : NO;
+}
+
+#pragma mark IDocEventListener
+- (void)onDocOpened:(FSPDFDoc *)document error:(int)error {
+    [self updateBookmarkButtonState];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([Utility canAssembleDocument:document]) {
+            self.bookmarkButton.userInteractionEnabled = YES;
+            self.bookmarkButton.alpha = 1;
+        } else {
+            self.bookmarkButton.userInteractionEnabled = NO;
+            self.bookmarkButton.alpha = 0.5;
+        }
+    });
+}
+
+- (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
+    self.bookmarkButton.userInteractionEnabled = YES;
+    self.bookmarkButton.alpha = 1.0f;
+}
+
+#pragma mark IPageEventListener
+- (void)onPageChanged:(int)oldIndex currentIndex:(int)currentIndex {
+    [self updateBookmarkButtonState];
+}
+
+#pragma mark ILayeroutEventListener
+- (void)onLayoutModeChanged:(PDF_LAYOUT_MODE)oldLayoutMode newLayoutMode:(PDF_LAYOUT_MODE)newLayoutMode {
+    [self updateBookmarkButtonState];
+}
+
+
+@end

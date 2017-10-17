@@ -14,8 +14,8 @@
 
 /**@brief A magnifier to show a selected text. */
 @interface MagnifierView : UIView {
-	UIView *viewToMagnify;
-	CGPoint touchPoint;
+    UIView *viewToMagnify;
+    CGPoint touchPoint;
     CGPoint magnifyPoint;
 }
 

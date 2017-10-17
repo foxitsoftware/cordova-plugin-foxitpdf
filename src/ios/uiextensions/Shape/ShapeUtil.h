@@ -10,13 +10,13 @@
  * Review legal.txt for additional license and legal information.
  */
 
+#import "Const.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "Const.h"
 
 @interface ShapeUtil : NSObject
 
-+ (NSArray*)getMovePointInRect:(CGRect)rect;
++ (NSArray *)getMovePointInRect:(CGRect)rect;
 + (EDIT_ANNOT_RECT_TYPE)getEditTypeWithPoint:(CGPoint)point rect:(CGRect)rect defaultEditType:(EDIT_ANNOT_RECT_TYPE)defaultEditType;
 
 @end
