@@ -25,7 +25,7 @@
     It made a lot of major adjustments to optimize a lot of problems
     It make our plugin easier to use
 
-This is RDK 4.0 Introduction
+This is RDK 5.0 Introduction
 
 > New features for PDF Core API:
 * PDF watermark operation (add/edit/delete)
@@ -36,7 +36,7 @@ This is RDK 4.0 Introduction
 * Get page box information by box type (MediaBox, CropBox, TrimBox)
 * Provide API to Access/Create an Image file (BMP, JPG, PNG, GIF, TIF, JPX, JBIG2)
 
-New features for UI Extensions:
+>New features for UI Extensions:
 * Add/Remove buttons from/to the default UI so that the UI can be customized easily
 * Show/Hide a special panel runtime (Reading Bookmarks/Outline/Annotations/Attachments Panel)
 * Show/Hide the UI element in the view setting bar at runtime
@@ -45,6 +45,8 @@ New features for UI Extensions:
 * New event provided for when end-user opens/taps on link
 * Facing Mode support for Android (already supported in iOS)
 * Support Relative Link and GoToR Action
+
+> etc.
 
 ## Installation
 ```bash
