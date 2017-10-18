@@ -21,13 +21,30 @@
     This plugin adds the ability to easily preview any PDF file in your Cordova application
 
 ## Major update
-    Now our plugin is also using Foxit RDK 4.0
+    Now our plugin is also using Foxit RDK 5.0
     It made a lot of major adjustments to optimize a lot of problems
     It make our plugin easier to use
 
 This is RDK 4.0 Introduction
 
-> From version 4.0, Foxit MobilePDF SDK makes a big change and optimization that wraps all of the basic UI implementations including the UI design of app to FSPDFReader class, and provides a more convenient way to flexibly control and customize the features through a configuration file, which means developers can easily build a full-featured PDF app with several lines of code.
+> New features for PDF Core API:
+* PDF watermark operation (add/edit/delete)
+* Indexed Full-Text Search for Android (already supported in iOS)
+* New e_saveFlagXRefStream option for "SaveAS" function
+* New "SetDefaultContentsLength" method for Signature feature
+* Third-Party Security Handler support
+* Get page box information by box type (MediaBox, CropBox, TrimBox)
+* Provide API to Access/Create an Image file (BMP, JPG, PNG, GIF, TIF, JPX, JBIG2)
+
+New features for UI Extensions:
+* Add/Remove buttons from/to the default UI so that the UI can be customized easily
+* Show/Hide a special panel runtime (Reading Bookmarks/Outline/Annotations/Attachments Panel)
+* Show/Hide the UI element in the view setting bar at runtime
+* The type of annotations supported can be set by the configuration json file
+* New event provided to allow developers to control what happens if the end user clicks on the "back" button
+* New event provided for when end-user opens/taps on link
+* Facing Mode support for Android (already supported in iOS)
+* Support Relative Link and GoToR Action
 
 ## Installation
 ```bash
