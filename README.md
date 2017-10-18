@@ -87,7 +87,7 @@ The preparatory work has been completed，Now,you can use this code everywhere i
     }
 
     var filePath = 'file://path/to/your/file';
-    //var filePath = cordova.file.applicationDirectory + 'Sample.pdf';
+    //var filePath = cordova.file.applicationDirectory + 'getting_started_ios.pdf';
     window.FoxitPdf.preview(filePath,success,error);
 ```
 
