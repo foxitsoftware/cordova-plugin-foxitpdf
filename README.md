@@ -21,32 +21,7 @@
     This plugin adds the ability to easily preview any PDF file in your Cordova application
 
 ## Major update
-    Now our plugin is also using Foxit RDK 5.0
-    It made a lot of major adjustments to optimize a lot of problems
-    It make our plugin easier to use
-
-This is RDK 5.0 Introduction
-
-> New features for PDF Core API:
-* PDF watermark operation (add/edit/delete)
-* Indexed Full-Text Search for Android (already supported in iOS)
-* New e_saveFlagXRefStream option for "SaveAS" function
-* New "SetDefaultContentsLength" method for Signature feature
-* Third-Party Security Handler support
-* Get page box information by box type (MediaBox, CropBox, TrimBox)
-* Provide API to Access/Create an Image file (BMP, JPG, PNG, GIF, TIF, JPX, JBIG2)
-
->New features for UI Extensions:
-* Add/Remove buttons from/to the default UI so that the UI can be customized easily
-* Show/Hide a special panel runtime (Reading Bookmarks/Outline/Annotations/Attachments Panel)
-* Show/Hide the UI element in the view setting bar at runtime
-* The type of annotations supported can be set by the configuration json file
-* New event provided to allow developers to control what happens if the end user clicks on the "back" button
-* New event provided for when end-user opens/taps on link
-* Facing Mode support for Android (already supported in iOS)
-* Support Relative Link and GoToR Action
-
-> etc.
+    Now our plugin is also using Foxit RDK 5.1
 
 ## Installation
 ```bash
@@ -70,7 +45,7 @@ Thanks to the new version, and now we use the plug-in iOS only need a few simple
     Resource folder -- found in the `Plugins/cordova-plugin-foxitpdf/uiextensions/resource` folder
 
     or use the method of `Add Files to xxx` ,remember check the option of `Create Group`
- 
+
 
 > `Note` Do not forget to add pdf files  
    You can add the PDF to Copy Bundle Resources directly. Just left-click the your project, find Copy Bundle Resources in the Build Phases tab, press on the + button, and choose the file to add. You can refer to any PDF file, just add it to the Xcode’s Copy Bundle Resources.
