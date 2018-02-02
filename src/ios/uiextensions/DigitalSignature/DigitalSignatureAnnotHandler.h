@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -19,6 +19,4 @@
 
 @interface DigitalSignatureAnnotHandler : NSObject <IAnnotHandler, IRotationEventListener, IDocEventListener, IScrollViewEventListener>
 - (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
-- (void)onDocWillOpen;
-- (void)onDocumentReloaded:(FSPDFDoc *)document;
 @end

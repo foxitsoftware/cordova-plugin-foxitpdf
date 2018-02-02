@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -84,7 +84,7 @@
 
         [_superView addSubview:self.panel.contentView];
         self.panel.contentView.translatesAutoresizingMaskIntoConstraints = NO;
-        self.isHidden = YES;
+        [self setIsHidden:YES animated:NO];
 
         //load attachment panel
         if ([panelTypes containsObject:@(FSPanelTypeAttachment)]) {
@@ -101,7 +101,6 @@
         if ([panelTypes containsObject:@(FSPanelTypeOutline)]) {
             outlinePanel = [[OutlinePanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
             [outlinePanel load];
-            
         }
         //load bookmark panel
         if ([panelTypes containsObject:@(FSPanelTypeReadingBookmark)]) {
@@ -110,6 +109,36 @@
         }
     }
     return self;
+}
+
+#pragma mark - get panels show/hide status
+-(NSMutableDictionary *)getItemHiddenStatus {
+    NSMutableDictionary *panelInfo = [@{
+                                        @"ReadingBookmark":@"YES",
+                                        @"Outline":@"YES",
+                                        @"Annotation":@"YES",
+                                        @"Attachment":@"YES",
+                                        } mutableCopy];
+    
+    NSMutableDictionary *panelsTags = [@{
+                                         [NSNumber numberWithInt:FSPanelTagReadingBookmark]:@"ReadingBookmark",
+                                         [NSNumber numberWithInt:FSPanelTagOutline]:@"Outline",
+                                         [NSNumber numberWithInt:FSPanelTagAnnotation]:@"Annotation",
+                                         [NSNumber numberWithInt:FSPanelTagAttachment]:@"Attachment",
+                                         } mutableCopy];
+    
+    NSArray *tempArr = nil;
+    
+    for ( id<IPanelSpec> thePanel in self.panel.spaces) {
+        int tag = [thePanel getTag];
+        tempArr = [panelsTags allKeys];
+        
+        if ([tempArr containsObject: [NSNumber numberWithInt:tag]]) {
+            [panelInfo setObject:@"NO" forKey:[panelsTags objectForKey:[NSNumber numberWithInt:tag]]];
+        }
+    }
+    
+    return panelInfo;
 }
 
 - (void)setPanelHidden:(BOOL)isHidden type:(FSPanelType)type {
@@ -132,24 +161,24 @@
 - (void)removePanelOfType:(FSPanelType)type {
     id<IPanelSpec> thePanel = nil;
     switch (type) {
-        case FSPanelTypeOutline:
-            thePanel = outlinePanel;
-            outlinePanel = nil;
-            break;
-        case FSPanelTypeAnnotation:
-            thePanel = annotationPanel;
-            annotationPanel = nil;
-            break;
-        case FSPanelTypeAttachment:
-            thePanel = attachmentPanel;
-            attachmentPanel = nil;
-            break;
-        case FSPanelTypeReadingBookmark:
-            thePanel = bookmarkPanel;
-            bookmarkPanel = nil;
-            break;
-        default:
-            break;
+    case FSPanelTypeOutline:
+        thePanel = outlinePanel;
+        outlinePanel = nil;
+        break;
+    case FSPanelTypeAnnotation:
+        thePanel = annotationPanel;
+        annotationPanel = nil;
+        break;
+    case FSPanelTypeAttachment:
+        thePanel = attachmentPanel;
+        attachmentPanel = nil;
+        break;
+    case FSPanelTypeReadingBookmark:
+        thePanel = bookmarkPanel;
+        bookmarkPanel = nil;
+        break;
+    default:
+        break;
     }
     if (!thePanel) {
         return;
@@ -160,75 +189,98 @@
 
 - (void)addPanelOfType:(FSPanelType)type {
     switch (type) {
-        case FSPanelTypeOutline:
-            if (_extensionsManager.modulesConfig.loadOutline) {
-                outlinePanel = [[OutlinePanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
-                [outlinePanel load];
-            }
-            break;
-        case FSPanelTypeAnnotation:
-            if (_extensionsManager.modulesConfig.tools.count > 0) {
-                annotationPanel = [[AnnotationPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
-                [annotationPanel load];
-            }
-            break;
-        case FSPanelTypeAttachment:
-            if (_extensionsManager.modulesConfig.loadAttachment) {
-                attachmentPanel = [[AttachmentPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
-                [attachmentPanel load];
-            }
-            break;
-        case FSPanelTypeReadingBookmark:
-            if (_extensionsManager.modulesConfig.loadReadingBookmark) {
-                bookmarkPanel = [[ReadingBookmarkPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
-                [bookmarkPanel load];
-            }
-            break;
-        default:
-            break;
+    case FSPanelTypeOutline:
+        if (_extensionsManager.modulesConfig.loadOutline && outlinePanel == nil) {
+            outlinePanel = [[OutlinePanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
+            [outlinePanel load];
+        }
+        break;
+    case FSPanelTypeAnnotation:
+        if (_extensionsManager.modulesConfig.tools.count > 0 && annotationPanel == nil) {
+            annotationPanel = [[AnnotationPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
+            [annotationPanel load];
+        }
+        break;
+    case FSPanelTypeAttachment:
+        if (_extensionsManager.modulesConfig.loadAttachment && attachmentPanel == nil) {
+            attachmentPanel = [[AttachmentPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
+            [attachmentPanel load];
+        }
+        break;
+    case FSPanelTypeReadingBookmark:
+        if (_extensionsManager.modulesConfig.loadReadingBookmark && bookmarkPanel == nil) {
+            bookmarkPanel = [[ReadingBookmarkPanel alloc] initWithUIExtensionsManager:_extensionsManager panelController:self];
+            [bookmarkPanel load];
+        }
+        break;
+    default:
+        break;
     }
     [self.panel reloadSegmentView];
 }
 
 - (void)setIsHidden:(BOOL)isHidden {
+    [self setIsHidden:isHidden animated:YES];
+}
+
+- (void)setIsHidden:(BOOL)isHidden animated:(BOOL)animated {
     if (_isHidden == isHidden) {
         return;
     }
     _isHidden = isHidden;
     if (_isHidden) {
-        [UIView animateWithDuration:0.4
-            animations:^{
-                _maskView.alpha = 0.1f;
-            }
-            completion:^(BOOL finished) {
+        if (animated) {
+            [UIView animateWithDuration:0.4
+                animations:^{
+                    _maskView.alpha = 0.1f;
+                }
+                completion:^(BOOL finished) {
 
-                [_maskView removeFromSuperview];
-            }];
+                    [_maskView removeFromSuperview];
+                }];
+        } else {
+            [_maskView removeFromSuperview];
+        }
 
         CGRect newFrame = self.panel.contentView.frame;
-
         newFrame.origin.x = -self.panel.contentView.frame.size.width;
 
-        [UIView animateWithDuration:0.4
-            animations:^{
-                self.panel.contentView.frame = newFrame;
+        if (animated) {
+            [UIView animateWithDuration:0.4
+                animations:^{
+                    self.panel.contentView.frame = newFrame;
 
-                [self.panel.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                    make.top.equalTo(_superView.mas_top).offset(0);
-                    make.bottom.equalTo(_superView.mas_bottom).offset(0);
-                    if (DEVICE_iPHONE) {
-                        make.right.equalTo(_superView.mas_left).offset(0);
-                        make.width.mas_equalTo(-newFrame.origin.x);
-                    } else {
-                        make.right.equalTo(_superView.mas_left).offset(0);
-                        make.width.mas_equalTo(300);
-                    }
+                    [self.panel.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                        make.top.equalTo(_superView.mas_top).offset(0);
+                        make.bottom.equalTo(_superView.mas_bottom).offset(0);
+                        if (DEVICE_iPHONE) {
+                            make.right.equalTo(_superView.mas_left).offset(0);
+                            make.width.mas_equalTo(-newFrame.origin.x);
+                        } else {
+                            make.right.equalTo(_superView.mas_left).offset(0);
+                            make.width.mas_equalTo(300);
+                        }
+                    }];
+
+                }
+                completion:^(BOOL finished) {
+                    self.panel.contentView.hidden = _isHidden;
                 }];
-
-            }
-            completion:^(BOOL finished) {
-                self.panel.contentView.hidden = _isHidden;
+        } else {
+            self.panel.contentView.frame = newFrame;
+            [self.panel.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.top.equalTo(_superView.mas_top).offset(0);
+                make.bottom.equalTo(_superView.mas_bottom).offset(0);
+                if (DEVICE_iPHONE) {
+                    make.right.equalTo(_superView.mas_left).offset(0);
+                    make.width.mas_equalTo(-newFrame.origin.x);
+                } else {
+                    make.right.equalTo(_superView.mas_left).offset(0);
+                    make.width.mas_equalTo(300);
+                }
             }];
+            self.panel.contentView.hidden = _isHidden;
+        }
 
     } else {
         _maskView.frame = _pdfViewCtrl.bounds;
@@ -257,23 +309,39 @@
         }
 
         self.panel.contentView.hidden = _isHidden;
-        [UIView animateWithDuration:0.4
-                         animations:^{
-                             self.panel.contentView.frame = newFrame;
-                             [self.panel.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.top.equalTo(_superView.mas_top).offset(0);
-                                 make.bottom.equalTo(_superView.mas_bottom).offset(0);
-                                 if (DEVICE_iPHONE) {
-                                     make.left.equalTo(_superView.mas_left).offset(0);
-                                     make.right.equalTo(_superView.mas_right).offset(0);
-                                 } else {
-                                     make.left.equalTo(_superView.mas_left).offset(0);
-                                     make.width.mas_equalTo(300);
-                                 }
+
+        if (animated) {
+            [UIView animateWithDuration:0.4
+                             animations:^{
+                                 self.panel.contentView.frame = newFrame;
+                                 [self.panel.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                     make.top.equalTo(_superView.mas_top).offset(0);
+                                     make.bottom.equalTo(_superView.mas_bottom).offset(0);
+                                     if (DEVICE_iPHONE) {
+                                         make.left.equalTo(_superView.mas_left).offset(0);
+                                         make.right.equalTo(_superView.mas_right).offset(0);
+                                     } else {
+                                         make.left.equalTo(_superView.mas_left).offset(0);
+                                         make.width.mas_equalTo(300);
+                                     }
+                                 }];
+                             }
+                             completion:^(BOOL finished){
                              }];
-                         }
-                         completion:^(BOOL finished){
-                         }];
+        } else {
+            self.panel.contentView.frame = newFrame;
+            [self.panel.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.top.equalTo(_superView.mas_top).offset(0);
+                make.bottom.equalTo(_superView.mas_bottom).offset(0);
+                if (DEVICE_iPHONE) {
+                    make.left.equalTo(_superView.mas_left).offset(0);
+                    make.right.equalTo(_superView.mas_right).offset(0);
+                } else {
+                    make.left.equalTo(_superView.mas_left).offset(0);
+                    make.width.mas_equalTo(300);
+                }
+            }];
+        }
     }
     for (id<IPanelChangedListener> listener in self.panelListeners) {
         if ([listener respondsToSelector:@selector(onPanelChanged:)]) {

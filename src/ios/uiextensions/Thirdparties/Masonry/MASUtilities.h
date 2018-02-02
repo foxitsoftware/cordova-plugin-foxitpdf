@@ -93,7 +93,7 @@ static inline id _MASBoxValue(const char *type, ...) {
         obj = [NSNumber numberWithFloat:actual];
     } else if (strcmp(type, @encode(int)) == 0) {
         int actual = (int)va_arg(v, int);
-        obj = [NSNumber numberWithInt:actual];
+        obj = @(actual);
     } else if (strcmp(type, @encode(long)) == 0) {
         long actual = (long)va_arg(v, long);
         obj = [NSNumber numberWithLong:actual];

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -19,7 +19,7 @@
 @class UIExtensionsManager;
 
 typedef void (^AnnotationGotoPageHandler)(int page, NSString *annotuuid);
-typedef void (^AnnotationSelectionHandler)();
+typedef void (^AnnotationSelectionHandler)(void);
 
 /** @brief The view controller for annotation list panel. */
 @interface AnnotationListViewController : UITableViewController <UITextViewDelegate, UITableViewDelegate, IPanelChangedListener, IDocEventListener> {

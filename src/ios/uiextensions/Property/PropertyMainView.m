@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -21,6 +21,8 @@
 @property (nonatomic, strong) LineWidthLayout *currentLineWidthLayout;
 @property (nonatomic, strong) FontLayout *currentFontLayout;
 @property (nonatomic, strong) IconLayout *currentIconLayout;
+@property (nonatomic, strong) DistanceUnitLayout *currentdistanceUnitLayout;
+@property (nonatomic, strong) RotationLayout *currentRotationLayout;
 
 @end
 
@@ -50,6 +52,9 @@
     if (self.currentIconLayout) {
         self.currentIconLayout.hidden = YES;
     }
+    if (self.currentdistanceUnitLayout) {
+        self.currentdistanceUnitLayout.hidden = YES;
+    }
     switch (type) {
     case TAB_FILL:
         if (self.currentColorLayout) {
@@ -74,7 +79,11 @@
             self.currentIconLayout.hidden = NO;
         }
         break;
-
+    case TAB_DISTANCE_UNIT:
+        if (self.currentdistanceUnitLayout) {
+            self.currentdistanceUnitLayout.hidden = NO;
+        }
+        break;
     default:
         break;
     }
@@ -103,6 +112,14 @@
                 layout.frame = opacityFrame;
                 [self addSubview:layout];
             }
+            if ([(id) layout supportProperty] & PROPERTY_ROTATION) {
+                self.currentRotationLayout = (RotationLayout *) layout;
+                CGRect rotationFrame = layout.frame;
+                rotationFrame.origin.y = TABHEIGHT + self.currentColorLayout.layoutHeight;
+                rotationFrame.size.height = [(RotationLayout *) layout layoutHeight];
+                layout.frame = rotationFrame;
+                [self addSubview:layout];
+            }
         }
     } break;
     case TAB_BORDER: {
@@ -129,6 +146,18 @@
             }
         }
     } break;
+    case TAB_DISTANCE_UNIT: {
+        if ([layout respondsToSelector:@selector(supportProperty)]) {
+            if ([(id) layout supportProperty] & PROPERTY_DISTANCE_UNIT) {
+                self.currentdistanceUnitLayout = (DistanceUnitLayout *) layout;
+                CGRect fontFrame = layout.frame;
+                fontFrame.origin.y = TABHEIGHT;
+                fontFrame.size.height = [(DistanceUnitLayout *) layout layoutHeight];
+                layout.frame = fontFrame;
+                [self addSubview:layout];
+            }
+        }
+    } break;            
     case TAB_TYPE: {
         if ([layout respondsToSelector:@selector(supportProperty)]) {
             if ([(id) layout supportProperty] & PROPERTY_ICONTYPE || [(id) layout supportProperty] & PROPERTY_ATTACHMENT_ICONTYPE) {
@@ -187,11 +216,17 @@
     if (self.currentOpacityLayout) {
         fillHeight += self.currentOpacityLayout.layoutHeight;
     }
+    if (self.currentRotationLayout) {
+        fillHeight += self.currentRotationLayout.layoutHeight;
+    }
     if (self.currentLineWidthLayout) {
         fillHeight += self.currentLineWidthLayout.layoutHeight;
     }
     if (self.currentFontLayout) {
         fillHeight += self.currentFontLayout.layoutHeight;
+    }
+    if (self.currentdistanceUnitLayout) {
+        fillHeight += self.currentdistanceUnitLayout.layoutHeight;
     }
     if (self.currentIconLayout) {
         typeHeight += self.currentIconLayout.layoutHeight;
@@ -224,11 +259,14 @@
         if (self.currentFontLayout) {
             self.currentFontLayout.mainLayoutHeight = mainHeight;
         }
+        if (self.currentdistanceUnitLayout) {
+            self.currentdistanceUnitLayout.mainLayoutHeight = mainHeight;
+        }
     }
 }
 
 - (void)resetAllLayout {
-    if (self.currentColorLayout && self.currentOpacityLayout && !self.currentLineWidthLayout && !self.currentFontLayout) //markup
+    if (self.currentColorLayout && self.currentOpacityLayout && !self.currentLineWidthLayout && !self.currentFontLayout && !self.currentdistanceUnitLayout) //markup
     {
         CGRect colorFrame = self.currentColorLayout.frame;
         colorFrame.origin.y = 0;
@@ -283,10 +321,34 @@
         CGRect linewidthFrame = self.currentLineWidthLayout.frame;
         linewidthFrame.origin.y = colorFrame.size.height;
         self.currentLineWidthLayout.frame = linewidthFrame;
+    } else if (self.currentOpacityLayout && self.currentRotationLayout) { // image
+        CGRect rotationFrame = self.currentRotationLayout.frame;
+        rotationFrame.origin.y = 0;
+        self.currentRotationLayout.frame = rotationFrame;
+        [self.currentRotationLayout addDivideView];
+
+        CGRect opacityFrame = self.currentOpacityLayout.frame;
+        opacityFrame.origin.y = rotationFrame.size.height;
+        self.currentOpacityLayout.frame = opacityFrame;
     } else if (self.currentColorLayout && !self.currentOpacityLayout && !self.currentLineWidthLayout && !self.currentFontLayout) {
         CGRect colorFrame = self.currentColorLayout.frame;
         colorFrame.origin.y = 0;
         self.currentColorLayout.frame = colorFrame;
+    }
+    else if (self.currentColorLayout && self.currentOpacityLayout && self.currentdistanceUnitLayout){
+        CGRect distanceFrame = self.currentdistanceUnitLayout.frame;
+        distanceFrame.origin.y = 0;
+        self.currentdistanceUnitLayout.frame = distanceFrame;
+        [self.currentdistanceUnitLayout addDivideView];
+        
+        CGRect colorFrame = self.currentColorLayout.frame;
+        colorFrame.origin.y = distanceFrame.size.height;
+        self.currentColorLayout.frame = colorFrame;
+        [self.currentColorLayout addDivideView];
+        
+        CGRect opacityFrame = self.currentOpacityLayout.frame;
+        opacityFrame.origin.y = colorFrame.size.height + distanceFrame.size.height;
+        self.currentOpacityLayout.frame = opacityFrame;
     }
 }
 

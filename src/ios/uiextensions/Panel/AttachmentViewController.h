@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -12,6 +12,7 @@
 
 #import "AnnotationListCell.h"
 #import "FileManageBaseViewController.h"
+#import "UIExtensionsManager.h"
 
 enum MoveFileAlertCheckType {
     MoveFileAlertCheckType_Ask = 0,
@@ -25,7 +26,7 @@ typedef enum MoveFileAlertCheckType MoveFileAlertCheckType;
 
 @class AttachmentPanel;
 
-@interface AttachmentViewController : UITableViewController <IAnnotEventListener, UIAlertViewDelegate, UITextViewDelegate, UITableViewDelegate, UIDocumentInteractionControllerDelegate, IDocEventListener, IPageEventListener> {
+@interface AttachmentViewController : UITableViewController <UIAlertViewDelegate, UITextViewDelegate, UITableViewDelegate, UIDocumentInteractionControllerDelegate, IDocEventListener, IPageEventListener> {
     BOOL _alertViewFinished;
     MoveFileAlertCheckType _moveFileAlertCheckType;
 }

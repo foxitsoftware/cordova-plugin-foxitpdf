@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -36,7 +36,8 @@
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         [self loadModule];
-        [[EraseToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        EraseToolHandler* toolHandler = [[EraseToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_extensionsManager registerToolHandler:toolHandler];
     }
     return self;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -38,9 +38,6 @@
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         _type = e_annotFreeText;
 
-        [_extensionsManager registerToolHandler:self];
-        [_extensionsManager registerRotateChangedListener:self];
-        [_pdfViewCtrl registerScrollViewEventListener:self];
         _isTypewriterToolbarActive = YES;
         _keyboardFrame = CGRectZero;
     }
@@ -102,10 +99,11 @@
         _textView.backgroundColor = [UIColor clearColor];
         UInt32 color = [_extensionsManager getAnnotColor:e_annotFreeText];
         float opacity = [_extensionsManager getAnnotOpacity:e_annotFreeText];
-        if ([_pdfViewCtrl isNightMode] && color == 0) {
+        BOOL isMappingColorMode = (_pdfViewCtrl.colorMode == e_colorModeMapping);
+        if (isMappingColorMode && color == 0) {
             color = 16775930;
         }
-        if (![_pdfViewCtrl isNightMode] && color == 16775930) {
+        if (!isMappingColorMode && color == 16775930) {
             color = 0;
         }
         _textView.textColor = [UIColor colorWithRGBHex:color alpha:opacity];
@@ -253,7 +251,7 @@
     CGPoint oldPvPoint = [_pdfViewCtrl convertDisplayViewPtToPageViewPt:CGPointMake(0, 0) pageIndex:_currentPageIndex];
     FSPointF *oldPdfPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:oldPvPoint pageIndex:_currentPageIndex];
 
-    CGRect dvAnnotRect = [_extensionsManager.pdfViewCtrl convertPageViewRectToDisplayViewRect:textFrame pageIndex:_currentPageIndex];
+    CGRect dvAnnotRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:textFrame pageIndex:_currentPageIndex];
     float positionY;
     if (DEVICE_iPHONE && !OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
         positionY = CGRectGetWidth(_pdfViewCtrl.bounds) - dvAnnotRect.origin.y - dvAnnotRect.size.height;
@@ -269,7 +267,7 @@
         FSRectF *pdfRect = [_pdfViewCtrl convertPageViewRectToPdfRect:pvRect pageIndex:_currentPageIndex];
         float pdfOffsetY = pdfRect.top - pdfRect.bottom;
 
-        if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_SINGLE || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO) {
+        if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_SINGLE || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_RIGHT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_MIDDLE) {
             float tmpPvOffset = pvRect.size.height;
             CGRect tmpPvRect = CGRectMake(0, 0, 10, tmpPvOffset);
             CGRect tmpDvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:tmpPvRect pageIndex:_currentPageIndex];
@@ -294,7 +292,7 @@
     _keyboardShown = NO;
 
     PDF_LAYOUT_MODE layoutMode = [_pdfViewCtrl getPageLayoutMode];
-    if (layoutMode == PDF_LAYOUT_MODE_SINGLE || layoutMode == PDF_LAYOUT_MODE_TWO || _currentPageIndex == [_pdfViewCtrl getPageCount] - 1) {
+    if (layoutMode == PDF_LAYOUT_MODE_SINGLE || layoutMode == PDF_LAYOUT_MODE_TWO || _currentPageIndex == [_pdfViewCtrl getPageCount] - 1 || layoutMode == PDF_LAYOUT_MODE_TWO_LEFT || layoutMode == PDF_LAYOUT_MODE_TWO_RIGHT || layoutMode == PDF_LAYOUT_MODE_TWO_MIDDLE) {
         [_pdfViewCtrl setBottomOffset:0];
     }
 }
@@ -305,8 +303,9 @@
 
         if (_textView.text.length > 0) {
             CGRect textFrame = _textView.frame;
-            StringDrawUtil *strDrawUtil = [[StringDrawUtil alloc] initWithFont:_textView.font];
-            NSString *content = [strDrawUtil getReturnRefinedString:_textView.text forUITextViewWidth:_textView.bounds.size.width];
+            NSString *content = [StringDrawUtil getWrappedStringInTextView:_textView];
+            //            StringDrawUtil *strDrawUtil = [[StringDrawUtil alloc] initWithFont:_textView.font];
+            //            NSString *content = [strDrawUtil getReturnRefinedString:_textView.text forUITextViewWidth:_textView.bounds.size.width];
 
             CGRect annotRectPV = CGRectMake(textFrame.origin.x, textFrame.origin.y, textFrame.size.width, textFrame.size.height);
             FSRectF *rect = [_pdfViewCtrl convertPageViewRectToPdfRect:annotRectPV pageIndex:_currentPageIndex];
@@ -388,7 +387,7 @@
         FSRectF *pdfRect = [_pdfViewCtrl convertPageViewRectToPdfRect:pvRect pageIndex:pageIndex];
         float pdfOffsetY = pdfRect.top - pdfRect.bottom;
 
-        if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_SINGLE || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO) {
+        if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_SINGLE || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_RIGHT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_MIDDLE) {
             [_extensionsManager.pdfViewCtrl setBottomOffset:0];
         } else if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_CONTINUOUS) {
             if ([_pdfViewCtrl getCurrentPage] == [_pdfViewCtrl getPageCount] - 1) {

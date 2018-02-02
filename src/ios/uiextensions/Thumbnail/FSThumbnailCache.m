@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -12,7 +12,6 @@
 
 #import "FSThumbnailCache.h"
 #import "UIExtensionsManager+private.h"
-#import "UIExtensionsManager.h"
 #import "Utility.h"
 
 NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
@@ -36,7 +35,7 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
     return self;
 }
 
-- (void)getThumbnailForPageAtIndex:(NSUInteger)index withThumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)())needPause callback:(void (^__nonnull)(UIImage *))callback {
+- (void)getThumbnailForPageAtIndex:(NSUInteger)index withThumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)(void))needPause callback:(void (^__nonnull)(UIImage *))callback {
     NSString *thumbnailPath = [self getThumbnailPathForPageAtIndex:index withThumbnailSize:thumbnailSize];
     if (!thumbnailPath) {
         callback(nil);
@@ -66,7 +65,7 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
         return;
     }
 
-    UIImage *thumbnailImage = [Utility drawPage:page targetSize:thumbnailSize shouldDrawAnnotation:YES isNightMode:NO needPause:needPause];
+    UIImage *thumbnailImage = [Utility drawPage:page targetSize:thumbnailSize shouldDrawAnnotation:YES needPause:needPause];
     if (thumbnailImage) {
         @synchronized(self) {
             [UIImagePNGRepresentation(thumbnailImage) writeToFile:thumbnailPath atomically:YES];
@@ -132,6 +131,10 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
     [resultPageIndexes enumerateObjectsUsingBlock:^(NSNumber *_Nonnull newPageIndex, NSUInteger idx, BOOL *_Nonnull stop) {
         [self moveThumbnailOfPageAtIndex:newPageIndex.unsignedIntegerValue withPrefix:@"temp" toIndex:newPageIndex.unsignedIntegerValue withPrefix:nil];
     }];
+    
+    for (UndoItem *undoitem in self.extensionsManager.undoItems) {
+        undoitem.pageIndex = (int)[resultPageIndexes indexOfObject:[NSNumber numberWithInt:undoitem.pageIndex]];
+    }
 }
 
 - (void)onPagesRotated:(NSArray<NSNumber *> *)indexes rotation:(int)rotation {
@@ -155,7 +158,7 @@ NSMutableIndexSet *indexSetFromArray(NSArray<NSNumber *> *array);
     [self removeThumbnailCacheOfPageAtIndex:[page getIndex]];
 }
 
-- (void)onAnnotDeleted:(FSPDFPage *)page annot:(FSAnnot *)annot {
+- (void)onAnnotWillDelete:(FSPDFPage *)page annot:(FSAnnot *)annot {
     [self removeThumbnailCacheOfPageAtIndex:[page getIndex]];
 }
 

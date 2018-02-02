@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -347,7 +347,7 @@
         if (_currentListener) {
             NSString *stSize = [self.arrayFontSizes objectAtIndex:indexPath.row];
             int value = [[self.dictFontSizes objectForKey:stSize] intValue];
-            [_currentListener onProperty:PROPERTY_FONTSIZE changedFrom:[NSNumber numberWithInt:_currentFontSize] to:[NSNumber numberWithInt:value]];
+            [_currentListener onProperty:PROPERTY_FONTSIZE changedFrom:@(_currentFontSize) to:@(value)];
             [self setCurrentFontSize:value];
         }
     }

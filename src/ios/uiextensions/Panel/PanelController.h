@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -33,13 +33,13 @@
 
 /** @brief Panel types. */
 typedef NS_ENUM(NSUInteger, FSPanelType) {
-    /** @breif Annotation panel type. */
+    /** @brief Annotation panel type. */
     FSPanelTypeAnnotation = 0,
-    /** @breif Attachment panel type. */
+    /** @brief Attachment panel type. */
     FSPanelTypeAttachment,
-    /** @breif Outline panel type. */
+    /** @brief Outline panel type. */
     FSPanelTypeOutline,
-    /** @breif Reading bookmark panel type. */
+    /** @brief Reading bookmark panel type. */
     FSPanelTypeReadingBookmark
 };
 
@@ -55,6 +55,9 @@ typedef NS_ENUM(NSUInteger, FSPanelType) {
  * @return	The panel controller instance.
  */
 - (instancetype)initWithExtensionsManager:(UIExtensionsManager *)extensionsManager;
+
+/** @brief get panels show/hide status */
+-(NSMutableDictionary *)getItemHiddenStatus;
 
 /**
  * @brief	Hide or show panel of a specific type.

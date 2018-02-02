@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -336,7 +336,7 @@
         NSString *otherPass = (textboxOtherPassword.text.length == 0) ? nil : textboxOtherPassword.text;
         if (openDocPass == nil && otherPass == nil) //if none password is enter, tell user to give up
         {
-            AlertViewButtonClickedHandler buttonClickedHandler = ^(UIView *alertView, int buttonIndex) {
+            AlertViewButtonClickedHandler buttonClickedHandler = ^(UIView *alertView, NSInteger buttonIndex) {
                 if (buttonIndex == 0) //not encrypt
                 {
                     self.optionHandler(self, YES, nil, nil, NO, NO, NO, NO, NO, NO, NO, NO);

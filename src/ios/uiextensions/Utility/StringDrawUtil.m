@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -12,6 +12,7 @@
 
 #import "StringDrawUtil.h"
 #import <CoreText/CoreText.h>
+#import <UIKit/UIKit.h>
 
 @implementation StringDrawUtil
 
@@ -293,104 +294,104 @@
     return content;
 }
 
-- (NSString *)getReturnRefinedString:(NSString *)str forUITextViewWidth:(float)width {
-    //modify by lsj
-    //    width -= 2*UITextView_Margin;
-    //if it's cleared, return nothing
-    if (str.length == 0) {
-        self.previousStr = @"";
-        self.previousRetStr = @"";
-        self.previousHeight = 0;
-        return _previousRetStr;
-    }
-    //if cache already has the same string, return cached result
-    if ([_previousStr compare:str] == NSOrderedSame) {
-        return _previousRetStr;
-    }
-    float height = [self heightOfContent:str withinWidth:width];
-    //if just one line, return is self
-    if (height == self.singleLineHeight) {
-        self.previousStr = str;
-        self.previousRetStr = str;
-        self.previousHeight = height;
-        return _previousRetStr;
-    }
-    //if new string is append some character to the cached string, should consider is new line introduced, if not just return cached result with new character appended; if yes should calculate the return position again.
-    NSRange rangeAdd = [str rangeOfString:_previousStr];
-    if (rangeAdd.location == 0 && rangeAdd.length == _previousStr.length) {
-        if (height == _previousHeight) {
-            NSString *appendStr = [str substringFromIndex:rangeAdd.length];
-            self.previousRetStr = [_previousRetStr stringByAppendingString:appendStr];
-            self.previousStr = str;
-            return _previousRetStr;
-        }
-    }
-    NSRange rangeDel = [_previousStr rangeOfString:str];
-    if (rangeDel.location == 0 && rangeDel.length == str.length) {
-        if (height == _previousHeight) {
-            self.previousRetStr = [_previousRetStr substringToIndex:(_previousRetStr.length - (_previousStr.length - str.length))];
-            self.previousStr = str;
-            return _previousRetStr;
-        }
-    }
-    //calculate the return value
-    CTFontRef font = CTFontCreateWithName((CFStringRef) _font.fontName, _font.pointSize, NULL);
-    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc] initWithString:str];
-    [attributeStr addAttribute:(id) kCTFontAttributeName value:(__bridge id) font range:NSMakeRange(0, str.length)];
-    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef) attributeStr);
-    CGPathRef oneLinePath = CGPathCreateWithRect(CGRectMake(0, 0, width, self.singleLineHeight + 5 /*in big font size if exactly the same height one line can put nothing. expand a little.*/), NULL);
-    long pos = 0;
-    NSMutableArray *insertRets = [NSMutableArray array];
-    while (pos < str.length - 1) {
-        CTFrameRef oneLineFrame = CTFramesetterCreateFrame(framesetter, CFRangeMake(pos, 0), oneLinePath, NULL);
-        CFIndex endPos = CTFrameGetVisibleStringRange(oneLineFrame).length;
-        CFRelease(oneLineFrame);
-
-        for (long i = pos; i < [str length]; i++) {
-            NSString *newString = [str substringWithRange:NSMakeRange(pos, i - pos + 1)];
-            NSDictionary *attrs = @{NSFontAttributeName : _font};
-            CGSize textSize = [newString boundingRectWithSize:CGSizeMake(width * 2, self.singleLineHeight) options:NSStringDrawingUsesLineFragmentOrigin attributes:attrs context:nil].size;
-            if (textSize.width + 2 >= width) {
-                endPos = i;
-                break;
-
-            } else if ([[str substringWithRange:NSMakeRange(i, 1)] compare:@"\n"] == NSOrderedSame) {
-                endPos = i + 1;
-                break;
-            } else {
-                endPos = i;
-            }
-            if (i == [str length] - 1) {
-                endPos++;
-            }
-        }
-        pos = endPos;
-
-        if ([[str substringWithRange:NSMakeRange(pos - 1, 1)] compare:@"\n"] != NSOrderedSame) //if user type return here, it's already return, so don't need to add
-        {
-            [insertRets addObject:[NSNumber numberWithLong:pos]];
-        }
-        NSAssert(insertRets.count < 1000, @"Infinit loop in calculate return position.");
-    }
-    CGPathRelease(oneLinePath);
-    CFRelease(framesetter);
-    CFRelease(font);
-    NSMutableString *modifiedStr = [NSMutableString stringWithString:str];
-    if (insertRets.count > 0) {
-        for (int i = 0; i < insertRets.count; i++) {
-            int insertPos = [[insertRets objectAtIndex:i] intValue];
-            insertPos += i;
-            if (insertPos != modifiedStr.length) //last one should not insert return
-            {
-                [modifiedStr insertString:@"\r" atIndex:insertPos];
-            }
-        }
-    }
-    self.previousRetStr = modifiedStr;
-    self.previousStr = str;
-    self.previousHeight = height;
-    return _previousRetStr;
-}
+//- (NSString *)getReturnRefinedString:(NSString *)str forUITextViewWidth:(float)width {
+//    //modify by lsj
+//    //    width -= 2*UITextView_Margin;
+//    //if it's cleared, return nothing
+//    if (str.length == 0) {
+//        self.previousStr = @"";
+//        self.previousRetStr = @"";
+//        self.previousHeight = 0;
+//        return _previousRetStr;
+//    }
+//    //if cache already has the same string, return cached result
+//    if ([_previousStr compare:str] == NSOrderedSame) {
+//        return _previousRetStr;
+//    }
+//    float height = [self heightOfContent:str withinWidth:width];
+//    //if just one line, return is self
+//    if (height == self.singleLineHeight) {
+//        self.previousStr = str;
+//        self.previousRetStr = str;
+//        self.previousHeight = height;
+//        return _previousRetStr;
+//    }
+//    //if new string is append some character to the cached string, should consider is new line introduced, if not just return cached result with new character appended; if yes should calculate the return position again.
+//    NSRange rangeAdd = [str rangeOfString:_previousStr];
+//    if (rangeAdd.location == 0 && rangeAdd.length == _previousStr.length) {
+//        if (height == _previousHeight) {
+//            NSString *appendStr = [str substringFromIndex:rangeAdd.length];
+//            self.previousRetStr = [_previousRetStr stringByAppendingString:appendStr];
+//            self.previousStr = str;
+//            return _previousRetStr;
+//        }
+//    }
+//    NSRange rangeDel = [_previousStr rangeOfString:str];
+//    if (rangeDel.location == 0 && rangeDel.length == str.length) {
+//        if (height == _previousHeight) {
+//            self.previousRetStr = [_previousRetStr substringToIndex:(_previousRetStr.length - (_previousStr.length - str.length))];
+//            self.previousStr = str;
+//            return _previousRetStr;
+//        }
+//    }
+//    //calculate the return value
+//    CTFontRef font = CTFontCreateWithName((CFStringRef) _font.fontName, _font.pointSize, NULL);
+//    NSMutableAttributedString *attributeStr = [[NSMutableAttributedString alloc] initWithString:str];
+//    [attributeStr addAttribute:(id) kCTFontAttributeName value:(__bridge id) font range:NSMakeRange(0, str.length)];
+//    CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef) attributeStr);
+//    CGPathRef oneLinePath = CGPathCreateWithRect(CGRectMake(0, 0, width, self.singleLineHeight + 5 /*in big font size if exactly the same height one line can put nothing. expand a little.*/), NULL);
+//    long pos = 0;
+//    NSMutableArray *insertRets = [NSMutableArray array];
+//    while (pos < str.length - 1) {
+//        CTFrameRef oneLineFrame = CTFramesetterCreateFrame(framesetter, CFRangeMake(pos, 0), oneLinePath, NULL);
+//        CFIndex endPos = CTFrameGetVisibleStringRange(oneLineFrame).length;
+//        CFRelease(oneLineFrame);
+//
+//        for (long i = pos; i < [str length]; i++) {
+//            NSString *newString = [str substringWithRange:NSMakeRange(pos, i - pos + 1)];
+//            NSDictionary *attrs = @{NSFontAttributeName : _font};
+//            CGSize textSize = [newString boundingRectWithSize:CGSizeMake(width * 2, self.singleLineHeight) options:NSStringDrawingUsesLineFragmentOrigin attributes:attrs context:nil].size;
+//            if (textSize.width + 2 >= width) {
+//                endPos = i;
+//                break;
+//
+//            } else if ([[str substringWithRange:NSMakeRange(i, 1)] compare:@"\n"] == NSOrderedSame) {
+//                endPos = i + 1;
+//                break;
+//            } else {
+//                endPos = i;
+//            }
+//            if (i == [str length] - 1) {
+//                endPos++;
+//            }
+//        }
+//        pos = endPos;
+//
+//        if ([[str substringWithRange:NSMakeRange(pos - 1, 1)] compare:@"\n"] != NSOrderedSame) //if user type return here, it's already return, so don't need to add
+//        {
+//            [insertRets addObject:[NSNumber numberWithLong:pos]];
+//        }
+//        NSAssert(insertRets.count < 1000, @"Infinit loop in calculate return position.");
+//    }
+//    CGPathRelease(oneLinePath);
+//    CFRelease(framesetter);
+//    CFRelease(font);
+//    NSMutableString *modifiedStr = [NSMutableString stringWithString:str];
+//    if (insertRets.count > 0) {
+//        for (int i = 0; i < insertRets.count; i++) {
+//            int insertPos = [[insertRets objectAtIndex:i] intValue];
+//            insertPos += i;
+//            if (insertPos != modifiedStr.length) //last one should not insert return
+//            {
+//                [modifiedStr insertString:@"\r" atIndex:insertPos];
+//            }
+//        }
+//    }
+//    self.previousRetStr = modifiedStr;
+//    self.previousStr = str;
+//    self.previousHeight = height;
+//    return _previousRetStr;
+//}
 
 //get word range of string, including space
 + (NSArray *)getUnitWordBoundary:(NSString *)str {
@@ -411,4 +412,48 @@
     }
     return array;
 }
+//
+//+ (NSString *)getWrappedString:(NSString *)str withFont:(UIFont *)font maxWidth:(float)maxWidth {
+//    NSAttributedString *attributedStr = [[NSAttributedString alloc] initWithString:str attributes:@{NSFontAttributeName : font}];
+//    NSLayoutManager *lm = [NSLayoutManager new];
+//    NSTextContainer *tc = [[NSTextContainer alloc] initWithSize:CGSizeMake(maxWidth, CGFLOAT_MAX)];
+//    [lm addTextContainer:tc];
+//    NSTextStorage *tm = [[NSTextStorage alloc] initWithAttributedString:attributedStr];
+//    [tm addLayoutManager:lm];
+//    NSMutableString *wrappedStr = [NSMutableString string];
+//    [lm enumerateLineFragmentsForGlyphRange:NSMakeRange(0, lm.numberOfGlyphs)
+//                                 usingBlock:^(CGRect rect, CGRect usedRect,
+//                                              NSTextContainer *textContainer,
+//                                              NSRange glyphRange, BOOL *stop) {
+//                                     NSRange r = [lm characterRangeForGlyphRange:glyphRange actualGlyphRange:nil];
+//                                     NSString *currentLineStr = [attributedStr.string substringWithRange:r];
+//                                     if (wrappedStr.length > 0 && ![wrappedStr hasSuffix:@"\r"] && ![wrappedStr hasSuffix:@"\n"]) {
+//                                         [wrappedStr appendString:@"\r"];
+//                                     }
+//                                     [wrappedStr appendString:currentLineStr];
+//                                 }];
+//    NSLog(@"\n\"%@\"\n\t-->\n\"%@\"\n", str, wrappedStr);
+//    return wrappedStr;
+//}
+
+// string with additional line break
++ (NSString *)getWrappedStringInTextView:(UITextView *)textView {
+    NSLayoutManager *layoutManager = textView.layoutManager;
+    NSMutableString *wrappedStr = [NSMutableString string];
+    NSString *originStr = textView.text;
+    [layoutManager enumerateLineFragmentsForGlyphRange:NSMakeRange(0, layoutManager.numberOfGlyphs)
+                                            usingBlock:^(CGRect rect, CGRect usedRect,
+                                                         NSTextContainer *textContainer,
+                                                         NSRange glyphRange, BOOL *stop) {
+                                                NSRange r = [layoutManager characterRangeForGlyphRange:glyphRange actualGlyphRange:nil];
+                                                NSString *currentLineStr = [originStr substringWithRange:r];
+                                                if (wrappedStr.length > 0 && ![wrappedStr hasSuffix:@"\r"] && ![wrappedStr hasSuffix:@"\n"]) {
+                                                    [wrappedStr appendString:@"\r"];
+                                                }
+                                                [wrappedStr appendString:currentLineStr];
+                                            }];
+    //    NSLog(@"\n\"%@\"\n\t-->\n\"%@\"\n", originStr, wrappedStr);
+    return wrappedStr;
+}
+
 @end

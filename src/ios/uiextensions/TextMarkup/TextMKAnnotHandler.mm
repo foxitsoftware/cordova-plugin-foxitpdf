@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -43,12 +43,6 @@
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = _extensionsManager.pdfViewCtrl;
         _taskServer = _extensionsManager.taskServer;
-        [_pdfViewCtrl registerDocEventListener:self];
-        [_pdfViewCtrl registerScrollViewEventListener:self];
-        [_extensionsManager registerAnnotHandler:self];
-        [_extensionsManager registerRotateChangedListener:self];
-        [_extensionsManager registerGestureEventListener:self];
-        [_extensionsManager.propertyBar registerPropertyBarListener:self];
 
         self.isShowStyle = NO;
         self.shouldShowMenu = NO;
@@ -98,7 +92,9 @@
         [array addObject:deleteItem];
     } else {
         [array addObject:commentItem];
-        [array addObject:replyItem];
+        if (annot.canReply) {
+            [array addObject:replyItem];
+        }
     }
 
     CGRect dvRect = rect;
@@ -266,7 +262,7 @@
             int pageIndex = annot.pageIndex;
             if (addUndo) {
                 FSAnnotAttributes *attributes = [FSAnnotAttributes attributesWithAnnot:annot];
-                [_extensionsManager addUndoItem:[UndoAddAnnot createWithAttributes:attributes page:page annotHandler:self]];
+                [_extensionsManager addUndoItem:[UndoItem itemForUndoAddAnnotWithAttributes:attributes page:page annotHandler:self]];
             }
 
             [_extensionsManager onAnnotAdded:page annot:annot];
@@ -292,7 +288,7 @@
     }
     if ([annot canModify] && addUndo) {
         annot.modifiedDate = [NSDate date];
-        [_extensionsManager addUndoItem:[UndoModifyAnnot createWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoModifyAnnotWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
     }
 
     [_extensionsManager onAnnotModified:page annot:annot];
@@ -316,12 +312,13 @@
 
     if (addUndo) {
         FSAnnotAttributes *attributes = self.attributesBeforeModify ?: [FSAnnotAttributes attributesWithAnnot:annot];
-        [_extensionsManager addUndoItem:[UndoDeleteAnnot createWithAttributes:attributes page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoDeleteAnnotWithAttributes:attributes page:page annotHandler:self]];
     }
     self.attributesBeforeModify = nil;
 
-    [_extensionsManager onAnnotDeleted:page annot:annot];
+    [_extensionsManager onAnnotWillDelete:page annot:annot];
     [page removeAnnot:annot];
+    [_extensionsManager onAnnotDeleted:page annot:annot];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
@@ -334,11 +331,6 @@
 }
 
 - (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer annot:(FSAnnot *)annot {
-    BOOL canAddAnnot = [Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc];
-    if (!canAddAnnot) {
-        return NO;
-    }
-
     CGPoint point = [recognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
     FSPointF *pdfPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
     if (_extensionsManager.currentAnnot == annot) {

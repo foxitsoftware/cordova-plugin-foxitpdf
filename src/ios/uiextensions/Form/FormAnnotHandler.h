@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -43,7 +43,7 @@
 - (void)endTextInput;
 
 - (void)refresh:(FSPDFPage *)page pdfRect:(FSRectF *)pdfRect;
-- (BOOL)setTimer:(int)elapse timerFunc:(FSTimer *)timerFunc timerID:(int *)timerID;
+//- (BOOL)setTimer:(int)elapse timerFunc:(FSTimer *)timerFunc timerID:(int *)timerID;
 - (BOOL)killTimer:(int)timerID;
 - (void)focusGotOnControl:(FSFormControl *)control fieldValue:(NSString *)fieldValue;
 - (void)focusLostFromControl:(FSFormControl *)control fieldValue:(NSString *)fieldValue;

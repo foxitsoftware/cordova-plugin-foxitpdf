@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -30,6 +30,7 @@
 @property (nonatomic, strong) NSArray *arraySelectedRect;
 @property (nonatomic, strong) FSRectF *currentEditPdfRect;
 @property (nonatomic, strong) NSArray *colors;
+@property (nonatomic, strong) MagnifierView *magnifierView;
 @end
 
 @implementation SelectToolHandler {
@@ -45,68 +46,16 @@
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
-        [_extensionsManager registerToolHandler:self];
-        [_pdfViewCtrl registerPageEventListener:self];
-        [_extensionsManager registerRotateChangedListener:self];
-        [_pdfViewCtrl registerScrollViewEventListener:self];
-        [_extensionsManager registerGestureEventListener:self];
-        [_pdfViewCtrl registerDocEventListener:self];
         _taskServer = _extensionsManager.taskServer;
     }
     return self;
 }
 
 - (NSArray *)_getTextRects:(FSPDFTextSelect *)fstextPage start:(int)start end:(int)end {
-    int count = ABS(end - start) + 1;
-    start = MIN(start, end);
-    __block NSMutableArray *ret = [NSMutableArray array];
-
+    __block NSArray *ret = nil;
     Task *task = [[Task alloc] init];
     task.run = ^() {
-        if (fstextPage != nil) {
-            int rectCount = [fstextPage getTextRectCount:start count:count];
-            for (int i = 0; i < rectCount; i++) {
-                FSRectF *dibRect = [fstextPage getTextRect:i];
-                if (dibRect.getLeft == dibRect.getRight || dibRect.getTop == dibRect.getBottom) {
-                    continue;
-                }
-
-                FSRotation direction = [fstextPage getBaselineRotation:i];
-                NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:dibRect]], [NSNumber numberWithInt:direction], nil];
-
-                [ret addObject:array];
-            }
-
-            //merge rects if possible
-            if (ret.count > 1) {
-                int i = 0;
-                while (i < ret.count - 1) {
-                    int j = i + 1;
-                    while (j < ret.count) {
-                        FSRectF *rect1 = [Utility CGRect2FSRectF:[[[ret objectAtIndex:i] objectAtIndex:0] CGRectValue]];
-                        FSRectF *rect2 = [Utility CGRect2FSRectF:[[[ret objectAtIndex:j] objectAtIndex:0] CGRectValue]];
-
-                        int direction1 = [[[ret objectAtIndex:i] objectAtIndex:1] intValue];
-                        int direction2 = [[[ret objectAtIndex:j] objectAtIndex:1] intValue];
-                        BOOL adjcent = NO;
-                        if (direction1 == direction2) {
-                            adjcent = NO;
-                        }
-                        if (adjcent) {
-                            FSRectF *rectResult = [[FSRectF alloc] init];
-                            [rectResult set:MIN([rect1 getLeft], [rect2 getLeft]) bottom:MAX([rect1 getTop], [rect2 getTop]) right:MAX([rect1 getRight], [rect2 getRight]) top:MIN([rect1 getBottom], [rect2 getBottom])];
-                            NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:rectResult]], [NSNumber numberWithInt:direction1], nil];
-                            [ret replaceObjectAtIndex:i withObject:array];
-                            [ret removeObjectAtIndex:j];
-                        } else {
-                            j++;
-                        }
-                    }
-                    i++;
-                }
-            }
-        }
-
+        ret = [Utility getTextRects:fstextPage startCharIndex:start endCharIndex:end];
     };
     [_taskServer executeSync:task];
     return ret;
@@ -618,7 +567,6 @@
     MenuItem *typeWriterItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kTypewriter") object:self action:@selector(typeWriter)];
     MenuItem *signatureItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kSignAction") object:self action:@selector(signature)];
 
-    
     if ([Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc]) {
         if ([_extensionsManager.modulesConfig.tools containsObject:Tool_Note]) {
             [array addObject:commentItem];

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -13,48 +13,36 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-typedef void (^highLightClicked)();
-typedef void (^underLineClicked)();
-typedef void (^strikeOutClicked)();
-typedef void (^breakLineClicked)();
-typedef void (^replaceClicked)();
-typedef void (^insertClicked)();
-
-typedef void (^rectClicked)();
-typedef void (^lineClicked)();
-typedef void (^circleClicked)();
-typedef void (^arrowsClicked)();
-typedef void (^pencileClicked)();
-typedef void (^eraserClicked)();
-typedef void (^attachmentClicked)();
-
-typedef void (^typerwriterClicked)();
-typedef void (^noteClicked)();
-typedef void (^stampClicked)();
+typedef void (^DumbBlock)(void);
 
 @class UIExtensionsModulesConfig;
 
 @interface MoreAnnotationsBar : NSObject
 
 @property (nonatomic, strong) UIView *contentView;
-@property (nonatomic, copy) highLightClicked highLightClicked;
-@property (nonatomic, copy) underLineClicked underLineClicked;
-@property (nonatomic, copy) strikeOutClicked strikeOutClicked;
-@property (nonatomic, copy) breakLineClicked breakLineClicked;
-@property (nonatomic, copy) replaceClicked replaceClicked;
-@property (nonatomic, copy) insertClicked insertClicked;
+@property (nonatomic, copy) DumbBlock highLightClicked;
+@property (nonatomic, copy) DumbBlock underLineClicked;
+@property (nonatomic, copy) DumbBlock strikeOutClicked;
+@property (nonatomic, copy) DumbBlock breakLineClicked;
+@property (nonatomic, copy) DumbBlock replaceClicked;
+@property (nonatomic, copy) DumbBlock insertClicked;
 
-@property (nonatomic, copy) rectClicked rectClicked;
-@property (nonatomic, copy) lineClicked lineClicked;
-@property (nonatomic, copy) circleClicked circleClicked;
-@property (nonatomic, copy) arrowsClicked arrowsClicked;
-@property (nonatomic, copy) pencileClicked pencileClicked;
-@property (nonatomic, copy) eraserClicked eraserClicked;
-@property (nonatomic, copy) attachmentClicked attachmentClicked;
+@property (nonatomic, copy) DumbBlock rectClicked;
+@property (nonatomic, copy) DumbBlock lineClicked;
+@property (nonatomic, copy) DumbBlock circleClicked;
+@property (nonatomic, copy) DumbBlock arrowsClicked;
+@property (nonatomic, copy) DumbBlock pencileClicked;
+@property (nonatomic, copy) DumbBlock eraserClicked;
+@property (nonatomic, copy) DumbBlock polygonClicked;
+@property (nonatomic, copy) DumbBlock cloudClicked;
 
-@property (nonatomic, copy) typerwriterClicked typerwriterClicked;
-@property (nonatomic, copy) noteClicked noteClicked;
-@property (nonatomic, copy) stampClicked stampClicked;
+@property (nonatomic, copy) DumbBlock typerwriterClicked;
+@property (nonatomic, copy) DumbBlock textboxClicked;
+@property (nonatomic, copy) DumbBlock noteClicked;
+@property (nonatomic, copy) DumbBlock stampClicked;
+@property (nonatomic, copy) DumbBlock distanceClicked;
+@property (nonatomic, copy) DumbBlock imageClicked;
+@property (nonatomic, copy) DumbBlock attachmentClicked;
 
 - (MoreAnnotationsBar *)initWithWidth:(CGFloat)width config:(UIExtensionsModulesConfig *)config;
 - (void)refreshLayoutWithWidth:(CGFloat)width;

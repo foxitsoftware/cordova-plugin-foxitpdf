@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -71,7 +71,7 @@
         if (self.webView == nil) {
             self.webView = [[UIWebView alloc] initWithFrame:self.view.bounds];
             self.webView.scalesPageToFit = YES;
-            self.webView.delegate = self;
+            //            self.webView.delegate = self;
             if (OS_ISVERSION9) {
                 self.webView.allowsLinkPreview = YES;
             }

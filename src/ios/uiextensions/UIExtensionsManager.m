@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -27,6 +27,8 @@
 #import "NoteToolHandler.h"
 #import "PencilAnnotHandler.h"
 #import "PencilToolHandler.h"
+#import "PolygonAnnotHandler.h"
+#import "PolygonToolHandler.h"
 #import "ReplaceToolHandler.h"
 #import "SelectToolHandler.h"
 #import "ShapeAnnotHandler.h"
@@ -47,6 +49,7 @@
 #import "OutlinePanel.h"
 
 #import "CropViewController.h"
+#import "PanAndZoomViewController.h"
 
 #import "AlertView.h"
 #import "ColorUtility.h"
@@ -68,6 +71,7 @@
 #import "FSUndo.h"
 #import "FormModule.h"
 #import "FreetextModule.h"
+#import "ImageModule.h"
 #import "InsertModule.h"
 #import "LineModule.h"
 #import "LinkModule.h"
@@ -77,6 +81,7 @@
 #import "PageNavigationModule.h"
 #import "PasswordModule.h"
 #import "PencilModule.h"
+#import "PolygonModule.h"
 #import "ReadingBookmarkModule.h"
 #import "ReflowModule.h"
 #import "ReplaceModule.h"
@@ -86,9 +91,11 @@
 #import "SignToolHandler.h"
 #import "SignatureModule.h"
 #import "StampModule.h"
+#import "TextboxModule.h"
 #import "UndoModule.h"
+#import "DistanceModule.h"
 
-@interface UIExtensionsManager () <UIPopoverControllerDelegate, FSThumbnailViewControllerDelegate, SettingBarDelegate>
+@interface UIExtensionsManager () <UIPopoverControllerDelegate, FSThumbnailViewControllerDelegate, SettingBarDelegate, ILayoutEventListener>
 
 @property (nonatomic, strong) NSMutableDictionary *propertyBarListeners;
 @property (nonatomic, strong) NSMutableArray *rotateListeners;
@@ -112,6 +119,7 @@
 @property (nonatomic, strong) NSMutableArray *modules;
 
 @property (nonatomic, strong) FSThumbnailViewController *thumbnailViewController;
+//@property (nonatomic) PDF_LAYOUT_MODE prevLayoutMode; // for returning from thumbnail
 @property (nonatomic, strong) FSThumbnailCache *thumbnailCache;
 
 @property (nonatomic, strong) NSMutableArray *fullScreenListeners;
@@ -124,13 +132,21 @@
 @property (nonatomic, assign) int currentState;
 @property (nonatomic, strong) DXPopover *popover;
 
-@property (nonatomic, strong) UIView *topToolbarViewSaved;
+@property (nonatomic, strong) UIToolbar *topToolbarSaved;
 @property (nonatomic, strong) UIToolbar *bottomToolbarSaved;
 
-@property (nonatomic, strong) UIView *topToolbarView;
-@property (nonatomic, strong) NSMutableArray *topToolBarItemsArr;
+@property (nonatomic, strong) NSArray<UIBarButtonItem*> *topToolBarItemsArr;
+@property (nonatomic, strong) NSArray<UIBarButtonItem*> *bottomToolBarItemsArr;
 
 @property (nonatomic, strong) UIControl *settingBarMaskView;
+
+//pan&zoom
+@property (nonatomic, strong) UIToolbar *PanZoomBottomBar;
+@property (nonatomic, strong) PanZoomView* panZoomView;
+@property (nonatomic, strong) UISlider* zoomSlider;
+@property (nonatomic, strong) UIBarButtonItem* prevPageButtonItem;
+@property (nonatomic, strong) UIBarButtonItem* nextPageButtonItem;
+
 @end
 
 @implementation UIExtensionsManager {
@@ -146,7 +162,6 @@
     if (jsonConfigData) {
         config = [[UIExtensionsModulesConfig alloc] initWithJSONData:jsonConfigData];
         if (!config) {
-            NSString *errMsg = [NSString stringWithFormat:@"Invalid JSON"];
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Invalid JSON" message:@"Extensions manager could not be loaded." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
             [alert show];
             return nil;
@@ -186,6 +201,8 @@
     self.noteIcon = 2;
     self.attachmentIcon = 1;
     self.eraserLineWidth = 4;
+    self.distanceUnit = @"1 inch = 1 inch";
+    self.screenAnnotRotation = e_rotation0;
     self.linksHighlightColor = [UIColor colorWithRed:1 green:1 blue:0 alpha:0.3];
     self.selectionHighlightColor = [UIColor colorWithRed:0 green:0 blue:1 alpha:0.3];
     self.securityHandlers = [NSMutableArray array];
@@ -198,7 +215,7 @@
     self.redoItems = [NSMutableArray<UndoItem *> array];
     self.undoListeners = [NSMutableArray<IFSUndoEventListener> array];
 
-    [_pdfViewCtrl registerLayoutChangedEventListener:self];
+    [_pdfViewCtrl registerLayoutEventListener:self];
     [self buildToolbars];
     [self buildItems];
 
@@ -208,13 +225,10 @@
     [_pdfViewCtrl registerDocEventListener:self];
     [_pdfViewCtrl registerPageEventListener:self];
 
-    [self registerStateChangeListener:self];
     self.panelController = [[FSPanelController alloc] initWithExtensionsManager:self];
     self.panelController.isHidden = YES;
 
     self.propertyBar = [[PropertyBar alloc] initWithPDFViewController:viewctrl extensionsManager:self];
-
-    [self registerSearchEventListener:self];
 
     NSMutableArray *modules = [NSMutableArray array];
     if (self.modulesConfig.loadPageNavigation)
@@ -244,6 +258,9 @@
     if ([tools containsObject:Tool_Freetext]) {
         [modules addObject:[[FreetextModule alloc] initWithUIExtensionsManager:self]];
     }
+    if ([tools containsObject:Tool_Textbox]) {
+        [modules addObject:[[TextboxModule alloc] initWithUIExtensionsManager:self]];
+    }
     if ([tools containsObject:Tool_Pencil]) {
         [modules addObject:[[PencilModule alloc] initWithUIExtensionsManager:self]];
     }
@@ -252,6 +269,9 @@
     }
     if ([tools containsAnyObjectInArray:@[ Tool_Line, Tool_Arrow ]]) {
         [modules addObject:[[LineModule alloc] initWithUIExtensionsManager:self]];
+    }
+    if ([tools containsAnyObjectInArray:@[ Tool_Distance ]]) {
+        [modules addObject:[[DistanceModule alloc] initWithUIExtensionsManager:self]];
     }
     if ([tools containsObject:Tool_Stamp]) {
         [modules addObject:[[StampModule alloc] initWithUIExtensionsManager:self]];
@@ -262,6 +282,12 @@
     if ([tools containsObject:Tool_Replace]) {
         [modules addObject:[[ReplaceModule alloc] initWithUIExtensionsManager:self]];
     }
+    if ([tools containsObject:Tool_Image]) {
+        [modules addObject:[[ImageModule alloc] initWithUIExtensionsManager:self]];
+    }
+    if ([tools containsAnyObjectInArray:@[ Tool_Polygon, Tool_Cloud ]]) {
+        [modules addObject:[[PolygonModule alloc] initWithUIExtensionsManager:self]];
+    }
     if (self.modulesConfig.loadAttachment) {
         [modules addObject:[[AttachmentModule alloc] initWithUIExtensionsManager:self]];
     }
@@ -271,63 +297,116 @@
         [modules addObject:[[SignatureModule alloc] initWithUIExtensionsManager:self]];
     if ([self.modulesConfig.tools containsObject:Tool_Select])
         [modules addObject:[[SelectionModule alloc] initWithUIExtensionsManager:self]];
-
     [modules addObject:[[LinkModule alloc] initWithUIExtensionsManager:self]];
     self.passwordModule = [[PasswordModule alloc] initWithExtensionsManager:self];
     [modules addObject:self.passwordModule];
     self.modules = modules;
-
     self.menuControl = [[MenuControl alloc] initWithUIExtensionsManager:self];
 
     _iconProvider = [[ExAnnotIconProviderCallback alloc] init];
     [FSLibrary setAnnotIconProvider:_iconProvider];
     _actionHandler = [[ExActionHandler alloc] initWithPDFViewControl:viewctrl];
     [FSLibrary setActionHandler:_actionHandler];
-    //    [FSLibrary registerDefaultSignatureHandler];
 
     self.thumbnailCache = [[FSThumbnailCache alloc] initWithUIExtenionsManager:self];
     [_pdfViewCtrl registerPageEventListener:self.thumbnailCache];
     [self registerAnnotEventListener:self.thumbnailCache];
     [_pdfViewCtrl registerScrollViewEventListener:self];
-
-    _topToolBarItemsArr = [self.topToolbar.items mutableCopy];
     
     return self;
 }
 
-#pragma mark - set topToolbar item hide/show
--(void)setTopToolbarItemHiddenWithTag:(NSUInteger)itemTag hidden:(BOOL)isHidden{
-    if (itemTag != FS_TOPBAR_ITEM_BOOKMARK_TAG && itemTag != FS_TOPBAR_ITEM_MORE_TAG && itemTag != FS_TOPBAR_ITEM_SEARCH_TAG && itemTag != FS_TOPBAR_ITEM_BACK_TAG) {
-        return;
+#pragma mark - get bottomToolbar item hide/show status
+-(NSMutableDictionary *)getBottomToolbarItemHiddenStatus {
+    NSMutableDictionary *bottombarbuttonInfo = [@{
+                                               @"LIST":@"YES",
+                                               @"VIEW":@"YES",
+                                               @"COMMENT":@"YES",
+                                               @"SIGNATURE":@"YES",
+                                               } mutableCopy];
+    
+    NSMutableDictionary *bottomItemTagDic = [@{
+                                               [NSNumber numberWithInt:FS_BOTTOMBAR_ITEM_PANEL_TAG]:@"LIST",
+                                               [NSNumber numberWithInt:FS_BOTTOMBAR_ITEM_READMODE_TAG]:@"VIEW",
+                                               [NSNumber numberWithInt:FS_BOTTOMBAR_ITEM_ANNOT_TAG]:@"COMMENT",
+                                               [NSNumber numberWithInt:FS_BOTTOMBAR_ITEM_SIGNATURE_TAG]:@"SIGNATURE",
+                                              } mutableCopy];
+    
+    for (UIBarButtonItem *tempbarItem in self.bottomToolbar.items) {
+        NSArray *tempArr = [bottomItemTagDic allKeys];
+        NSNumber *tag = [NSNumber numberWithLong:tempbarItem.tag];
+        if ([tempArr containsObject: tag]) {
+            [bottombarbuttonInfo setObject:@"NO" forKey:[bottomItemTagDic objectForKey:tag]];
+        }
     }
     
-    NSMutableArray *topToolBarItems = [self.topToolbar.items mutableCopy];
+    return bottombarbuttonInfo;
+}
+
+#pragma mark - get topToolbar item hide/show status
+-(NSMutableDictionary *)getTopToolbarItemHiddenStatus {
+    NSMutableDictionary *topbarbuttonInfo = [@{
+                                               @"BACK":self.backButton.isHidden ? @"YES":@"NO",
+                                               } mutableCopy];
     
+    NSMutableArray *tempArr = [[NSMutableArray alloc] initWithCapacity:3];
+    
+    for (UIBarButtonItem *tempbarItem in self.topToolbar.items) {
+        [tempArr addObject:[NSNumber numberWithLong:tempbarItem.tag ]];
+    }
+    
+    NSString *bookmarkResult = @"NO";
+    NSString *searchResult = @"NO";
+    NSString *morekResult = @"NO";
+    NSString *backResult = @"NO";
+    bookmarkResult = [tempArr containsObject:[NSNumber numberWithInt:FS_TOPBAR_ITEM_BOOKMARK_TAG]] ? @"NO" : @"YES";
+    searchResult = [tempArr containsObject:[NSNumber numberWithInt:FS_TOPBAR_ITEM_SEARCH_TAG]] ?  @"NO" : @"YES";
+    morekResult = [tempArr containsObject:[NSNumber numberWithInt:FS_TOPBAR_ITEM_MORE_TAG]] ?  @"NO" : @"YES";
+    backResult = [tempArr containsObject:[NSNumber numberWithInt:FS_TOPBAR_ITEM_BACK_TAG]] ?  @"NO" : @"YES";
+    
+    [topbarbuttonInfo setObject:bookmarkResult forKey:@"BOOKMARK"];
+    [topbarbuttonInfo setObject:searchResult forKey:@"SEARCH"];
+    [topbarbuttonInfo setObject:morekResult forKey:@"MORE"];
+    [topbarbuttonInfo setObject:backResult forKey:@"BACK"];
+    
+    return topbarbuttonInfo;
+}
+
+#pragma mark - set toolbar items hide/show
+-(void)setToolbarItemHiddenWithTag:(NSUInteger)itemTag hidden:(BOOL)isHidden{
+    NSMutableArray *toolBarItems = nil;
+    if(itemTag < 200)
+        toolBarItems = [self.topToolbar.items mutableCopy];
+    else
+        toolBarItems = [self.bottomToolbar.items mutableCopy];
     if (isHidden){
-        UIBarButtonItem *waitRemoveItem = [[UIBarButtonItem alloc] init];
-        for (UIBarButtonItem *tempbarItem in topToolBarItems) {
+        UIBarButtonItem *waitRemoveItem = nil;
+        for (UIBarButtonItem *tempbarItem in toolBarItems) {
             if (tempbarItem.tag == itemTag) {
                 waitRemoveItem = tempbarItem;
             }
         }
         
-        if([topToolBarItems containsObject:waitRemoveItem]){
-            [topToolBarItems removeObject:waitRemoveItem];
+        if(waitRemoveItem && [toolBarItems containsObject:waitRemoveItem]){
+            [toolBarItems removeObject:waitRemoveItem];
         }
     }else{
-        UIBarButtonItem *waitAddItem = [[UIBarButtonItem alloc] init];
+        UIBarButtonItem *waitAddItem = nil;
         for (UIBarButtonItem *tempbarItem in _topToolBarItemsArr) {
             if (tempbarItem.tag == itemTag) {
                 waitAddItem = tempbarItem;
             }
         }
         
-        if(![topToolBarItems containsObject:waitAddItem]){
-            [topToolBarItems addObject:waitAddItem];
+        if(waitAddItem && ![toolBarItems containsObject:waitAddItem]){
+            [toolBarItems addObject:waitAddItem];
         }
     }
     
-    [self.topToolbar setItems:topToolBarItems animated:NO];
+    if(itemTag < 200)
+        [self.topToolbar setItems:toolBarItems animated:NO];
+    else
+        [self.bottomToolbar setItems:toolBarItems animated:NO];
 }
 
 #pragma mark <SettingBarDelegate>
@@ -344,6 +423,11 @@
 
 - (void)settingBarDoublePageLayout:(SettingBar *)settingBar {
     [self.pdfViewCtrl setPageLayoutMode:PDF_LAYOUT_MODE_TWO];
+    self.hiddenSettingBar = YES;
+}
+
+- (void)settingBarCoverPageLayout:(SettingBar *)settingBar {
+    [self.pdfViewCtrl setPageLayoutMode:PDF_LAYOUT_MODE_TWO_RIGHT];
     self.hiddenSettingBar = YES;
 }
 
@@ -367,6 +451,11 @@
 
 - (void)settingBarCrop:(SettingBar *)settingBar {
     [self setCropMode];
+    self.hiddenSettingBar = YES;
+}
+
+- (void)settingBarPanAndZoom:(SettingBar *)settingBar {
+    [self setPanAndZoomMode];
     self.hiddenSettingBar = YES;
 }
 
@@ -419,7 +508,7 @@
 
 - (void)onPagesInsertedAtRange:(NSRange)range {
     //Load Form if there it is.
-    FormAnnotHandler *handler = [self getAnnotHandlerByType:e_annotWidget];
+    FormAnnotHandler *handler = (FormAnnotHandler *) [self getAnnotHandlerByType:e_annotWidget];
     if (!handler)
         return;
     [handler onDocOpened:self.pdfViewCtrl.currentDoc error:0];
@@ -432,9 +521,113 @@
 - (void)onPageChanged:(int)oldIndex currentIndex:(int)currentIndex {
     [self dismissAnnotMenu];
     self.isShowBlankMenu = NO;
+    if (self.zoomSlider) {
+        self.zoomSlider.value = [_pdfViewCtrl getZoom];
+        if ([_pdfViewCtrl getPageCount] - 1 == _pdfViewCtrl.getCurrentPage) {
+            self.nextPageButtonItem.enabled = NO;
+        } else {
+            self.nextPageButtonItem.enabled = YES;
+        }
+        if (0 == _pdfViewCtrl.getCurrentPage) {
+            self.prevPageButtonItem.enabled = NO;
+        } else {
+            self.prevPageButtonItem.enabled = YES;
+        }
+    }
+}
+
+- (void)setPanAndZoomMode {
+    self.panZoomView = [[PanZoomView alloc] initWithUIExtensionsManager:self];
+    
+    [self.pdfViewCtrl addSubview:self.panZoomView];
+    
+    _topToolBarItemsArr = self.topToolbar.items;
+    _bottomToolBarItemsArr = self.bottomToolbar.items;
+    
+    [self buildPanZoomBottomBar];
+}
+
+- (void)buildPanZoomBottomBar {
+    
+    UIButton* exitButton = [Utility createButtonWithImage:[UIImage imageNamed:@"common_back_blue"]];
+    [exitButton addTarget:self action:@selector(onClickExitPanZoomButton) forControlEvents:UIControlEventTouchUpInside];
+    exitButton.enabled = YES;
+    UIBarButtonItem *exitButtonItem = [[UIBarButtonItem alloc] initWithCustomView:exitButton];
+    
+    //zoom tool
+    UIButton* zoomOutButton = [Utility createButtonWithImage:[UIImage imageNamed:@"zoom_out"]];
+    zoomOutButton.enabled = NO;
+    UIBarButtonItem *zoomOutButtonItem = [[UIBarButtonItem alloc] initWithCustomView:zoomOutButton];
+    zoomOutButtonItem.enabled = NO;
+    
+    UIButton* zoomInButton = [Utility createButtonWithImage:[UIImage imageNamed:@"zoom_in"]];
+    zoomInButton.enabled = NO;
+    UIBarButtonItem *zoomInButtonItem = [[UIBarButtonItem alloc] initWithCustomView:zoomInButton];
+    zoomInButtonItem.enabled = NO;
+    
+    //page change tool
+    UIButton* prevPageButton = [Utility createButtonWithImage:[UIImage imageNamed:@"zoom_prevPage"]];
+    [prevPageButton addTarget:self action:@selector(onClickPrevPageButton) forControlEvents:UIControlEventTouchUpInside];
+    self.prevPageButtonItem = [[UIBarButtonItem alloc] initWithCustomView:prevPageButton];
+    
+    UIButton* nextPageButton = [Utility createButtonWithImage:[UIImage imageNamed:@"zoom_nextPage"]];
+    [nextPageButton addTarget:self action:@selector(onClickNextPageButton) forControlEvents:UIControlEventTouchUpInside];
+    self.nextPageButtonItem = [[UIBarButtonItem alloc] initWithCustomView:nextPageButton];
+    
+    int width = zoomInButton.frame.size.width + zoomOutButton.frame.size.width + prevPageButton.frame.size.width + nextPageButton.frame.size.width;
+    self.zoomSlider = [[UISlider alloc] initWithFrame:CGRectMake( 0, 0, SCREENWIDTH - width - 100, 20)];
+    self.zoomSlider.maximumValue = 10.0;
+    self.zoomSlider.minimumValue = 1.0;
+    self.zoomSlider.value = [_pdfViewCtrl getZoom];
+    self.zoomSlider.continuous = YES;
+    [self.zoomSlider addTarget:self action:@selector(onZoomSliderValueChanged:) forControlEvents:UIControlEventValueChanged];
+    UIBarButtonItem* zoomSliderItem = [[UIBarButtonItem alloc] initWithCustomView:self.zoomSlider];
+    
+    UIBarButtonItem *flexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+    
+    self.topToolbar.items = @[ exitButtonItem, flexibleSpace ];
+    self.bottomToolbar.items = @[ flexibleSpace, zoomOutButtonItem, zoomSliderItem, zoomInButtonItem, flexibleSpace, self.prevPageButtonItem, flexibleSpace, self.nextPageButtonItem, flexibleSpace ];
+    
+    if ([_pdfViewCtrl getPageCount] - 1 == _pdfViewCtrl.getCurrentPage) {
+        self.nextPageButtonItem.enabled = NO;
+    }
+    if (0 == _pdfViewCtrl.getCurrentPage) {
+        self.prevPageButtonItem.enabled = NO;
+    }
+}
+
+- (void)onClickExitPanZoomButton {
+    [self.panZoomView removeFromSuperview];
+    
+    [self unregisterAnnotEventListener:self.panZoomView];
+    [self unregisterRotateChangedListener:self.panZoomView];
+    [_pdfViewCtrl unregisterPageEventListener:self.panZoomView];
+    [_pdfViewCtrl unregisterScrollViewEventListener:self.panZoomView];
+    [_pdfViewCtrl unregisterLayoutEventListener:self.panZoomView];
+    [_pdfViewCtrl unregisterDocEventListener:self.panZoomView];
+    
+    self.panZoomView = nil;
+    
+    self.topToolbar.items = _topToolBarItemsArr;
+    self.bottomToolbar.items = _bottomToolBarItemsArr;
+}
+
+- (void)onZoomSliderValueChanged:(UISlider*)slider {
+    CGFloat scale = slider.value;
+    [_pdfViewCtrl setZoom:scale];
+}
+
+- (void)onClickPrevPageButton {
+    [_pdfViewCtrl gotoPrevPage:NO];
+}
+
+- (void)onClickNextPageButton {
+    [_pdfViewCtrl gotoNextPage:NO];
 }
 
 - (void)setCropMode {
+    self.settingBar.panAndZoomBtn.enabled = NO;
+    
     CropViewController *cropViewController = [[CropViewController alloc] initWithNibName:@"CropViewController" bundle:nil];
     [cropViewController setExtension:self];
     cropViewController.cropViewClosedHandler = ^() {
@@ -501,9 +694,9 @@
 
 - (id<IToolHandler>)getToolHandlerByName:(NSString *)name {
     // tools share one tool handler
-    if ([@[Tool_Highlight, Tool_Squiggly, Tool_StrikeOut, Tool_Underline] containsObject:name]) {
+    if ([@[ Tool_Highlight, Tool_Squiggly, Tool_StrikeOut, Tool_Underline ] containsObject:name]) {
         name = Tool_Markup;
-    } else if ([@[Tool_Rectangle, Tool_Oval] containsObject:name]) {
+    } else if ([@[ Tool_Rectangle, Tool_Oval ] containsObject:name]) {
         name = Tool_Shape;
     } else if ([name isEqualToString:Tool_Arrow]) {
         name = Tool_Line;
@@ -682,12 +875,11 @@
         note.lineWidth = 2;
         note.modifiedDate = [NSDate date];
         note.createDate = [NSDate date];
+        [note resetAppearanceStream];
         id<IAnnotHandler> annotHandler = [self getAnnotHandlerByAnnot:note];
         [annotHandler addAnnot:note];
     };
-    if (self.currentToolHandler == self) {
-        [self setCurrentToolHandler:nil];
-    }
+    [self setCurrentToolHandler:nil];
 }
 
 - (void)typeWriter {
@@ -697,7 +889,7 @@
     toolHandler.freeTextStartPoint = [_pdfViewCtrl convertPdfPtToPageViewPt:self.currentPoint pageIndex:self.currentPageIndex];
     [toolHandler onPageViewTap:self.currentPageIndex recognizer:nil];
     toolHandler.isTypewriterToolbarActive = NO;
-    if (self.currentToolHandler == self) {
+    if (self.currentToolHandler == (id<IToolHandler>)self) { // todo
         [self setCurrentToolHandler:nil];
     }
 }
@@ -911,12 +1103,11 @@
 
     if (_currentState == STATE_PAGENAVIGATE)
         return NO;
-    FSPDFViewCtrl *pdfView = self.pdfViewCtrl;
     CGFloat width = pageView.bounds.size.width;
     if (width * 0.2 < point.x && point.x < width * 0.8) {
         self.isFullScreen = !self.isFullScreen;
         return YES;
-    } else if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO && width * 1.2 < point.x && point.x < width * 1.8) {
+    } else if (([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_RIGHT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_MIDDLE) && width * 1.2 < point.x && point.x < width * 1.8) {
         self.isFullScreen = !self.isFullScreen;
         return YES;
     } else {
@@ -1018,7 +1209,7 @@
         return NO;
     }
     if (_currentToolHandler != nil) {
-        if ([_currentToolHandler onPageViewShouldBegin:pageIndex recognizer:recognizer]) {
+        if ([_currentToolHandler respondsToSelector:@selector(onPageViewShouldBegin:recognizer:)] && [_currentToolHandler onPageViewShouldBegin:pageIndex recognizer:recognizer]) {
             return YES;
         }
     }
@@ -1265,17 +1456,24 @@
     }
 }
 
-- (void)onAnnotDeleted:(FSPDFPage *)page annot:(FSAnnot *)annot {
+- (void)onAnnotWillDelete:(FSPDFPage *)page annot:(FSAnnot *)annot {
     if (annot == self.currentAnnot) {
         _currentAnnot = nil;
     }
 
     for (id<IAnnotEventListener> listener in self.annotListeners) {
+        if ([listener respondsToSelector:@selector(onAnnotWillDelete:annot:)]) {
+            [listener onAnnotWillDelete:page annot:annot];
+        }
+    }
+}
+
+- (void)onAnnotDeleted:(FSPDFPage *)page annot:(FSAnnot *)annot {
+    for (id<IAnnotEventListener> listener in self.annotListeners) {
         if ([listener respondsToSelector:@selector(onAnnotDeleted:annot:)]) {
             [listener onAnnotDeleted:page annot:annot];
         }
     }
-
     self.isDocModified = YES;
 }
 
@@ -1322,6 +1520,9 @@
 }
 - (void)onScrollViewDidEndZooming:(UIScrollView *)scrollView {
     [self showAnnotMenu];
+    if (self.zoomSlider) {
+        self.zoomSlider.value = [_pdfViewCtrl getZoom];
+    }
 }
 
 - (void)setCurrentAnnot:(FSAnnot *)annot {
@@ -1341,25 +1542,32 @@
     if (annot != nil) {
         int pageIndex = annot.pageIndex;
         CGRect pvRect = [Utility getAnnotRect:annot pdfViewCtrl:_pdfViewCtrl];
+        pvRect = CGRectIntersection([_pdfViewCtrl getPageView:pageIndex].bounds, pvRect);
         CGRect dvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:pvRect pageIndex:pageIndex];
         BOOL isAnnotVisible = CGRectContainsRect(_pdfViewCtrl.bounds, dvRect);
-        if (!isAnnotVisible) {
+
+        void (^block)(void) = ^{
+            id<IAnnotHandler> annotHandler = [self getAnnotHandlerByAnnot:annot];
+            if (annotHandler) {
+                [annotHandler onAnnotSelected:annot];
+                [self onAnnotSelected:[annot getPage] annot:annot];
+            }
+        };
+
+        if (isAnnotVisible) {
+            block();
+        } else {
             FSPointF *fspt = [[FSPointF alloc] init];
             FSRectF *fsrect = annot.type == e_annotCaret ? [Utility getCaretAnnotRect:(FSCaret *) annot] : annot.fsrect;
-            [fspt set:fsrect.left y:fsrect.bottom];
-
+            [fspt set:fsrect.left y:fsrect.top];
             if (DEVICE_iPHONE) {
                 //Avoid being sheltered from top bar. To do, need to check page rotation.
                 [fspt setY:[fspt getY] + 64];
             }
-
             [_pdfViewCtrl gotoPage:pageIndex withDocPoint:fspt animated:YES];
-        }
-
-        id<IAnnotHandler> annotHandler = [self getAnnotHandlerByAnnot:annot];
-        if (annotHandler) {
-            [annotHandler onAnnotSelected:annot];
-            [self onAnnotSelected:[annot getPage] annot:annot];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                block();
+            });
         }
     }
 }
@@ -1399,6 +1607,18 @@
         [self.propertyBar showPropertyBar:rect inView:view viewsCanMove:nil];
         return;
     }
+
+    // image
+    if (annotType == e_annotScreen) {
+        [self.propertyBar resetBySupportedItems:PROPERTY_OPACITY | PROPERTY_ROTATION frame:CGRectZero];
+        [self.propertyBar setProperty:PROPERTY_COLOR intValue:[UIColor grayColor].rgbHex];
+        [self.propertyBar setProperty:PROPERTY_OPACITY intValue:[self getAnnotOpacity:annotType]];
+        [self.propertyBar setProperty:PROPERTY_ROTATION intValue:self.screenAnnotRotation];
+        [self.propertyBar addListener:self];
+        [self.propertyBar showPropertyBar:rect inView:view viewsCanMove:nil];
+        return;
+    }
+
     NSArray *colors = nil;
     if (annotType == e_annotHighlight) {
         colors = @[ @0xFFFF00, @0xCCFF66, @0x00FFFF, @0x99CCFF, @0x7480FC, @0xCC99FF, @0xFF99FF, @0xFF9999, @0x00CC66, @0x22F3B1 ];
@@ -1411,16 +1631,22 @@
     } else if (annotType == e_annotCircle || annotType == e_annotSquare || annotType == e_annotLine) {
         colors = @[ @0xFF9F40, @0x8080FF, @0xBAE94C, @0xFFF160, @0xC3C3C3, @0xFF4C4C, @0x669999, @0xC72DA1, @0x996666, @0x000000 ];
     } else if (annotType == e_annotFreeText) {
-        colors = @[ @0x3366CC, @0x669933, @0xCC6600, @0xCC9900, @0xA3A305, @0xCC0000, @0x336666, @0x660066, @0x000000, @0x8F8E8E ];
+        if ([[self.currentToolHandler getName] isEqualToString:Tool_Textbox]) {
+            colors = @[ @0x7480FC, @0xFFFF00, @0xCCFF66, @0x00FFFF, @0x99CCFF, @0xCC99FF, @0xFF9999, @0xFFFFFF, @0xC3C3C3, @0x000000 ];
+        } else {
+            colors = @[ @0x3366CC, @0x669933, @0xCC6600, @0xCC9900, @0xA3A305, @0xCC0000, @0x336666, @0x660066, @0x000000, @0x8F8E8E ];
+        }
     } else if (annotType == e_annotInk) {
         colors = @[ @0xFF9F40, @0x8080FF, @0xBAE94C, @0xFFF160, @0xC3C3C3, @0xFF4C4C, @0x669999, @0xC72DA1, @0x996666, @0x000000 ];
     } else if (annotType == e_annotCaret || annotType == e_annotFileAttachment) {
         colors = @[ @0xFF9F40, @0x8080FF, @0xBAE94C, @0xFFF160, @0x996666, @0xFF4C4C, @0x669999, @0xFFFFFF, @0xC3C3C3, @0x000000 ];
+    } else if (annotType == e_annotPolygon) {
+        colors = ((PolygonAnnotHandler *) [self getAnnotHandlerByType:e_annotPolygon]).colors;
     }
 
     [self.propertyBar setColors:colors];
 
-    if (annotType == e_annotSquare || annotType == e_annotCircle || annotType == e_annotLine) {
+    if (annotType == e_annotSquare || annotType == e_annotCircle || (annotType == e_annotLine && ![[self.currentToolHandler getName] isEqualToString:Tool_Distance]) || annotType == e_annotPolygon) {
         [self.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY | PROPERTY_LINEWIDTH frame:CGRectZero];
         [self.propertyBar setProperty:PROPERTY_LINEWIDTH intValue:[self getAnnotLineWidth:annotType]];
     } else if (annotType == e_annotFreeText) {
@@ -1433,12 +1659,28 @@
     } else if (annotType == e_annotFileAttachment) {
         [self.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY | PROPERTY_ATTACHMENT_ICONTYPE frame:CGRectZero];
         [self.propertyBar setProperty:PROPERTY_ATTACHMENT_ICONTYPE intValue:self.attachmentIcon];
-    } else {
+    }
+    // distance
+    else if (annotType == e_annotLine && [[self.currentToolHandler getName] isEqualToString:Tool_Distance]) {
+        [self.propertyBar resetBySupportedItems:PROPERTY_DISTANCE_UNIT | PROPERTY_COLOR | PROPERTY_OPACITY frame:CGRectZero];
+        
+        [self.propertyBar setProperty:PROPERTY_COLOR intValue:[self getPropertyBarSettingColor:annotType]];
+        [self.propertyBar setProperty:PROPERTY_OPACITY intValue:[self getAnnotOpacity:annotType]];
+        
+        [self.propertyBar setProperty:PROPERTY_DISTANCE_UNIT stringValue:self.distanceUnit];
+    
+        [self.propertyBar addListener:self];
+        [self.propertyBar showPropertyBar:rect inView:view viewsCanMove:nil];
+        return;
+    }
+    else {
         [self.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY frame:CGRectZero];
     }
     [self.propertyBar setProperty:PROPERTY_COLOR intValue:[self getPropertyBarSettingColor:annotType]];
     [self.propertyBar setProperty:PROPERTY_OPACITY intValue:[self getAnnotOpacity:annotType]];
 
+    
+    
     if (annotType == e_annotNote) {
         if (self.noteIcon == 0) {
             self.noteIcon = 2;
@@ -1452,14 +1694,15 @@
 /** @brief Customized annotation type on application level. */
 #define e_annotArrowLine 99
 #define e_annotInsert 101
+#define e_annotTextbox 103
+#define e_annotCloud 105
 
 - (int)filterAnnotType:(FSAnnotType)annotType {
     if (e_annotLine == annotType) {
         LineToolHandler *toolHandler = [self getToolHandlerByName:Tool_Line];
         if (toolHandler.isArrowLine)
             return e_annotArrowLine;
-    }
-    if (e_annotCaret == annotType) {
+    } else if (e_annotCaret == annotType) {
         NSString *toolHandlerName = [self.currentToolHandler getName];
         if ([toolHandlerName isEqualToString:Tool_Insert]) {
             return e_annotInsert;
@@ -1468,6 +1711,26 @@
         CaretAnnotHandler *annotHandler = (CaretAnnotHandler *) [self getAnnotHandlerByType:e_annotCaret];
         if (annotHandler.isInsert) {
             return e_annotInsert;
+        }
+    } else if (e_annotFreeText == annotType) {
+        BOOL isTextbox = NO;
+        if ([[self.currentToolHandler getName] isEqualToString:Tool_Textbox]) {
+            isTextbox = YES;
+        } else if (self.currentAnnot && self.currentAnnot.type == e_annotFreeText && self.currentAnnot.intent == nil) {
+            isTextbox = YES;
+        }
+        if (isTextbox) {
+            return e_annotTextbox;
+        }
+    } else if (e_annotPolygon == annotType) {
+        BOOL isPolygon = YES;
+        if ([[self.currentToolHandler getName] isEqualToString:Tool_Polygon]) {
+            isPolygon = ((PolygonToolHandler *) self.currentToolHandler).isPolygon;
+        } else if (self.currentAnnot && self.currentAnnot.type == e_annotPolygon) {
+            isPolygon = !([[((FSPolygon *) self.currentAnnot) getBorderInfo] getStyle] == e_borderStyleCloudy);
+        }
+        if (!isPolygon) {
+            return e_annotCloud;
         }
     }
 
@@ -1517,7 +1780,7 @@
 }
 
 - (void)setAnnotColor:(unsigned int)color annotType:(FSAnnotType)annotType {
-    self.annotColors[[NSNumber numberWithInt:[self filterAnnotType:annotType]]] = [NSNumber numberWithInt:color];
+    self.annotColors[[NSNumber numberWithInt:[self filterAnnotType:annotType]]] = @(color);
     for (id<IAnnotPropertyListener> listender in self.annotPropertyListeners) {
         if ([listender respondsToSelector:@selector(onAnnotColorChanged:annotType:)])
             [listender onAnnotColorChanged:color annotType:annotType];
@@ -1530,7 +1793,7 @@
 }
 
 - (void)setAnnotOpacity:(int)opacity annotType:(FSAnnotType)annotType {
-    self.annotOpacities[[NSNumber numberWithInt:[self filterAnnotType:annotType]]] = [NSNumber numberWithInt:opacity];
+    self.annotOpacities[[NSNumber numberWithInt:[self filterAnnotType:annotType]]] = @(opacity);
     for (id<IAnnotPropertyListener> listender in self.annotPropertyListeners) {
         if ([listender respondsToSelector:@selector(onAnnotOpacityChanged:annotType:)])
             [listender onAnnotOpacityChanged:opacity annotType:annotType];
@@ -1547,7 +1810,7 @@
 }
 
 - (void)setAnnotLineWidth:(int)lineWidth annotType:(FSAnnotType)annotType {
-    self.annotLineWidths[[NSNumber numberWithInt:[self filterAnnotType:annotType]]] = [NSNumber numberWithInt:lineWidth];
+    self.annotLineWidths[[NSNumber numberWithInt:[self filterAnnotType:annotType]]] = @(lineWidth);
     for (id<IAnnotPropertyListener> listener in self.annotPropertyListeners) {
         if ([listener respondsToSelector:@selector(onAnnotLineWidthChanged:annotType:)]) {
             [listener onAnnotLineWidthChanged:lineWidth annotType:annotType];
@@ -1556,7 +1819,7 @@
 }
 
 - (int)getAnnotFontSize:(FSAnnotType)annotType {
-    NSNumber *num = (NSNumber *) self.annotFontSizes[[NSNumber numberWithInt:annotType]];
+    NSNumber *num = (NSNumber *) self.annotFontSizes[@([self filterAnnotType:annotType])];
     if (num) {
         return num.intValue;
     } else {
@@ -1565,7 +1828,7 @@
 }
 
 - (void)setAnnotFontSize:(int)fontSize annotType:(FSAnnotType)annotType {
-    self.annotFontSizes[[NSNumber numberWithInt:annotType]] = [NSNumber numberWithInt:fontSize];
+    self.annotFontSizes[@([self filterAnnotType:annotType])] = @(fontSize);
     for (id<IAnnotPropertyListener> listener in self.annotPropertyListeners) {
         if ([listener respondsToSelector:@selector(onAnnotFontSizeChanged:annotType:)]) {
             [listener onAnnotFontSizeChanged:fontSize annotType:annotType];
@@ -1574,11 +1837,11 @@
 }
 
 - (NSString *)getAnnotFontName:(FSAnnotType)annotType {
-    return self.annotFontNames[[NSNumber numberWithInt:annotType]] ?: @"Courier";
+    return self.annotFontNames[@([self filterAnnotType:annotType])] ?: @"Courier";
 }
 
 - (void)setAnnotFontName:(NSString *)fontName annotType:(FSAnnotType)annotType {
-    self.annotFontNames[[NSNumber numberWithInt:annotType]] = fontName;
+    self.annotFontNames[@([self filterAnnotType:annotType])] = fontName;
     for (id<IAnnotPropertyListener> listener in self.annotPropertyListeners) {
         if ([listener respondsToSelector:@selector(onAnnotFontNameChanged:annotType:)]) {
             [listener onAnnotFontNameChanged:fontName annotType:annotType];
@@ -1604,32 +1867,41 @@
     }
 }
 
+- (void)setScreenAnnotRotation:(FSRotation)screenAnnotRotation {
+    _screenAnnotRotation = screenAnnotRotation;
+    for (id<IAnnotPropertyListener> listener in self.annotPropertyListeners) {
+        if ([listener respondsToSelector:@selector(onAnnotRotationChanged:annotType:)]) {
+            [listener onAnnotRotationChanged:screenAnnotRotation annotType:e_annotScreen];
+        }
+    }
+}
+
 #pragma mark - IPropertyValueChangedListener
 - (void)onProperty:(long)property changedFrom:(NSValue *)oldValue to:(NSValue *)newValue {
     FSAnnot *annot = self.currentAnnot;
     if (annot) {
-        BOOL addUndo;
-        switch (annot.type) {
-        case e_annotNote:
-        case e_annotCircle:
-        case e_annotSquare:
-        case e_annotFreeText:
-        // text markup
-        case e_annotHighlight:
-        case e_annotUnderline:
-        case e_annotStrikeOut:
-        case e_annotSquiggly:
-
-        case e_annotLine:
-        case e_annotInk:
-        case e_annotCaret:
-        case e_annotStamp:
-            addUndo = NO;
-            break;
-        default:
-            addUndo = YES;
-            break;
-        }
+        //        BOOL addUndo;
+        //        switch (annot.type) {
+        //        case e_annotNote:
+        //        case e_annotCircle:
+        //        case e_annotSquare:
+        //        case e_annotFreeText:
+        //        // text markup
+        //        case e_annotHighlight:
+        //        case e_annotUnderline:
+        //        case e_annotStrikeOut:
+        //        case e_annotSquiggly:
+        //
+        //        case e_annotLine:
+        //        case e_annotInk:
+        //        case e_annotCaret:
+        //        case e_annotStamp:
+        //            addUndo = NO;
+        //            break;
+        //        default:
+        //            addUndo = YES;
+        //            break;
+        //        }
         [self changeAnnot:annot property:property from:oldValue to:newValue];
     }
 
@@ -1659,6 +1931,12 @@
         break;
     case PROPERTY_FONTNAME:
         [self setAnnotFontName:(NSString *) [newValue nonretainedObjectValue] annotType:annotType];
+        break;
+    case PROPERTY_DISTANCE_UNIT:
+        self.distanceUnit = (NSString *) [newValue nonretainedObjectValue];
+            break;
+    case PROPERTY_ROTATION:
+        self.screenAnnotRotation = [Utility rotationForValue:newValue];
         break;
     default:
         break;
@@ -1724,6 +2002,23 @@
             modified = NO;
         }
         break;
+    case PROPERTY_DISTANCE_UNIT:
+        if (annot.type == e_annotLine) {
+            FSLine *lineAnnot = (FSLine *) annot;
+            if ([[lineAnnot getIntent] isEqualToString:@"LineDimension"]) {
+                NSString *unitName = (NSString *) [newValue nonretainedObjectValue];
+                annot.subject = unitName;
+            }
+        }
+        break;
+    case PROPERTY_ROTATION:
+        if (annot.type == e_annotScreen) {
+            FSRotation rotation = [Utility rotationForValue:newValue];
+            [(FSScreen *) annot setRotation:rotation];
+        } else {
+            modified = NO;
+        }
+        break;
     default:
         modified = NO;
         break;
@@ -1732,6 +2027,28 @@
         FSDateTime *now = [Utility convert2FSDateTime:[NSDate date]];
         [annot setModifiedDateTime:now];
         [annot resetAppearanceStream];
+
+        // keep annot in bounds
+        {
+            FSRectF *rect = annot.fsrect;
+            FSPDFPage *page = [annot getPage];
+            BOOL isOutOfBounds = NO;
+            if (rect.bottom < 0) {
+                rect.top -= rect.bottom;
+                rect.bottom = 0;
+                isOutOfBounds = YES;
+            }
+            float w = [page getWidth];
+            if (rect.right > w) {
+                rect.left -= rect.right - w;
+                rect.right = w;
+                isOutOfBounds = YES;
+            }
+            if (isOutOfBounds) {
+                annot.fsrect = rect;
+                [annot resetAppearanceStream];
+            }
+        }
 
         id<IAnnotHandler> annotHandler = [self getAnnotHandlerByAnnot:annot];
         if ([annotHandler respondsToSelector:@selector(onAnnotChanged:property:from:to:)]) {
@@ -1804,6 +2121,7 @@
     if (!self.currentAnnot) {
         return YES;
     }
+    // these types should draw in annot handler
     static FSAnnotType shouldNotRenderTypes[] = {
         e_annotFreeText,
         e_annotLine,
@@ -1812,14 +2130,16 @@
         e_annotSquare,
         e_annotCircle,
         e_annotStamp,
-        e_annotFileAttachment};
+        e_annotFileAttachment,
+        e_annotScreen,
+        e_annotPolygon};
     if ((self.currentAnnot == annot || [self.currentAnnot.NM isEqualToString:annot.NM])) {
         FSAnnotType type = annot.type;
         for (int i = 0; i < sizeof(shouldNotRenderTypes) / sizeof(shouldNotRenderTypes[0]); i++) {
             if (shouldNotRenderTypes[i] == type) {
                 if (type == e_annotFreeText) {
                     NSString *intent = [((FSMarkup *) annot) getIntent];
-                    if (!intent || [intent caseInsensitiveCompare:@"FreeTextTypeWriter"] != NSOrderedSame)
+                    if (intent && [intent caseInsensitiveCompare:@"FreeTextTypewriter"] != NSOrderedSame)
                         return YES;
                 }
                 return NO;
@@ -1829,6 +2149,11 @@
     if (annot.type == e_annotInk) {
         FSPDFPath *path = [(FSInk *) annot getInkList];
         if ([path getPointCount] <= 1) {
+            return NO;
+        }
+    }
+    if ([[self.currentToolHandler getName] isEqualToString:Tool_Polygon]) {
+        if (((PolygonToolHandler *) self.currentToolHandler).annot == annot) {
             return NO;
         }
     }
@@ -1893,7 +2218,7 @@
     [self.settingBar updateLayoutButtonsWithLayout:[_pdfViewCtrl getPageLayoutMode]];
 }
 
-- (void)thumbnailViewController:(FSThumbnailViewController *)thumbnailViewController getThumbnailForPageAtIndex:(NSUInteger)index thumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)())needPause callback:(void (^__nonnull)(UIImage *))callback {
+- (void)thumbnailViewController:(FSThumbnailViewController *)thumbnailViewController getThumbnailForPageAtIndex:(NSUInteger)index thumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)(void))needPause callback:(void (^__nonnull)(UIImage *))callback {
     [self.thumbnailCache getThumbnailForPageAtIndex:index withThumbnailSize:thumbnailSize needPause:needPause callback:callback];
 }
 
@@ -1906,16 +2231,12 @@
     maskView = [[UIControl alloc] initWithFrame:_pdfViewCtrl.bounds];
     maskView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleHeight;
 
-    self.topToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 20, screenFrame.size.width, 44)];
+    self.topToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, screenFrame.size.width, 44)];
     self.topToolbar.clipsToBounds = YES; // remove border line
     self.topToolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    self.topToolbarView = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, screenFrame.size.width, 64)];
-    self.topToolbarView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [self.topToolbarView addSubview:self.topToolbar];
 
     self.bottomToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, screenFrame.size.height - 49, screenFrame.size.width, 49)];
-    self.bottomToolbar.backgroundColor = [UIColor colorWithRGBHex:0xF2FAFAFA];
-    
+
     self.editDoneBar = [[TbBaseBar alloc] init];
     self.editDoneBar.contentView.frame = CGRectMake(0, 0, 200, 64);
     self.editDoneBar.top = YES;
@@ -1954,7 +2275,7 @@
 
     self.moreToolsBar = [[MoreAnnotationsBar alloc] initWithWidth:DEVICE_iPHONE ? screenFrame.size.width : 300 config:self.modulesConfig];
 
-    [self.pdfViewCtrl addSubview:self.topToolbarView];
+    [self.pdfViewCtrl addSubview:self.topToolbar];
     [self.pdfViewCtrl addSubview:self.bottomToolbar];
     [self.pdfViewCtrl addSubview:self.editDoneBar.contentView];
     [self.pdfViewCtrl addSubview:self.editBar.contentView];
@@ -1965,12 +2286,12 @@
         [self.pdfViewCtrl addSubview:self.moreToolsBar.contentView];
     }
 
-    self.hiddenSettingBar = YES;
-    self.hiddenEditDoneBar = YES;
-    self.hiddenEditBar = YES;
-    self.hiddenToolSetBar = YES;
-    self.hiddenMoreMenu = YES;
-    self.hiddenMoreToolsBar = YES;
+    [self setHiddenSettingBar:YES animated:NO];
+    [self setHiddenEditDoneBar:YES animated:NO];
+    [self setHiddenEditBar:YES animated:NO];
+    [self setHiddenToolSetBar:YES animated:NO];
+    [self setHiddenMoreMenu:YES animated:NO];
+    [self setHiddenMoreToolsBar:YES animated:NO];
     self.isPopoverhidden = NO;
 }
 
@@ -1990,6 +2311,8 @@
     leftPadding.width = paddingWidth - [Utility getUIToolbarPaddingX];
     UIBarButtonItem *flexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
     self.topToolbar.items = @[ leftPadding, backButtonItem, flexibleSpace ];
+    
+    _topToolBarItemsArr = [self.topToolbar.items mutableCopy];
 
     // edit toolbar
     UIImage *commonReadMore = [UIImage imageNamed:@"common_read_more"];
@@ -2021,7 +2344,7 @@
     NSMutableArray<UIBarButtonItem *> *bottomBarItems = @[].mutableCopy;
     if (self.modulesConfig.loadReadingBookmark || self.modulesConfig.loadOutline || [self.modulesConfig.tools containsAnyObjectNotInArray:@[ Tool_Select, Tool_Eraser ]] || self.modulesConfig.loadAttachment) {
         UIButton *panelButton = [self createButtonWithTitle:FSLocalizedString(@"kReadList") image:[UIImage imageNamed:@"read_panel"]];
-        panelButton.contentEdgeInsets = UIEdgeInsetsMake((CGRectGetHeight(self.bottomToolbar.frame)-CGRectGetHeight(panelButton.frame))/2, 0, 0, 0);
+        panelButton.contentEdgeInsets = UIEdgeInsetsMake((CGRectGetHeight(self.bottomToolbar.frame) - CGRectGetHeight(panelButton.frame)) / 2, 0, 0, 0);
         panelButton.tag = FS_BOTTOMBAR_ITEM_PANEL_TAG;
         [panelButton addTarget:self action:@selector(onClickBottomBarButton:) forControlEvents:UIControlEventTouchUpInside];
         UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:panelButton];
@@ -2030,7 +2353,7 @@
     }
 
     UIButton *readModeButton = [self createButtonWithTitle:FSLocalizedString(@"kReadView") image:[UIImage imageNamed:@"read_mode"]];
-    readModeButton.contentEdgeInsets = UIEdgeInsetsMake((49-CGRectGetHeight(readModeButton.frame))/2, 0, 0, 0);
+    readModeButton.contentEdgeInsets = UIEdgeInsetsMake((49 - CGRectGetHeight(readModeButton.frame)) / 2, 0, 0, 0);
     readModeButton.tag = FS_BOTTOMBAR_ITEM_READMODE_TAG;
     [readModeButton addTarget:self action:@selector(onClickBottomBarButton:) forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:readModeButton];
@@ -2039,14 +2362,14 @@
 
     if ([self.modulesConfig.tools containsAnyObjectNotInArray:@[ Tool_Select ]] || self.modulesConfig.loadAttachment) {
         self.annotButton = [self createButtonWithTitle:FSLocalizedString(@"kReadComment") image:[UIImage imageNamed:@"read_annot"]];
-        self.annotButton.contentEdgeInsets = UIEdgeInsetsMake((49-CGRectGetHeight(self.annotButton.frame))/2, 0, 0, 0);
+        self.annotButton.contentEdgeInsets = UIEdgeInsetsMake((49 - CGRectGetHeight(self.annotButton.frame)) / 2, 0, 0, 0);
         self.annotButton.tag = FS_BOTTOMBAR_ITEM_ANNOT_TAG;
         [self.annotButton addTarget:self action:@selector(onClickBottomBarButton:) forControlEvents:UIControlEventTouchUpInside];
         UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:self.annotButton];
         item.tag = FS_BOTTOMBAR_ITEM_ANNOT_TAG;
         [bottomBarItems addObject:item];
     }
-    
+
     NSMutableArray<UIBarButtonItem *> *tmpArray = @[].mutableCopy;
     for (UIBarButtonItem *item in bottomBarItems) {
         [tmpArray addObject:flexibleSpace];
@@ -2063,11 +2386,11 @@
     float width = image.size.width;
     float height = image.size.height;
     CGRect frame = CGRectMake(0, 0, titleSize.width > width ? titleSize.width : width, titleSize.height + height);
-    
+
     UIButton *button = [[UIButton alloc] initWithFrame:frame];
     button.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     [button setEnlargedEdge:ENLARGE_EDGE];
-    
+
     [button setTitle:title forState:UIControlStateNormal];
     button.titleEdgeInsets = UIEdgeInsetsMake(0, -width, -height, 0);
     button.titleLabel.textAlignment = NSTextAlignmentCenter;
@@ -2075,14 +2398,50 @@
     [button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [button setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
     [button setTitleColor:[UIColor grayColor] forState:UIControlStateDisabled];
-    
+
     [button setImage:image forState:UIControlStateNormal];
     UIImage *translucentImage = [Utility imageByApplyingAlpha:image alpha:0.5];
     [button setImage:translucentImage forState:UIControlStateHighlighted];
     [button setImage:translucentImage forState:UIControlStateDisabled];
     button.imageEdgeInsets = UIEdgeInsetsMake(-titleSize.height, 0, 0, -titleSize.width);
-    
+
     return button;
+}
+
+- (void)saveAndCloseCurrentDoc:(void (^_Nullable)(BOOL success))completion {
+    NSString *intermediateFilePath = nil;
+    NSString *filePath = self.pdfViewCtrl.filePath;
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    BOOL isAsync = ![fileManager fileExistsAtPath:filePath];
+    if (filePath) {
+        if (!isAsync) {
+            NSString *tempDir = NSTemporaryDirectory();
+            intermediateFilePath = [tempDir stringByAppendingPathComponent:[filePath lastPathComponent]];
+            [self.pdfViewCtrl saveDoc:intermediateFilePath flag:self.docSaveFlag];
+        } else {
+            NSString *fileName = [filePath lastPathComponent];
+            NSString *path = [DOCUMENT_PATH stringByAppendingPathComponent:fileName];
+            if ([fileManager fileExistsAtPath:path]) {
+                [fileManager removeItemAtPath:path error:nil];
+            }
+            NSLog(@"saving async doc to %@...", path);
+            // todo wei, show alert view with cancel button
+            [self.pdfViewCtrl saveDoc:path flag:self.docSaveFlag];
+        }
+    }
+    [self.pdfViewCtrl closeDoc:^() {
+        BOOL isOK = YES;
+        if (filePath && !isAsync) {
+            NSError *error = nil;
+            if ([fileManager fileExistsAtPath:filePath]) {
+                [fileManager removeItemAtPath:filePath error:nil];
+            }
+            isOK = [fileManager moveItemAtPath:intermediateFilePath toPath:filePath error:&error];
+        }
+        if (completion) {
+            completion(isOK);
+        }
+    }];
 }
 
 - (void)buttonSaveClick {
@@ -2090,29 +2449,11 @@
     self.popover = nil;
     self.isFileEdited = YES;
     _isDocModified = NO;
-    
-    NSString *tmpPath = nil;
-    NSString* filePath =  self.pdfViewCtrl.filePath;
-    if (filePath) {
-        NSString *tempDir = NSTemporaryDirectory();
-        tmpPath = [tempDir stringByAppendingPathComponent:[filePath lastPathComponent]];
-        [self.pdfViewCtrl saveDoc:tmpPath flag:self.docSaveFlag];
-    }
-    
-    [self.pdfViewCtrl closeDoc:^() {
-        if (filePath) {
-            NSFileManager *fileManager = [NSFileManager defaultManager];
-            NSError *error = nil;
-            if ([fileManager fileExistsAtPath:filePath]) {
-                [fileManager removeItemAtPath:filePath error:nil];
-            }
-            BOOL success = [fileManager copyItemAtPath:tmpPath toPath:filePath error:&error];
-            if(success)
-                [fileManager removeItemAtPath:tmpPath error:nil];
-        }
+
+    [self saveAndCloseCurrentDoc:^(BOOL success) {
+        if (self.goBack)
+            self.goBack();
     }];
-    if(self.goBack) self.goBack();
-    return;
 }
 
 - (void)buttonDiscardChangeClick {
@@ -2125,16 +2466,25 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self clearThumbnailCachesForPDFAtPath:filePath];
     });
-    if(self.goBack) self.goBack();
+    if (self.goBack)
+        self.goBack();
 }
 
 - (void)setHiddenToolSetBar:(BOOL)hiddenToolSetBar {
+    [self setHiddenToolSetBar:hiddenToolSetBar animated:YES];
+}
+
+- (void)setHiddenToolSetBar:(BOOL)hiddenToolSetBar animated:(BOOL)animated {
     _hiddenToolSetBar = hiddenToolSetBar;
     if (hiddenToolSetBar) {
-        [UIView animateWithDuration:0.2
-                         animations:^{
-                             self.toolSetBar.contentView.alpha = 0.f;
-                         }];
+        if (animated) {
+            [UIView animateWithDuration:0.2
+                             animations:^{
+                                 self.toolSetBar.contentView.alpha = 0.f;
+                             }];
+        } else {
+            self.toolSetBar.contentView.alpha = 0.f;
+        }
         self.toolSetBar.hidden = hiddenToolSetBar;
         [self.toolSetBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.height.mas_equalTo(@49);
@@ -2144,20 +2494,34 @@
         }];
     } else {
         self.toolSetBar.hidden = hiddenToolSetBar;
-        [UIView animateWithDuration:0.2
-                         animations:^{
-                             self.toolSetBar.contentView.alpha = 1.f;
-                             [self.toolSetBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.height.mas_equalTo(@49);
-                                 make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
-                                 make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
-                                 make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+        if (animated) {
+            [UIView animateWithDuration:0.2
+                             animations:^{
+                                 self.toolSetBar.contentView.alpha = 1.f;
+                                 [self.toolSetBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                     make.height.mas_equalTo(@49);
+                                     make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                                     make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                                     make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                                 }];
                              }];
-                         }];
+        } else {
+            self.toolSetBar.contentView.alpha = 1.f;
+            [self.toolSetBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.height.mas_equalTo(@49);
+                make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+            }];
+        }
     }
 }
 
 - (void)setHiddenEditBar:(BOOL)hiddenEditBar {
+    [self setHiddenEditBar:hiddenEditBar animated:YES];
+}
+
+- (void)setHiddenEditBar:(BOOL)hiddenEditBar animated:(BOOL)animated {
     if (_hiddenEditBar == hiddenEditBar) {
         return;
     }
@@ -2165,33 +2529,57 @@
     if (hiddenEditBar) {
         CGRect newFrame = self.editBar.contentView.frame;
         newFrame.origin.y = _pdfViewCtrl.bounds.size.height;
-        [UIView animateWithDuration:0.3
-                         animations:^{
-                             self.editBar.contentView.frame = newFrame;
-                             [self.editBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.height.mas_equalTo(@49);
-                                 make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
-                                 make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
-                                 make.top.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+        if (animated) {
+            [UIView animateWithDuration:0.3
+                             animations:^{
+                                 self.editBar.contentView.frame = newFrame;
+                                 [self.editBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                     make.height.mas_equalTo(@49);
+                                     make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                                     make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                                     make.top.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                                 }];
                              }];
-                         }];
+        } else {
+            self.editBar.contentView.frame = newFrame;
+            [self.editBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.height.mas_equalTo(@49);
+                make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                make.top.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+            }];
+        }
     } else {
         CGRect newFrame = self.editBar.contentView.frame;
         newFrame.origin.y = _pdfViewCtrl.bounds.size.height - self.editBar.contentView.frame.size.height;
-        [UIView animateWithDuration:0.3
-                         animations:^{
-                             self.editBar.contentView.frame = newFrame;
-                             [self.editBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.height.mas_equalTo(@49);
-                                 make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
-                                 make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
-                                 make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+        if (animated) {
+            [UIView animateWithDuration:0.3
+                             animations:^{
+                                 self.editBar.contentView.frame = newFrame;
+                                 [self.editBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                     make.height.mas_equalTo(@49);
+                                     make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                                     make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                                     make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                                 }];
                              }];
-                         }];
+        } else {
+            self.editBar.contentView.frame = newFrame;
+            [self.editBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.height.mas_equalTo(@49);
+                make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+            }];
+        }
     }
 }
 
 - (void)setHiddenEditDoneBar:(BOOL)hiddenEditDoneBar {
+    [self setHiddenEditDoneBar:hiddenEditDoneBar animated:YES];
+}
+
+- (void)setHiddenEditDoneBar:(BOOL)hiddenEditDoneBar animated:(BOOL)animated {
     if (_hiddenEditDoneBar == hiddenEditDoneBar) {
         return;
     }
@@ -2199,36 +2587,53 @@
     if (hiddenEditDoneBar) {
         CGRect newFrame = self.editDoneBar.contentView.frame;
         newFrame.origin.y = -self.editDoneBar.contentView.frame.size.height;
-        [UIView animateWithDuration:0.3
-                         animations:^{
-
-                             self.editDoneBar.contentView.frame = newFrame;
-                             [self.editDoneBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.height.mas_equalTo(@64);
-                                 make.width.mas_equalTo(@200);
-                                 make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
-                                 make.bottom.equalTo(self.pdfViewCtrl.mas_top).offset(0);
+        if (animated) {
+            [UIView animateWithDuration:0.3
+                             animations:^{
+                                 self.editDoneBar.contentView.frame = newFrame;
+                                 [self.editDoneBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                     make.height.mas_equalTo(@64);
+                                     make.width.mas_equalTo(@200);
+                                     make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                                     make.bottom.equalTo(self.pdfViewCtrl.mas_top).offset(0);
+                                 }];
+                             }
+                             completion:^(BOOL finished){
                              }];
-
-                         }
-                         completion:^(BOOL finished){
-
-                         }];
+        } else {
+            self.editDoneBar.contentView.frame = newFrame;
+            [self.editDoneBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.height.mas_equalTo(@64);
+                make.width.mas_equalTo(@200);
+                make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                make.bottom.equalTo(self.pdfViewCtrl.mas_top).offset(0);
+            }];
+        }
     } else {
         CGRect newFrame = self.editDoneBar.contentView.frame;
         newFrame.origin.y = 0;
-        [UIView animateWithDuration:0.3
-                         animations:^{
-                             self.editDoneBar.contentView.frame = newFrame;
-                             [self.editDoneBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.height.mas_equalTo(@64);
-                                 make.width.mas_equalTo(@200);
-                                 make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
-                                 make.top.equalTo(self.pdfViewCtrl.mas_top).offset(0);
+        if (animated) {
+            [UIView animateWithDuration:0.3
+                             animations:^{
+                                 self.editDoneBar.contentView.frame = newFrame;
+                                 [self.editDoneBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                     make.height.mas_equalTo(@64);
+                                     make.width.mas_equalTo(@200);
+                                     make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                                     make.top.equalTo(self.pdfViewCtrl.mas_top).offset(0);
+                                 }];
+                             }
+                             completion:^(BOOL finished){
                              }];
-                         }
-                         completion:^(BOOL finished){
-                         }];
+        } else {
+            self.editDoneBar.contentView.frame = newFrame;
+            [self.editDoneBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.height.mas_equalTo(@64);
+                make.width.mas_equalTo(@200);
+                make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                make.top.equalTo(self.pdfViewCtrl.mas_top).offset(0);
+            }];
+        }
     }
 }
 
@@ -2262,25 +2667,36 @@
                                  make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
                                  make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
                                  make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
-
                              }];
                          }];
     }
 }
 
 - (void)setHiddenTopToolbar:(BOOL)hiddenTopToolbar {
+    if (IOS11_OR_LATER) {
+        UIToolbar *topToolbar = self.topToolbar;
+        UIView *topToolbarWrapper = topToolbar.superview;
+        
+        [topToolbarWrapper layoutIfNeeded];
+        [topToolbarWrapper bringSubviewToFront:topToolbar];
+    }
+    
     if (_hiddenTopToolbar == hiddenTopToolbar) {
         return;
     }
     _hiddenTopToolbar = hiddenTopToolbar;
+    if ([self.delegate respondsToSelector:@selector(uiextensionsManager:setTopToolBarHidden:)]) {
+        [self.delegate uiextensionsManager:self setTopToolBarHidden:hiddenTopToolbar];
+        return;
+    }
     if (hiddenTopToolbar) {
-        CGRect newFrame = self.topToolbarView.frame;
-        newFrame.origin.y = -self.topToolbarView.frame.size.height;
+        CGRect newFrame = self.topToolbar.frame;
+        newFrame.origin.y = -self.topToolbar.frame.size.height;
         [UIView animateWithDuration:0.3
                          animations:^{
-                             self.topToolbarView.frame = newFrame;
-                             [self.topToolbarView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.height.mas_equalTo(@64);
+                             self.topToolbar.frame = newFrame;
+                             [self.topToolbar mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                 make.height.mas_equalTo(@44);
                                  make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
                                  make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
                                  make.bottom.equalTo(self.pdfViewCtrl.mas_top).offset(0);
@@ -2289,13 +2705,13 @@
                          completion:^(BOOL finished){
                          }];
     } else {
-        CGRect newFrame = self.topToolbarView.frame;
+        CGRect newFrame = self.topToolbar.frame;
         newFrame.origin.y = 0;
         [UIView animateWithDuration:0.3
                          animations:^{
-                             self.topToolbarView.frame = newFrame;
-                             [self.topToolbarView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.height.mas_equalTo(@64);
+                             self.topToolbar.frame = newFrame;
+                             [self.topToolbar mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                 make.height.mas_equalTo(@44);
                                  make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
                                  make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
                                  make.top.equalTo(self.pdfViewCtrl.mas_top).offset(0);
@@ -2307,20 +2723,29 @@
 }
 
 - (void)setHiddenMoreToolsBar:(BOOL)hiddenMoreToolsBar {
+    [self setHiddenMoreToolsBar:hiddenMoreToolsBar animated:YES];
+}
+
+- (void)setHiddenMoreToolsBar:(BOOL)hiddenMoreToolsBar animated:(BOOL)animated {
     if (_hiddenMoreToolsBar == hiddenMoreToolsBar) {
         return;
     }
     _hiddenMoreToolsBar = hiddenMoreToolsBar;
     if (DEVICE_iPHONE) {
         if (hiddenMoreToolsBar) {
-            [UIView animateWithDuration:0.4
-                animations:^{
-                    maskView.alpha = 0.1f;
-                }
-                completion:^(BOOL finished) {
+            if (animated) {
+                [UIView animateWithDuration:0.4
+                    animations:^{
+                        maskView.alpha = 0.1f;
+                    }
+                    completion:^(BOOL finished) {
 
-                    [maskView removeFromSuperview];
-                }];
+                        [maskView removeFromSuperview];
+                    }];
+            } else {
+                maskView.alpha = 0.1f;
+                [maskView removeFromSuperview];
+            }
 
             CGRect newFrame = self.moreToolsBar.contentView.frame;
             if (DEVICE_iPHONE) {
@@ -2329,17 +2754,28 @@
                 newFrame.origin.x = _pdfViewCtrl.bounds.size.width;
             }
 
-            [UIView animateWithDuration:0.4
-                             animations:^{
-                                 self.moreToolsBar.contentView.frame = newFrame;
-                                 [self.moreToolsBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                     make.top.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
-                                     make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
-                                     make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
-                                     make.height.mas_equalTo(self.moreToolsBar.contentView.frame.size.height);
+            if (animated) {
+                [UIView animateWithDuration:0.4
+                                 animations:^{
+                                     self.moreToolsBar.contentView.frame = newFrame;
+                                     [self.moreToolsBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                         make.top.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                                         make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                                         make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                                         make.height.mas_equalTo(self.moreToolsBar.contentView.frame.size.height);
 
+                                     }];
                                  }];
-                             }];
+            } else {
+                self.moreToolsBar.contentView.frame = newFrame;
+                [self.moreToolsBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                    make.top.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                    make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                    make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                    make.height.mas_equalTo(self.moreToolsBar.contentView.frame.size.height);
+
+                }];
+            }
         } else {
             maskView.frame = _pdfViewCtrl.bounds;
             maskView.backgroundColor = [UIColor blackColor];
@@ -2361,16 +2797,26 @@
             } else {
                 newFrame.origin.x = _pdfViewCtrl.bounds.size.width - newFrame.size.width;
             }
-            [UIView animateWithDuration:0.4
-                             animations:^{
-                                 self.moreToolsBar.contentView.frame = newFrame;
-                                 [self.moreToolsBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                     make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
-                                     make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
-                                     make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
-                                     make.height.mas_equalTo(self.moreToolsBar.contentView.frame.size.height);
+            if (animated) {
+                [UIView animateWithDuration:0.4
+                                 animations:^{
+                                     self.moreToolsBar.contentView.frame = newFrame;
+                                     [self.moreToolsBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                         make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                                         make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                                         make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                                         make.height.mas_equalTo(self.moreToolsBar.contentView.frame.size.height);
+                                     }];
                                  }];
-                             }];
+            } else {
+                self.moreToolsBar.contentView.frame = newFrame;
+                [self.moreToolsBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                    make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                    make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                    make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                    make.height.mas_equalTo(self.moreToolsBar.contentView.frame.size.height);
+                }];
+            }
         }
     } else {
         if (!hiddenMoreToolsBar) {
@@ -2411,19 +2857,28 @@
 }
 
 - (void)setHiddenMoreMenu:(BOOL)hiddenMoreMenu {
+    [self setHiddenMoreMenu:hiddenMoreMenu animated:YES];
+}
+
+- (void)setHiddenMoreMenu:(BOOL)hiddenMoreMenu animated:(BOOL)animated {
     if (_hiddenMoreMenu == hiddenMoreMenu) {
         return;
     }
     _hiddenMoreMenu = hiddenMoreMenu;
     if (hiddenMoreMenu) {
-        [UIView animateWithDuration:0.4
-            animations:^{
-                maskView.alpha = 0.1f;
-            }
-            completion:^(BOOL finished) {
+        if (animated) {
+            [UIView animateWithDuration:0.4
+                animations:^{
+                    maskView.alpha = 0.1f;
+                }
+                completion:^(BOOL finished) {
 
-                [maskView removeFromSuperview];
-            }];
+                    [maskView removeFromSuperview];
+                }];
+        } else {
+            maskView.alpha = 0.1f;
+            [maskView removeFromSuperview];
+        }
 
         CGRect newFrame = [self.more getContentView].frame;
 
@@ -2433,23 +2888,37 @@
             newFrame.origin.x = _pdfViewCtrl.bounds.size.width;
         }
 
-        [UIView animateWithDuration:0.4
-                         animations:^{
+        if (animated) {
+            [UIView animateWithDuration:0.4
+                             animations:^{
+                                 [self.more getContentView].frame = newFrame;
+                                 [[self.more getContentView] mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                     make.top.equalTo(self.pdfViewCtrl.mas_top).offset(0);
+                                     make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                                     if (DEVICE_iPHONE) {
+                                         make.left.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                                         make.width.mas_equalTo(newFrame.origin.x);
+                                     } else {
+                                         make.left.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                                         make.width.mas_equalTo(300);
+                                     }
+                                 }];
 
-                             [self.more getContentView].frame = newFrame;
-                             [[self.more getContentView] mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.top.equalTo(self.pdfViewCtrl.mas_top).offset(0);
-                                 make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
-                                 if (DEVICE_iPHONE) {
-                                     make.left.equalTo(self.pdfViewCtrl.mas_right).offset(0);
-                                     make.width.mas_equalTo(newFrame.origin.x);
-                                 } else {
-                                     make.left.equalTo(self.pdfViewCtrl.mas_right).offset(0);
-                                     make.width.mas_equalTo(300);
-                                 }
                              }];
-
-                         }];
+        } else {
+            [self.more getContentView].frame = newFrame;
+            [[self.more getContentView] mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.top.equalTo(self.pdfViewCtrl.mas_top).offset(0);
+                make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                if (DEVICE_iPHONE) {
+                    make.left.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                    make.width.mas_equalTo(newFrame.origin.x);
+                } else {
+                    make.left.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                    make.width.mas_equalTo(300);
+                }
+            }];
+        }
     } else {
         self.currentToolHandler = nil;
         self.currentAnnot = nil;
@@ -2481,50 +2950,83 @@
             }
         }
 
-        [UIView animateWithDuration:0.4
-                         animations:^{
-                             [self.more getContentView].frame = newFrame;
-                             [[self.more getContentView] mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.top.equalTo(self.pdfViewCtrl.mas_top).offset(0);
-                                 make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
-                                 if (DEVICE_iPHONE) {
-                                     make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
-                                     make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
-                                 } else {
-                                     make.width.mas_equalTo(300);
-                                     make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
-                                 }
+        if (animated) {
+            [UIView animateWithDuration:0.4
+                             animations:^{
+                                 [self.more getContentView].frame = newFrame;
+                                 [[self.more getContentView] mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                     make.top.equalTo(self.pdfViewCtrl.mas_top).offset(0);
+                                     make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                                     if (DEVICE_iPHONE) {
+                                         make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                                         make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                                     } else {
+                                         make.width.mas_equalTo(300);
+                                         make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                                     }
+                                 }];
                              }];
-                         }];
+        } else {
+            [self.more getContentView].frame = newFrame;
+            [[self.more getContentView] mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.top.equalTo(self.pdfViewCtrl.mas_top).offset(0);
+                make.bottom.equalTo(self.pdfViewCtrl.mas_bottom).offset(0);
+                if (DEVICE_iPHONE) {
+                    make.left.equalTo(self.pdfViewCtrl.mas_left).offset(0);
+                    make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                } else {
+                    make.width.mas_equalTo(300);
+                    make.right.equalTo(self.pdfViewCtrl.mas_right).offset(0);
+                }
+            }];
+        }
     }
 }
 
 - (void)setHiddenSettingBar:(BOOL)hiddenSettingBar {
+    [self setHiddenSettingBar:hiddenSettingBar animated:YES];
+}
+- (void)setHiddenSettingBar:(BOOL)hiddenSettingBar animated:(BOOL)animated {
     if (_hiddenSettingBar == hiddenSettingBar) {
         return;
     }
     _hiddenSettingBar = hiddenSettingBar;
     if (hiddenSettingBar) {
-        [UIView animateWithDuration:0.4
-                         animations:^{
-                             _settingBarMaskView.alpha = 0.1f;
-                         }
-                         completion:^(BOOL finished) {
-                             [_settingBarMaskView removeFromSuperview];
-                         }];
+        if (animated) {
+            [UIView animateWithDuration:0.4
+                animations:^{
+                    _settingBarMaskView.alpha = 0.1f;
+                }
+                completion:^(BOOL finished) {
+                    [_settingBarMaskView removeFromSuperview];
+                }];
+        } else {
+            _settingBarMaskView.alpha = 0.1f;
+            [_settingBarMaskView removeFromSuperview];
+        }
 
         CGRect newFrame = self.settingBar.contentView.frame;
         newFrame.origin.y = _pdfViewCtrl.bounds.size.height;
-        [UIView animateWithDuration:0.4
-                         animations:^{
-                             self.settingBar.contentView.frame = newFrame;
-                             [self.settingBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.top.equalTo(_pdfViewCtrl.mas_bottom).offset(0);
-                                 make.left.equalTo(_pdfViewCtrl.mas_left).offset(0);
-                                 make.right.equalTo(_pdfViewCtrl.mas_right).offset(0);
-                                 make.height.mas_equalTo(self.settingBar.contentView.frame.size.height);
+        if (animated) {
+            [UIView animateWithDuration:0.4
+                             animations:^{
+                                 self.settingBar.contentView.frame = newFrame;
+                                 [self.settingBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                     make.top.equalTo(_pdfViewCtrl.mas_bottom).offset(0);
+                                     make.left.equalTo(_pdfViewCtrl.mas_left).offset(0);
+                                     make.right.equalTo(_pdfViewCtrl.mas_right).offset(0);
+                                     make.height.mas_equalTo(self.settingBar.contentView.frame.size.height);
+                                 }];
                              }];
-                         }];
+        } else {
+            self.settingBar.contentView.frame = newFrame;
+            [self.settingBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.top.equalTo(_pdfViewCtrl.mas_bottom).offset(0);
+                make.left.equalTo(_pdfViewCtrl.mas_left).offset(0);
+                make.right.equalTo(_pdfViewCtrl.mas_right).offset(0);
+                make.height.mas_equalTo(self.settingBar.contentView.frame.size.height);
+            }];
+        }
     } else {
         if (!_settingBarMaskView) {
             _settingBarMaskView = [[UIControl alloc] initWithFrame:_pdfViewCtrl.bounds];
@@ -2546,18 +3048,28 @@
         }];
 
         [self.settingBar updateBtnLayout];
-        [UIView animateWithDuration:0.4
-                         animations:^{
-                             CGRect frame = self.settingBar.contentView.frame;
-                             frame.origin.y -= self.settingBar.contentView.frame.size.height;
-                             self.settingBar.contentView.frame = frame;
-                             [self.settingBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
-                                 make.bottom.equalTo(_pdfViewCtrl.mas_bottom).offset(0);
-                                 make.left.equalTo(_pdfViewCtrl.mas_left).offset(0);
-                                 make.right.equalTo(_pdfViewCtrl.mas_right).offset(0);
-                                 make.height.mas_equalTo(self.settingBar.contentView.frame.size.height);
+        CGRect frame = self.settingBar.contentView.frame;
+        frame.origin.y -= self.settingBar.contentView.frame.size.height;
+        if (animated) {
+            [UIView animateWithDuration:0.4
+                             animations:^{
+                                 self.settingBar.contentView.frame = frame;
+                                 [self.settingBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                                     make.bottom.equalTo(_pdfViewCtrl.mas_bottom).offset(0);
+                                     make.left.equalTo(_pdfViewCtrl.mas_left).offset(0);
+                                     make.right.equalTo(_pdfViewCtrl.mas_right).offset(0);
+                                     make.height.mas_equalTo(self.settingBar.contentView.frame.size.height);
+                                 }];
                              }];
-                         }];
+        } else {
+            self.settingBar.contentView.frame = frame;
+            [self.settingBar.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.bottom.equalTo(_pdfViewCtrl.mas_bottom).offset(0);
+                make.left.equalTo(_pdfViewCtrl.mas_left).offset(0);
+                make.right.equalTo(_pdfViewCtrl.mas_right).offset(0);
+                make.height.mas_equalTo(self.settingBar.contentView.frame.size.height);
+            }];
+        }
     }
 }
 
@@ -2582,36 +3094,7 @@
     }
 }
 
-#pragma mark - IStateChangeListener
-
-- (void)onStateChanged:(int)state {
-    self.hiddenTopToolbar = YES;
-    self.hiddenBottomToolbar = YES;
-    self.hiddenEditBar = YES;
-    self.hiddenEditDoneBar = YES;
-    self.hiddenToolSetBar = YES;
-    self.hiddenMoreMenu = YES;
-    self.hiddenMoreToolsBar = YES;
-    self.hiddenSettingBar = YES;
-    switch (state) {
-    case STATE_NORMAL:
-        self.hiddenTopToolbar = NO;
-        self.hiddenBottomToolbar = NO;
-        break;
-    case STATE_EDIT:
-        self.hiddenEditBar = NO;
-        self.hiddenEditDoneBar = NO;
-        break;
-    case STATE_ANNOTTOOL:
-        self.hiddenToolSetBar = NO;
-        self.hiddenEditDoneBar = NO;
-        break;
-    case STATE_SEARCH:
-        break;
-    default:
-        break;
-    }
-}
+#pragma mark <ILayoutEventListener>
 
 - (void)onLayoutModeChanged:(PDF_LAYOUT_MODE)oldLayoutMode newLayoutMode:(PDF_LAYOUT_MODE)newLayoutMode {
     //    if (newLayoutMode == PDF_LAYOUT_MODE_MULTIPLE)
@@ -2631,11 +3114,11 @@
         if (_isFullScreen) {
             self.hiddenTopToolbar = YES;
             self.hiddenBottomToolbar = YES;
-            [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:YES];
+            //            [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:YES];
         } else {
             self.hiddenTopToolbar = NO;
             self.hiddenBottomToolbar = NO;
-            [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:YES];
+            //            [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:YES];
         }
     }
     for (id<IFullScreenListener> listener in self.fullScreenListeners) {
@@ -2699,9 +3182,9 @@
             [listener didRotateFromInterfaceOrientation:fromInterfaceOrientation];
         }
     }
-    
+
     [self.pdfViewCtrl didRotateFromInterfaceOrientation:fromInterfaceOrientation];
-    
+
     if (DEVICE_iPHONE && [self.pdfViewCtrl getDoc]) {
         CGFloat width;
         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
@@ -2710,6 +3193,11 @@
             width = CGRectGetWidth(_pdfViewCtrl.frame);
         }
         [self.moreToolsBar refreshLayoutWithWidth:width];
+    }
+    
+    //pan zoom
+    if (self.panZoomView) {
+        [self buildPanZoomBottomBar];
     }
 }
 
@@ -2743,6 +3231,33 @@
         [self setCurrentAnnot:nil];
     }
     self.currentState = state;
+
+    self.hiddenTopToolbar = YES;
+    self.hiddenBottomToolbar = YES;
+    self.hiddenEditBar = YES;
+    self.hiddenEditDoneBar = YES;
+    self.hiddenToolSetBar = YES;
+    self.hiddenMoreMenu = YES;
+    self.hiddenMoreToolsBar = YES;
+    self.hiddenSettingBar = YES;
+    switch (state) {
+    case STATE_NORMAL:
+        self.hiddenTopToolbar = NO;
+        self.hiddenBottomToolbar = NO;
+        break;
+    case STATE_EDIT:
+        self.hiddenEditBar = NO;
+        self.hiddenEditDoneBar = NO;
+        break;
+    case STATE_ANNOTTOOL:
+        self.hiddenToolSetBar = NO;
+        self.hiddenEditDoneBar = NO;
+        break;
+    case STATE_SEARCH:
+        break;
+    default:
+        break;
+    }
     if (self.stateChangeListeners) {
         for (id<IStateChangeListener> listener in self.stateChangeListeners) {
             if ([listener respondsToSelector:@selector(onStateChanged:)]) {
@@ -2754,19 +3269,19 @@
 
 - (void)enableTopToolbar:(BOOL)isEnabled {
     if (isEnabled) {
-        if (self.topToolbarView)
+        if (self.topToolbar)
             return;
 
-        if (self.topToolbarViewSaved) {
-            self.topToolbarView = self.topToolbarViewSaved;
-            [self.pdfViewCtrl addSubview:self.topToolbarView];
+        if (self.topToolbarSaved) {
+            self.topToolbar = self.topToolbarSaved;
+            [self.pdfViewCtrl addSubview:self.topToolbar];
         }
     } else {
-        if (!self.topToolbarView)
+        if (!self.topToolbar)
             return;
-        [self.topToolbarView removeFromSuperview];
-        self.topToolbarViewSaved = self.topToolbarView;
-        self.topToolbarView = nil;
+        [self.topToolbar removeFromSuperview];
+        self.topToolbarSaved = self.topToolbar;
+        self.topToolbar = nil;
     }
 }
 
@@ -2804,11 +3319,13 @@
     }
 }
 
+- (void)onDocModified:(FSPDFDoc *)document {
+}
+
 - (void)onDocWillClose:(FSPDFDoc *)document {
     id<IToolHandler> toolHandler = [self getToolHandlerByName:Tool_Freetext];
-    if(toolHandler && [toolHandler isKindOfClass:[FtToolHandler class]])
-    {
-        FtToolHandler* ftToolhandler = (FtToolHandler*)toolHandler;
+    if (toolHandler && [toolHandler isKindOfClass:[FtToolHandler class]]) {
+        FtToolHandler *ftToolhandler = (FtToolHandler *) toolHandler;
         [ftToolhandler exitWithoutSave];
     }
 }
@@ -2838,13 +3355,24 @@
 - (void)onCurrentAnnotChanged:(FSAnnot *)lastAnnot currentAnnot:(FSAnnot *)currentAnnot {
 }
 
-#pragma mark - ISearchEventListener
+#pragma mark <ISearchEventListener>
+
 - (void)onSearchStarted {
     [self changeState:STATE_SEARCH];
+    for (id<ISearchEventListener> listener in self.searchListeners) {
+        if ([listener respondsToSelector:@selector(onSearchStarted)]) {
+            [listener onSearchStarted];
+        }
+    }
 }
 
 - (void)onSearchCanceled {
     [self changeState:STATE_NORMAL];
+    for (id<ISearchEventListener> listener in self.searchListeners) {
+        if ([listener respondsToSelector:@selector(onSearchCanceled)]) {
+            [listener onSearchCanceled];
+        }
+    }
 }
 
 #pragma mark - IPageEventListener
@@ -2861,11 +3389,11 @@
         [self setCurrentAnnot:nil];
     }
 
-    ((UIButton *) [self.settingBar getItemView:CROPPAGE]).selected = NO;
-
-    if (![self.pdfViewCtrl.currentDoc isModified]) {
+    BOOL isAsync = (self.pdfViewCtrl.filePath != nil) && ![[NSFileManager defaultManager] fileExistsAtPath:self.pdfViewCtrl.filePath];
+    if (!isAsync && ![self.pdfViewCtrl.currentDoc isModified] && !_isDocModified) {
         [self.pdfViewCtrl closeDoc:nil];
-        if(self.goBack) self.goBack();
+        if (self.goBack)
+            self.goBack();
         return;
     }
     UIView *menu = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 160, 100)];
@@ -2877,7 +3405,7 @@
     [save addTarget:self action:@selector(buttonSaveClick) forControlEvents:UIControlEventTouchUpInside];
     [menu addSubview:save];
     UIButton *discard = [[UIButton alloc] initWithFrame:CGRectMake(10, 65, 130, 20)];
-    [discard setTitle:FSLocalizedString(@"kDiscardChange") forState:UIControlStateNormal];
+    [discard setTitle:FSLocalizedString(isAsync ? @"kDonotSave" : @"kDiscardChange") forState:UIControlStateNormal];
     [discard setTitleColor:[UIColor colorWithRed:23.f / 255.f green:156.f / 255.f blue:216.f / 255.f alpha:1] forState:UIControlStateNormal];
     [discard setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
     discard.titleLabel.font = [UIFont systemFontOfSize:15];
@@ -2886,7 +3414,7 @@
     UIView *line = [[UIView alloc] initWithFrame:CGRectMake(10, 50, 130, 1)];
     line.backgroundColor = [UIColor colorWithRed:0.92 green:0.92 blue:0.92 alpha:1];
     [menu addSubview:line];
-    
+
     CGPoint startPoint = CGPointMake(CGRectGetMidX(button.frame), CGRectGetMaxY(button.frame));
     self.popover = [DXPopover popover];
     [self.popover showAtPoint:startPoint popoverPosition:DXPopoverPositionDown withContentView:menu inView:self.pdfViewCtrl];
@@ -2899,24 +3427,24 @@
         [self setCurrentAnnot:nil];
     }
     switch (button.tag) {
-        case FS_BOTTOMBAR_ITEM_PANEL_TAG:
-            self.panelController.isHidden = NO;
-            break;
-        case FS_BOTTOMBAR_ITEM_READMODE_TAG:
-            self.hiddenSettingBar = NO;
-            break;
-        case FS_BOTTOMBAR_ITEM_ANNOT_TAG:
-            [self changeState:STATE_EDIT];
-            break;
-        default:
-            break;
+    case FS_BOTTOMBAR_ITEM_PANEL_TAG:
+        self.panelController.isHidden = NO;
+        break;
+    case FS_BOTTOMBAR_ITEM_READMODE_TAG:
+        self.hiddenSettingBar = NO;
+        break;
+    case FS_BOTTOMBAR_ITEM_ANNOT_TAG:
+        [self changeState:STATE_EDIT];
+        break;
+    default:
+        break;
     }
 }
 
 #pragma mark <FSUndo>
 
 - (void)addUndoItem:(UndoItem *)undoItem {
-    if(!undoItem)
+    if (!undoItem)
         return;
     [self.undoItems addObject:undoItem];
     [self.redoItems removeAllObjects];
@@ -2984,6 +3512,16 @@
     for (id<IFSUndoEventListener> listener in self.undoListeners) {
         [listener onUndoChanged];
     }
+}
+
+#pragma mark print methods
+
++ (void)printDoc:(FSPDFDoc *)doc animated:(BOOL)animated jobName:(nullable NSString *)jobName delegate:(nullable id<UIPrintInteractionControllerDelegate>)delegate completionHandler:(nullable UIPrintInteractionCompletionHandler)completion {
+    [Utility printDoc:doc animated:animated jobName:jobName delegate:delegate completionHandler:completion];
+}
+
++ (void)printDoc:(FSPDFDoc *)doc fromRect:(CGRect)rect inView:(UIView *)view animated:(BOOL)animated jobName:(nullable NSString *)jobName delegate:(nullable id<UIPrintInteractionControllerDelegate>)delegate completionHandler:(nullable UIPrintInteractionCompletionHandler)completion {
+    [Utility printDoc:doc fromRect:rect inView:view animated:animated jobName:jobName delegate:delegate completionHandler:completion];
 }
 
 @end
@@ -3108,7 +3646,7 @@ int _formCurrentPageIndex = 0;
     __block int retCode = -1;
     AlertView *alertView = [[AlertView alloc] initWithTitle:title
                                                     message:msg
-                                         buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                         buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
 
                                              if (type == 0 || type == 4) {
                                                  retCode = 1;

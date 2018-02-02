@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -158,7 +158,8 @@
     if (self.menuItems.count < index + 1)
         return;
     MenuItem *mcItem = [self.menuItems objectAtIndex:index];
-    [mcItem.object performSelector:mcItem.action withObject:nil];
+    ((void (*)(id, SEL))[mcItem.object methodForSelector:mcItem.action])(mcItem.object, mcItem.action);
+    
 }
 
 - (UIViewController *)topViewController {

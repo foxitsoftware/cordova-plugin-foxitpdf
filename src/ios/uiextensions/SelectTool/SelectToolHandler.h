@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -10,19 +10,10 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <Foundation/Foundation.h>
-#import <FoxitRDK/FSPDFViewControl.h>
+#import "UIExtensionsManager.h"
 
-@protocol IToolHandler;
-@protocol IRotationEventListener;
-@protocol IGestureEventListener;
-@class MagnifierView;
-@class UIExtensionsManager;
-
-/**@brief A tool handler to select texts on the page, or for adding annotations. */
-@interface SelectToolHandler : NSObject <IToolHandler, UIPopoverControllerDelegate, IRotationEventListener, IScrollViewEventListener, IGestureEventListener, IPageEventListener> {
-    MagnifierView *_magnifierView;
-}
+/** @brief A tool handler to select texts on the page, or for adding annotations. */
+@interface SelectToolHandler : NSObject <IToolHandler, UIPopoverControllerDelegate, IRotationEventListener, IScrollViewEventListener, IGestureEventListener, IPageEventListener, IDocEventListener>
 
 @property (nonatomic, assign) BOOL isEdit;
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -72,8 +72,8 @@
     if (flag) {
         currentPageLayoutMode = [_pdfViewCtrl getPageLayoutMode];
         oldPageLayoutMode = currentPageLayoutMode;
-        [_extensionsManager changeState:STATE_REFLOW];
         [_pdfViewCtrl setPageLayoutMode:PDF_LAYOUT_MODE_REFLOW];
+        [_extensionsManager changeState:STATE_REFLOW];
         _isReflowByClick = YES;
         if (!self.needShowImageForReflow) {
             [self.showGraph setImage:[UIImage imageNamed:@"reflow_graphD.png"] forState:UIControlStateNormal];
@@ -94,8 +94,9 @@
             currentPageLayoutMode = PDF_LAYOUT_MODE_SINGLE;
         }
         [_pdfViewCtrl setPageLayoutMode:currentPageLayoutMode];
+        [_extensionsManager.settingBar updateLayoutButtonsWithLayout:currentPageLayoutMode];
     }
-    self.bigger.enabled = ([_pdfViewCtrl getZoom] < 5.0f);
+    self.bigger.enabled = ([_pdfViewCtrl getZoom] < 20.0f);
     self.smaller.enabled = ([_pdfViewCtrl getZoom] > 1.0f);
     [self setPreviousAndNextBtnEnable];
 }
@@ -197,13 +198,13 @@
 
 - (IBAction)biggerClicked:(id)sender {
     [_pdfViewCtrl setZoom:[_pdfViewCtrl getZoom] * 1.5f];
-    self.bigger.enabled = ([_pdfViewCtrl getZoom] < 5.0f);
+    self.bigger.enabled = ([_pdfViewCtrl getZoom] < 19.0f);
     self.smaller.enabled = YES;
 }
 
 - (IBAction)smallerClicked:(id)sender {
-    [_pdfViewCtrl setZoom:[_pdfViewCtrl getZoom] * 0.75f];
-    self.smaller.enabled = ([_pdfViewCtrl getZoom] > 1.0f);
+    [_pdfViewCtrl setZoom:[_pdfViewCtrl getZoom] * 0.667f];
+    self.smaller.enabled = ([_pdfViewCtrl getZoom] > 2.0f);
     self.bigger.enabled = YES;
 }
 

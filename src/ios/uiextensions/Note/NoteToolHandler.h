@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -19,7 +19,7 @@
 @class NoteDialog;
 
 /**@brief A note tool handler to handle its own events. */
-@interface NoteToolHandler : NSObject <IToolHandler>
+@interface NoteToolHandler : NSObject <IToolHandler, IDocEventListener>
 @property (nonatomic, assign) FSAnnotType type;
 @property (nonatomic, strong) NoteDialog *currentVC;
 

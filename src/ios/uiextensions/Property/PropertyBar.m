@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -39,10 +39,12 @@
 @property (nonatomic, strong) OpacityLayout *opacityLayout;
 @property (nonatomic, strong) FontLayout *fontLayout;
 @property (nonatomic, strong) IconLayout *typeLayout;
+@property (nonatomic, strong) RotationLayout *rotationLayout;
 @property (nonatomic, strong) UIControl *maskView;
 @property (nonatomic, strong) UIPopoverController *popoverCtr;
 @property (nonatomic, strong) UIViewController *popViewCtr;
 @property (nonatomic, assign) CGRect tempFrame;
+@property (nonatomic, strong) DistanceUnitLayout *distanceUnitLayout;
 @end
 
 @implementation PropertyBar {
@@ -98,6 +100,12 @@
         self.opacityLayout.tag = PROPERTY_OPACITY;
         [self.mainView addLayoutAtTab:self.opacityLayout tab:TAB_FILL];
     }
+    if (items & PROPERTY_ROTATION) {
+        CGRect rotationFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
+        self.rotationLayout = [[RotationLayout alloc] initWithFrame:rotationFrame];
+        self.rotationLayout.tag = PROPERTY_ROTATION;
+        [self.mainView addLayoutAtTab:self.rotationLayout tab:TAB_FILL];
+    }
     if (items & PROPERTY_LINEWIDTH) {
         self.lineWidthLayout = [[LineWidthLayout alloc] initWithFrame:CGRectMake(0, 0, self.mainView.frame.size.width, 40)];
         self.lineWidthLayout.tag = PROPERTY_LINEWIDTH;
@@ -120,6 +128,13 @@
         self.typeLayout.tag = PROPERTY_ATTACHMENT_ICONTYPE;
         [self.mainView addLayoutAtTab:self.typeLayout tab:TAB_TYPE];
     }
+    
+    if (items & PROPERTY_DISTANCE_UNIT) {
+        self.distanceUnitLayout = [[DistanceUnitLayout alloc] initWithFrame:CGRectMake(0, 0, self.mainView.frame.size.width, 100)];
+        self.distanceUnitLayout.tag = PROPERTY_DISTANCE_UNIT;
+        [self.mainView addLayoutAtTab:self.distanceUnitLayout tab:TAB_DISTANCE_UNIT];
+    }
+    
     if (self.mainView.segmentItems.count > 0) {
         SegmentView *segmentView = [[SegmentView alloc] initWithFrame:CGRectMake(20, 5, self.mainView.frame.size.width - 40, TABHEIGHT - 10) segmentItems:self.mainView.segmentItems];
         segmentView.delegate = self.mainView;
@@ -158,6 +173,9 @@
     if (property & PROPERTY_ATTACHMENT_ICONTYPE) {
         [self.typeLayout setCurrentIconType:value];
     }
+    if (property & PROPERTY_ROTATION) {
+        [self.rotationLayout setCurrentRotation:value];
+    }
 }
 
 - (void)setProperty:(long)property floatValue:(float)value {
@@ -169,6 +187,10 @@
 - (void)setProperty:(long)property stringValue:(NSString *)value {
     if (property & PROPERTY_FONTNAME) {
         [self.fontLayout setCurrentFontName:value];
+    }
+    
+    if (property & PROPERTY_DISTANCE_UNIT) {
+        [self.distanceUnitLayout setCurrentUnitName:value];
     }
 }
 
@@ -189,6 +211,13 @@
     if (self.typeLayout) {
         [self.typeLayout setCurrentListener:listener];
     }
+
+    if (self.distanceUnitLayout) {
+        [self.distanceUnitLayout setCurrentListener:listener];
+    }
+    if (self.rotationLayout) {
+        [self.rotationLayout setCurrentListener:listener];
+    }
 }
 
 - (void)addTabByTitle:(NSString *)title atIndex:(int)tabIndex {
@@ -205,7 +234,6 @@
         int pageIndex = annot.pageIndex;
         CGRect pvRect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
         CGRect dvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:pvRect pageIndex:pageIndex];
-        UIDeviceOrientation o = [[UIDevice currentDevice] orientation];
         float width = DISPLAYVIEWWIDTH;
         float height = DISPLAYVIEWHEIGHT;
         ;
@@ -347,6 +375,12 @@
         [self.opacityLayout resetLayout];
         [self.mainView addLayoutAtTab:self.opacityLayout tab:TAB_FILL];
     }
+    if (self.currentItems & PROPERTY_ROTATION) {
+        CGRect rotationFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
+        self.rotationLayout.frame = rotationFrame;
+        [self.rotationLayout resetLayout];
+        [self.mainView addLayoutAtTab:self.rotationLayout tab:TAB_FILL];
+    }
     if (self.currentItems & PROPERTY_LINEWIDTH) {
         CGRect linewidthFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
         self.lineWidthLayout.frame = linewidthFrame;
@@ -368,6 +402,13 @@
         [self.mainView addLayoutAtTab:self.typeLayout tab:TAB_TYPE];
     }
 
+    if (self.currentItems & PROPERTY_DISTANCE_UNIT) {
+        CGRect fontNameFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
+        self.distanceUnitLayout.frame = fontNameFrame;
+        [self.distanceUnitLayout resetLayout];
+        [self.mainView addLayoutAtTab:self.distanceUnitLayout tab:TAB_DISTANCE_UNIT];
+    }
+    
     if (self.mainView.segmentItems.count > 0) {
         SegmentView *segmentView = [[SegmentView alloc] initWithFrame:CGRectMake(20, 5, self.mainView.frame.size.width - 40, TABHEIGHT - 10) segmentItems:self.mainView.segmentItems];
         segmentView.delegate = self.mainView;
@@ -464,6 +505,10 @@
     }
 }
 
+- (void)setDistanceLayoutsForbidEdit {
+    [self.distanceUnitLayout forbidUnit];
+}
+
 #pragma mark IRotationEventListener
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
     if (![self isShowing])
@@ -503,6 +548,12 @@
         [self.opacityLayout resetLayout];
         [self.mainView addLayoutAtTab:self.opacityLayout tab:TAB_FILL];
     }
+    if (self.currentItems & PROPERTY_ROTATION) {
+        CGRect rotationFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
+        self.rotationLayout.frame = rotationFrame;
+        [self.rotationLayout resetLayout];
+        [self.mainView addLayoutAtTab:self.rotationLayout tab:TAB_FILL];
+    }
     if (self.currentItems & PROPERTY_LINEWIDTH) {
         CGRect linewidthFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
         self.lineWidthLayout.frame = linewidthFrame;
@@ -524,6 +575,13 @@
         [self.mainView addLayoutAtTab:self.typeLayout tab:TAB_TYPE];
     }
 
+    if (self.currentItems & PROPERTY_DISTANCE_UNIT) {
+        CGRect fontNameFrame = CGRectMake(0, 0, self.mainView.frame.size.width, 100);
+        self.distanceUnitLayout.frame = fontNameFrame;
+        [self.distanceUnitLayout resetLayout];
+        [self.mainView addLayoutAtTab:self.distanceUnitLayout tab:TAB_DISTANCE_UNIT];
+    }
+    
     CGRect rect = self.mainView.frame;
     if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
         rect.origin.y = _pdfViewCtrl.bounds.size.width - rect.size.height;

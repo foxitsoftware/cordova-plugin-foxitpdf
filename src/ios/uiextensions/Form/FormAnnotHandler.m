@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -28,9 +28,6 @@ static NSString *FORM_CHAR_BACK = @"BACK";
         self.extensionsManager = extensionsManager;
         self.pdfViewCtrl = self.extensionsManager.pdfViewCtrl;
         _taskServer = self.extensionsManager.taskServer;
-        [self.extensionsManager registerAnnotHandler:self];
-        [self.extensionsManager registerRotateChangedListener:self];
-        [self.pdfViewCtrl registerDocEventListener:self];
 
         _keyboardHeight = 0;
         _formFiller = nil;
@@ -102,7 +99,6 @@ static NSString *FORM_CHAR_BACK = @"BACK";
         int pageCount = [doc getPageCount];
         int annotCount = [page getAnnotCount];
         BOOL canShowKeybord = NO;
-        int i = _focusedWidgetIndex;
         int savedPos = _focusedWidgetIndex;
         int savedPageIndex = curPageIndex;
         int prePos = _focusedWidgetIndex < 0 ? 0 : _focusedWidgetIndex - 1;
@@ -283,7 +279,11 @@ static NSString *FORM_CHAR_BACK = @"BACK";
 }
 
 - (BOOL)isHitAnnot:(FSAnnot *)annot point:(FSPointF *)point {
-    FSAnnot *hitAnnot = [[annot getPage] getAnnotAtPos:point tolerance:5];
+    FSAnnot *hitAnnot = nil;
+    @try {
+        hitAnnot = [[annot getPage] getAnnotAtPos:point tolerance:5];
+    } @catch (NSException *exception) {
+    }
     if (hitAnnot && ([hitAnnot getCptr] == [annot getCptr])) {
         FSFormField *field = [((FSWidget *) hitAnnot) getField];
         if (field && ([field getFlags] & e_formFieldFlagReadonly))
@@ -366,16 +366,27 @@ static NSString *FORM_CHAR_BACK = @"BACK";
 }
 
 - (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event annot:(FSAnnot *)annot {
-    BOOL canFillForm = [Utility canFillFormInDocument:self.pdfViewCtrl.currentDoc];
-    if (![self.pdfViewCtrl.currentDoc hasForm] || !canFillForm) {
+    BOOL hasForm = NO;
+    @try {
+        hasForm = [self.pdfViewCtrl.currentDoc hasForm];
+    } @catch (NSException *e) {
+    }
+    if (!hasForm) {
         return NO;
     }
-
+    BOOL canFillForm = [Utility canFillFormInDocument:self.pdfViewCtrl.currentDoc];
+    if (!canFillForm) {
+        return NO;
+    }
     UIView *pageView = [self.pdfViewCtrl getPageView:pageIndex];
     CGPoint point = [[touches anyObject] locationInView:pageView];
     FSPointF *pdfPoint = [self.pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
     if (self.extensionsManager.currentAnnot == annot) {
-        FSAnnot *hitAnnot = [[[self.pdfViewCtrl getDoc] getPage:pageIndex] getAnnotAtPos:pdfPoint tolerance:5];
+        FSAnnot *hitAnnot = nil;
+        @try {
+            hitAnnot = [[[self.pdfViewCtrl getDoc] getPage:pageIndex] getAnnotAtPos:pdfPoint tolerance:5];
+        } @catch (NSException *exception) {
+        }
         if (pageIndex == annot.pageIndex && hitAnnot && hitAnnot.type == e_annotWidget) {
             _focusedWidgetIndex = [hitAnnot getIndex];
             _hasFormChanged = NO;
@@ -568,7 +579,7 @@ static NSString *FORM_CHAR_BACK = @"BACK";
 
             FSPointF *jumpPdfPoint = [[FSPointF alloc] init];
             [jumpPdfPoint set:oldPdfPoint.x y:oldPdfPoint.y - pdfOffsetY];
-            if ([self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_SINGLE || [self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO) {
+            if ([self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_SINGLE || [self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO || [self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_RIGHT || [self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_MIDDLE) {
                 [self.pdfViewCtrl setBottomOffset:dvOffsetY];
             } else if ([self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_CONTINUOUS) {
                 if ([self.pdfViewCtrl getCurrentPage] == [self.pdfViewCtrl.currentDoc getPageCount] - 1) {
@@ -611,7 +622,7 @@ static NSString *FORM_CHAR_BACK = @"BACK";
     [self endOp:YES];
     FSAnnot *dmAnnot = self.extensionsManager.currentAnnot;
     if (dmAnnot && !_lockKeyBoardPosition) {
-        if ([self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_SINGLE || dmAnnot.pageIndex == [self.pdfViewCtrl.currentDoc getPageCount] - 1 || [self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO) {
+        if ([self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_SINGLE || dmAnnot.pageIndex == [self.pdfViewCtrl.currentDoc getPageCount] - 1 || [self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO || [self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_RIGHT || [self.pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_MIDDLE) {
             [self.pdfViewCtrl setBottomOffset:0];
         }
     }
@@ -708,12 +719,19 @@ static NSString *FORM_CHAR_BACK = @"BACK";
 
 - (void)onDocOpened:(FSPDFDoc *)document error:(int)error {
     FSPDFDoc *doc = self.pdfViewCtrl.currentDoc;
-    if (nil == _formFiller && [doc hasForm] && [Utility canFillFormInDocument:doc]) {
-        // creating form filler may block current thread if -[ExActionHandler alert:title:type:icon:] called
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-            _formFiller = [[FSFormFiller alloc] initWithForm:[doc getForm] assist:self];
-            [_formFiller highlightFormFields:YES];
-        });
+    if (nil == _formFiller) {
+        BOOL hasForm = NO;
+        @try {
+            hasForm = [doc hasForm];
+        } @catch (NSException *e) {
+        }
+        if (hasForm && [Utility canFillFormInDocument:doc]) {
+            // creating form filler may block current thread if -[ExActionHandler alert:title:type:icon:] called
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+                _formFiller = [[FSFormFiller alloc] initWithForm:[doc getForm] assist:self];
+                [_formFiller highlightFormFields:YES];
+            });
+        }
     }
 }
 

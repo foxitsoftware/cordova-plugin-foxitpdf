@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -14,23 +14,24 @@
 #import "FileInformationViewController.h"
 #import "MenuGroup.h"
 #import "MenuView.h"
+#import "PrintRenderer.h"
+#import "ScreenCaptureViewController.h"
 
 @interface MoreModule ()
 
 @property (nonatomic, strong) FSPDFDoc *document;
 
 @property (nonatomic, weak) UIButton *moreButton;
-@property (nonatomic, assign) CGRect moreRect;
 @property (nonatomic, strong) MenuView *moreMenu;
 
 @property (nonatomic, strong) MenuGroup *othersGroup;
 @property (nonatomic, strong) MvMenuItem *saveItem;
 @property (nonatomic, strong) MvMenuItem *fileInfoItem;
 @property (nonatomic, strong) MvMenuItem *reduceFileSizeItem;
+@property (nonatomic, strong) MvMenuItem *WirelessPrintItem;
+@property (nonatomic, strong) MvMenuItem *cropScreenItem;
 
-@property (nonatomic, strong) NSObject *currentVC;
 @property (nonatomic, strong) UIPopoverController *sharePopoverController;
-@property (nonatomic, assign) BOOL haddismiss;
 
 @property (nonatomic, weak) FSPDFViewCtrl *pdfViewCtrl;
 @property (nonatomic, weak) UIExtensionsManager *extensionsManager;
@@ -68,7 +69,6 @@
         items;
     });
     self.moreButton = moreButton;
-    self.moreRect = self.moreButton.frame;
 
     self.othersGroup = [self.moreMenu getGroup:TAG_GROUP_FILE];
     if (!self.othersGroup) {
@@ -82,14 +82,27 @@
     self.fileInfoItem.tag = TAG_ITEM_FILEINFO;
     self.fileInfoItem.callBack = self;
     self.fileInfoItem.text = FSLocalizedString(@"kFileInformation");
-    
+
     self.reduceFileSizeItem = [[MvMenuItem alloc] init];
     self.reduceFileSizeItem.tag = TAG_ITEM_REDUCEFILESIZE;
     self.reduceFileSizeItem.callBack = self;
     self.reduceFileSizeItem.text = FSLocalizedString(@"kReduceFileSize");
+
+    self.WirelessPrintItem = [[MvMenuItem alloc] init];
+    self.WirelessPrintItem.tag = TAG_ITEM_WIRELESSPRINT;
+    self.WirelessPrintItem.callBack = self;
+    self.WirelessPrintItem.text = FSLocalizedString(@"kAirPrint");
     
+    self.cropScreenItem = [[MvMenuItem alloc] init];
+    self.cropScreenItem.tag = TAG_ITEM_CROP;
+    self.cropScreenItem.callBack = self;
+    self.cropScreenItem.text = FSLocalizedString(@"kScreenCapture");
+    
+
     [self.moreMenu addMenuItem:self.othersGroup.tag withItem:self.fileInfoItem];
     [self.moreMenu addMenuItem:self.othersGroup.tag withItem:self.reduceFileSizeItem];
+    [self.moreMenu addMenuItem:self.othersGroup.tag withItem:self.WirelessPrintItem];
+    [self.moreMenu addMenuItem:self.othersGroup.tag withItem:self.cropScreenItem];
 }
 
 - (void)onClickMoreButton:(UIButton *)button {
@@ -103,44 +116,17 @@
         [self fileInfo];
     } else if (item.tag == TAG_ITEM_REDUCEFILESIZE) {
         [self reduceFileSize];
+    } else if (item.tag == TAG_ITEM_WIRELESSPRINT) {
+        [self wirelessPrint];
+    } else if(item.tag == TAG_ITEM_CROP) {
+        _extensionsManager.hiddenMoreMenu = YES;
+        [self cropScreen];
     }
-}
-
-- (void)onDocWillOpen {
-}
-
-- (void)onDocOpened:(FSPDFDoc *)document error:(int)error {
-    self.moreRect = self.moreButton.frame;
-    self.haddismiss = NO;
-}
-
-- (void)onDocWillClose:(FSPDFDoc *)document {
-    if (self.currentVC) {
-        if ([self.currentVC isKindOfClass:[UIViewController class]]) {
-            [(UIViewController *) self.currentVC dismissViewControllerAnimated:NO completion:nil];
-        } else if ([self.currentVC isKindOfClass:[UIDocumentInteractionController class]]) {
-            [(UIDocumentInteractionController *) self.currentVC dismissMenuAnimated:NO];
-            [(UIDocumentInteractionController *) self.currentVC dismissPreviewAnimated:NO];
-        } else if ([self.currentVC isKindOfClass:[UIPrintInteractionController class]]) {
-            [(UIPrintInteractionController *) self.currentVC dismissAnimated:NO];
-        } else if ([self.currentVC isKindOfClass:[AlertView class]]) {
-            [(AlertView *) self.currentVC dismissWithClickedButtonIndex:0 animated:NO];
-        }
-        self.currentVC = nil;
-    }
-}
-
-- (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
-    self.haddismiss = NO;
-}
-
-- (void)onDocWillSave:(FSPDFDoc *)document {
 }
 
 - (void)fileInfo {
     FileInformationViewController *fileInfoCtr = [[FileInformationViewController alloc] initWithNibName:nil bundle:nil];
     [fileInfoCtr setUIExtensionsManager:_extensionsManager];
-    self.currentVC = fileInfoCtr;
     UINavigationController *fileInfoNavCtr = [[UINavigationController alloc] initWithRootViewController:fileInfoCtr];
     fileInfoNavCtr.delegate = fileInfoCtr;
     fileInfoNavCtr.modalPresentationStyle = UIModalPresentationFormSheet;
@@ -150,47 +136,81 @@
 
 - (void)reduceFileSize {
     //todo:cyy
-    AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm" message:@"kReduceFileSizeDescription" buttonClickHandler:^(UIView *alertView, int buttonIndex) {
-        if (0 == buttonIndex) {
-            return ;
-        }
-        self.extensionsManager.docSaveFlag = e_saveFlagXRefStream;
-        _extensionsManager.hiddenMoreMenu = YES;
-    } cancelButtonTitle:@"kCancel" otherButtonTitles:@"kOK", nil];
-    
+    AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm"
+                                                    message:@"kReduceFileSizeDescription"
+                                         buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
+                                             if (0 == buttonIndex) {
+                                                 return;
+                                             }
+                                             self.extensionsManager.docSaveFlag = e_saveFlagXRefStream;
+                                             self.extensionsManager.isDocModified = YES;
+                                             _extensionsManager.hiddenMoreMenu = YES;
+                                         }
+                                          cancelButtonTitle:@"kCancel"
+                                          otherButtonTitles:@"kOK", nil];
+
     [alertView show];
 }
 
-#pragma mark rotation
-
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    if (self.currentVC) {
-        if ([self.currentVC isKindOfClass:[UIDocumentInteractionController class]]) {
-            [(UIDocumentInteractionController *) self.currentVC dismissMenuAnimated:NO];
-            [(UIDocumentInteractionController *) self.currentVC dismissPreviewAnimated:NO];
-        } else if ([self.currentVC isKindOfClass:[UIPrintInteractionController class]]) {
-            ((UIPrintInteractionController *) self.currentVC).printPageRenderer = nil;
-            [(UIPrintInteractionController *) self.currentVC dismissAnimated:NO];
+- (void)wirelessPrint {
+    UIPrintInteractionCompletionHandler completion = ^(UIPrintInteractionController *_Nonnull printInteractionController, BOOL completed, NSError *_Nullable error) {
+        if (error) {
+            AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning" message:error.localizedDescription buttonClickHandler:nil cancelButtonTitle:nil otherButtonTitles:@"kOK", nil];
+            [alertView show];
         }
+        //            NSInteger startPage = pic.printFormatter.startPage;
+        //            NSInteger pageCount = pic.printFormatter.pageCount;
+    };
+    NSString *fileName = self.pdfViewCtrl.filePath.lastPathComponent;
+    if (DEVICE_iPHONE) {
+        [Utility printDoc:self.pdfViewCtrl.currentDoc animated:YES jobName:fileName delegate:nil completionHandler:completion];
+    } else {
+        CGRect fromRect = [self.pdfViewCtrl convertRect:self.moreButton.bounds fromView:self.moreButton];
+        [Utility printDoc:self.pdfViewCtrl.currentDoc fromRect:fromRect inView:self.pdfViewCtrl animated:YES jobName:fileName delegate:nil completionHandler:completion];
     }
 }
 
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
-    self.moreRect = self.moreButton.frame;
-    if (self.currentVC && !self.haddismiss) {
-        if ([self.currentVC isKindOfClass:[UIDocumentInteractionController class]]) {
-        }
+- (void)cropScreen {
+    if (!OS_ISVERSION6) {
+        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning" message:@"kScreenCaptureVersion" buttonClickHandler:nil cancelButtonTitle:nil otherButtonTitles:@"kOK", nil];
+        [alertView show];
+        return;
     }
-}
+    if (![Utility canCopyForAssessInDocument:self.pdfViewCtrl.currentDoc]) {
+        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning" message:@"kRMSNoAccess" buttonClickHandler:nil cancelButtonTitle:nil otherButtonTitles:@"kOK", nil];
+        [alertView show];
+        return;
+    }
+    
+    __weak __typeof__(self) weakSelf = self;
+    void(^start)(void) = ^(void)
+    {
+        weakSelf.extensionsManager.isFullScreen = YES;
 
-#pragma mark UIDocumentInteractionController delegate
-
-- (void)documentInteractionControllerDidDismissOpenInMenu:(UIDocumentInteractionController *)controller {
-    self.haddismiss = YES;
-}
-
-- (void)popoverController:(UIPopoverController *)popoverController willRepositionPopoverToRect:(inout CGRect *)rect inView:(inout UIView *_Nonnull *)view {
-    *rect = self.moreRect;
+        UIImage * img = [Utility screenShot:[_extensionsManager.pdfViewCtrl getDisplayView]];
+        ScreenCaptureViewController *screenCaptureViewController = [[ScreenCaptureViewController alloc] initWithNibName:@"ScreenCaptureViewController" bundle:nil];
+        
+        screenCaptureViewController.img = img;
+        screenCaptureViewController.screenCaptureCompelementHandler = ^(CGRect area) {
+        };
+        screenCaptureViewController.screenCaptureClosedHandler = ^() {
+            weakSelf.extensionsManager.isFullScreen = NO;
+        };
+        
+        UINavigationController *shotNavCtr = [[UINavigationController alloc] initWithRootViewController:screenCaptureViewController];
+        shotNavCtr.modalPresentationStyle = UIModalPresentationFormSheet;
+        shotNavCtr.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+        [_extensionsManager.pdfViewCtrl.window.rootViewController presentViewController:shotNavCtr animated:YES completion:nil];
+    };
+    
+    if (OS_ISVERSION7) {
+        start();
+    } else {
+        //fix ios6 will make toolbar item disappear bug
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            start();
+        });
+    }
 }
 
 @end

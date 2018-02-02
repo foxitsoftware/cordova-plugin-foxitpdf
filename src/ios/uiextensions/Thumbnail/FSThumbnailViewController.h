@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -20,12 +20,14 @@
 @protocol FSThumbnailViewControllerDelegate;
 @protocol IRotationEventListener;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface FSThumbnailViewController : UIViewController <UICollectionViewDelegate, FSReorderableCollectionViewDataSource, IRotationEventListener>
 
-@property (nonatomic, weak) id<FSThumbnailViewControllerDelegate> delegate;
-@property (nonatomic, weak) id<FSPageOrganizerDelegate> pageManipulationDelegate;
-@property (nonatomic, strong) FSReorderableCollectionView *collectionView;
-@property (nonatomic, strong) FSPDFDoc *document;
+@property (nonatomic, weak, nullable) id<FSThumbnailViewControllerDelegate> delegate;
+@property (nonatomic, weak, nullable) id<FSPageOrganizerDelegate> pageManipulationDelegate;
+@property (nonatomic, strong, nullable) FSReorderableCollectionView *collectionView;
+@property (nonatomic, strong, nonnull) FSPDFDoc *document;
 @property (nonatomic) BOOL isEditing;
 
 - (instancetype)initWithDocument:(FSPDFDoc *)document;
@@ -36,6 +38,8 @@
 
 - (void)exitThumbnailViewController:(FSThumbnailViewController *)thumbnailViewController;
 - (void)thumbnailViewController:(FSThumbnailViewController *)thumbnailViewController openPage:(int)page;
-- (void)thumbnailViewController:(FSThumbnailViewController *)thumbnailViewController getThumbnailForPageAtIndex:(NSUInteger)index thumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)())needPause callback:(void (^__nonnull)(UIImage *thumbnailImage))callback;
+- (void)thumbnailViewController:(FSThumbnailViewController *)thumbnailViewController getThumbnailForPageAtIndex:(NSUInteger)index thumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)(void))needPause callback:(void (^)(UIImage *))callback;
 
 @end
+
+NS_ASSUME_NONNULL_END

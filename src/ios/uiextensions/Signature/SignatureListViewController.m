@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -140,7 +140,7 @@ static const float STYLE_CELL_HEIGHT_IPHONE = 120;
                                  make.top.mas_equalTo(self.moreContentView.superview.mas_top);
                                  make.bottom.mas_equalTo(self.moreContentView.superview.mas_bottom);
                              }];
-                             self.moreContentView.superview.layoutIfNeeded;
+                             [self.moreContentView.superview layoutIfNeeded];
                          }];
     } else {
         self.moreBtn.hidden = NO;
@@ -153,7 +153,7 @@ static const float STYLE_CELL_HEIGHT_IPHONE = 120;
                                  make.bottom.mas_equalTo(self.moreContentView.superview.mas_bottom);
                              }];
                          }];
-        self.moreContentView.superview.layoutIfNeeded;
+        [self.moreContentView.superview layoutIfNeeded];
     }
 }
 

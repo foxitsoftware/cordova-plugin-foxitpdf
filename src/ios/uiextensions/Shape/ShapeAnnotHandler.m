@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -43,13 +43,6 @@
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
-        [_pdfViewCtrl registerDocEventListener:self];
-        [_extensionsManager registerAnnotHandler:self];
-        [_pdfViewCtrl registerDocEventListener:self];
-        [_pdfViewCtrl registerScrollViewEventListener:self];
-        [_extensionsManager registerRotateChangedListener:self];
-        [_extensionsManager registerGestureEventListener:self];
-        [_extensionsManager.propertyBar registerPropertyBarListener:self];
         self.colors = @[ @0xFF9F40, @0x8080FF, @0xBAE94C, @0xFFF160, @0xC3C3C3, @0xFF4C4C, @0x669999, @0xC72DA1, @0x996666, @0x000000 ];
         self.isShowStyle = NO;
         self.editAnnot = nil;
@@ -84,7 +77,7 @@
     MenuItem *openItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kOpen") object:self action:@selector(comment)];
     MenuItem *replyItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kReply") object:self action:@selector(reply)];
     MenuItem *styleItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kStyle") object:self action:@selector(showStyle)];
-    MenuItem *deleteItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kDelete") object:self action:@selector(delete:)];
+    MenuItem *deleteItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kDelete") object:self action:@selector(delete)];
     if (annot.canModify) {
         if (annot.contents == nil || [annot.contents isEqualToString:@""]) {
             [array addObject:commentItem];
@@ -96,7 +89,9 @@
         [array addObject:deleteItem];
     } else {
         [array addObject:commentItem];
-        [array addObject:replyItem];
+        if (annot.canReply) {
+            [array addObject:replyItem];
+        }
     }
 
     CGRect dvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:self.currentAnnotRect pageIndex:annot.pageIndex];
@@ -163,7 +158,7 @@
     };
 }
 
-- (void) delete:(id)sender {
+- (void) delete {
     FSAnnot *annot = _extensionsManager.currentAnnot;
     Task *task = [[Task alloc] init];
     task.run = ^() {
@@ -226,7 +221,7 @@
     FSPDFPage *page = [annot getPage];
     if (addUndo) {
         FSAnnotAttributes *attributes = [FSAnnotAttributes attributesWithAnnot:annot];
-        [_extensionsManager addUndoItem:[UndoAddAnnot createWithAttributes:attributes page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoAddAnnotWithAttributes:attributes page:page annotHandler:self]];
     }
 
     [_extensionsManager onAnnotAdded:page annot:annot];
@@ -250,7 +245,7 @@
 
     if ([annot canModify] && addUndo) {
         annot.modifiedDate = [NSDate date];
-        [_extensionsManager addUndoItem:[UndoModifyAnnot createWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoModifyAnnotWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
     }
 
     [_extensionsManager onAnnotModified:[annot getPage] annot:annot];
@@ -272,14 +267,15 @@
 
     if (addUndo) {
         FSAnnotAttributes *attributes = self.attributesBeforeModify ?: [FSAnnotAttributes attributesWithAnnot:annot];
-        [_extensionsManager addUndoItem:[UndoDeleteAnnot createWithAttributes:attributes page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoDeleteAnnotWithAttributes:attributes page:page annotHandler:self]];
     }
     self.attributesBeforeModify = nil;
 
     CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:annot.pageIndex];
 
-    [_extensionsManager onAnnotDeleted:page annot:annot];
+    [_extensionsManager onAnnotWillDelete:page annot:annot];
     [page removeAnnot:annot];
+    [_extensionsManager onAnnotDeleted:page annot:annot];
 
     rect = CGRectInset(rect, -30, -30);
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -293,10 +289,6 @@
 }
 
 - (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer annot:(FSAnnot *)annot {
-    BOOL canAddAnnot = [Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc];
-    if (!canAddAnnot) {
-        return NO;
-    }
     CGPoint point = [recognizer locationInView:[_pdfViewCtrl getPageView:annot.pageIndex]];
     FSPointF *pdfPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:annot.pageIndex];
     if (_extensionsManager.currentAnnot == annot) {

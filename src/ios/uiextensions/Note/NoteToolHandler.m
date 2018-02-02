@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -30,8 +30,6 @@
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
-        [_pdfViewCtrl registerDocEventListener:self];
-        [_extensionsManager registerToolHandler:self];
         _taskServer = _extensionsManager.taskServer;
         _type = e_annotNote;
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -91,7 +91,7 @@
     int circleWidth = self.silder.value * 16 / 12;
     self.circleView.layer.cornerRadius = circleWidth;
     self.circleView.frame = CGRectMake(20 + 16 - circleWidth, LAYOUTTITLEHEIGHT + LAYOUTTBSPACE + 16 - circleWidth, circleWidth * 2, circleWidth * 2);
-    [self.currentListener onProperty:PROPERTY_LINEWIDTH changedFrom:[NSNumber numberWithInt:_currentLineWidth] to:[NSNumber numberWithInt:self.silder.value]];
+    [self.currentListener onProperty:PROPERTY_LINEWIDTH changedFrom:@(_currentLineWidth) to:[NSNumber numberWithInt:self.silder.value]];
     _currentLineWidth = self.silder.value;
 }
 

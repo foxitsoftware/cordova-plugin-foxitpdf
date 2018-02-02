@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -35,7 +35,6 @@
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
-        [_extensionsManager registerToolHandler:self];
         _taskServer = _extensionsManager.taskServer;
         _type = e_annotLine;
         _isArrowLine = NO;
@@ -59,6 +58,13 @@
 }
 
 - (void)onDeactivate {
+    if(self.annot)
+    {
+        FSAnnot* annot = self.annot;
+        self.annot = nil;
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:annot];
+        [annotHandler addAnnot:annot addUndo:YES];
+    }
 }
 
 #pragma mark PageView Gesture+Touch
@@ -130,7 +136,6 @@
     [annot setStartPoint:self.startPoint];
     [annot setEndPoint:self.endPoint];
     [annot resetAppearanceStream];
-    self.annot = annot;
 
     id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:annot];
     [annotHandler addAnnot:annot addUndo:YES];
@@ -155,57 +160,71 @@
     } else {
         [dibRect set:dibPoint.x bottom:dibPoint.y right:dibPoint.x + 0.1 top:dibPoint.y + 0.1];
     }
+    
+    void (^end)() = ^() {
+        FSAnnot* annot = self.annot;
+        self.annot = nil;
+        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:annot];
+        [annotHandler addAnnot:annot addUndo:YES];
+    };
+    
     if (recognizer.state == UIGestureRecognizerStateBegan) {
+        if(self.annot)
+            end();
+        
         FSLine *annot = [self addAnnotToPage:pageIndex withRect:dibRect];
         if (!annot) {
-            return YES;
+            return NO;
         }
         self.annot = (FSLine *) annot;
         if (_isArrowLine) {
             [annot setLineEndingStyle:@"OpenArrow"];
         }
         self.startPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
-        self.endPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
+        self.endPoint = self.startPoint;
         FSLine *line = (FSLine *) self.annot;
         [line setStartPoint:self.startPoint];
         [line setEndPoint:self.endPoint];
         [annot resetAppearanceStream];
+        return YES;
 
     } else if (recognizer.state == UIGestureRecognizerStateChanged) {
         if (pageIndex != self.annot.pageIndex) {
+            end();
             return NO;
         }
 
-        FSPointF *dibPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
+        FSPointF *pdfPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
         float marginX = [Utility getAnnotMinXMarginInPDF:_pdfViewCtrl pageIndex:pageIndex];
         float marginY = [Utility getAnnotMinYMarginInPDF:_pdfViewCtrl pageIndex:pageIndex];
         FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
-
-        if (dibPoint.x < marginX || dibPoint.y > [page getHeight] - marginY || dibPoint.y < marginY || dibPoint.x > [page getWidth] - marginX) {
+        FSRectF* pageBox = [Utility getPageBoundary:page];
+        FSRectF* deflateRect = [Utility inflateFSRect:pageBox width:-marginX height:-marginY];
+        if(![Utility isPointInFSRect:deflateRect point:pdfPoint])
+        {
+            end();
             return NO;
         }
         self.endPoint = dibPoint;
         [self.annot setEndPoint:dibPoint];
         [self.annot resetAppearanceStream];
-        FSRectF *dibRect = [Utility convertToFSRect:self.startPoint p2:self.endPoint];
-        self.annot.fsrect = dibRect;
+        FSRectF *pdfRect = [Utility convertToFSRect:self.startPoint p2:self.endPoint];
+        //self.annot.fsrect = dibRect;
 
-        CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:dibRect pageIndex:pageIndex];
+        CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:pdfRect pageIndex:pageIndex];
         rect = CGRectInset(rect, -20, -20);
         [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
+        return YES;
 
     } else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
-        if ([Utility pointEqualToPoint:self.startPoint point:self.endPoint]) {
-            return;
-        }
-        FSLine *annot1 = (FSLine *) self.annot;
-        [annot1 setStartPoint:self.startPoint];
-        [annot1 setEndPoint:self.endPoint];
-        [annot1 setFsrect:[Utility convertToFSRect:self.startPoint p2:self.endPoint]];
-
-        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:self.annot];
-        [annotHandler addAnnot:self.annot addUndo:YES];
+        FSLine *annot = (FSLine *) self.annot;
+        [annot setStartPoint:self.startPoint];
+        [annot setEndPoint:self.endPoint];
+        [annot resetAppearanceStream];
+        end();
+        return YES;
     }
+    return NO;
 }
 
 - (FSLine *)addAnnotToPage:(int)pageIndex withRect:(FSRectF *)rect {

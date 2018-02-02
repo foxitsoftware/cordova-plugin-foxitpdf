@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -50,7 +50,7 @@
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateBookmarkButtonState) name:UPDATEBOOKMARK object:nil];
         [_extensionsManager.pdfViewCtrl registerDocEventListener:self];
         [_extensionsManager.pdfViewCtrl registerPageEventListener:self];
-        [_extensionsManager.pdfViewCtrl registerLayoutChangedEventListener:self];
+        [_extensionsManager.pdfViewCtrl registerLayoutEventListener:self];
     }
 }
 
@@ -64,7 +64,7 @@
     }
     FSPDFViewCtrl *pdfViewCtrl = _extensionsManager.pdfViewCtrl;
     int currentPage = [pdfViewCtrl getCurrentPage];
-    if ([pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO) {
+    if ([pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO || [pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_MIDDLE) {
         currentPage = currentPage / 2 * 2;
     }
     FSReadingBookmark *bookmark = [Utility getReadingBookMarkAtPage:pdfViewCtrl.currentDoc page:currentPage];
@@ -81,7 +81,7 @@
 - (void)updateBookmarkButtonState {
     FSPDFViewCtrl* pdfViewCtrl = _extensionsManager.pdfViewCtrl;
     int currentPage = [pdfViewCtrl getCurrentPage];
-    if ([pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO) {
+    if ([pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO || [pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_MIDDLE) {
         currentPage = currentPage / 2 * 2;
     }
     FSReadingBookmark *bookmark = [Utility getReadingBookMarkAtPage:pdfViewCtrl.currentDoc page:currentPage];

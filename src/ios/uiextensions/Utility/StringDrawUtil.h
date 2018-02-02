@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -15,6 +15,7 @@
 #import <UIKit/NSStringDrawing.h>
 #import <UIKit/UIFont.h>
 #import <UIKit/UIStringDrawing.h>
+#import <UIKit/UITextView.h>
 
 //A utility class specific for string size calculate function for drawing string
 //the font, size is fixed when initialize
@@ -68,11 +69,13 @@
 //remove the blank character between keyword which will make it can be found.
 + (NSString *)removeBlankBetweenKeyword:(NSString *)content keyword:(NSString *)keyword;
 
-//used for free text annotation. the string is typed in UITextView and need to get a same wrapped string with "\n" inserted at exactly place.
-//use core text to calculate
-- (NSString *)getReturnRefinedString:(NSString *)str forUITextViewWidth:(float)width;
+////used for free text annotation. the string is typed in UITextView and need to get a same wrapped string with "\n" inserted at exactly place.
+////use core text to calculate
+//- (NSString *)getReturnRefinedString:(NSString *)str forUITextViewWidth:(float)width;
 
 //get word range of string, including space, the best part is it supports all language including Chinese
 + (NSArray *)getUnitWordBoundary:(NSString *)str;
+
++ (NSString *)getWrappedStringInTextView:(UITextView *)textView;
 
 @end

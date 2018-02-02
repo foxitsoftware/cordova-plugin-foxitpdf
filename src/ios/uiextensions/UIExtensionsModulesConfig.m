@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -28,9 +28,10 @@
 
 + (NSSet<NSString *> *) standardTools {
     // exclude Tool_Attachment, Tool_Signature which are explicitly controlled by loadXXX property
-    return [NSSet setWithObjects:Tool_Select, Tool_Note, Tool_Freetext, Tool_Pencil, Tool_Eraser,
+    return [NSSet setWithObjects:Tool_Select, Tool_Note, Tool_Freetext, Tool_Textbox, Tool_Pencil, Tool_Eraser,
                                  Tool_Stamp, Tool_Insert, Tool_Replace, Tool_Highlight, Tool_Squiggly, Tool_StrikeOut,
-                                 Tool_Underline, Tool_Rectangle, Tool_Oval, Tool_Line, Tool_Arrow, nil];
+                                 Tool_Underline, Tool_Rectangle, Tool_Oval, Tool_Line, Tool_Arrow, Tool_Image,
+                                 Tool_Polygon, Tool_Cloud, Tool_Distance, nil];
 }
 
 - (id)init {
@@ -187,12 +188,40 @@
     case e_annotCircle:
         tool = Tool_Oval;
         break;
-    case e_annotFreeText:
-        tool = Tool_Freetext;
+    case e_annotFreeText: {
+        NSString *intent = [((FSFreeText *) annot) getIntent];
+        if (intent == nil) {
+            tool = Tool_Textbox;
+        } else if ([intent caseInsensitiveCompare:@"FreeTextTypewriter"] == NSOrderedSame) {
+            tool = Tool_Freetext;
+        }
         break;
+    }
     case e_annotLine: {
         BOOL isArrow = [[(FSMarkup *) annot getIntent] caseInsensitiveCompare:@"LineArrow"] == NSOrderedSame;
-        tool = isArrow ? Tool_Arrow : Tool_Line;
+        if (isArrow) {
+            tool = Tool_Arrow;
+            break;
+        }
+        BOOL isDistance = [[(FSMarkup *)annot getIntent] caseInsensitiveCompare:@"LineDimension"] == NSOrderedSame;
+        if (isDistance) {
+            tool = Tool_Distance;
+            break;
+        }
+        tool = Tool_Line;
+        break;
+    }
+    case e_annotScreen:
+        tool = Tool_Image;
+        break;
+    case e_annotPolygon: {
+        FSBorderInfo *border = [(FSPolygon *) annot getBorderInfo];
+        BOOL isCloud = ([border getStyle] == e_borderStyleCloudy);
+        if (isCloud) {
+            tool = Tool_Cloud;
+        } else {
+            tool = Tool_Polygon;
+        }
         break;
     }
     default:
@@ -234,6 +263,7 @@
     tool2 = [tool2 lowercaseString];
     for (NSArray *aliasArray in @[ @[ @"note", @"comment" ],
                                    @[ @"freetext", @"free text", @"typewriter", @"type writer" ],
+                                   @[ @"textbox", @"text box" ],
                                    @[ @"ink", @"pencil" ],
                                    @[ @"replace", @"replace text", @"replacetext" ],
                                    @[ @"insert", @"insert text", @"inserttext" ],
@@ -241,7 +271,9 @@
                                    @[ @"rectangle", @"square" ],
                                    @[ @"arrow", @"arrow line" ],
                                    @[ @"attachment", @"fileattachment", @"file attachment" ],
-                                   @[ @"select", @"selection", @"select text", @"selecttext" ] ]) {
+                                   @[ @"select", @"selection", @"select text", @"selecttext" ],
+                                   @[ @"image", @"screen" ],
+                                   @[ @"distance" ]]) {
         if ([aliasArray containsObject:tool1] && [aliasArray containsObject:tool2]) {
             return true;
         }

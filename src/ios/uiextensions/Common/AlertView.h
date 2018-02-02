@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -13,9 +13,9 @@
 #import "../Thirdparties/TSAlertView/TSAlertView.h"
 #import <UIKit/UIKit.h>
 
-@protocol IAppPasswordEvent;
+@class AlertView;
 
-typedef void (^AlertViewButtonClickedHandler)(UIView *alertView, int buttonIndex);
+typedef void (^AlertViewButtonClickedHandler)(AlertView *alertView, NSInteger buttonIndex);
 
 //a wrapper for UIAlertView to facilite callback. It handles:
 //1. button click delegate
@@ -32,10 +32,14 @@ typedef void (^AlertViewButtonClickedHandler)(UIView *alertView, int buttonIndex
 
 @end
 
+@class InputAlertView;
+
+typedef void (^InputAlertViewButtonClickedHandler)(InputAlertView *alertView, NSInteger buttonIndex);
+
 @interface InputAlertView : TSAlertView <TSAlertViewDelegate>
 
-- (id)initWithTitle:(NSString *)title message:(NSString *)message buttonClickHandler:(AlertViewButtonClickedHandler)handler cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ... NS_REQUIRES_NIL_TERMINATION;
+- (id)initWithTitle:(NSString *)title message:(NSString *)message buttonClickHandler:(InputAlertViewButtonClickedHandler)handler cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ... NS_REQUIRES_NIL_TERMINATION;
 
-@property (nonatomic, copy) AlertViewButtonClickedHandler buttonClickedHandler;
+@property (nonatomic, copy) InputAlertViewButtonClickedHandler buttonClickedHandler;
 
 @end

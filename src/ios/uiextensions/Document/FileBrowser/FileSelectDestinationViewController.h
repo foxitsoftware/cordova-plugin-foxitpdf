@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -32,9 +32,9 @@ typedef enum FileListMode {
 @class FileSelectDestinationViewController;
 
 typedef void (^FileDoneHandler)(FileSelectDestinationViewController *controller, NSArray *destinationFolder);
-typedef void (^FileCallOffHandler)(void);
+typedef void (^FileCallOffHandler)(FileSelectDestinationViewController *controller);
 
-@interface FileSelectDestinationViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface FileSelectDestinationViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UINavigationControllerDelegate>
 
 @property (strong, nonatomic) NSArray *exceptFolderList;
 @property (nonatomic, strong) UITableView *tableViewFolders;

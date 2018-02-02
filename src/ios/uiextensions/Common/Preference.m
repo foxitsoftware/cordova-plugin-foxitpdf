@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -31,7 +31,7 @@
 + (void)setIntValue:(NSString *)module type:(NSString *)type value:(int)value {
     NSString *key = [module copy];
     key = [key stringByAppendingString:type];
-    [USER_DEFAULT setObject:[NSNumber numberWithInt:value] forKey:key];
+    [USER_DEFAULT setObject:@(value) forKey:key];
     [USER_DEFAULT synchronize];
 }
 

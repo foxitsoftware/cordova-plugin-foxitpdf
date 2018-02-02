@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -17,7 +17,7 @@
 
 @protocol FSFileSelectDelegate <NSObject>
 @required
-- (void)didFileSelected:(NSString *)filePath;
+- (void)didFileSelected:(NSString *_Nonnull)filePath;
 @end
 
 // Document module to manage the pdf file list in the home directory.

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -25,7 +25,10 @@
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
-        [[LinkAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        LinkAnnotHandler* annotHandler = [[LinkAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_extensionsManager.pdfViewCtrl registerDocEventListener:annotHandler];
+        [_extensionsManager.pdfViewCtrl registerPageEventListener:annotHandler];
+        [_extensionsManager registerAnnotHandler:annotHandler];
     }
     return self;
 }

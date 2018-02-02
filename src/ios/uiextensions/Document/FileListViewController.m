@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -28,8 +28,8 @@
     UIImageView *nameimage;
     UIImageView *sizeimage;
     TbBaseItem *thumbnailItem;
-    FileItem* currentFileItem;
-    
+    FileItem *currentFileItem;
+
     BOOL isShowMorePopover;
     BOOL isShowSortPopover;
 
@@ -152,8 +152,9 @@
             isShowSortPopover = NO;
             self.sortNameItem.textColor = [UIColor blackColor];
             self.sortNameItem.tag = 6;
+            typeof(self) __weak weakSelf = self;
             self.sortNameItem.onTapClick = ^(TbBaseItem *item) {
-                [self setSortButtonPopover];
+                [weakSelf setSortButtonPopover];
             };
             [fileBrowser addItem:self.sortNameItem displayPosition:Position_CENTER];
 
@@ -601,10 +602,10 @@
 }
 
 #pragma mark IDocEventListener
-- (void)onDocSaved:(FSPDFDoc *)document error:(int)error
-{
+- (void)onDocSaved:(FSPDFDoc *)document error:(int)error {
     //update folder size dictionary
-    if(!currentFileItem) return;
+    if (!currentFileItem)
+        return;
     NSString *key = [[currentFileItem.path componentsSeparatedByString:DOCUMENT_PATH] objectAtIndex:1];
     NSMutableDictionary<NSString *, NSNumber *> *folderSizeDictionary = [FileManageListViewController getFolderSizeDictionary];
     while (![(key = [key stringByDeletingLastPathComponent]) isEqualToString:@"/"]) {

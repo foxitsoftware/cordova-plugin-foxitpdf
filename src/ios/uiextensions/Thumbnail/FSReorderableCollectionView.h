@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -37,7 +37,7 @@
 @property (nonatomic, strong, nullable) NSIndexPath *indexPathForPlaceholderCell; // a transparent cell showing insert position while dragging
 @property (nonatomic, strong, nullable) NSIndexPath *originalIndexPathForPlaceholderCell;
 
-- (NSIndexPath *)getOriginalIndexPathForIndexPath:(NSIndexPath *)indexPath;
-- (instancetype)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout isModifiable:(BOOL)isModifiable;
+- (NSIndexPath *_Nonnull)getOriginalIndexPathForIndexPath:(NSIndexPath *_Nonnull)indexPath;
+- (instancetype _Nullable)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *_Nonnull)layout isModifiable:(BOOL)isModifiable;
 
 @end

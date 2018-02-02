@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -17,10 +17,10 @@
 
 @interface PasswordModule : NSObject <TSAlertViewDelegate>
 
-@property (nonatomic, strong) FSPDFDoc *pdfDoc;
+@property (nonatomic, weak) FSPDFDoc *pdfDoc;
 @property (nonatomic, copy) NSString *inputPassword;
 
 - (instancetype)initWithExtensionsManager:(UIExtensionsManager *)extensionsManager;
 
-- (void)tryLoadPDFDocument:(FSPDFDoc *)document guessPassword:(NSString *)guessPassword success:(void (^)(NSString *password))success error:(void (^)(NSString *description))error abort:(void (^)())abort;
+- (void)tryLoadPDFDocument:(FSPDFDoc *)document guessPassword:(NSString *)guessPassword success:(void (^)(NSString *password))success error:(void (^)(NSString *description))error abort:(void (^)(void))abort;
 @end

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -83,8 +83,11 @@ static NSArray *removeSystemFiles(NSArray *array, BOOL isRoot) {
     BOOL isFolder = NO;
     for (NSString *fileName in array) {
         NSString *path = [([folder isEqualToString:DOCUMENT_PATH]) ? DOCUMENT_PATH : folder stringByAppendingPathComponent:fileName];
-        if ([fileManager fileExistsAtPath:path isDirectory:&isFolder] && isFolder) //If it is directory
-        {
+        BOOL isExist = [fileManager fileExistsAtPath:path isDirectory:&isFolder];
+        if (!isExist) {
+            continue;
+        }
+        if (isFolder) {
             //Removing the temporary directory of zip and zip
             if (!([folder isEqualToString:DOCUMENT_PATH] && ([path.lastPathComponent isEqualToString:@".unziptempfolder"] || [path.lastPathComponent isEqualToString:@".ziptempfolder"]))) {
                 //If you search for a keyword is empty you need to add Catalog

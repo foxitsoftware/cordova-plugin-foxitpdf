@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -28,6 +28,7 @@
 #import "AlertView.h"
 #import "ColorUtility.h"
 #import "FSAnnotExtent.h"
+#import "PrintRenderer.h"
 #import "UIButton+EnlargeEdge.h"
 
 #import <CommonCrypto/CommonDigest.h>
@@ -47,7 +48,7 @@ void FoxitLog(NSString *format, ...) {
 #endif
 }
 
-typedef BOOL (^NeedPauseBlock)();
+typedef BOOL (^NeedPauseBlock)(void);
 
 @interface FSPause : FSPauseCallback
 
@@ -161,6 +162,20 @@ typedef BOOL (^NeedPauseBlock)();
     return rect;
 }
 
++ (FSRectF *)inflateFSRect:(FSRectF *)rect width:(float)width height:(float)height
+{
+    if(!rect) return nil;
+    FSRectF *innerRect = [[FSRectF alloc] init];
+    innerRect.left = rect.left - width; innerRect.right = rect.right + width;
+    innerRect.bottom = rect.bottom - height; innerRect.top = rect.top + height;
+    return innerRect;
+}
+
++ (BOOL)isPointInFSRect:(FSRectF *)rect point:(FSPointF*)point
+{
+    return point.x <= rect.right && point.x >= rect.left && point.y <= rect.top && point.y >= rect.bottom;
+}
+
 //Standard Rect
 + (CGRect)getStandardRect:(CGRect)rect {
     rect.origin.x = (int) rect.origin.x;
@@ -250,7 +265,7 @@ typedef BOOL (^NeedPauseBlock)();
                 return YES;
             }
         }
-    } else if (annot.type == e_annotCaret)  {
+    } else if (annot.type == e_annotCaret) {
         for (int i = 0; i < [annot getGroupElementCount]; i++) {
             if ([annot getGroupElement:i].type == e_annotStrikeOut) {
                 return YES;
@@ -375,7 +390,7 @@ typedef BOOL (^NeedPauseBlock)();
             }
 
             int direction = [fstextPage getBaselineRotation:i];
-            NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:dibRect]], [NSNumber numberWithInt:direction], nil];
+            NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:dibRect]], @(direction), nil];
 
             [ret addObject:array];
         }
@@ -398,7 +413,7 @@ typedef BOOL (^NeedPauseBlock)();
                     if (adjcent) {
                         FSRectF *rectResult = [[FSRectF alloc] init];
                         [rectResult set:MIN([rect1 getLeft], [rect2 getLeft]) bottom:MAX([rect1 getTop], [rect2 getTop]) right:MAX([rect1 getRight], [rect2 getRight]) top:MIN([rect1 getBottom], [rect2 getBottom])];
-                        NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:rectResult]], [NSNumber numberWithInt:direction1], nil];
+                        NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:rectResult]], @(direction1), nil];
                         [ret replaceObjectAtIndex:i withObject:array];
                         [ret removeObjectAtIndex:j];
                     } else {
@@ -568,14 +583,14 @@ static void _CGDataProviderReleaseDataCallback(void *info, const void *data, siz
     [comps setMinute:minute];
     [comps setSecond:[time getSecond]];
     [comps setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:[time getUTHourOffset] * 3600 + [time getUTMinuteOffset] * 60]];
-    NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
     NSDate *date = [gregorian dateFromComponents:comps];
     return date;
 }
 
 + (FSDateTime *)convert2FSDateTime:(NSDate *)date {
-    NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-    unsigned unitFlags = NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit | NSHourCalendarUnit | NSMinuteCalendarUnit | NSSecondCalendarUnit;
+    NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    unsigned unitFlags = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
     NSDateComponents *comps = [gregorian components:unitFlags fromDate:date];
     FSDateTime *time = [[FSDateTime alloc] init];
     time.year = [comps year];
@@ -619,16 +634,20 @@ CGPDFDocumentRef GetPDFDocumentRef(const char *filename) {
 + (CGSize)getPDFPageSizeWithIndex:(NSUInteger)index pdfPath:(NSString *)path {
     @autoreleasepool {
         @synchronized(self) {
-            CGPDFDocumentRef document = nil;
-            CGPDFPageRef page;
-            document = GetPDFDocumentRef([path cStringUsingEncoding:NSUTF8StringEncoding]);
-            if (document == nil) {
+            @try {
+                FSPDFDoc *fspdfdoc = [[FSPDFDoc alloc] initWithFilePath:path];
+                FSErrorCode ret = [fspdfdoc load:nil];
+                if(!ret)
+                {
+                    FSPDFPage* page = [fspdfdoc getPage:0];
+                    return CGSizeMake([page getWidth], [page getHeight]);
+                }
                 return CGSizeMake(0, 0);
             }
-            page = CGPDFDocumentGetPage(document, 1);
-            CGRect pageRect = CGRectIntegral(CGPDFPageGetBoxRect(page, kCGPDFCropBox));
-            CGPDFDocumentRelease(document);
-            return pageRect.size;
+            @catch(NSException* e)
+            {
+                return CGSizeMake(0, 0);
+            }
         }
     }
 }
@@ -636,39 +655,25 @@ CGPDFDocumentRef GetPDFDocumentRef(const char *filename) {
 + (UIImage *)drawPageThumbnailWithPDFPath:(NSString *)pdfPath pageIndex:(int)pageIndex pageSize:(CGSize)size {
     @autoreleasepool {
         @synchronized(self) {
-            CGPDFDocumentRef document;
-            CGPDFPageRef page;
-            document = GetPDFDocumentRef([pdfPath cStringUsingEncoding:NSUTF8StringEncoding]);
-            if (document == nil) {
+            @try {
+                FSPDFDoc *fspdfdoc = [[FSPDFDoc alloc] initWithFilePath:pdfPath];
+                FSErrorCode ret = [fspdfdoc load:nil];
+                if(!ret)
+                {
+                    FSPDFPage* page = [fspdfdoc getPage:pageIndex];
+                    return [Utility drawPage:page targetSize:size shouldDrawAnnotation:YES needPause:nil];
+                }
                 return nil;
             }
-            page = CGPDFDocumentGetPage(document, pageIndex + 1);
-            UIGraphicsBeginImageContextWithOptions(size, NO, 4);
-            CGContextSetRGBFillColor(UIGraphicsGetCurrentContext(), 1.0, 1.0, 1.0, 1.0);
-            CGContextFillRect(UIGraphicsGetCurrentContext(), CGContextGetClipBoundingBox(UIGraphicsGetCurrentContext()));
-            CGContextSaveGState(UIGraphicsGetCurrentContext());
-
-            CGContextTranslateCTM(UIGraphicsGetCurrentContext(), 0.0, size.height);
-            CGContextScaleCTM(UIGraphicsGetCurrentContext(), 1.0, -1.0);
-
-            CGAffineTransform pdfXfm =
-                CGPDFPageGetDrawingTransform(page, kCGPDFMediaBox, CGRectMake(0, 0, size.width, size.height), 0, true);
-            CGContextConcatCTM(UIGraphicsGetCurrentContext(), pdfXfm);
-
-            CGContextSetInterpolationQuality(UIGraphicsGetCurrentContext(), kCGInterpolationHigh);
-            CGContextSetRenderingIntent(UIGraphicsGetCurrentContext(), kCGRenderingIntentDefault);
-            CGContextDrawPDFPage(UIGraphicsGetCurrentContext(), page);
-            CGContextRestoreGState(UIGraphicsGetCurrentContext());
-
-            UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-            UIGraphicsEndImageContext();
-            CGPDFDocumentRelease(document);
-            return image;
+            @catch(NSException* e)
+            {
+                return nil;
+            }
         }
     }
 }
 
-+ (FSEncryptType)getDocumentSecurityType:(NSString *)filePath taskServer:(TaskServer *)taskServer {
++ (FSEncryptType)getDocumentSecurityType:(NSString *)filePath taskServer:(TaskServer *_Nullable)taskServer {
     __block FSErrorCode ret = e_errUnknown;
     Task *task = [[Task alloc] init];
     task.run = ^() {
@@ -749,9 +754,11 @@ CGPDFDocumentRef GetPDFDocumentRef(const char *filename) {
 }
 
 + (UIImage *)getAnnotImage:(FSAnnot *)annot pdfViewCtrl:(FSPDFViewCtrl *)pdfViewCtrl {
-    FSPDFPage *page = [annot getPage];
     int pageIndex = annot.pageIndex;
     CGRect rect = [self getAnnotRect:annot pdfViewCtrl:pdfViewCtrl];
+    if (annot.type == e_annotFreeText && [annot.subject isEqualToString:@"Textbox"]) {
+        rect = CGRectInset(rect, -1, -1);
+    }
     UIGraphicsBeginImageContextWithOptions(rect.size, NO, [[UIScreen mainScreen] scale]);
     CGContextRef context = UIGraphicsGetCurrentContext();
 
@@ -765,9 +772,9 @@ CGPDFDocumentRef GetPDFDocumentRef(const char *filename) {
     }
 
     [fsrenderer setTransformAnnotIcon:NO];
-    if ([pdfViewCtrl isNightMode]) {
+    if (pdfViewCtrl.colorMode == e_colorModeMapping) {
         [fsrenderer setColorMode:e_colorModeMapping];
-        [fsrenderer setMappingModeColors:UX_BG_COLOR_NIGHT_PAGEVIEW foreColor:UX_TEXT_COLOR_NIGHT];
+        [fsrenderer setMappingModeColors:pdfViewCtrl.mappingModeBackgroundColor.argbHex foreColor:pdfViewCtrl.mappingModeForegroundColor.argbHex];
     }
     [fsrenderer renderAnnot:annot matrix:fsmatrix];
 
@@ -1117,6 +1124,14 @@ static const char *s_StandardFontNames[] = {
 }
 
 + (FSBitmap *)imgDataToBitmap:(NSData *)imgData {
+#if true
+    UIImage *image = [UIImage imageWithData:imgData];
+    if (image) {
+        return [[FSBitmap alloc] initWithUIImage:image];
+    } else {
+        return nil;
+    }
+#else
     UIImage *image = [UIImage imageWithData:imgData];
     CGImageRef cgImg = [image CGImage];
     CGDataProviderRef provider = CGImageGetDataProvider(cgImg);
@@ -1143,6 +1158,7 @@ static const char *s_StandardFontNames[] = {
 
     FSBitmap *bitmap = [[FSBitmap alloc] initWithWidth:width height:height format:e_dibArgb buffer:(unsigned char *) buf pitch:0];
     return bitmap;
+#endif
 }
 
 + (NSDictionary<NSString *, FSPDFObject *> *)getNSDictionaryFromPDFDictionary:(FSPDFDictionary *)pdfDict {
@@ -1293,6 +1309,22 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
     return iconNames;
 }
 
++ (BOOL)hasSignatureInDocument:(FSPDFDoc *)document {
+    FSPDFDictionary* root = [document getCatalog];
+    if(!root) return NO;
+    FSPDFObject* acroForm = [root getElement:@"AcroForm"];
+    if(!acroForm) return NO;
+    if([acroForm getType] == e_objReference)
+        acroForm = [acroForm getDirectObject];
+    if(!acroForm || [acroForm getType] != e_objDictionary)
+        return NO;
+    FSPDFObject* flag = [(FSPDFDictionary*)acroForm getElement:@"SigFlags"];
+    int sigFlags = flag?[flag getInteger]:0;
+    if(sigFlags & 0x01)
+        return YES;
+    return NO;
+}
+
 + (BOOL)isOwnerOfDoucment:(FSPDFDoc *)document {
     int mdpPermission = [Utility getMDPDigitalSignPermissionInDocument:document];
     if (mdpPermission != 0) {
@@ -1303,6 +1335,7 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
 }
 
 + (BOOL)isDocumentSigned:(FSPDFDoc *)document {
+    if(![Utility hasSignatureInDocument:document]) return NO;
     int count = [document getSignatureCount];
     for (int i = 0; i < count; i++) {
         if ([[document getSignature:i] isSigned])
@@ -1382,6 +1415,13 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
     return (allPermission & e_permExtract) != 0u;
 }
 
++ (BOOL)canPrintDocument:(FSPDFDoc *)document {
+    if ([Utility isOwnerOfDoucment:document])
+        return YES;
+    unsigned long allPermission = [document getUserPermissions];
+    return (allPermission & e_permPrint) != 0u;
+}
+
 + (int)getMDPDigitalSignPermissionInDocument:(FSPDFDoc *)document {
     FSPDFDictionary *catalog = [document getCatalog];
     FSPDFDictionary *perms = (FSPDFDictionary *) [[catalog getElement:@"Perms"] getDirectObject];
@@ -1450,7 +1490,20 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
     return (NSArray *) fileList;
 }
 
-+ (BOOL)parsePage:(FSPDFPage *)page flag:(unsigned int)flag pause:(FSPauseCallback *)pause {
++ (FSRectF*)getPageBoundary:(FSPDFPage*)page
+{
+    FSRectF* pageBox = [page GetBox:e_pageCropBox];
+    if(!pageBox)
+        pageBox = [page GetBox:e_pageMediaBox];
+    if(!pageBox)
+    {
+        pageBox = [[FSRectF alloc] init];
+        [pageBox set:0 bottom:0 right:612 top:792];
+    }
+    return pageBox;
+}
+
++ (BOOL)parsePage:(FSPDFPage *)page flag:(unsigned int)flag pause:(FSPauseCallback *_Nullable)pause {
     FSProgressive *progress = [page startParse:flag pause:pause isReparse:NO];
     if (!progress) {
         return YES;
@@ -1473,7 +1526,7 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
     return [Utility parsePage:page flag:e_parsePageNormal pause:nil];
 }
 
-+ (UIImage *)drawPage:(FSPDFPage *)page dibWidth:(int)dibWidth dibHeight:(int)dibHeight shouldDrawAnnotation:(BOOL)shouldDrawAnnotation isNightMode:(BOOL)isNightMode needPause:(BOOL (^__nullable)())needPause {
++ (UIImage *)drawPage:(FSPDFPage *)page dibWidth:(int)dibWidth dibHeight:(int)dibHeight shouldDrawAnnotation:(BOOL)shouldDrawAnnotation needPause:(BOOL (^__nullable)(void))needPause {
     UIImage *img = nil;
 
     CGFloat scale = [UIScreen mainScreen].scale;
@@ -1510,14 +1563,15 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
 #endif
         [fsrenderer setTransformAnnotIcon:NO];
         FSMatrix *fsmatrix = [page getDisplayMatrix:newPdfX yPos:newPdfY xSize:newPdfWidth ySize:newPdfHeight rotate:e_rotation0];
-        if (isNightMode) {
-#ifndef CONTEXT_DRAW
-            //set background color of bitmap to black
-            memset(pBuf, 0x00, size);
-#endif
-            [fsrenderer setColorMode:e_colorModeMapping];
-            [fsrenderer setMappingModeColors:UX_BG_COLOR_NIGHT_PAGEVIEW foreColor:UX_TEXT_COLOR_NIGHT];
-        } else {
+        //        if (isNightMode) {
+        //#ifndef CONTEXT_DRAW
+        //            //set background color of bitmap to black
+        //            memset(pBuf, 0x00, size);
+        //#endif
+        //            [fsrenderer setColorMode:e_colorModeMapping];
+        //            [fsrenderer setMappingModeColors:pdfViewCtrl.mappingModeBackgroundColor.argbHex foreColor:pdfViewCtrl.mappingModeForegroundColor.argbHex];
+        //        } else
+        {
 #ifdef CONTEXT_DRAW
             CGContextSetRGBFillColor(context, 1, 1, 1, 1);
             CGContextFillRect(context, CGRectMake(0, 0, newDibWidth, newDibHeight));
@@ -1541,7 +1595,7 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
 
         FSPause *pause = [FSPause pauseWithBlock:needPause];
         FSProgressive *ret = [fsrenderer startRender:page matrix:fsmatrix pause:pause];
-        
+
         if (ret != nil) {
             FSProgressState state;
             while (true) {
@@ -1566,12 +1620,12 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
     return img;
 }
 
-+ (UIImage *)drawPage:(FSPDFPage *)page targetSize:(CGSize)targetSize shouldDrawAnnotation:(BOOL)shouldDrawAnnotation isNightMode:(BOOL)isNightMode needPause:(BOOL (^__nullable)())needPause {
-    BOOL isOK = [self parsePage:page];
++ (UIImage *)drawPage:(FSPDFPage *)page targetSize:(CGSize)targetSize shouldDrawAnnotation:(BOOL)shouldDrawAnnotation needPause:(BOOL (^__nullable)(void))needPause {
+    BOOL isOK = [Utility parsePage:page];
     if (!isOK || ![page isParsed]) {
         return nil;
     }
-    return [Utility drawPage:page dibWidth:targetSize.width dibHeight:targetSize.height shouldDrawAnnotation:shouldDrawAnnotation isNightMode:isNightMode needPause:needPause];
+    return [Utility drawPage:page dibWidth:targetSize.width dibHeight:targetSize.height shouldDrawAnnotation:shouldDrawAnnotation needPause:needPause];
 
 #if 0
     UIGraphicsBeginImageContextWithOptions(targetSize, NO, [[UIScreen mainScreen] scale]);
@@ -1579,7 +1633,7 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
     FSRenderer* fsrenderer = [FSRenderer createFromContext:context deviceType:e_deviceTypeDisplay];
     if (isNightMode) {
         [fsrenderer setColorMode:e_colorModeMapping];
-        [fsrenderer setMappingModeColors:UX_BG_COLOR_NIGHT_PAGEVIEW foreColor:UX_TEXT_COLOR_NIGHT];
+        [fsrenderer setMappingModeColors:pdfViewCtrl.mappingModeBackgroundColor.argbHex foreColor:pdfViewCtrl.mappingModeForegroundColor.argbHex];
     } else {
         CGContextSetRGBFillColor(context, 1, 1, 1, 1);
         CGContextFillRect(context, CGRectMake(0, 0, targetSize.width, targetSize.height));
@@ -1610,7 +1664,36 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
 #endif
 }
 
-+ (void)tryLoadDocument:(FSPDFDoc *)document withPassword:(NSString *)password success:(void (^)(NSString *password))success error:(void (^)(NSString *description))error abort:(void (^)())abort {
++ (void)printPage:(FSPDFPage *)page inContext:(CGContextRef)context inRect:(CGRect)rect shouldDrawAnnotation:(BOOL)shouldDrawAnnotation {
+#if 0
+    BOOL parseSuccess = [Utility parsePage:page flag:e_parsePageNormal pause:nil];
+    if (!parseSuccess) {
+        return;
+    }
+    FSRenderer *fsrenderer = [FSRenderer createFromContext:context deviceType:e_deviceTypePrinter];
+    FSMatrix *fsmatrix = [page getDisplayMatrix:rect.origin.x yPos:rect.origin.y xSize:rect.size.width ySize:rect.size.height rotate:e_rotation0];
+    [fsrenderer setRenderContent:(shouldDrawAnnotation ? (e_renderPage | e_renderAnnot) : e_renderPage)];
+    FSProgressive *progressive = [fsrenderer startRender:page matrix:fsmatrix pause:nil];
+    if (progressive != nil) {
+        while (true) {
+            if ([progressive resume] != e_progressToBeContinued) {
+                break;
+            }
+        }
+    }
+#else
+    UIImage *image = [Utility drawPage:page targetSize:rect.size shouldDrawAnnotation:YES needPause:nil];
+    if (image) {
+        CGContextSaveGState(context);
+        CGContextTranslateCTM(context, 0.0, 2 * rect.origin.y + rect.size.height);
+        CGContextScaleCTM(context, 1.0, -1.0);
+        CGContextDrawImage(context, rect, image.CGImage);
+        CGContextRestoreGState(context);
+    }
+#endif
+}
+
++ (void)tryLoadDocument:(FSPDFDoc *)document withPassword:(NSString *)password success:(void (^)(NSString *password))success error:(void (^_Nullable)(NSString *description))error abort:(void (^_Nullable)(void))abort {
     FSErrorCode errorCode = [document load:password];
     switch (errorCode) {
     case e_errSuccess: {
@@ -1623,7 +1706,7 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
         AlertView *alertView = [[AlertView alloc] initWithTitle:title
                                                         message:nil
                                                           style:UIAlertViewStyleSecureTextInput
-                                             buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                             buttonClickHandler:^(UIView *alertView, NSInteger buttonIndex) {
                                                  if (buttonIndex == 1) {
                                                      NSString *guessPassword = [(AlertView *) alertView textFieldAtIndex:0].text;
                                                      [Utility tryLoadDocument:document withPassword:guessPassword success:success error:error abort:abort];
@@ -1747,12 +1830,20 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
     case e_annotLine:
         if ([annotType isEqualToString:FSLocalizedString(@"kArrowLine")]) {
             imageView.image = [UIImage imageNamed:@"property_type_arrowline"];
-        } else {
+        }
+        else if ([annotType isEqualToString:FSLocalizedString(@"kDistance")]) {
+            imageView.image = [UIImage imageNamed:@"property_type_distance"];
+        }
+        else {
             imageView.image = [UIImage imageNamed:@"property_type_line"];
         }
         break;
     case e_annotFreeText:
-        imageView.image = [UIImage imageNamed:@"property_type_freetext"];
+        if ([annotType isEqualToString:FSLocalizedString(@"kTextbox")]) {
+            imageView.image = [UIImage imageNamed:@"property_type_textbox"];
+        } else {
+            imageView.image = [UIImage imageNamed:@"property_type_freetext"];
+        }
         break;
     case e_annotInk:
         if ([annotType isEqualToString:FSLocalizedString(@"kErase")]) {
@@ -1770,8 +1861,19 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
         } else
             imageView.image = [UIImage imageNamed:@"property_type_caret"];
         break;
+    case e_annotScreen:
+        imageView.image = [UIImage imageNamed:@"property_type_image"];
+        break;
     case e_annotFileAttachment:
         imageView.image = [UIImage imageNamed:@"property_type_attachment"];
+        break;
+    case e_annotPolygon:
+        if ([annotType isEqualToString:FSLocalizedString(@"kCloud")]) {
+            imageView.image = [UIImage imageNamed:@"property_type_cloud"];
+        } else {
+            imageView.image = [UIImage imageNamed:@"property_type_polygon"];
+        }
+        break;
     default:
         break;
     }
@@ -1833,17 +1935,274 @@ static NSDictionary<NSString *, NSNumber *> *g_stampIconNameToType = nil;
     button.contentVerticalAlignment = UIControlContentVerticalAlignmentBottom;
     button.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     button.titleLabel.textAlignment = NSTextAlignmentCenter;
-    
+
     [button setImage:image forState:UIControlStateNormal];
     UIImage *translucentImage = [Utility imageByApplyingAlpha:image alpha:0.5];
     [button setImage:translucentImage forState:UIControlStateHighlighted];
     [button setImage:translucentImage forState:UIControlStateDisabled];
-    
+
     return button;
 }
 
 + (CGFloat)getUIToolbarPaddingX {
     return 20.f;
+}
+
++ (BOOL)isSinceiOS:(const NSString *)requiredVersion {
+    NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
+    return ([currSysVer compare:(NSString *) requiredVersion options:NSNumericSearch] != NSOrderedAscending);
+}
+
+#pragma mark print methods
+
++ (UIPrintInteractionController *)createPrintInteractionControolerForDoc:(FSPDFDoc *)doc jobName:(nullable NSString *)jobName {
+    if (![Utility isSinceiOS:@"4.2"]) {
+        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning" message:@"kAirPrintVersion" buttonClickHandler:nil cancelButtonTitle:nil otherButtonTitles:@"kOK", nil];
+        [alertView show];
+        return nil;
+    }
+
+    if (![UIPrintInteractionController isPrintingAvailable]) {
+        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning" message:@"kAirPrintNotAvailable" buttonClickHandler:nil cancelButtonTitle:nil otherButtonTitles:@"kOK", nil];
+        [alertView show];
+        return nil;
+    }
+
+    if (![Utility canPrintDocument:doc]) {
+        AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning" message:@"kRMSNoAccess" buttonClickHandler:nil cancelButtonTitle:nil otherButtonTitles:@"kOK", nil];
+        [alertView show];
+        return nil;
+    }
+
+    //save editing first? todo
+
+    UIPrintInteractionController *printController = [UIPrintInteractionController sharedPrintController];
+    printController.showsPageRange = YES;
+
+    UIPrintInfo *printInfo = [UIPrintInfo printInfo];
+    printInfo.outputType = UIPrintInfoOutputGeneral;
+    printInfo.jobName = jobName;
+    if ([doc getPageCount] > 0) {
+        FSPDFPage *page = [doc getPage:0];
+        if ([page getWidth] > [page getHeight]) {
+            printInfo.orientation = UIPrintInfoOrientationLandscape;
+        }
+    }
+    printController.printInfo = printInfo;
+    printController.printPageRenderer = [[PrintRenderer alloc] initWithDocument:doc];
+    return printController;
+}
+
++ (void)printDoc:(FSPDFDoc *)doc animated:(BOOL)animated jobName:(nullable NSString *)jobName delegate:(nullable id<UIPrintInteractionControllerDelegate>)delegate completionHandler:(nullable UIPrintInteractionCompletionHandler)completion {
+    UIPrintInteractionController *printController = [self.class createPrintInteractionControolerForDoc:doc jobName:jobName];
+    printController.delegate = delegate;
+    [printController presentAnimated:animated completionHandler:completion];
+}
+
++ (void)printDoc:(FSPDFDoc *)doc fromRect:(CGRect)rect inView:(UIView *)view animated:(BOOL)animated jobName:(nullable NSString *)jobName delegate:(nullable id<UIPrintInteractionControllerDelegate>)delegate completionHandler:(nullable UIPrintInteractionCompletionHandler)completion {
+    UIPrintInteractionController *printController = [self.class createPrintInteractionControolerForDoc:doc jobName:jobName];
+    printController.delegate = delegate;
+    [printController presentFromRect:rect inView:view animated:animated completionHandler:completion];
+}
+
+////Take screen shot
++ (UIImage *)screenShot:(UIView *)view {
+    // Create a graphics context with the target size
+    CGSize imageSize = view.bounds.size;
+    UIGraphicsBeginImageContextWithOptions(imageSize, YES, [UIScreen mainScreen].scale);
+    
+    [view.layer renderInContext:UIGraphicsGetCurrentContext()];
+    // Retrieve the screenshot image
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return image;
+}
+
+//remove all gesture
++ (void)removeAllGestureRecognizer:(UIView *)view {
+    for (UIGestureRecognizer *ges in view.gestureRecognizers) {
+        [view removeGestureRecognizer:ges];
+    }
+}
+
+//Crop image
++ (UIImage*)cropImage:(UIImage*)img rect:(CGRect)rect
+{
+    UIGraphicsBeginImageContextWithOptions(rect.size, NO, [img scale]);
+    [img drawAtPoint:CGPointMake(-rect.origin.x, -rect.origin.y)];
+    UIImage *cropped_image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return cropped_image;
+}
+
+#pragma mark
+
++ (NSArray *)getTextRects:(FSPDFTextSelect *)fstextPage startCharIndex:(int)startCharIndex endCharIndex:(int)endCharIndex {
+    NSMutableArray *ret = [NSMutableArray array];
+    if (fstextPage == nil) {
+        return ret;
+    }
+    int count = ABS(endCharIndex - startCharIndex) + 1;
+    startCharIndex = MIN(startCharIndex, endCharIndex);
+    int rectCount = [fstextPage getTextRectCount:startCharIndex count:count];
+    for (int i = 0; i < rectCount; i++) {
+        FSRectF *dibRect = [fstextPage getTextRect:i];
+        if (dibRect.getLeft == dibRect.getRight || dibRect.getTop == dibRect.getBottom) {
+            continue;
+        }
+
+        FSRotation direction = [fstextPage getBaselineRotation:i];
+        NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:dibRect]], @(direction), nil];
+
+        [ret addObject:array];
+    }
+
+    //merge rects if possible
+    if (ret.count > 1) {
+        int i = 0;
+        while (i < ret.count - 1) {
+            int j = i + 1;
+            while (j < ret.count) {
+                FSRectF *rect1 = [Utility CGRect2FSRectF:[[[ret objectAtIndex:i] objectAtIndex:0] CGRectValue]];
+                FSRectF *rect2 = [Utility CGRect2FSRectF:[[[ret objectAtIndex:j] objectAtIndex:0] CGRectValue]];
+
+                int direction1 = [[[ret objectAtIndex:i] objectAtIndex:1] intValue];
+                int direction2 = [[[ret objectAtIndex:j] objectAtIndex:1] intValue];
+                BOOL adjcent = NO;
+                if (direction1 == direction2) {
+                    adjcent = NO;
+                }
+                if (adjcent) {
+                    FSRectF *rectResult = [[FSRectF alloc] init];
+                    [rectResult set:MIN([rect1 getLeft], [rect2 getLeft]) bottom:MAX([rect1 getTop], [rect2 getTop]) right:MAX([rect1 getRight], [rect2 getRight]) top:MIN([rect1 getBottom], [rect2 getBottom])];
+                    NSArray *array = [NSArray arrayWithObjects:[NSValue valueWithCGRect:[Utility FSRectF2CGRect:rectResult]], @(direction1), nil];
+                    [ret replaceObjectAtIndex:i withObject:array];
+                    [ret removeObjectAtIndex:j];
+                } else {
+                    j++;
+                }
+            }
+            i++;
+        }
+    }
+    return ret;
+}
+
+// get distance unit info
++ (NSArray *)getDistanceUnitInfo:(NSString *)measureRatio {
+    measureRatio = [measureRatio stringByReplacingOccurrencesOfString:@"= "withString:@""];
+    NSArray *result = [measureRatio componentsSeparatedByString:@" "];
+    return  result;
+}
+
+// get distance between to cgpoint
++ (float)getDistanceFromX:(FSPointF *)start toY:(FSPointF *)end{
+    float distance;
+    CGFloat xDist = (end.x - start.x);
+    CGFloat yDist = (end.y - start.y);
+    distance = sqrt((xDist * xDist) + (yDist * yDist));
+    return distance;
+}
+
+// get distance between to cgpoint with unit
++ (float)getDistanceFromX:(FSPointF *)start toY:(FSPointF *)end withUnit:(NSString *)measureRatio{
+    NSArray *distancInfo = [Utility getDistanceUnitInfo:measureRatio];
+    
+    NSString *distanceUnit = [distancInfo objectAtIndex:1];
+    float scale = 0.0;
+    if ([[distancInfo objectAtIndex:0] floatValue] != 0) {
+        scale = [[distancInfo objectAtIndex:2] floatValue]/[[distancInfo objectAtIndex:0] floatValue];
+    }
+    
+    float distance = [Utility getDistanceFromX:start toY:end]; // pt
+    NSMutableDictionary *unitDict = @{
+                                      @"pt":[NSNumber numberWithFloat:1.0 ],
+                                      @"inch":[NSNumber numberWithFloat:1.0/72 ],
+                                      @"ft":[NSNumber numberWithFloat:1.0/(72 *12) ],
+                                      @"yd":[NSNumber numberWithFloat:1.0/(72 *36) ],
+                                      @"p":[NSNumber numberWithFloat:1.0/(12) ],
+                                      @"mm":[NSNumber numberWithFloat:25.4/72 ],
+                                      @"cm":[NSNumber numberWithFloat:2.54/72 ],
+                                      @"m":[NSNumber numberWithFloat:0.0254/72 ],
+                                      }.mutableCopy;
+    
+    float transParams = [[unitDict objectForKey:distanceUnit] floatValue];
+    return distance * transParams * scale;
+}
+
++ (FSImage *)createFSImageWithUIImage:(UIImage *)image {
+    NSData *data = UIImagePNGRepresentation(image);
+    if (data) {
+        FSImage *fsImage = [[FSImage alloc] initWithBuffer:data];
+        return fsImage;
+    }
+    return nil;
+}
+
++ (CGRect)boundedRectForRect:(CGRect)rect containerRect:(CGRect)containerRect {
+    rect.origin.x = MAX(CGRectGetMinX(rect), CGRectGetMinX(containerRect));
+    rect.origin.x = MIN(CGRectGetMinX(rect), CGRectGetMaxX(containerRect) - CGRectGetWidth(rect));
+    rect.origin.y = MAX(CGRectGetMinY(rect), CGRectGetMinY(containerRect));
+    rect.origin.y = MIN(CGRectGetMinY(rect), CGRectGetMaxY(containerRect) - CGRectGetHeight(rect));
+    return rect;
+}
+
++ (FSRotation)rotationForValue:(NSValue *)value {
+    switch ([(NSNumber *) value intValue]) {
+    case 0:
+        return e_rotation0;
+    case 90:
+        return e_rotation90;
+    case 180:
+        return e_rotation180;
+    case 270:
+        return e_rotation270;
+    default:
+        return e_rotation0;
+    }
+}
+
++ (int)valueForRotation:(FSRotation)rotation {
+    switch (rotation) {
+    case e_rotation0:
+        return 0;
+    case e_rotation90:
+        return 90;
+    case e_rotation180:
+        return 180;
+    case e_rotation270:
+        return 270;
+    default:
+        return 0;
+    }
+}
+
++ (UIImageOrientation)imageOrientationForRotation:(FSRotation)rotation {
+    switch (rotation) {
+    case e_rotation0:
+        return UIImageOrientationUp;
+    case e_rotation90:
+        return UIImageOrientationLeft;
+    case e_rotation180:
+        return UIImageOrientationDown;
+    case e_rotation270:
+        return UIImageOrientationRight;
+    default:
+        return UIImageOrientationUp;
+    }
+}
+
++ (NSArray<FSPointF *> *)getPolygonVertexes:(FSPolygon *)polygon {
+    NSMutableArray<FSPointF *> *vertexes = @[].mutableCopy;
+    for (int i = 0; i < [polygon getVertexCount]; i++) {
+        FSPointF *vertex = [polygon getVertex:i];
+        if (vertex) {
+            [vertexes addObject:vertex];
+        }
+    }
+    return vertexes;
 }
 
 @end

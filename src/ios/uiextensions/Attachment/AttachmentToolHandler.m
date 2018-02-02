@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -31,8 +31,6 @@
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
-        [_pdfViewCtrl registerDocEventListener:self];
-        [_extensionsManager registerToolHandler:self];
         _taskServer = _extensionsManager.taskServer;
         _type = e_annotFileAttachment;
     }
@@ -111,9 +109,8 @@
             [annotHandler addAnnot:annot];
         }
     };
-    typeof(selectDestination) __weak weakSelectDestination = selectDestination;
-    selectDestination.cancelHandler = ^() {
-        [weakSelectDestination dismissViewControllerAnimated:YES completion:nil];
+    selectDestination.cancelHandler = ^(FileSelectDestinationViewController *controller) {
+        [controller dismissViewControllerAnimated:YES completion:nil];
     };
     UINavigationController *selectDestinationNavController = [[UINavigationController alloc] initWithRootViewController:selectDestination];
     selectDestinationNavController.modalPresentationStyle = UIModalPresentationFormSheet;

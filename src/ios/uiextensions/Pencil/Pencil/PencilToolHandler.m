@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -38,8 +38,6 @@
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
-        [_extensionsManager registerToolHandler:self];
-        [_extensionsManager registerAnnotPropertyListener:self];
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         _taskServer = _extensionsManager.taskServer;
         _type = e_annotInk;

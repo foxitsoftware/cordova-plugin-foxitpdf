@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -179,7 +179,7 @@
             if (endDate.timeIntervalSince1970 - [NSDate date].timeIntervalSince1970 < 0) {
                 AlertView *alert = [[AlertView alloc] initWithTitle:@"kWarning"
                                                             message:@"kCertExpired"
-                                                 buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                 buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
 
                                                  }
                                                   cancelButtonTitle:nil
@@ -203,7 +203,7 @@
         if (result == P12FILESCANFERROR) {
             AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                             message:@"kCertFileError"
-                                                 buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                 buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                      if (buttonIndex == 0) {
                                                      }
                                                  }
@@ -231,7 +231,7 @@
             if (result == P12FILESCANFERROR) {
                 AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                                 message:@"kCertFileError"
-                                                     buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                     buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                          if (buttonIndex == 0) {
                                                          }
                                                      }
@@ -252,7 +252,7 @@
             if (endDate.timeIntervalSince1970 - [NSDate date].timeIntervalSince1970 < 0) {
                 AlertView *alert = [[AlertView alloc] initWithTitle:@"kWarning"
                                                             message:@"kCertExpired"
-                                                 buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                 buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
 
                                                  }
                                                   cancelButtonTitle:nil

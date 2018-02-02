@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -24,7 +24,7 @@ static NSString *LINK_DES_AREA = @"DesArea";
 static NSString *LINK_DES_FILE = @"DesFile";
 
 /**@brief A link annotation handler to handle touches and gestures on tha link annotation. */
-@interface LinkAnnotHandler : NSObject <IAnnotHandler> {
+@interface LinkAnnotHandler : NSObject <IAnnotHandler, IDocEventListener, IPageEventListener> {
     NSString *_url;
 }
 

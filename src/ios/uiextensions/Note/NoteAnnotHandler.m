@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -49,12 +49,6 @@
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = _extensionsManager.pdfViewCtrl;
-        [_pdfViewCtrl registerDocEventListener:self];
-        [_extensionsManager registerAnnotHandler:self];
-        [_extensionsManager registerRotateChangedListener:self];
-        [_extensionsManager registerGestureEventListener:self];
-        [_pdfViewCtrl registerScrollViewEventListener:self];
-        [_extensionsManager.propertyBar registerPropertyBarListener:self];
 
         _taskServer = _extensionsManager.taskServer;
         self.colors = @[ @0xFF9F40, @0x8080FF, @0xBAE94C, @0xFFF160, @0xC3C3C3, @0xFF4C4C, @0x669999, @0xC72DA1, @0x996666, @0x000000 ];
@@ -263,7 +257,7 @@
 
     if ([annot canModify] && addUndo) {
         annot.modifiedDate = [NSDate date];
-        [_extensionsManager addUndoItem:[UndoModifyAnnot createWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoModifyAnnotWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
     }
 
     [_extensionsManager onAnnotModified:page annot:annot];
@@ -290,7 +284,7 @@
     int pageIndex = annot.pageIndex;
 
     if (addUndo) {
-        FSNoteAttributes *attributes = [self.attributesBeforeModify.NM isEqualToString:annot.NM] ? self.attributesBeforeModify : [FSAnnotAttributes attributesWithAnnot:annot];
+        FSNoteAttributes *attributes = (FSNoteAttributes *) ([self.attributesBeforeModify.NM isEqualToString:annot.NM] ? self.attributesBeforeModify : [FSAnnotAttributes attributesWithAnnot:annot]);
         [_extensionsManager addUndoItem:[UndoItem itemWithUndo:^(UndoItem *item) {
                                 FSNote *note = nil;
                                 if (attributes.replyTo.length == 0) {
@@ -314,8 +308,9 @@
     }
     self.attributesBeforeModify = nil;
 
-    [_extensionsManager onAnnotDeleted:page annot:annot];
+    [_extensionsManager onAnnotWillDelete:page annot:annot];
     [page removeAnnot:annot];
+    [_extensionsManager onAnnotDeleted:page annot:annot];
 
     rect = CGRectInset(rect, -30, -30);
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -584,27 +579,25 @@
     if (addUndo) {
         FSNoteAttributes *attributes = [[FSNoteAttributes alloc] initWithAnnot:annot];
         [_extensionsManager addUndoItem:[UndoItem itemWithUndo:^(UndoItem *item) {
-                                FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:item.pageIndex];
-                                FSAnnot *annot = [Utility getAnnotByNM:attributes.NM inPage:page];
-                                if (annot) {
-                                    [self removeAnnot:annot addUndo:NO];
-                                }
-                            }
-                                            redo:^(UndoItem *item) {
-                                                FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:item.pageIndex];
-                                                FSNote *note = nil;
-                                                if (attributes.replyTo.length == 0) {
-                                                    note = (FSNote *) [page addAnnot:e_annotNote rect:attributes.rect];
-                                                } else {
-                                                    FSMarkup *parent = (FSMarkup *) [Utility getAnnotByNM:attributes.replyTo inPage:page];
-                                                    note = [parent addReply];
-                                                }
-                                                if (note) {
-                                                    [attributes resetAnnot:note];
-                                                    [self addAnnot:note addUndo:NO];
-                                                }
-                                            }
-                                            pageIndex:annot.pageIndex]];
+            FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:item.pageIndex];
+            FSAnnot *annot = [Utility getAnnotByNM:attributes.NM inPage:page];
+            if (annot) {
+                [self removeAnnot:annot addUndo:NO];
+            }
+        } redo:^(UndoItem *item) {
+            FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:item.pageIndex];
+            FSNote *note = nil;
+            if (attributes.replyTo.length == 0) {
+                note = (FSNote *) [page addAnnot:e_annotNote rect:attributes.rect];
+            } else {
+                FSMarkup *parent = (FSMarkup *) [Utility getAnnotByNM:attributes.replyTo inPage:page];
+                note = [parent addReply];
+            }
+            if (note) {
+                [attributes resetAnnot:note];
+                [self addAnnot:note addUndo:NO];
+            }
+        } pageIndex:annot.pageIndex]];
     }
 
     if (annot.replyTo.length > 0) {

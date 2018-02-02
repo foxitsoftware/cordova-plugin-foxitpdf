@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -11,7 +11,6 @@
  */
 
 #import "AnnotationItem.h"
-#import "UIExtensionsManager+Private.h"
 #import <Foundation/Foundation.h>
 #import <FoxitRDK/FSPDFViewControl.h>
 
@@ -82,10 +81,5 @@
 @property (nonatomic, assign) id<AnnotationListCellDelegate> cellDelegate;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier isMenu:(BOOL)isMenu;
-
-- (void)addNoteToAnnotation;
-- (void)replyToAnnotation;
-- (void)deleteAnnotation;
-- (void)saveAttachment;
 
 @end

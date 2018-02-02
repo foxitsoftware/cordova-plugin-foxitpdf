@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -82,7 +82,7 @@
             OpacityItem *item = [[OpacityItem alloc] initWithFrame:itemFrame];
             [item setOpacity:25 * (i + 1)];
             item.callback = ^(long property, int value) {
-                [_currentListener onProperty:property changedFrom:[NSNumber numberWithInt:_currentOpacity] to:[NSNumber numberWithInt:value]];
+                [_currentListener onProperty:property changedFrom:@(_currentOpacity) to:@(value)];
                 [self setCurrentOpacity:value];
             };
             [self addSubview:item];
@@ -96,7 +96,7 @@
             OpacityItem *item = [[OpacityItem alloc] initWithFrame:itemFrame];
             [item setOpacity:25 * (i + 1)];
             item.callback = ^(long property, int value) {
-                [_currentListener onProperty:property changedFrom:[NSNumber numberWithInt:_currentOpacity] to:[NSNumber numberWithInt:value]];
+                [_currentListener onProperty:property changedFrom:@(_currentOpacity) to:@(value)];
                 [self setCurrentOpacity:value];
             };
             [self addSubview:item];

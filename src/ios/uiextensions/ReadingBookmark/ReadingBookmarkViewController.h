@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -17,8 +17,8 @@
 @class FileDetailViewController;
 
 typedef void (^ReadingBookmarkGotoPageHandler)(int page);
-typedef void (^ReadingBookmarkSelectionHandler)();
-typedef void (^ReadingBookmarkDeleteHandler)();
+typedef void (^ReadingBookmarkSelectionHandler)(void);
+typedef void (^ReadingBookmarkDeleteHandler)(void);
 
 @interface ReadingBookmarkViewController : UITableViewController <IPanelChangedListener> {
     FSReadingBookmark *selectBookmark;

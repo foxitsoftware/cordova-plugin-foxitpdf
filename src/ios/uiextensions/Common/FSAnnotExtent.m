@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -71,8 +71,7 @@ FSRectF *convertToFSRect(FSPointF *p1, FSPointF *p2) {
     return [[self getBorderInfo] getWidth];
 }
 - (void)setLineWidth:(float)lineWidth {
-    FSBorderInfo *borderInfo = [[FSBorderInfo alloc] init];
-    [borderInfo setStyle:e_borderStyleSolid];
+    FSBorderInfo *borderInfo = [self getBorderInfo];
     [borderInfo setWidth:lineWidth];
     [self setBorderInfo:borderInfo];
 }

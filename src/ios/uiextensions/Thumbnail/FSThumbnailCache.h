@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -10,19 +10,14 @@
  * Review legal.txt for additional license and legal information.
  */
 
-#import <Foundation/Foundation.h>
-#import <FoxitRDK/FSPDFViewControl.h>
-#import <UIKit/UIKit.h>
-
-@class UIExtensionsManager;
-@protocol IAnnotEventListener;
+#import "UIExtensionsManager.h"
 
 @interface FSThumbnailCache : NSObject <IPageEventListener, IAnnotEventListener>
 
-- (id)initWithUIExtenionsManager:(UIExtensionsManager *)extensionsManager;
+- (id _Nonnull)initWithUIExtenionsManager:(UIExtensionsManager *_Nonnull)extensionsManager;
 
-- (void)getThumbnailForPageAtIndex:(NSUInteger)index withThumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)())needPause callback:(void (^__nonnull)(UIImage *))callback;
+- (void)getThumbnailForPageAtIndex:(NSUInteger)index withThumbnailSize:(CGSize)thumbnailSize needPause:(BOOL (^__nullable)(void))needPause callback:(void (^__nonnull)(UIImage *_Nullable))callback;
 - (BOOL)removeThumbnailCacheOfPageAtIndex:(NSUInteger)pageIndex;
-- (void)clearThumbnailCachesForPDFAtPath:(NSString *)path;
+- (void)clearThumbnailCachesForPDFAtPath:(NSString *_Nonnull)path;
 
 @end

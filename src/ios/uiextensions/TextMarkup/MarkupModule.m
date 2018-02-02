@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -37,8 +37,15 @@
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         [self loadModule];
-        [[MKToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
-        [[MKAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        MKToolHandler* toolHandler = [[MKToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_extensionsManager registerToolHandler:toolHandler];
+        MKAnnotHandler* annotHandler = [[MKAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_pdfViewCtrl registerDocEventListener:annotHandler];
+        [_pdfViewCtrl registerScrollViewEventListener:annotHandler];
+        [_extensionsManager registerAnnotHandler:annotHandler];
+        [_extensionsManager registerRotateChangedListener:annotHandler];
+        [_extensionsManager registerGestureEventListener:annotHandler];
+        [_extensionsManager.propertyBar registerPropertyBarListener:annotHandler];
     }
     return self;
 }

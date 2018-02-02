@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -262,12 +262,12 @@
     annoItem.annot = annot;
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
                                            annoItem, @"Annotation",
-                                           [NSNumber numberWithInt:AnnotationOperation_Add], @"Operation",
+                                           @(AnnotationOperation_Add), @"Operation",
                                            nil];
     [self reloadAnnotationForAnnotation:dict];
 }
 
-- (void)onAnnotDeleted:(FSPDFPage *)page annot:(FSAnnot *)annot {
+- (void)onAnnotWillDelete:(FSPDFPage *)page annot:(FSAnnot *)annot {
     //If currently is clearing all the annotations, then we don't reload the data here for better performance.
     if (_isClearingAllAnnots)
         return;
@@ -291,7 +291,7 @@
     annoItem.annot = annot;
     NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
                                            annoItem, @"Annotation",
-                                           [NSNumber numberWithInt:AnnotationOperation_Modify], @"Operation",
+                                           @(AnnotationOperation_Modify), @"Operation",
                                            nil];
     [self reloadAnnotationForAnnotation:dict];
 }
@@ -620,8 +620,7 @@
 }
 
 - (void)setCurrentAnnotionItem:(AnnotationItem *)annotationItem {
-    BOOL canAddAnnot = [Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc];
-    if (canAddAnnot && [_pdfViewCtrl getPageLayoutMode] != PDF_LAYOUT_MODE_REFLOW) {
+    if ([_pdfViewCtrl getPageLayoutMode] != PDF_LAYOUT_MODE_REFLOW) {
         [_extensionsManager setCurrentAnnot:annotationItem.annot];
     }
 }
@@ -958,7 +957,7 @@
                                        return NO;
                                    }
                                    FSAnnotType type = [annot getType];
-                                   if (type == e_annotWidget) {
+                                   if (type == e_annotWidget || type == e_annotSound || type == e_annotMovie) {
                                        return NO;
                                    }
                                    // 'replace text' consist of caret and strikeout annotation, add former only
@@ -971,7 +970,7 @@
 
                                    if (type == e_annotFreeText) {
                                        NSString *intent = [((FSMarkup *) annot) getIntent];
-                                       if (!intent || [intent caseInsensitiveCompare:@"FreeTextTypeWriter"] != NSOrderedSame) {
+                                       if (intent && [intent caseInsensitiveCompare:@"FreeTextCallout"] == NSOrderedSame) {
                                            return NO;
                                        }
                                    }
@@ -989,7 +988,7 @@
 }
 
 - (void)loadAnnotationsForPageAtIndex:(int)pageIndex {
-    NSMutableArray<AnnotationItem *> *itemsArray = [self getAnnotationItemsForPageAtIndex:pageIndex];
+    NSArray<AnnotationItem *> *itemsArray = [self getAnnotationItemsForPageAtIndex:pageIndex];
     if (itemsArray.count == 0) {
         return;
     }
@@ -1033,11 +1032,13 @@
         NSBlockOperation *__weak weakOp = op;
         typeof(self) __weak weakSelf = self;
         [op addExecutionBlock:^{
-            for (int i = 0; i < [_pdfViewCtrl.currentDoc getPageCount]; i++) {
-                if (weakOp.isCancelled) {
-                    return;
+            @autoreleasepool {
+                for (int i = 0; i < [_pdfViewCtrl.currentDoc getPageCount]; i++) {
+                    if (weakOp.isCancelled) {
+                        return;
+                    }
+                    [weakSelf loadAnnotationsForPageAtIndex:i];
                 }
-                [weakSelf loadAnnotationsForPageAtIndex:i];
             }
             if (weakOp.isCancelled) {
                 return;
@@ -1836,20 +1837,26 @@
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView {
+    AnnotationListCell *selectcell = (AnnotationListCell *) [self.tableView cellForRowAtIndexPath:self.indexPath];
+    UITextView *edittextview = (UITextView *) [selectcell.contentView viewWithTag:107];
+    if (edittextview != textView) {
+        return;
+    }
+
     if (self.editAnnoItem) {
         [self modifyAnnot:self.editAnnoItem.annot withContents:textView.text];
         self.editAnnoItem = nil;
     }
     if (_replyanno && _replyanno.isReply) {
-        _replyanno.annot.contents = textView.text;
-        _replyanno.isReply = NO;
-        id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:_replyanno.annot];
-        [annotHandler addAnnot:_replyanno.annot];
+        if (_replyanno == selectcell.item) {
+            _replyanno.annot.contents = textView.text;
+            _replyanno.isReply = NO;
+            id<IAnnotHandler> annotHandler = [_extensionsManager getAnnotHandlerByAnnot:_replyanno.annot];
+            [annotHandler addAnnot:_replyanno.annot];
+        }
         _replyanno = nil;
     }
 
-    AnnotationListCell *selectcell = (AnnotationListCell *) [self.tableView cellForRowAtIndexPath:self.indexPath];
-    UITextView *edittextview = (UITextView *) [selectcell.contentView viewWithTag:107];
     edittextview.hidden = YES;
     UILabel *labelContents = (UILabel *) [selectcell.contentView viewWithTag:104];
     labelContents.hidden = NO;
@@ -1985,13 +1992,11 @@
             [annotHandler addAnnot:_replyanno.annot];
             _replyanno = nil;
         }
-
+        
         edittextview.hidden = YES;
         labelContents.hidden = NO;
         dispatch_async(dispatch_get_main_queue(), ^{
-
             [self.tableView reloadData];
-
         });
         [edittextview resignFirstResponder];
         cell.isInputText = NO;

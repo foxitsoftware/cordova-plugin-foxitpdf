@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -42,7 +42,11 @@
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         [self loadModule];
-        [[FormAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        
+        FormAnnotHandler* annotHandler = [[FormAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_extensionsManager registerAnnotHandler:annotHandler];
+        [_extensionsManager registerRotateChangedListener:annotHandler];
+        [_pdfViewCtrl registerDocEventListener:annotHandler];
     }
     return self;
 }
@@ -101,10 +105,10 @@
         selectDestination.operatingHandler = ^(FileSelectDestinationViewController *controller, NSArray *destinationFolder) {
             [controller dismissViewControllerAnimated:YES completion:nil];
 
-            __block void (^inputFileName)() = ^() {
+            __block void (^inputFileName)(void) = ^() {
                 InputAlertView *inputAlertView = [[InputAlertView alloc] initWithTitle:@"kInputNewFileName"
                                                                                message:nil
-                                                                    buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                                    buttonClickHandler:^(UIView *alertView, NSInteger buttonIndex) {
                                                                         if (buttonIndex == 0) {
                                                                             return;
                                                                         }
@@ -115,7 +119,7 @@
                                                                             dispatch_async(dispatch_get_main_queue(), ^{
                                                                                 AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                                                                                                 message:@"kIllegalNameWarning"
-                                                                                                                     buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                                                                                     buttonClickHandler:^(UIView *alertView, NSInteger buttonIndex) {
                                                                                                                          dispatch_async(dispatch_get_main_queue(), ^{
                                                                                                                              inputFileName();
                                                                                                                          });
@@ -174,7 +178,7 @@
                                                                             dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
                                                                                 AlertView *alert = [[AlertView alloc] initWithTitle:@"kWarning"
                                                                                                                             message:@"kFileAlreadyExists"
-                                                                                                                 buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                                                                                 buttonClickHandler:^(UIView *alertView, NSInteger buttonIndex) {
                                                                                                                      if (buttonIndex == 0) {
                                                                                                                          dispatch_async(dispatch_get_main_queue(), ^{
                                                                                                                              inputFileName();
@@ -204,9 +208,8 @@
 
             inputFileName();
         };
-        __weak typeof(selectDestination) weakSelect = selectDestination;
-        selectDestination.cancelHandler = ^{
-            [weakSelect dismissViewControllerAnimated:YES completion:nil];
+        selectDestination.cancelHandler = ^(FileSelectDestinationViewController *controller) {
+            [controller dismissViewControllerAnimated:YES completion:nil];
         };
         UINavigationController *selectDestinationNavController = [[UINavigationController alloc] initWithRootViewController:selectDestination];
         UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
@@ -255,9 +258,8 @@
                 }
             }
         };
-        __weak typeof(selectDestination) weakSelect = selectDestination;
-        selectDestination.cancelHandler = ^() {
-            [weakSelect dismissViewControllerAnimated:YES completion:nil];
+        selectDestination.cancelHandler = ^(FileSelectDestinationViewController *controller) {
+            [controller dismissViewControllerAnimated:YES completion:nil];
         };
         UINavigationController *selectDestinationNavController = [[UINavigationController alloc] initWithRootViewController:selectDestination];
         [_pdfViewCtrl.window.rootViewController presentViewController:selectDestinationNavController animated:YES completion:nil];
@@ -270,7 +272,7 @@
 
         AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm"
                                                         message:@"kSureToResetFormFields"
-                                             buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                             buttonClickHandler:^(UIView *alertView, NSInteger buttonIndex) {
                                                  if (buttonIndex == 1) {
                                                      FSForm *form = [_pdfViewCtrl.currentDoc getForm];
                                                      if (nil == form)

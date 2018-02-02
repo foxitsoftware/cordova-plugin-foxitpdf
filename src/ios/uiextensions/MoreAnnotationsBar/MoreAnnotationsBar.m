@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -42,6 +42,8 @@
 @property (nonatomic, strong) UIButton *arrowsBtn;
 @property (nonatomic, strong) UIButton *pencileBtn;
 @property (nonatomic, strong) UIButton *eraserBtn;
+@property (nonatomic, strong) UIButton *polygonBtn;
+@property (nonatomic, strong) UIButton *cloudBtn;
 
 @property (nonatomic, strong) UIView *divideView2;
 
@@ -50,9 +52,12 @@
 
 @property (nonatomic, strong) NSMutableArray *otherButtons;
 @property (nonatomic, strong) UIButton *typewriterBtn;
+@property (nonatomic, strong) UIButton *textboxBtn;
 @property (nonatomic, strong) UIButton *noteBtn;
 @property (nonatomic, strong) UIButton *attachmentBtn;
 @property (nonatomic, strong) UIButton *stampBtn;
+@property (nonatomic, strong) UIButton *distanceBtn;
+@property (nonatomic, strong) UIButton *imageBtn;
 
 @end
 
@@ -114,12 +119,16 @@
         UIImage *arrowsImage = [UIImage imageNamed:@"annot_arrows"];
         UIImage *pencileImage = [UIImage imageNamed:@"annot_pencile"];
         UIImage *eraserImage = [UIImage imageNamed:@"annot_eraser"];
+        UIImage *polygonImage = [UIImage imageNamed:@"annot_polygon_more"];
+        UIImage *cloudImage = [UIImage imageNamed:@"annot_cloud_more"];
         self.lineBtn = [MoreAnnotationsBar createItemWithImage:lineImage];
         self.rectBtn = [MoreAnnotationsBar createItemWithImage:rectImage];
         self.circleBtn = [MoreAnnotationsBar createItemWithImage:circleImage];
         self.arrowsBtn = [MoreAnnotationsBar createItemWithImage:arrowsImage];
         self.pencileBtn = [MoreAnnotationsBar createItemWithImage:pencileImage];
         self.eraserBtn = [MoreAnnotationsBar createItemWithImage:eraserImage];
+        self.polygonBtn = [MoreAnnotationsBar createItemWithImage:polygonImage];
+        self.cloudBtn = [MoreAnnotationsBar createItemWithImage:cloudImage];
 
         _drawButtons = @[].mutableCopy;
         if ([tools containsObject:Tool_Line]) {
@@ -140,6 +149,12 @@
         if ([tools containsObject:Tool_Eraser]) {
             [_drawButtons addObject:self.eraserBtn];
         }
+        if ([tools containsObject:Tool_Polygon]) {
+            [_drawButtons addObject:self.polygonBtn];
+        }
+        if ([tools containsObject:Tool_Cloud]) {
+            [_drawButtons addObject:self.cloudBtn];
+        }
         if (_drawButtons.count > 0) {
             if (_textButtons.count > 0) {
                 self.divideView1 = [[UIView alloc] init];
@@ -155,18 +170,27 @@
         
         //Others
         UIImage *typeriterImage = [UIImage imageNamed:@"annot_typewriter_more"];
+        UIImage *textboxImage = [UIImage imageNamed:@"annot_textbox_more"];
         UIImage *noteImage = [UIImage imageNamed:@"annot_note_more"];
         UIImage *stampImage = [UIImage imageNamed:@"annot_stamp_more"];
         UIImage *attachmentImage = [UIImage imageNamed:@"annot_attachment_more"];
+        UIImage *distanceImage = [UIImage imageNamed:@"annot_distance_more"];
+        UIImage *imageToolImage = [UIImage imageNamed:@"annot_image_more"];
 
         self.typewriterBtn = [MoreAnnotationsBar createItemWithImageAndTitle:FSLocalizedString(@"kTypewriter") imageNormal:typeriterImage];
+        self.textboxBtn = [MoreAnnotationsBar createItemWithImageAndTitle:FSLocalizedString(@"kTextbox") imageNormal:textboxImage];
         self.noteBtn = [MoreAnnotationsBar createItemWithImageAndTitle:FSLocalizedString(@"kNote") imageNormal:noteImage];
         self.attachmentBtn = [MoreAnnotationsBar createItemWithImageAndTitle:FSLocalizedString(@"kAttachment") imageNormal:attachmentImage];
         self.stampBtn = [MoreAnnotationsBar createItemWithImageAndTitle:FSLocalizedString(@"kPropertyStamps") imageNormal:stampImage];
+        self.distanceBtn = [MoreAnnotationsBar createItemWithImageAndTitle:FSLocalizedString(@"kDistance") imageNormal:distanceImage];
+        self.imageBtn = [MoreAnnotationsBar createItemWithImageAndTitle:FSLocalizedString(@"kPropertyImage") imageNormal:imageToolImage];
 
         _otherButtons = @[].mutableCopy;
         if ([tools containsObject:Tool_Freetext]) {
             [_otherButtons addObject:self.typewriterBtn];
+        }
+        if ([tools containsObject:Tool_Textbox]) {
+            [_otherButtons addObject:self.textboxBtn];
         }
         if ([tools containsObject:Tool_Note]) {
             [_otherButtons addObject:self.noteBtn];
@@ -177,6 +201,13 @@
         if (config.loadAttachment) {
             [_otherButtons addObject:self.attachmentBtn];
         }
+        if ([tools containsObject:Tool_Image]) {
+            [_otherButtons addObject:self.imageBtn];
+        }
+        if ([tools containsObject:Tool_Distance]) {
+            [_otherButtons addObject:self.distanceBtn];
+        }
+        
         if (_otherButtons.count > 0) {
             if (_textButtons.count > 0 || _drawButtons.count > 0) {
                 self.divideView2 = [[UIView alloc] init];
@@ -227,14 +258,31 @@
         make.width.mas_equalTo(200);
         make.height.mas_equalTo(20);
     }];
-    [_drawButtons enumerateObjectsUsingBlock:^(id  _Nonnull button, NSUInteger idx, BOOL * _Nonnull stop) {
-        [self.contentView addSubview:button];
-        [button mas_remakeConstraints:^(MASConstraintMaker *make) {
-            make.left.mas_equalTo(leftMargin + (width - 20) / 6 * idx);
-            make.top.equalTo(self.drawLabel.mas_bottom).offset(10);
+    if (_drawButtons.count > 0) {
+        UIScrollView *drawButtonsScrollView = [[UIScrollView alloc] init];
+        drawButtonsScrollView.showsHorizontalScrollIndicator = NO;
+        [self.contentView addSubview:drawButtonsScrollView];
+        [_drawButtons enumerateObjectsUsingBlock:^(id _Nonnull button, NSUInteger idx, BOOL *_Nonnull stop) {
+            [drawButtonsScrollView addSubview:button];
+            [button mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.left.mas_equalTo(leftMargin + (width - 20) / 6 * idx);
+                make.top.equalTo(self.drawLabel.mas_bottom).offset(10);
+            }];
         }];
-    }];
-    
+        UIButton *lastDrawButton = (UIButton *) _drawButtons.lastObject;
+        [lastDrawButton sizeToFit];
+        CGFloat buttonWidth = lastDrawButton.bounds.size.width;
+        CGFloat buttonHeight = lastDrawButton.bounds.size.height;
+        CGFloat lastDrawButtonMaxX = leftMargin + (width - 20) / 6 * _drawButtons.count + buttonWidth;
+        drawButtonsScrollView.contentSize = CGSizeMake(lastDrawButtonMaxX, buttonHeight);
+        [drawButtonsScrollView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(self.drawLabel.mas_bottom).offset(10);
+            make.left.mas_equalTo(0);
+            make.right.mas_equalTo(self.contentView.mas_right);
+            make.height.mas_equalTo(buttonHeight);
+        }];
+    }
+
     [self.divideView2 mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.equalTo(self.contentView.mas_left).offset(5);
         make.right.equalTo(self.contentView.mas_right).offset(-5);
@@ -247,96 +295,42 @@
         make.width.mas_equalTo(200);
         make.height.mas_equalTo(20);
     }];
-    [_otherButtons enumerateObjectsUsingBlock:^(id  _Nonnull button, NSUInteger idx, BOOL * _Nonnull stop) {
-        [self.contentView addSubview:button];
-        [button mas_updateConstraints:^(MASConstraintMaker *make) {
-            make.left.mas_equalTo(leftMargin + (width - 20) / 4 * idx);
-            make.top.equalTo(self.othersLabel.mas_bottom).offset(10);
-            make.width.mas_equalTo([button bounds].size.width);
-            make.height.mas_equalTo([button bounds].size.height);
+
+    if (_otherButtons.count > 0) {
+        UIScrollView *otherButtonsScrollView = [[UIScrollView alloc] init];
+        otherButtonsScrollView.showsHorizontalScrollIndicator = NO;
+        [self.contentView addSubview:otherButtonsScrollView];
+
+        UIButton __block *lastButton = nil;
+        NSMutableArray *buttonWidtharr = @[].mutableCopy;
+        [_otherButtons enumerateObjectsUsingBlock:^(UIButton *button, NSUInteger idx, BOOL *stop) {
+            [otherButtonsScrollView addSubview:button];
+            [buttonWidtharr addObject:@(button.frame.size.width)];
         }];
-    }];
-    
-//    [self.contentView mas_makeConstraints:^(MASConstraintMaker *make) {
-//        UIButton *lastButton = _otherButtons.lastObject ?: (_drawButtons.lastObject ?: _textButtons.lastObject);
-//        if (lastButton) {
-//            make.bottom.equalTo(lastButton.mas_bottom).offset(10);
-//        }
-//    }];
+
+        CGFloat maxButtonWidthValue = [[buttonWidtharr valueForKeyPath:@"@max.floatValue"] floatValue];
+
+        [_otherButtons enumerateObjectsUsingBlock:^(UIButton *button, NSUInteger idx, BOOL *stop) {
+            [button mas_remakeConstraints:^(MASConstraintMaker *make) {
+                make.width.mas_equalTo(@(maxButtonWidthValue));
+                make.height.mas_equalTo(@(button.frame.size.height));
+                make.top.mas_equalTo(0);
+                make.left.mas_equalTo(lastButton ? lastButton.mas_right : button.superview.mas_left).with.offset(lastButton ? leftMargin : leftMargin);
+
+                lastButton = button;
+            }];
+        }];
+
+        otherButtonsScrollView.contentSize = CGSizeMake(leftMargin + (width - 20) / 4 * _otherButtons.count + lastButton.frame.size.width, lastButton.frame.size.height);
+
+        [otherButtonsScrollView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(self.othersLabel.mas_bottom).offset(10);
+            make.left.mas_equalTo(0);
+            make.right.mas_equalTo(self.contentView.mas_right);
+            make.height.mas_equalTo(lastButton.frame.size.height);
+        }];
+    }
 }
-//{
-//    [self.textLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.rectBtn.mas_left).offset(0);
-//        make.top.equalTo(self.contentView.mas_top).offset(10);
-//        make.width.mas_equalTo(200);
-//        make.height.mas_equalTo(20);
-//    }];
-//
-//    [self.drawLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.rectBtn.mas_left).offset(0);
-//        make.top.equalTo(self.contentView.mas_top).offset(80);
-//        make.width.mas_equalTo(200);
-//        make.height.mas_equalTo(20);
-//    }];
-//
-//    [self.othersLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.rectBtn.mas_left).offset(0);
-//        make.top.equalTo(self.contentView.mas_top).offset(160);
-//        make.width.mas_equalTo(200);
-//        make.height.mas_equalTo(20);
-//    }];
-//
-//    [self.highlightBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.rectBtn.mas_left).offset(0);
-//        make.top.equalTo(self.textLabel.mas_bottom).offset(10);
-//        make.width.mas_equalTo(self.highlightBtn.bounds.size.width);
-//        make.height.mas_equalTo(self.highlightBtn.bounds.size.height);
-//    }];
-//    [self.underlineBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.circleBtn.mas_left).offset(0);
-//        make.top.equalTo(self.textLabel.mas_bottom).offset(10);
-//        make.width.mas_equalTo(self.underlineBtn.bounds.size.width);
-//        make.height.mas_equalTo(self.underlineBtn.bounds.size.height);
-//    }];
-//    [self.breaklineBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.lineBtn.mas_left).offset(0);
-//        make.top.equalTo(self.textLabel.mas_bottom).offset(10);
-//        make.width.mas_equalTo(self.breaklineBtn.bounds.size.width);
-//        make.height.mas_equalTo(self.breaklineBtn.bounds.size.height);
-//    }];
-//    [self.strokeoutBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.arrowsBtn.mas_left).offset(0);
-//        make.top.equalTo(self.textLabel.mas_bottom).offset(10);
-//        make.width.mas_equalTo(self.strokeoutBtn.bounds.size.width);
-//        make.height.mas_equalTo(self.strokeoutBtn.bounds.size.height);
-//    }];
-//    [self.replaceBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.pencileBtn.mas_left).offset(0);
-//        make.top.equalTo(self.textLabel.mas_bottom).offset(10);
-//        make.width.mas_equalTo(self.replaceBtn.bounds.size.width);
-//        make.height.mas_equalTo(self.replaceBtn.bounds.size.height);
-//    }];
-//    [self.insertBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.eraserBtn.mas_left).offset(0);
-//        make.top.equalTo(self.textLabel.mas_bottom).offset(10);
-//        make.width.mas_equalTo(self.insertBtn.bounds.size.width);
-//        make.height.mas_equalTo(self.insertBtn.bounds.size.height);
-//    }];
-//
-//    [self.divideView1 mas_makeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.contentView.mas_left).offset(5);
-//        make.right.equalTo(self.contentView.mas_right).offset(-5);
-//        make.top.equalTo(self.contentView.mas_top).offset(75);
-//        make.height.mas_equalTo([Utility realPX:1.0f]);
-//    }];
-//
-//    [self.divideView2 mas_makeConstraints:^(MASConstraintMaker *make) {
-//        make.left.equalTo(self.contentView.mas_left).offset(5);
-//        make.right.equalTo(self.contentView.mas_right).offset(-5);
-//        make.top.equalTo(self.contentView.mas_top).offset(150);
-//        make.height.mas_equalTo([Utility realPX:1.0f]);
-//    }];
-//}
 
 - (void)initButtonActions {
     [self.highlightBtn addTarget:self action:@selector(onHighLightClicked) forControlEvents:UIControlEventTouchUpInside];
@@ -352,12 +346,16 @@
     [self.arrowsBtn addTarget:self action:@selector(onArrowsClicked) forControlEvents:UIControlEventTouchUpInside];
     [self.pencileBtn addTarget:self action:@selector(onPencilClicked) forControlEvents:UIControlEventTouchUpInside];
     [self.eraserBtn addTarget:self action:@selector(onEraserClicked) forControlEvents:UIControlEventTouchUpInside];
+    [self.polygonBtn addTarget:self action:@selector(onPolygonClicked) forControlEvents:UIControlEventTouchUpInside];
+    [self.cloudBtn addTarget:self action:@selector(onCloudClicked) forControlEvents:UIControlEventTouchUpInside];
 
     [self.typewriterBtn addTarget:self action:@selector(onTyperwriterClicked) forControlEvents:UIControlEventTouchUpInside];
-
+    [self.textboxBtn addTarget:self action:@selector(onTextboxClicked) forControlEvents:UIControlEventTouchUpInside];
     [self.noteBtn addTarget:self action:@selector(onNoteClicked) forControlEvents:UIControlEventTouchUpInside];
     [self.attachmentBtn addTarget:self action:@selector(onAttachClicked) forControlEvents:UIControlEventTouchUpInside];
     [self.stampBtn addTarget:self action:@selector(onStampClicked) forControlEvents:UIControlEventTouchUpInside];
+    [self.distanceBtn addTarget:self action:@selector(onDistanceClicked) forControlEvents:UIControlEventTouchUpInside];
+    [self.imageBtn addTarget:self action:@selector(onImageClicked) forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)onHighLightClicked {
@@ -420,9 +418,27 @@
     }
 }
 
+- (void)onPolygonClicked {
+    if (self.polygonClicked) {
+        self.polygonClicked();
+    }
+}
+
+- (void)onCloudClicked {
+    if (self.cloudClicked) {
+        self.cloudClicked();
+    }
+}
+
 - (void)onTyperwriterClicked {
     if (self.typerwriterClicked) {
         self.typerwriterClicked();
+    }
+}
+
+- (void)onTextboxClicked {
+    if (self.textboxClicked) {
+        self.textboxClicked();
     }
 }
 
@@ -444,6 +460,12 @@
     }
 }
 
+- (void)onImageClicked {
+    if (self.imageClicked) {
+        self.imageClicked();
+    }
+}
+
 - (void)onInsertClicked {
     if (self.insertClicked)
         self.insertClicked();
@@ -452,6 +474,11 @@
 - (void)onReplaceClicked {
     if (self.replaceClicked)
         self.replaceClicked();
+}
+
+- (void)onDistanceClicked {
+    if (self.distanceClicked)
+        self.distanceClicked();
 }
 
 //create button with image.

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -102,7 +102,7 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     if (_buttonClickedHandler) {
-        _buttonClickedHandler(self, (int) buttonIndex);
+        _buttonClickedHandler(self, buttonIndex);
     }
     if (self.outerDelegate) {
         [self.outerDelegate alertView:alertView clickedButtonAtIndex:buttonIndex];
@@ -134,7 +134,7 @@
     return self;
 }
 
-- (id)initWithTitle:(NSString *)title message:(NSString *)message buttonClickHandler:(AlertViewButtonClickedHandler)handler cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ... {
+- (id)initWithTitle:(NSString *)title message:(NSString *)message buttonClickHandler:(InputAlertViewButtonClickedHandler)handler cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ... {
     if (self = [super initWithTitle:title == nil ? nil : FSLocalizedString(title) message:message == nil ? nil : FSLocalizedString(message) delegate:self cancelButtonTitle:cancelButtonTitle == nil ? nil : FSLocalizedString(cancelButtonTitle) otherButtonTitles:nil]) {
         if (otherButtonTitles != nil) {
             [self addButtonWithTitle:FSLocalizedString(otherButtonTitles)];

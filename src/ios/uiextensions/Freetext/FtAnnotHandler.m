@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -39,11 +39,6 @@
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = _extensionsManager.pdfViewCtrl;
-        [_extensionsManager registerAnnotHandler:self];
-        [_pdfViewCtrl registerScrollViewEventListener:self];
-        [_extensionsManager registerRotateChangedListener:self];
-        [_extensionsManager registerGestureEventListener:self];
-        [_extensionsManager.propertyBar registerPropertyBarListener:self];
 
         self.isShowStyle = NO;
         self.shouldShowMenu = NO;
@@ -68,7 +63,7 @@
     if (![annot isMarkup])
         return;
     NSString *intent = [((FSMarkup *) annot) getIntent];
-    if (!intent || [intent caseInsensitiveCompare:@"FreeTextTypewriter"] != NSOrderedSame)
+    if (intent && [intent caseInsensitiveCompare:@"FreeTextTypewriter"] != NSOrderedSame)
         return;
 
     self.editAnnot = (FSFreeText *) annot;
@@ -76,6 +71,10 @@
     int pageIndex = annot.pageIndex;
 
     CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
+    if ([annot.subject isEqualToString:@"Textbox"]) {
+        rect = CGRectInset(rect, -1, -1);
+    }
+
     NSMutableArray *array = [NSMutableArray array];
 
     MenuItem *copyItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kCopyText") object:self action:@selector(copyText)];
@@ -132,8 +131,14 @@
     int pageIndex = annot.pageIndex;
     {
         CGRect textFrame = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
+        textFrame = CGRectInset(textFrame, -1, -1); // added for border
         _textView = [[UITextView alloc] initWithFrame:textFrame];
         _textView.delegate = self;
+        BOOL isTextbox = (annot.intent == nil);
+        if (isTextbox) {
+            _textView.layer.borderColor = [UIColor redColor].CGColor;
+            _textView.layer.borderWidth = 1;
+        }
         if (OS_ISVERSION7) {
             _textView.textContainerInset = UIEdgeInsetsMake(2, -4, 2, -4);
         } else {
@@ -195,12 +200,26 @@
                 *isAnnotRemoved = YES;
             }
         } else {
-            StringDrawUtil *strDrawUtil = [[StringDrawUtil alloc] initWithFont:_textView.font];
-            NSString *contents = [strDrawUtil getReturnRefinedString:_textView.text forUITextViewWidth:_textView.bounds.size.width];
+            NSString *contents = [StringDrawUtil getWrappedStringInTextView:_textView];
+            //            StringDrawUtil *strDrawUtil = [[StringDrawUtil alloc] initWithFont:_textView.font];
+            //            NSString *contents = [strDrawUtil getReturnRefinedString:_textView.text forUITextViewWidth:_textView.bounds.size.width];
 
             [self fixInvalidFontForFreeText:annot];
             annot.contents = contents;
+            CGRect textViewFrame = _textView.frame;
+            //            textViewFrame.size.width -= 2 * _textView.layer.borderWidth;
+            annot.fsrect = [_pdfViewCtrl convertPageViewRectToPdfRect:textViewFrame pageIndex:annot.pageIndex];
             [annot resetAppearanceStream];
+            // move annot if exceed page edge, as the annot size may be changed after reset ap (especially for Chinese char, the line interspace is changed)
+            {
+                FSRectF *rect = annot.fsrect;
+                if (rect.bottom < 0) {
+                    rect.top -= rect.bottom;
+                    rect.bottom = 0;
+                    annot.fsrect = rect;
+                    [annot resetAppearanceStream];
+                }
+            }
         }
 
         [_textView resignFirstResponder];
@@ -221,9 +240,12 @@
 }
 
 - (void)showStyle {
-    [_extensionsManager.propertyBar setColors:@[ @0x3366CC, @0x669933, @0xCC6600, @0xCC9900, @0xA3A305, @0xCC0000, @0x336666, @0x660066, @0x000000, @0x8F8E8E ]];
-    [_extensionsManager.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY | PROPERTY_FONTNAME | PROPERTY_FONTSIZE frame:CGRectZero];
     FSAnnot *annot = _extensionsManager.currentAnnot;
+    BOOL isTextbox = (annot.intent == nil);
+    NSArray *colors = isTextbox ? @[ @0x7480FC, @0xFFFF00, @0xCCFF66, @0x00FFFF, @0x99CCFF, @0xCC99FF, @0xFF9999, @0xFFFFFF, @0xC3C3C3, @0x000000 ]
+                                : @[ @0x3366CC, @0x669933, @0xCC6600, @0xCC9900, @0xA3A305, @0xCC0000, @0x336666, @0x660066, @0x000000, @0x8F8E8E ];
+    [_extensionsManager.propertyBar setColors:colors];
+    [_extensionsManager.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY | PROPERTY_FONTNAME | PROPERTY_FONTSIZE frame:CGRectZero];
 
     [_extensionsManager.propertyBar setProperty:PROPERTY_COLOR intValue:annot.color];
     [_extensionsManager.propertyBar setProperty:PROPERTY_OPACITY intValue:annot.opacity * 100.0];
@@ -289,7 +311,7 @@
     int pageIndex = annot.pageIndex;
     FSPDFPage *page = [annot getPage];
     if (addUndo) {
-        [_extensionsManager addUndoItem:[UndoAddAnnot createWithAttributes:[FSAnnotAttributes attributesWithAnnot:annot] page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoAddAnnotWithAttributes:[FSAnnotAttributes attributesWithAnnot:annot] page:page annotHandler:self]];
     }
 
     [_extensionsManager onAnnotAdded:page annot:annot];
@@ -311,7 +333,7 @@
     }
     if ([annot canModify] && addUndo) {
         annot.modifiedDate = [NSDate date];
-        [_extensionsManager addUndoItem:[UndoModifyAnnot createWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoModifyAnnotWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
         self.attributesBeforeModify = nil;
     }
     [_extensionsManager onAnnotModified:page annot:annot];
@@ -334,15 +356,16 @@
 
     if (addUndo) {
         FSAnnotAttributes *attributes = self.attributesBeforeModify ?: [FSAnnotAttributes attributesWithAnnot:annot];
-        [_extensionsManager addUndoItem:[UndoDeleteAnnot createWithAttributes:attributes page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoDeleteAnnotWithAttributes:attributes page:page annotHandler:self]];
     }
     self.attributesBeforeModify = nil;
 
     CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:annot.pageIndex];
     rect = CGRectInset(rect, -30, -30);
 
-    [_extensionsManager onAnnotDeleted:page annot:annot];
+    [_extensionsManager onAnnotWillDelete:page annot:annot];
     [page removeAnnot:annot];
+    [_extensionsManager onAnnotDeleted:page annot:annot];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
@@ -351,14 +374,14 @@
 
 // PageView Gesture+Touch
 - (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer annot:(FSAnnot *)annot {
-    return [self onPageViewTap:pageIndex recognizer:recognizer annot:annot];
+    return [self onPageViewTapOrLongPress:pageIndex recognizer:recognizer annot:annot];
 }
 
 - (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer annot:(FSAnnot *)annot {
-    BOOL canAddAnnot = [Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc];
-    if (!canAddAnnot) {
-        return NO;
-    }
+    return [self onPageViewTapOrLongPress:pageIndex recognizer:recognizer annot:annot];
+}
+
+- (BOOL)onPageViewTapOrLongPress:(int)pageIndex recognizer:(UIGestureRecognizer *)recognizer annot:(FSAnnot *)annot {
     CGPoint point = [recognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
     FSPointF *pdfPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
     if (_extensionsManager.currentAnnot == annot) {
@@ -375,7 +398,7 @@
 }
 
 - (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer annot:(FSAnnot *)annot {
-    if (_extensionsManager.currentAnnot != annot) {
+    if (_extensionsManager.currentAnnot != annot || pageIndex != annot.pageIndex) {
         return NO;
     }
 
@@ -474,13 +497,9 @@
 - (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer annot:(FSAnnot *)annot {
     if (annot.type == e_annotFreeText) {
         NSString *intent = [((FSMarkup *) annot) getIntent];
-        if (!intent || [intent caseInsensitiveCompare:@"FreeTextTypewriter"] != NSOrderedSame)
+        if (intent && [intent caseInsensitiveCompare:@"FreeTextTypewriter"] != NSOrderedSame)
             return NO;
 
-        BOOL canAddAnnot = [Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc];
-        if (!canAddAnnot) {
-            return NO;
-        }
         CGPoint point = [gestureRecognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
         FSPointF *pdfPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
         if (pageIndex == annot.pageIndex && [self isHitAnnot:annot point:pdfPoint]) {
@@ -519,7 +538,7 @@
     if (![annot isMarkup])
         return;
     NSString *intent = [((FSMarkup *) annot) getIntent];
-    if (!intent || [intent caseInsensitiveCompare:@"FreeTextTypewriter"] != NSOrderedSame)
+    if (intent && [intent caseInsensitiveCompare:@"FreeTextTypewriter"] != NSOrderedSame)
         return;
     if (pageIndex == annot.pageIndex) {
         if (_textView) {
@@ -540,7 +559,8 @@
             }
 
             if (_extensionsManager.currentAnnot == annot) {
-                CGRect rect = CGRectInset(pvRect, -2, -2);
+                BOOL isTextbox = (((FSFreeText *) annot).intent == nil);
+                CGRect rect = isTextbox ? CGRectInset(pvRect, -5, -5) : CGRectInset(pvRect, -2, -2);
                 CGContextSetLineWidth(context, 2.0);
                 CGFloat dashArray[] = {3, 3, 3, 3};
                 CGContextSetLineDash(context, 3, dashArray, 4);
@@ -556,24 +576,35 @@
     CGSize oneSize = [Utility getTestSize:textView.font];
     CGPoint point = textView.frame.origin;
 
-    FSAnnot *annot = _extensionsManager.currentAnnot;
+    FSFreeText *annot = (FSFreeText *) _extensionsManager.currentAnnot;
 
     int pageIndex = annot.pageIndex;
-    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-    paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-    CGSize size = [textView.text boundingRectWithSize:CGSizeMake([_pdfViewCtrl getPageViewWidth:pageIndex] - point.x - oneSize.width, 99999) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName : textView.font, NSParagraphStyleAttributeName : paragraphStyle} context:nil].size;
-    size.width += oneSize.width;
-    size.height += oneSize.height;
-    CGRect frame = textView.frame;
-    frame.size = size;
-    textView.frame = frame;
+
+    BOOL isTextbox = (annot.intent == nil);
+    if (isTextbox) {
+        CGRect frame = textView.frame;
+        CGSize constraintSize = CGSizeMake(frame.size.width, MAXFLOAT);
+        CGSize size = [textView sizeThatFits:constraintSize];
+        textView.frame = CGRectMake(frame.origin.x, frame.origin.y, frame.size.width, size.height);
+    } else {
+        NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+        paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
+        CGSize size = [textView.text boundingRectWithSize:CGSizeMake([_pdfViewCtrl getPageViewWidth:pageIndex] - point.x - oneSize.width, 99999) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName : textView.font, NSParagraphStyleAttributeName : paragraphStyle} context:nil].size;
+        size.width += oneSize.width;
+        size.height += oneSize.height;
+        CGRect frame = textView.frame;
+        frame.size = size;
+        textView.frame = frame;
+    }
     float textViewHeight = textView.frame.origin.y + textView.frame.size.height;
     if (textViewHeight >= ([_pdfViewCtrl getPageViewHeight:pageIndex] - 20)) {
         CGRect textViewFrame = textView.frame;
         textViewFrame.origin.y -= (textViewHeight - [_pdfViewCtrl getPageViewHeight:pageIndex]);
         textView.frame = textViewFrame;
     }
-    annot.fsrect = [_pdfViewCtrl convertPageViewRectToPdfRect:textView.frame pageIndex:pageIndex];
+    CGRect textViewFrame = textView.frame;
+    //    textViewFrame.size.width -= 2 * textView.layer.borderWidth;
+    annot.fsrect = [_pdfViewCtrl convertPageViewRectToPdfRect:textViewFrame pageIndex:pageIndex];
     if (textView.frame.size.height >= ([_pdfViewCtrl getPageViewHeight:pageIndex] - 20)) {
         [textView endEditing:YES];
     }
@@ -607,7 +638,7 @@
             FSRectF *pdfRect = [_pdfViewCtrl convertPageViewRectToPdfRect:pvRect pageIndex:pageIndex];
             float pdfOffsetY = pdfRect.top - pdfRect.bottom;
 
-            if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_SINGLE || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO) {
+            if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_SINGLE || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_RIGHT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_MIDDLE) {
                 float tmpPvOffset = pvRect.size.height;
                 CGRect tmpPvRect = CGRectMake(0, 0, 10, tmpPvOffset);
                 CGRect tmpDvRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:tmpPvRect pageIndex:pageIndex];
@@ -635,7 +666,7 @@
     [_pdfViewCtrl refresh:annot.pageIndex];
     _keyboardShown = NO;
     PDF_LAYOUT_MODE layoutMode = [_pdfViewCtrl getPageLayoutMode];
-    if (layoutMode == PDF_LAYOUT_MODE_SINGLE || layoutMode == PDF_LAYOUT_MODE_TWO || annot.pageIndex == [_pdfViewCtrl getPageCount] - 1) {
+    if (layoutMode == PDF_LAYOUT_MODE_SINGLE || layoutMode == PDF_LAYOUT_MODE_TWO || annot.pageIndex == [_pdfViewCtrl getPageCount] - 1 || layoutMode == PDF_LAYOUT_MODE_TWO_LEFT || layoutMode == PDF_LAYOUT_MODE_TWO_RIGHT || layoutMode == PDF_LAYOUT_MODE_TWO_MIDDLE) {
         [_pdfViewCtrl setBottomOffset:0];
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -71,7 +71,7 @@
 @implementation DigitalCertInfoCtr
 - (void)viewDidLoad {
     [super viewDidLoad];
-    UIBarButtonItem *leftButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"common_back_black"] style:UIBarButtonItemStyleBordered target:self action:@selector(dismissVC)];
+    UIBarButtonItem *leftButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"common_back_black"] style:UIBarButtonItemStylePlain target:self action:@selector(dismissVC)];
     self.navigationItem.leftBarButtonItem = leftButton;
     self.navigationController.navigationBar.tintColor = [UIColor blackColor];
     self.maxKeyWidth = [self caculateMaxKeyWidth];

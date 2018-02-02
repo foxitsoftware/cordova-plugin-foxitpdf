@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -44,8 +44,15 @@
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         [self loadModule];
-        [[SignToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
-        [[DigitalSignatureAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        SignToolHandler* toolHandler = [[SignToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_extensionsManager registerToolHandler:toolHandler];
+        [_extensionsManager registerRotateChangedListener:toolHandler];
+        [_extensionsManager.pdfViewCtrl registerDocEventListener:toolHandler];
+        
+        DigitalSignatureAnnotHandler* annotHandler = [[DigitalSignatureAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_pdfViewCtrl registerScrollViewEventListener:annotHandler];
+        [_extensionsManager registerRotateChangedListener:annotHandler];
+        [_extensionsManager registerAnnotHandler:annotHandler];
         self.toolHandler = (SignToolHandler *) [_extensionsManager getToolHandlerByName:Tool_Signature];
         [_pdfViewCtrl registerDocEventListener:self];
     }

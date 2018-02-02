@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -33,7 +33,6 @@
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
-        [_extensionsManager registerToolHandler:self];
         _taskServer = _extensionsManager.taskServer;
         _type = e_annotCircle;
     }
@@ -142,8 +141,10 @@
         FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
         float marginX = [Utility getAnnotMinXMarginInPDF:_pdfViewCtrl pageIndex:pageIndex];
         float marginY = [Utility getAnnotMinYMarginInPDF:_pdfViewCtrl pageIndex:pageIndex];
-
-        if (dibPoint.x < marginX || dibPoint.y > [page getHeight] - marginY || dibPoint.y < marginY || dibPoint.x > [page getWidth] - marginX) {
+        FSRotation rotation = [page getRotation];
+        CGFloat pdfPageWidth = (rotation == e_rotation0 || rotation == e_rotation180 || rotation == e_rotationUnknown) ? [page getWidth] : [page getHeight];
+        CGFloat pdfPageHeight = (rotation == e_rotation0 || rotation == e_rotation180 || rotation == e_rotationUnknown) ? [page getHeight] : [page getWidth];
+        if (dibPoint.x < marginX || dibPoint.y > pdfPageHeight - marginY || dibPoint.y < marginY || dibPoint.x > pdfPageWidth - marginX) {
             return NO;
         }
         self.endPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];

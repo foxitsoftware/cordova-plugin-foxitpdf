@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -13,7 +13,7 @@
 #import "../Common/UIExtensionsSharedHeader.h"
 #import <UIKit/UIKit.h>
 
-typedef void (^CropViewClosedHandler)();
+typedef void (^CropViewClosedHandler)(void);
 
 @interface CropViewController : UIViewController
 

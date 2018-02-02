@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -142,10 +142,10 @@
     int newIconType = (int) indexPath.row;
     if (_currentListener) {
         if (self.currentShowIconType & PROPERTY_ICONTYPE) {
-            [_currentListener onProperty:PROPERTY_ICONTYPE changedFrom:[NSNumber numberWithInt:_currentIconType] to:[NSNumber numberWithInt:newIconType]];
+            [_currentListener onProperty:PROPERTY_ICONTYPE changedFrom:@(_currentIconType) to:@(newIconType)];
         }
         if (self.currentShowIconType & PROPERTY_ATTACHMENT_ICONTYPE) {
-            [_currentListener onProperty:PROPERTY_ATTACHMENT_ICONTYPE changedFrom:[NSNumber numberWithInt:_currentIconType] to:[NSNumber numberWithInt:newIconType]];
+            [_currentListener onProperty:PROPERTY_ATTACHMENT_ICONTYPE changedFrom:@(_currentIconType) to:@(newIconType)];
         }
     }
     _currentIconType = newIconType;

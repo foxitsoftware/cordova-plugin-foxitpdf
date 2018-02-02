@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -22,7 +22,7 @@
 
 @interface FileManageListViewController ()
 
-- (void)pushFileManageListViewWithFolder:(NSString *)folder;
+- (void)pushFileManageListViewWithFolder:(NSString *)folder displayName:(NSString *)displayname;
 - (void)changeViewMode:(int)viewMode;
 
 @end

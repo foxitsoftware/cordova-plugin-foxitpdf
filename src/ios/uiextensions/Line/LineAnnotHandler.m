@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -33,6 +33,7 @@
 @property (nonatomic, assign) BOOL shouldShowMenu;
 @property (nonatomic, assign) BOOL shouldShowPropety;
 @property (nonatomic, strong) UIImage *annotImage;
+@property (nonatomic, strong) NSArray *measureRatioInfo;
 
 // for undo/redo in pan
 @property (nonatomic, strong) FSAnnotAttributes *attributesBeforeModify; // for undo
@@ -49,13 +50,6 @@
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
-        [_pdfViewCtrl registerDocEventListener:self];
-        [_extensionsManager registerAnnotHandler:self];
-        [_pdfViewCtrl registerDocEventListener:self];
-        [_pdfViewCtrl registerScrollViewEventListener:self];
-        [_extensionsManager registerRotateChangedListener:self];
-        [_extensionsManager registerGestureEventListener:self];
-        [_extensionsManager.propertyBar registerPropertyBarListener:self];
         self.colors = @[ @0xFF9F40, @0x8080FF, @0xBAE94C, @0xFFF160, @0xC3C3C3, @0xFF4C4C, @0x669999, @0xC72DA1, @0x996666, @0x000000 ];
         self.isShowStyle = NO;
         self.editAnnot = nil;
@@ -135,7 +129,7 @@
     MenuItem *openItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kOpen") object:self action:@selector(comment)];
     MenuItem *replyItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kReply") object:self action:@selector(reply)];
     MenuItem *styleItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kStyle") object:self action:@selector(showStyle)];
-    MenuItem *deleteItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kDelete") object:self action:@selector(delete:)];
+    MenuItem *deleteItem = [[MenuItem alloc] initWithTitle:FSLocalizedString(@"kDelete") object:self action:@selector(delete)];
     if (annot.canModify) {
         if (annot.contents == nil || [annot.contents isEqualToString:@""]) {
             [array addObject:commentItem];
@@ -148,7 +142,9 @@
         [array addObject:deleteItem];
     } else {
         [array addObject:commentItem];
-        [array addObject:replyItem];
+        if (annot.canReply) {
+            [array addObject:replyItem];
+        }
     }
 
     CGRect dvRect = rect;
@@ -163,9 +159,26 @@
     self.startPoint = [annot1 getStartPoint];
     self.endPoint = [annot1 getEndPoint];
     self.annotImage = [Utility getAnnotImage:annot pdfViewCtrl:_pdfViewCtrl];
-
+    
     rect = CGRectInset(rect, -20, -20);
     [_pdfViewCtrl refresh:rect pageIndex:annot.pageIndex needRender:YES];
+    
+    if ([[annot1 getIntent] isEqualToString:@"LineDimension"]){
+        [_pdfViewCtrl refresh:annot.pageIndex];
+        _measureRatioInfo = [Utility getDistanceUnitInfo:[annot1 getMeasureRatio]];
+    }
+}
+
+-(void)updateDistanceDataFromStartPoint:(FSPointF *)start toEndPoint:(FSPointF *)end {
+    FSLine *lineAnnot = (FSLine *)self.editAnnot;
+    
+    NSString *measureRatio = lineAnnot ? [lineAnnot getMeasureRatio]:_extensionsManager.distanceUnit;
+    float distance = [Utility getDistanceFromX:start toY:end withUnit:measureRatio];
+    
+    NSString *unitStr = lineAnnot ? [lineAnnot getMeasureUnit:0] : [_measureRatioInfo objectAtIndex:3];
+    
+    NSString *distanceContent = [NSString stringWithFormat:@"%.2f%@",distance,unitStr];
+    [self.editAnnot setContent:distanceContent];
 }
 
 - (void)comment {
@@ -221,7 +234,7 @@
     };
 }
 
-- (void) delete:(id)sender {
+- (void) delete {
     FSAnnot *annot = _extensionsManager.currentAnnot;
     Task *task = [[Task alloc] init];
     task.run = ^() {
@@ -233,17 +246,30 @@
 
 - (void)showStyle {
     [_extensionsManager.propertyBar setColors:self.colors];
-    [_extensionsManager.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY | PROPERTY_LINEWIDTH frame:CGRectZero];
+    
     FSAnnot *annot = _extensionsManager.currentAnnot;
+    FSLine *annot1 = (FSLine *) annot;
+    
+    if ([[annot1 getIntent] isEqualToString:@"LineDimension"]) {
+        
+        [_extensionsManager.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY | PROPERTY_DISTANCE_UNIT frame:CGRectZero];
+        [_extensionsManager.propertyBar setProperty:PROPERTY_DISTANCE_UNIT stringValue:annot1 ? [annot1 getMeasureRatio] : _extensionsManager.distanceUnit];
+        [_extensionsManager.propertyBar setDistanceLayoutsForbidEdit];
+    }else{
+        [_extensionsManager.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY | PROPERTY_LINEWIDTH frame:CGRectZero];
+        [_extensionsManager.propertyBar setProperty:PROPERTY_LINEWIDTH intValue:annot.lineWidth];
+        
+    }
     [_extensionsManager.propertyBar setProperty:PROPERTY_COLOR intValue:annot.color];
     [_extensionsManager.propertyBar setProperty:PROPERTY_OPACITY intValue:annot.opacity * 100.0];
-    [_extensionsManager.propertyBar setProperty:PROPERTY_LINEWIDTH intValue:annot.lineWidth];
+    
     [_extensionsManager.propertyBar addListener:_extensionsManager];
 
     CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:annot.pageIndex];
     CGRect showRect = [_pdfViewCtrl convertPageViewRectToDisplayViewRect:rect pageIndex:annot.pageIndex];
     NSArray *array = [NSArray arrayWithObject:[_pdfViewCtrl getDisplayView]];
     [_extensionsManager.propertyBar showPropertyBar:showRect inView:_pdfViewCtrl viewsCanMove:array];
+    
     self.isShowStyle = YES;
     self.shouldShowMenu = NO;
     self.shouldShowPropety = YES;
@@ -266,13 +292,18 @@
         [self modifyAnnot:annot addUndo:YES];
     }
     self.attributesBeforeModify = nil;
-
+    
     int pageIndex = annot.pageIndex;
     CGRect newRect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
     newRect = CGRectInset(newRect, -20, -20);
     dispatch_async(dispatch_get_main_queue(), ^{
         [_pdfViewCtrl refresh:newRect pageIndex:pageIndex needRender:YES];
     });
+    
+    FSLine *lineAnnot = (FSLine *)annot;
+    if ([[lineAnnot getIntent] isEqualToString:@"LineDimension"]){
+        [_pdfViewCtrl refresh:annot.pageIndex];
+    }
 }
 
 - (void)addAnnot:(FSAnnot *)annot {
@@ -285,7 +316,7 @@
 
     if (addUndo) {
         FSAnnotAttributes *attributes = [FSAnnotAttributes attributesWithAnnot:annot];
-        [_extensionsManager addUndoItem:[UndoAddAnnot createWithAttributes:attributes page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoAddAnnotWithAttributes:attributes page:page annotHandler:self]];
     }
 
     [_extensionsManager onAnnotAdded:page annot:annot];
@@ -308,7 +339,7 @@
 
     if ([annot canModify] && addUndo) {
         annot.modifiedDate = [NSDate date];
-        [_extensionsManager addUndoItem:[UndoModifyAnnot createWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoModifyAnnotWithOldAttributes:self.attributesBeforeModify newAttributes:[FSAnnotAttributes attributesWithAnnot:annot] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:self]];
     }
 
     [_extensionsManager onAnnotModified:page annot:annot];
@@ -325,20 +356,26 @@
 }
 
 - (void)removeAnnot:(FSAnnot *)annot addUndo:(BOOL)addUndo {
+    FSLine *lineAnnot = (FSLine *)annot;
+    if ([[lineAnnot getIntent] isEqualToString:@"LineDimension"]){
+       [_pdfViewCtrl refresh:annot.pageIndex];
+    }
+    
     int pageIndex = annot.pageIndex;
     FSPDFPage *page = [annot getPage];
 
     if (addUndo) {
         FSAnnotAttributes *attributes = self.attributesBeforeModify ?: [FSAnnotAttributes attributesWithAnnot:annot];
-        [_extensionsManager addUndoItem:[UndoDeleteAnnot createWithAttributes:attributes page:page annotHandler:self]];
+        [_extensionsManager addUndoItem:[UndoItem itemForUndoDeleteAnnotWithAttributes:attributes page:page annotHandler:self]];
     }
     self.attributesBeforeModify = nil;
 
     CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:annot.pageIndex];
     rect = CGRectInset(rect, -20, -20);
 
-    [_extensionsManager onAnnotDeleted:page annot:annot];
+    [_extensionsManager onAnnotWillDelete:page annot:annot];
     [page removeAnnot:annot];
+    [_extensionsManager onAnnotDeleted:page annot:annot];
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
@@ -354,10 +391,6 @@
 }
 
 - (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer annot:(FSAnnot *)annot {
-    BOOL canAddAnnot = [Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc];
-    if (!canAddAnnot) {
-        return NO;
-    }
     CGPoint point = [recognizer locationInView:[_pdfViewCtrl getPageView:annot.pageIndex]];
     FSPointF *pdfPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:annot.pageIndex];
     if (_extensionsManager.currentAnnot == annot) {
@@ -523,9 +556,9 @@
         FSRectF *dibRect = [Utility convertToFSRect:_startPoint p2:_endPoint];
         CGRect newRect = [_pdfViewCtrl convertPdfRectToPageViewRect:dibRect pageIndex:pageIndex];
         CGRect unionRect = CGRectUnion(self.oldRect, newRect);
-        unionRect = CGRectInset(unionRect, -100, -100);
+        unionRect = CGRectInset(unionRect, -110, -100);
         self.annotImage = [Utility getAnnotImage:annot pdfViewCtrl:_pdfViewCtrl];
-        [_pdfViewCtrl refresh:unionRect pageIndex:pageIndex needRender:NO];
+        [_pdfViewCtrl refresh:pageIndex needRender:NO];
         self.oldRect = newRect;
     } else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
         if (_editType != EDITANNOT_LINE_TYPE_UNKNOWN) {
@@ -549,6 +582,10 @@
         self.startPoint = nil;
         self.endPoint = nil;
         _editType = EDITANNOT_LINE_TYPE_UNKNOWN;
+    }
+    
+    if ([[annot1 getIntent] isEqualToString:@"LineDimension"]){
+        [self updateDistanceDataFromStartPoint:[annot1 getStartPoint] toEndPoint:[annot1 getEndPoint]];
     }
 }
 
@@ -666,6 +703,28 @@
         dotEndPoint.y -= dragDot.size.height / 2;
         [dragDot drawAtPoint:dotStartPoint];
         [dragDot drawAtPoint:dotEndPoint];
+        
+        if ([[lineAnnot getIntent] isEqualToString:@"LineDimension"]){
+            //Draw Distance Text
+            NSMutableParagraphStyle* textStyle = NSMutableParagraphStyle.defaultParagraphStyle.mutableCopy;
+            textStyle.alignment = NSTextAlignmentLeft;
+            
+            NSDictionary* textFontAttributes = @{
+                                                 NSFontAttributeName: [UIFont fontWithName: @"Helvetica" size: 12],
+                                                 NSForegroundColorAttributeName: UIColor.redColor,
+                                                 NSParagraphStyleAttributeName: textStyle
+                                                 };
+            
+            dotStartPoint.y -= 10;
+            
+            NSString *measureRatio = lineAnnot ? [lineAnnot getMeasureRatio]:_extensionsManager.distanceUnit;
+            float distance = [Utility getDistanceFromX:self.startPoint ?:[lineAnnot getStartPoint] toY:self.endPoint ?:[lineAnnot getEndPoint] withUnit:measureRatio];
+            
+            NSString *unitStr = lineAnnot ? [lineAnnot getMeasureUnit:0] : [_measureRatioInfo objectAtIndex:3];
+            
+            NSString *distanceContent = [NSString stringWithFormat:@"%.2f%@",distance,unitStr];
+            [distanceContent drawAtPoint:dotStartPoint withAttributes:textFontAttributes];
+        }
     }
 }
 

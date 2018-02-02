@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -31,6 +31,8 @@ typedef NS_ENUM(NSUInteger, SettingItemType) {
     CONTINUOUS,
     /** @brief	Double page layout button. */
     DOUBLEPAGE,
+    /** @brief	Cover page layout button. */
+    COVERPAGE,
     /** @brief	Thumbnail button. */
     THUMBNAIL,
     /** @brief	Reflow button. */
@@ -42,7 +44,9 @@ typedef NS_ENUM(NSUInteger, SettingItemType) {
     /** @brief	Brightness slider view. */
     BRIGHTNESS,
     /** @brief	Night mode button. */
-    NIGHTMODE
+    NIGHTMODE,
+    /** @brief  Pan&zoom button. */
+    PANZOOM
 };
 
 @protocol IRotationEventListener;
@@ -81,6 +85,12 @@ typedef NS_ENUM(NSUInteger, SettingItemType) {
  */
 - (void)settingBarDoublePageLayout:(SettingBar *)settingBar;
 /**
+ * @brief	Triggered when select double page layout with cover.
+ *
+ * @param[in]	settingBar      The setting bar.
+ */
+- (void)settingBarCoverPageLayout:(SettingBar *)settingBar;
+/**
  * @brief	Triggered when select thumbnail item.
  *
  * @param[in]	settingBar      The setting bar.
@@ -98,6 +108,12 @@ typedef NS_ENUM(NSUInteger, SettingItemType) {
  * @param[in]	settingBar      The setting bar.
  */
 - (void)settingBarCrop:(SettingBar *)settingBar;
+/**
+ * @brief	Triggered when select pan&zoom mode.
+ *
+ * @param[in]	settingBar      The setting bar.
+ */
+- (void)settingBarPanAndZoom:(SettingBar *)settingBar;
 /**
  * @brief	Triggered when select lock screen item.
  *
@@ -127,6 +143,12 @@ typedef NS_ENUM(NSUInteger, SettingItemType) {
  * @return	The setting bar instance.
  */
 - (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
+
+/**
+ * @brief get setting bar items show/hide status.
+ */
+-(NSMutableDictionary *)getItemHiddenStatus;
+
 /**
  * @brief	Hide or show item in setting bar.
  *

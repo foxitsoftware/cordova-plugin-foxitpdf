@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -11,12 +11,13 @@
  */
 
 #import "../UIExtensionsManager.h"
+#import "../Property/PropertyBar.h"
 #import <FoxitRDK/FSPDFViewControl.h>
 
 @class ReplyTableViewController;
 
 /**@brief A note annotation handler to handle touches and gestures on tha note annotation. */
-@interface NoteAnnotHandler : NSObject <IAnnotHandler>
+@interface NoteAnnotHandler : NSObject <IAnnotHandler, IDocEventListener, IRotationEventListener, IGestureEventListener, IScrollViewEventListener, IPropertyBarListener>
 
 @property (nonatomic, strong) ReplyTableViewController *currentVC;
 

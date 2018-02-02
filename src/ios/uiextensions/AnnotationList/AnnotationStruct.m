@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -191,7 +191,10 @@
              [[pLine getLineEndingStyle] isEqualToString:@"None"])) {
             resultString = @"panel_annotation_arrow.png";
             break;
-        } else {
+            } else if([[pLine getIntent] isEqualToString:@"LineDimension"]){
+                resultString = @"panel_annotation_distance.png";
+                break;
+            } else {
             resultString = @"panel_annotation_line.png";
             break;
         }
@@ -200,9 +203,11 @@
         resultString = @"panel_annotation_pencil.png";
         break;
 
-    case e_annotFreeText:
-        resultString = @"panel_annotation_freetext.png";
+    case e_annotFreeText: {
+        BOOL isTextbox = (annotation.annot.intent == nil);
+        resultString = isTextbox ? @"panel_annotation_textbox.png" : @"panel_annotation_freetext.png";
         break;
+    }
 
     case e_annotStamp:
         resultString = @"panel_annotation_stamp.png";
@@ -219,6 +224,16 @@
     case e_annotFileAttachment:
         resultString = @"panel_annotation_fileattachment.png";
         break;
+
+    case e_annotScreen:
+        resultString = @"panel_annotation_image.png";
+        break;
+
+    case e_annotPolygon: {
+        FSPolygon *polygon = (FSPolygon *) annotation.annot;
+        BOOL isCloud = ([[polygon getBorderInfo] getStyle] == e_borderStyleCloudy);
+        resultString = isCloud ? @"panel_annotation_cloud.png" : @"panel_annotation_polygon.png";
+    } break;
 
     default:
         break;

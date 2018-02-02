@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -45,11 +45,6 @@
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = _extensionsManager.pdfViewCtrl;
         _taskServer = _extensionsManager.taskServer;
-        [_pdfViewCtrl registerScrollViewEventListener:self];
-        [_extensionsManager registerAnnotHandler:self];
-        [_extensionsManager registerRotateChangedListener:self];
-        [_extensionsManager registerGestureEventListener:self];
-        [_extensionsManager.propertyBar registerPropertyBarListener:self];
 
         self.colors = @[ @0xFF9F40, @0x8080FF, @0xBAE94C, @0xFFF160, @0x996666, @0xFF4C4C, @0x669999, @0xFFFFFF, @0xC3C3C3, @0x000000 ];
         self.isShowStyle = NO;
@@ -211,7 +206,7 @@
     }
 
     if (!isContain) {
-        self.colors = @[ [NSNumber numberWithInt:firstColor], @0x8080FF, @0xBAE94C, @0xFFF160, @0x996666, @0xFF4C4C, @0x669999, @0xFFFFFF, @0xC3C3C3, @0x000000 ];
+        self.colors = @[ @(firstColor), @0x8080FF, @0xBAE94C, @0xFFF160, @0x996666, @0xFF4C4C, @0x669999, @0xFFFFFF, @0xC3C3C3, @0x000000 ];
     }
     [_extensionsManager.propertyBar setColors:self.colors];
     [_extensionsManager.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY frame:CGRectZero];
@@ -240,7 +235,7 @@
     }
 
     if (!isContain) {
-        self.colors = @[ [NSNumber numberWithInt:firstColor], @0x8080FF, @0xBAE94C, @0xFFF160, @0x996666, @0xFF4C4C, @0x669999, @0xFFFFFF, @0xC3C3C3, @0x000000 ];
+        self.colors = @[ @(firstColor), @0x8080FF, @0xBAE94C, @0xFFF160, @0x996666, @0xFF4C4C, @0x669999, @0xFFFFFF, @0xC3C3C3, @0x000000 ];
     }
     [_extensionsManager.propertyBar setColors:self.colors];
     [_extensionsManager.propertyBar resetBySupportedItems:PROPERTY_COLOR | PROPERTY_OPACITY frame:CGRectZero];
@@ -321,7 +316,7 @@
         if (addUndo) {
             FSCaretAttributes *attributes = [[FSCaretAttributes alloc] initWithAnnot:annot];
             if (![(FSMarkup *) annot isGrouped]) {
-                [_extensionsManager addUndoItem:[UndoAddAnnot createWithAttributes:attributes page:page annotHandler:self]];
+                [_extensionsManager addUndoItem:[UndoItem itemForUndoAddAnnotWithAttributes:attributes page:page annotHandler:self]];
             } else {
                 int groupCount = [(FSMarkup *) annot getGroupElementCount];
                 NSMutableArray<FSAnnotAttributes *> *attributesArray = [NSMutableArray<FSAnnotAttributes *> arrayWithCapacity:groupCount];
@@ -399,9 +394,9 @@
             NSArray<FSAnnotAttributes *> *attributesArray = [self createAnnotAttributes:(FSCaret *) annot];
             assert(count == attributesArray.count);
             for (int i = 0; i < count; i++) {
-                [undoItemArray addObject:[UndoModifyAnnot createWithOldAttributes:self.attributesArrayBeforeModify[i] newAttributes:attributesArray[i] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:[_extensionsManager getAnnotHandlerByType:attributesArray[i].type]]];
+                [undoItemArray addObject:[UndoItem itemForUndoModifyAnnotWithOldAttributes:self.attributesArrayBeforeModify[i] newAttributes:attributesArray[i] pdfViewCtrl:_pdfViewCtrl page:page annotHandler:[_extensionsManager getAnnotHandlerByType:attributesArray[i].type]]];
             }
-            [_extensionsManager addUndoItem:[UndoItem itemByMergingUndoItemInArray:undoItemArray]];
+            [_extensionsManager addUndoItem:[UndoItem itemByMergingItems:undoItemArray]];
         }
     }
 
@@ -423,10 +418,10 @@
     FSPDFPage *page = [annot getPage];
     if (page) {
         if (addUndo) {
-            NSMutableArray<FSAnnotAttributes *> *attributesArray = self.attributesArrayBeforeModify ?: [self createAnnotAttributes:(FSCaret *) annot];
+            NSArray<FSAnnotAttributes *> *attributesArray = self.attributesArrayBeforeModify ?: [self createAnnotAttributes:(FSCaret *) annot];
             if (![(FSMarkup *) annot isGrouped]) {
                 FSAnnotAttributes *attributes = attributesArray[0];
-                [_extensionsManager addUndoItem:[UndoDeleteAnnot createWithAttributes:attributes page:page annotHandler:self]];
+                [_extensionsManager addUndoItem:[UndoItem itemForUndoDeleteAnnotWithAttributes:attributes page:page annotHandler:self]];
             } else {
                 [_extensionsManager addUndoItem:[UndoItem itemWithUndo:^(UndoItem *item) {
                                         NSMutableArray<FSMarkup *> *annotArray = [NSMutableArray<FSMarkup *> arrayWithCapacity:[attributesArray count]];
@@ -454,7 +449,7 @@
         }     // addUndo
         self.attributesArrayBeforeModify = nil;
 
-        [_extensionsManager onAnnotDeleted:page annot:annot];
+        [_extensionsManager onAnnotWillDelete:page annot:annot];
         assert([annot isMarkup]);
         if ([(FSMarkup *) annot isGrouped]) {
             for (int i = 0; i < [(FSMarkup *) annot getGroupElementCount]; i++) {
@@ -467,6 +462,7 @@
         CGRect rect = [_pdfViewCtrl convertPdfRectToPageViewRect:annot.fsrect pageIndex:pageIndex];
         rect = CGRectInset(rect, -30, -30);
         [page removeAnnot:annot];
+        [_extensionsManager onAnnotDeleted:page annot:annot];
         [_pdfViewCtrl refresh:rect pageIndex:pageIndex];
     } // page
 }
@@ -513,10 +509,6 @@
 
 - (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer annot:(FSAnnot *)annot {
     if (annot.type == e_annotCaret) {
-        BOOL canAddAnnot = [Utility canAddAnnotToDocument:_pdfViewCtrl.currentDoc];
-        if (!canAddAnnot) {
-            return NO;
-        }
         CGPoint point = [gestureRecognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
         FSPointF *pdfPoint = [_pdfViewCtrl convertPageViewPtToPdfPt:point pageIndex:pageIndex];
         if (pageIndex == annot.pageIndex && [self isHitAnnot:annot point:pdfPoint]) {

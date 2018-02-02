@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -18,14 +18,14 @@
 #import "FSThumbnailView.h"
 #import "FSThumbnailViewController.h"
 
+#import "FSFileAndImagePicker.h"
 #import "FileSelectDestinationViewController.h"
-#import "PhotoToPDFViewController.h"
 
 #define DEVICE_iPHONE ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone)
 static NSArray<NSNumber *> *arrayFromRange(NSRange range);
 static NSArray<NSIndexPath *> *indexPathsFromRange(NSRange range);
 
-@interface FSThumbnailViewController () <FSThumbnailCellDelegate, FSReorderableCollectionViewReorderDelegate>
+@interface FSThumbnailViewController () <FSThumbnailCellDelegate, FSReorderableCollectionViewReorderDelegate, FSFileAndImagePickerDelegate>
 
 @property (nonatomic) CGSize cellSize;
 // buttom bar
@@ -50,6 +50,9 @@ static NSArray<NSIndexPath *> *indexPathsFromRange(NSRange range);
 @property (nonatomic, strong) NSOperationQueue *operationQueue;
 @property (nonatomic, strong) NSMutableDictionary<NSIndexPath *, NSBlockOperation *> *operations;
 
+// misc
+@property (nonatomic) NSInteger insertIndex;
+
 @end
 
 @implementation FSThumbnailViewController
@@ -59,7 +62,7 @@ static NSString *const reuseIDForPlaceholderCell = @"placeholderCell";
 static const NSUInteger bottomBarHeight = 49;
 static const NSUInteger topBarHeight = 64;
 
-- (instancetype)initWithDocument:(FSPDFDoc *)document {
+- (instancetype)initWithDocument:(FSPDFDoc *_Nonnull)document {
     if (self = [super init]) {
         self.delegate = nil;
         self.document = document;
@@ -261,7 +264,12 @@ static const NSUInteger topBarHeight = 64;
     };
 
     _insertItem.onTapClick = ^(TbBaseItem *item) {
-        [weakSelf showInsertMenu:item.button];
+        __block NSInteger maxSelectedPageIndex = -1;
+        [weakSelf.collectionView.indexPathsForSelectedItems enumerateObjectsUsingBlock:^(NSIndexPath *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
+            maxSelectedPageIndex = MAX(maxSelectedPageIndex, obj.item);
+        }];
+        weakSelf.insertIndex = maxSelectedPageIndex != -1 ? (int) (maxSelectedPageIndex + 1) : [weakSelf.document getPageCount];
+        [weakSelf showInsertMenu:item.button insertBeforeOrAfter:NO];
     };
     [self resetTopBar];
 }
@@ -316,8 +324,18 @@ static const NSUInteger topBarHeight = 64;
     int pageIndex = (int) [reorderableCollectionView getOriginalIndexPathForIndexPath:indexPath].item;
     cell.labelNumber.text = [NSString stringWithFormat:@"%d", pageIndex + 1];
     // update button frames
-    FSPDFPage *page = [self.document getPage:pageIndex];
-    CGFloat realWidth = MIN(self.cellSize.width, self.cellSize.height * [page getWidth] / [page getHeight]);
+    
+    float width = 600;
+    float height = 800;
+    @try{
+        FSPDFPage *page = [self.document getPage:pageIndex];
+        width = [page getWidth];
+        height = [page getHeight];
+    }
+   @catch(NSException* e)
+    {
+    }
+    CGFloat realWidth = MIN(self.cellSize.width, self.cellSize.height * width / height);
     [cell updateButtonFramesWithThumbnailWidth:realWidth];
 
     BOOL selected = [[self.collectionView indexPathsForSelectedItems] containsObject:indexPath];
@@ -369,8 +387,16 @@ static const NSUInteger topBarHeight = 64;
     FSReorderableCollectionView *reorderCollectionView = (FSReorderableCollectionView *) collectionView;
     NSUInteger pageIndex = [reorderCollectionView getOriginalIndexPathForIndexPath:indexPath].item;
     CGSize thumbnailSize = ({
-        FSPDFPage *page = [self.document getPage:(int) pageIndex];
-        CGFloat aspectRatio = [page getWidth] / [page getHeight];
+        float width = 600;
+        float height = 800;
+        @try {
+            FSPDFPage *page = [self.document getPage:(int) pageIndex];
+            width = [page getWidth];
+            height = [page getHeight];
+        }
+        @catch(NSException* e)
+        {}
+        CGFloat aspectRatio = width / height;
         CGFloat thumbnailWidth = MAX(self.cellSize.width, self.cellSize.height * aspectRatio);
         CGFloat thumbnailHeight = thumbnailWidth / aspectRatio;
         CGSizeMake(thumbnailWidth, thumbnailHeight);
@@ -467,8 +493,8 @@ static const NSUInteger topBarHeight = 64;
 - (void)cell:(FSThumbnailCell *)cell insertBeforeOrAfter:(BOOL)beforeOrAfter {
     NSIndexPath *indexPath = [self.collectionView indexPathForCell:cell];
     if (indexPath) {
-        [self showInsertMenu:beforeOrAfter ? cell.insertPrevBtn : cell.insertNextBtn
-                     atIndex:(int) (beforeOrAfter ? indexPath.item : indexPath.item + 1)];
+        self.insertIndex = (beforeOrAfter ? indexPath.item : indexPath.item + 1);
+        [self showInsertMenu:beforeOrAfter ? cell.insertPrevBtn : cell.insertNextBtn insertBeforeOrAfter:beforeOrAfter];
     }
 }
 
@@ -572,7 +598,7 @@ static const NSUInteger topBarHeight = 64;
                 dispatch_async(dispatch_get_main_queue(), ^{
                     AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                                     message:@"kFileAlreadyExists"
-                                                         buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                         buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                              dispatch_async(dispatch_get_main_queue(), ^{
                                                                  inputFileName([path stringByDeletingLastPathComponent]);
                                                              });
@@ -586,7 +612,7 @@ static const NSUInteger topBarHeight = 64;
             AlertView *alertView = [[AlertView alloc] initWithTitle:@"kInputNewFileName"
                                                             message:nil
                                                               style:UIAlertViewStylePlainTextInput
-                                                 buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                 buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                      if (buttonIndex == 0) {
                                                          return;
                                                      }
@@ -599,7 +625,7 @@ static const NSUInteger topBarHeight = 64;
                                                          dispatch_async(dispatch_get_main_queue(), ^{
                                                              AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                                                                              message:@"kFileAlreadyExists"
-                                                                                                  buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                                                                  buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                                                                       dispatch_async(dispatch_get_main_queue(), ^{
                                                                                                           inputFileName(path);
                                                                                                       });
@@ -620,9 +646,8 @@ static const NSUInteger topBarHeight = 64;
 
         inputFileName(destinationFolder[0]);
     };
-    __weak typeof(selectDestination) weakSelectDestination = selectDestination;
-    selectDestination.cancelHandler = ^() {
-        [weakSelectDestination dismissViewControllerAnimated:YES completion:nil];
+    selectDestination.cancelHandler = ^(FileSelectDestinationViewController *controller) {
+        [controller dismissViewControllerAnimated:YES completion:nil];
     };
     UINavigationController *selectDestinationNavController = [[UINavigationController alloc] initWithRootViewController:selectDestination];
     selectDestinationNavController.modalPresentationStyle = UIModalPresentationFormSheet;
@@ -642,9 +667,9 @@ static const NSUInteger topBarHeight = 64;
     //create an empty doc
     FSPDFDoc *doc = [[FSPDFDoc alloc] init];
     //set pageRanges and count
-    int count = 2 * pages.count;
+    int count = 2 * (int) (pages.count);
     int a[count];
-    for (int i = 0; i < pages.count; i++) {
+    for (NSUInteger i = 0; i < pages.count; i++) {
         a[2 * i] = [sortPages[i] intValue];
         a[2 * i + 1] = 1;
     }
@@ -686,7 +711,7 @@ static const NSUInteger topBarHeight = 64;
     [self onCellSelectedOrDeselected];
 }
 
-- (void)duplicatePages:(void (^)())completionBlock {
+- (void)duplicatePages:(void (^)(void))completionBlock {
     NSArray<NSNumber *> *selectedPageIndexes = [self.collectionView.indexPathsForSelectedItems valueForKey:@"item"];
     if (selectedPageIndexes.count == 0) {
         return;
@@ -717,89 +742,85 @@ static const NSUInteger topBarHeight = 64;
 
 #pragma mark insert pages and images
 
-- (void)showInsertMenu:(UIButton *)button {
-    __block NSInteger maxSelectedPageIndex = -1;
-    [self.collectionView.indexPathsForSelectedItems enumerateObjectsUsingBlock:^(NSIndexPath *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
-        maxSelectedPageIndex = MAX(maxSelectedPageIndex, obj.item);
-    }];
-
-    int insertIndex = maxSelectedPageIndex != -1 ? (int) (maxSelectedPageIndex + 1) : [self.document getPageCount];
-    [self showInsertMenu:button atIndex:insertIndex];
-}
-
-- (void)showInsertMenu:(UIButton *)button atIndex:(int)index {
+- (void)showInsertMenu:(UIButton *)button insertBeforeOrAfter:(BOOL)beforeOrAfter {
+    FSFileAndImagePicker *picker = [[FSFileAndImagePicker alloc] init];
+    picker.expectedFileTypes = @[ @"pdf", @"jbig2", @"jpx", @"tif", @"gif", @"png", @"jpg", @"bmp" ];
+    picker.delegate = self;
     UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel"
-                                                           style:UIAlertActionStyleCancel
-                                                         handler:^(UIAlertAction *action){
-                                                         }];
-
-    UIAlertAction *fileAction = [UIAlertAction actionWithTitle:@"From Document"
-                                                         style:UIAlertActionStyleDefault
-                                                       handler:^(UIAlertAction *action) {
-                                                           [alert dismissViewControllerAnimated:NO completion:nil];
-
-                                                           FileSelectDestinationViewController *selectDestination = [[FileSelectDestinationViewController alloc] init];
-                                                           selectDestination.isRootFileDirectory = YES;
-                                                           selectDestination.fileOperatingMode = FileListMode_Import;
-                                                           selectDestination.expectFileType = [[NSArray alloc] initWithObjects:@"pdf", @"jbig2", @"jpx", @"tif", @"gif", @"png", @"jpg", @"bmp", nil];
-                                                           [selectDestination loadFilesWithPath:DOCUMENT_PATH];
-                                                           selectDestination.operatingHandler = ^(FileSelectDestinationViewController *controller, NSArray *destinationFolder) {
-                                                               [controller dismissViewControllerAnimated:YES completion:nil];
-                                                               if (destinationFolder.count > 0) {
-                                                                   NSString *srcPath = destinationFolder[0];
-                                                                   if ([srcPath.pathExtension.lowercaseString isEqualToString:@"pdf"]) {
-                                                                       [self insertPages:srcPath atIndex:index];
-                                                                   } else {
-                                                                       UIImage *image = [UIImage imageWithContentsOfFile:srcPath];
-                                                                       [self insertPageFromImage:image atIndex:index];
-                                                                   }
-                                                               }
-                                                           };
-                                                           __block FileSelectDestinationViewController *block = selectDestination;
-                                                           selectDestination.cancelHandler = ^() {
-                                                               [block dismissViewControllerAnimated:YES completion:nil];
-                                                           };
-                                                           UINavigationController *selectDestinationNavController = [[UINavigationController alloc] initWithRootViewController:selectDestination];
-                                                           selectDestinationNavController.modalPresentationStyle = UIModalPresentationFormSheet;
-                                                           selectDestinationNavController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-                                                           [rootViewController presentViewController:selectDestinationNavController animated:YES completion:nil];
-                                                       }];
-
-    UIAlertAction *photoAction = [UIAlertAction actionWithTitle:@"From Album"
-                                                          style:UIAlertActionStyleDefault
-                                                        handler:^(UIAlertAction *action) {
-                                                            [alert dismissViewControllerAnimated:NO completion:nil];
-                                                            photoToPDFViewController *photoController = [[photoToPDFViewController alloc] initWithButton:button];
-                                                            [rootViewController presentViewController:photoController animated:NO completion:nil];
-                                                            [photoController openAlbum];
-                                                            photoController.callback = ^(UIImage *image) {
-                                                                [self insertPageFromImage:image atIndex:index];
-                                                            };
-                                                        }];
-
-    UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:@"From Camera"
-                                                           style:UIAlertActionStyleDefault
-                                                         handler:^(UIAlertAction *action) {
-                                                             [alert dismissViewControllerAnimated:NO completion:nil];
-                                                             photoToPDFViewController *photoController = [[photoToPDFViewController alloc] initWithButton:button];
-                                                             [rootViewController presentViewController:photoController animated:NO completion:nil];
-                                                             [photoController openCamera];
-                                                             photoController.callback = ^(UIImage *image) {
-                                                                 [self insertPageFromImage:image atIndex:index];
-                                                             };
-                                                         }];
-
-    [alert addAction:cancelAction];
-    [alert addAction:fileAction];
-    [alert addAction:photoAction];
-    [alert addAction:cameraAction];
-
-    alert.popoverPresentationController.sourceView = button.imageView;
-    alert.popoverPresentationController.sourceRect = button.imageView.bounds;
-    [rootViewController presentViewController:alert animated:YES completion:nil];
+    [picker presentInRootViewController:rootViewController fromView:button];
 }
+
+//- (void)_showInsertMenu:(UIButton *)button {
+//    UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+//    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel"
+//                                                           style:UIAlertActionStyleCancel
+//                                                         handler:^(UIAlertAction *action){
+//                                                         }];
+//
+//    UIAlertAction *fileAction = [UIAlertAction actionWithTitle:@"From Document"
+//                                                         style:UIAlertActionStyleDefault
+//                                                       handler:^(UIAlertAction *action) {
+//                                                           [alert dismissViewControllerAnimated:NO completion:nil];
+//
+//                                                           FileSelectDestinationViewController *selectDestination = [[FileSelectDestinationViewController alloc] init];
+//                                                           selectDestination.isRootFileDirectory = YES;
+//                                                           selectDestination.fileOperatingMode = FileListMode_Import;
+//                                                           selectDestination.expectFileType = [[NSArray alloc] initWithObjects:@"pdf", @"jbig2", @"jpx", @"tif", @"gif", @"png", @"jpg", @"bmp", nil];
+//                                                           [selectDestination loadFilesWithPath:DOCUMENT_PATH];
+//                                                           selectDestination.operatingHandler = ^(FileSelectDestinationViewController *controller, NSArray *destinationFolder) {
+//                                                               [controller dismissViewControllerAnimated:YES completion:nil];
+//                                                               if (destinationFolder.count > 0) {
+//                                                                   NSString *srcPath = destinationFolder[0];
+//                                                                   if ([srcPath.pathExtension.lowercaseString isEqualToString:@"pdf"]) {
+//                                                                       [self insertPages:srcPath atIndex:index];
+//                                                                   } else {
+//                                                                       UIImage *image = [UIImage imageWithContentsOfFile:srcPath];
+//                                                                       [self insertPageFromImage:image atIndex:index];
+//                                                                   }
+//                                                               }
+//                                                           };
+//                                                           selectDestination.cancelHandler = ^(FileSelectDestinationViewController *controller) {
+//                                                               [controller dismissViewControllerAnimated:YES completion:nil];
+//                                                           };
+//                                                           UINavigationController *selectDestinationNavController = [[UINavigationController alloc] initWithRootViewController:selectDestination];
+//                                                           selectDestinationNavController.modalPresentationStyle = UIModalPresentationFormSheet;
+//                                                           selectDestinationNavController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+//                                                           [rootViewController presentViewController:selectDestinationNavController animated:YES completion:nil];
+//                                                       }];
+//
+//    UIAlertAction *photoAction = [UIAlertAction actionWithTitle:@"From Album"
+//                                                          style:UIAlertActionStyleDefault
+//                                                        handler:^(UIAlertAction *action) {
+//                                                            [alert dismissViewControllerAnimated:NO completion:nil];
+//                                                            PhotoToPDFViewController *photoController = [[PhotoToPDFViewController alloc] initWithButton:button];
+//                                                            [rootViewController presentViewController:photoController animated:NO completion:nil];
+//                                                            [photoController openAlbum];
+//                                                            photoController.callback = ^(UIImage *image) {
+//                                                                [self insertPageFromImage:image atIndex:index];
+//                                                            };
+//                                                        }];
+//
+//    UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:@"From Camera"
+//                                                           style:UIAlertActionStyleDefault
+//                                                         handler:^(UIAlertAction *action) {
+//                                                             [alert dismissViewControllerAnimated:NO completion:nil];
+//                                                             PhotoToPDFViewController *photoController = [[PhotoToPDFViewController alloc] initWithButton:button];
+//                                                             [rootViewController presentViewController:photoController animated:NO completion:nil];
+//                                                             [photoController openCamera];
+//                                                             photoController.callback = ^(UIImage *image) {
+//                                                                 [self insertPageFromImage:image atIndex:index];
+//                                                             };
+//                                                         }];
+//
+//    [alert addAction:cancelAction];
+//    [alert addAction:fileAction];
+//    [alert addAction:photoAction];
+//    [alert addAction:cameraAction];
+//
+//    alert.popoverPresentationController.sourceView = button.imageView;
+//    alert.popoverPresentationController.sourceRect = button.imageView.bounds;
+//    [rootViewController presentViewController:alert animated:YES completion:nil];
+//}
 
 - (void)insertPages:(NSString *)path atIndex:(int)index {
     void (^insertPagesFromLoadedDocument)(FSPDFDoc *document) = ^(FSPDFDoc *document) {
@@ -897,7 +918,7 @@ static const NSUInteger topBarHeight = 64;
     indexPaths = [indexPaths sortedArrayUsingComparator:^NSComparisonResult(id _Nonnull obj1, id _Nonnull obj2) {
         return [obj1 compare:obj2];
     }];
-    AlertViewButtonClickedHandler buttonClickedHandler = ^(UIView *alertView, int buttonIndex) {
+    AlertViewButtonClickedHandler buttonClickedHandler = ^(UIView *alertView, NSInteger buttonIndex) {
         if (buttonIndex == 1) {
             [indexPaths enumerateObjectsUsingBlock:^(NSIndexPath *_Nonnull obj, NSUInteger idx, BOOL *_Nonnull stop) {
                 [self.operations[obj] cancel];
@@ -940,6 +961,19 @@ static const NSUInteger topBarHeight = 64;
         [self.operations[obj] cancel];
         self.operations[obj] = nil;
     }];
+}
+
+#pragma mark <FSFileAndImagePickerDelegate>
+
+- (void)fileAndImagePicker:(FSFileAndImagePicker *)fileAndImagePicker didPickFileAtPath:(NSString *)filePath {
+    [self insertPages:filePath atIndex:(int)self.insertIndex];
+}
+
+- (void)fileAndImagePicker:(FSFileAndImagePicker *)fileAndImagePicker didPickImage:(UIImage *)image {
+    [self insertPageFromImage:image atIndex:(int)self.insertIndex];
+}
+
+- (void)fileAndImagePickerDidCancel:(FSFileAndImagePicker *)fileAndImagePicker {
 }
 
 #pragma mark <IRotationEventListener>

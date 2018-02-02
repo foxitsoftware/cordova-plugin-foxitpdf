@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -94,7 +94,6 @@ static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSe
 
     case UIGestureRecognizerStateChanged: {
         self.movingCellSnapshotView.center = pos;
-        assert(self.indexPathForPlaceholderCell);
         if (!self.indexPathForPlaceholderCell)
             break;
         NSIndexPath *newIndexPath = [self indexPathForItemAtPoint:pos];
@@ -122,7 +121,6 @@ static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSe
 
     case UIGestureRecognizerStateEnded:
     case UIGestureRecognizerStateCancelled: {
-        assert(self.indexPathForPlaceholderCell);
         if (!self.indexPathForPlaceholderCell)
             break;
         self.movingCellSnapshotView.center = pos;
@@ -206,7 +204,7 @@ static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSe
     self.movingCellSnapshotView = snapshotView;
 }
 
-- (void)tearDownSnapshotViewOfMovingCellAtIndexPath:(NSIndexPath *)indexPath completion:(void (^)())completion {
+- (void)tearDownSnapshotViewOfMovingCellAtIndexPath:(NSIndexPath *)indexPath completion:(void (^)(void))completion {
     UICollectionViewCell *cell = [self cellForItemAtIndexPath:indexPath];
     cell.contentView.alpha = 0.0f;
     [self.movingCellSnapshotView shakeStatus:NO];
@@ -230,7 +228,7 @@ static NSMutableArray<NSIndexPath *> *indexPathsFromIndexSet(NSIndexSet *indexSe
         }];
 }
 
-- (NSIndexPath *)getOriginalIndexPathForIndexPath:(NSIndexPath *)indexPath {
+- (NSIndexPath *_Nonnull)getOriginalIndexPathForIndexPath:(NSIndexPath *_Nonnull)indexPath {
     if (!self.isDraggingCell) {
         return indexPath;
     }

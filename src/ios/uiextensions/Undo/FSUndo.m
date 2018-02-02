@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -24,10 +24,10 @@
     return [[UndoItem alloc] initWithUndo:undo redo:redo pageIndex:pageIndex];
 }
 
-+ (instancetype)itemByMergingUndoItemInArray:(NSArray<UndoItem *> *)undoItemArray {
++ (instancetype)itemByMergingItems:(NSArray<UndoItem *> *)items {
     NSMutableArray<UndoBlock> *undoArray = [NSMutableArray<UndoBlock> array];
     NSMutableArray<RedoBlock> *redoArray = [NSMutableArray<UndoBlock> array];
-    for (UndoItem *undoItem in undoItemArray) {
+    for (UndoItem *undoItem in items) {
         [undoArray addObject:undoItem.undo];
         [redoArray addObject:undoItem.redo];
     }
@@ -41,7 +41,7 @@
                 redo(item);
             }
         }
-        pageIndex:[undoItemArray objectAtIndex:0].pageIndex];
+        pageIndex:[items objectAtIndex:0].pageIndex];
 }
 
 - (instancetype)initWithUndo:(UndoBlock)undo redo:(RedoBlock)redo pageIndex:(int)pageIndex;
@@ -54,11 +54,7 @@
     return self;
 }
 
-@end
-
-@implementation UndoModifyAnnot
-
-+ (instancetype)createWithOldAttributes:(FSAnnotAttributes *)oldAttributes newAttributes:(FSAnnotAttributes *)newAttributes pdfViewCtrl:(FSPDFViewCtrl *)pdfViewCtrl page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler {
++ (instancetype)itemForUndoModifyAnnotWithOldAttributes:(FSAnnotAttributes *)oldAttributes newAttributes:(FSAnnotAttributes *)newAttributes pdfViewCtrl:(FSPDFViewCtrl *)pdfViewCtrl page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler {
     if (oldAttributes && newAttributes && pdfViewCtrl && page && annotHandler) {
         int pageIndex = [page getIndex];
         return [UndoItem itemWithUndo:^(UndoItem *item) {
@@ -80,11 +76,7 @@
     return nil;
 }
 
-@end
-
-@implementation UndoAddAnnot
-
-+ (instancetype)createWithAttributes:(FSAnnotAttributes *)attributes page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler {
++ (instancetype)itemForUndoAddAnnotWithAttributes:(FSAnnotAttributes *)attributes page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler {
     if (attributes && page && annotHandler) {
         return [UndoItem itemWithUndo:^(UndoItem *item) {
             FSAnnot *annot = [Utility getAnnotByNM:attributes.NM inPage:page];
@@ -104,11 +96,7 @@
     return nil;
 }
 
-@end
-
-@implementation UndoDeleteAnnot
-
-+ (instancetype)createWithAttributes:(FSAnnotAttributes *)attributes page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler {
++ (instancetype)itemForUndoDeleteAnnotWithAttributes:(FSAnnotAttributes *)attributes page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler {
     if (attributes && page && annotHandler) {
         return [UndoItem itemWithUndo:^(UndoItem *item) {
             FSAnnot *annot = [page addAnnot:attributes.type rect:attributes.rect];

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -35,6 +35,7 @@
 #define Tool_Select @"Select"         ///< name of select tool
 #define Tool_Note @"Note"             ///< name of note tool
 #define Tool_Freetext @"Freetext"     ///< name of free text tool
+#define Tool_Textbox @"Textbox"       ///< name of text box tool
 #define Tool_Pencil @"Pencil"         ///< name of pencil tool
 #define Tool_Eraser @"Eraser"         ///< name of eraser tool
 #define Tool_Stamp @"Stamp"           ///< name of stamp tool
@@ -52,6 +53,12 @@
 #define Tool_Shape @"Shape"           ///< name of shape tool, which includes rectangle and oval tools
 #define Tool_Rectangle @"Rectangle"   ///< name of rectangle tool
 #define Tool_Oval @"Oval"             ///< name of oval tool
+#define Tool_Distance @"Distance"     ///< name of distance tool
+#define Tool_Image @"Image"           ///< name of image tool
+#define Tool_Polygon @"Polygon"       ///< name of polygon tool
+#define Tool_Cloud @"Cloud"           ///< name of cloud tool
+
+#define IOS11_OR_LATER ([[UIDevice currentDevice] systemVersion].floatValue >= 11.0)
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -60,6 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 /** @brief Triggered when the annotation is added. */
 - (void)onAnnotAdded:(FSPDFPage *)page annot:(FSAnnot *)annot;
+/** @brief Triggered before the annotation is deleted. */
+- (void)onAnnotWillDelete:(FSPDFPage *)page annot:(FSAnnot *)annot;
 /** @brief Triggered when the annotation is deleted. */
 - (void)onAnnotDeleted:(FSPDFPage *)page annot:(FSAnnot *)annot;
 /** @brief Triggered when the annotation is modified. */
@@ -103,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 /** @brief Long press gesture on the specified page. */
 - (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer;
 /** @brief Tap gesture on the specified page. */
-- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer;
+- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *_Nullable)recognizer;
 /** @brief Pan gesture on the specified page. */
 - (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer;
 /** @brief Should being gesture on the specified page. */
@@ -146,13 +155,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - PageView Gesture+Touch
 /** @brief Long press gesture on the specified page. */
-- (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer annot:(FSAnnot *)annot;
+- (BOOL)onPageViewLongPress:(int)pageIndex recognizer:(UILongPressGestureRecognizer *)recognizer annot:(FSAnnot *_Nullable)annot;
 /** @brief Tap gesture on the specified page. */
-- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer annot:(FSAnnot *)annot;
+- (BOOL)onPageViewTap:(int)pageIndex recognizer:(UITapGestureRecognizer *)recognizer annot:(FSAnnot *_Nullable)annot;
 /** @brief Pan gesture on the specified page. */
 - (BOOL)onPageViewPan:(int)pageIndex recognizer:(UIPanGestureRecognizer *)recognizer annot:(FSAnnot *)annot;
 /** @brief Should being gesture on the specified page. */
-- (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer annot:(FSAnnot *)annot;
+- (BOOL)onPageViewShouldBegin:(int)pageIndex recognizer:(UIGestureRecognizer *)gestureRecognizer annot:(FSAnnot *_Nullable)annot;
 /** @brief Touches began on the specified page. */
 - (BOOL)onPageViewTouchesBegan:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event annot:(FSAnnot *)annot;
 /** @brief Touches moved on the specified page. */
@@ -163,7 +172,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)onPageViewTouchesCancelled:(int)pageIndex touches:(NSSet *)touches withEvent:(UIEvent *)event annot:(FSAnnot *)annot;
 @optional
 /** @brief Drawing event on the specified page. */
-- (void)onDraw:(int)pageIndex inContext:(CGContextRef)context annot:(FSAnnot *)annot;
+- (void)onDraw:(int)pageIndex inContext:(CGContextRef)context annot:(FSAnnot *_Nullable)annot;
 /** @brief Changed property event on the specified annot. */
 - (void)onAnnotChanged:(FSAnnot *)annot property:(long)property from:(NSValue *)oldValue to:(NSValue *)newValue;
 @end
@@ -188,10 +197,24 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)onLinkOpen:(id)link LocationInfo:(CGPoint)pointParam;
 @end
 
+@class UIExtensionsManager;
+@protocol UIExtensionsManagerDelegate <NSObject>
+@optional
+/** @brief Customize top toolbar position and animation when toggle hidden state.
+ *  By default, top toolbar shows with top anchor equaling top anchor of pdf view ctrl and hides with bottom anchor equaling top anchor of pdf view ctrl.
+ *  User can replace the default behavior by implementing this method.
+ *  For instance top toolbar can change to top layout guide when it shows, or be added with additional subviews.
+ */
+- (void)uiextensionsManager:(UIExtensionsManager *)uiextensionsManager setTopToolBarHidden:(BOOL)hidden;
+- (BOOL)uiextensionsManager:(UIExtensionsManager *)uiextensionsManager openNewDocAtPath:(NSString *)path;
+@end
+
 /** @brief The UI extensions mangager which has included the default implementation of text selection tool, annotation tools... and so on. */
 @interface UIExtensionsManager : NSObject <FSPDFUIExtensionsManager, IDocEventListener, IPageEventListener, IRotationEventListener, IAnnotEventListener, IRecoveryEventListener, ILinkEventListener>
 /** @brief The PDF view control. */
 @property (nonatomic, strong, readonly) FSPDFViewCtrl *pdfViewCtrl;
+/** @brief Delegate of UI extensions mangager. */
+@property (nonatomic, weak) id<UIExtensionsManagerDelegate> delegate;
 /** @brief The Current tool handler. */
 @property (nonatomic, strong, nullable) id<IToolHandler> currentToolHandler;
 /** @brief The Current selected annotation. */
@@ -205,10 +228,10 @@ NS_ASSUME_NONNULL_BEGIN
 /** @brief Get/Set the hightlight color for text selection. */
 @property (nonatomic, strong) UIColor *selectionHighlightColor;
 /** @brief Caller can choose to provide a block to execute when user tap on 'back' button on the top toolbar. */
-@property (nonatomic, copy, nullable) void (^goBack)();
+@property (nonatomic, copy, nullable) void (^goBack)(void);
 
-@property (nonatomic, strong) UIToolbar *topToolbar;
-@property (nonatomic, strong) UIToolbar *bottomToolbar;
+@property (nonatomic, strong, nullable) UIToolbar *topToolbar;
+@property (nonatomic, strong, nullable) UIToolbar *bottomToolbar;
 /** @brief The panel controller. */
 @property (nonatomic, strong) FSPanelController *panelController;
 /** @brief The setting bar. It shows when tap on the view button in the bottom bar. */
@@ -318,20 +341,49 @@ NS_ASSUME_NONNULL_BEGIN
 /** @brief Show thumbnails to switch and manipulate pages. */
 - (void)showThumbnailView;
 
-/** @brief set topToolbar item hide/show.
+/** @brief get topToolbar item hide/show. */
+-(NSMutableDictionary *)getTopToolbarItemHiddenStatus;
+
+/** @brief get bottomToolbar item hide/show */
+-(NSMutableDictionary *)getBottomToolbarItemHiddenStatus;
+
+/** @brief set topToolbar/bottomToolbar item hide/show.
  *
  * @details Currently, if the itemTag is just one of following formats,
- *          {@link FS_TOPBAR_ITEM_BOOKMARK_TAG},
- *          {@link FS_TOPBAR_ITEM_BACK_TAG},
- *          {@link FS_TOPBAR_ITEM_MORE_TAG},
- *          {@link FS_TOPBAR_ITEM_SEARCH_TAG}
+ *          {@link FS_TOPBAR_ITEM_XXX},
+ *          {@link FS_BOTTOMBAR_ITEM_XXX},
  *          For other unsupported itemTag, this function will do nothing change.
  *
  * @param[in]	itemTag	The item tag will show/hide.
  * @param[in]	isHidden The item show/hide .
  *
  */
--(void)setTopToolbarItemHiddenWithTag:(NSUInteger)itemTag hidden:(BOOL)isHidden;
+-(void)setToolbarItemHiddenWithTag:(NSUInteger)itemTag hidden:(BOOL)isHidden;
+
+/** @brief Print the document by displaying an UI to select printer.
+ *
+ * @param[in]   doc The pdf document.
+ * @param[in]   animated    Use animation or not .
+ * @param[in]   jobname The printing job name.
+ * @param[in]   delegate    The delegate for printing.
+ * @param[in]   completion  A completion handler to be invoked after printing job is done.
+ *
+ */
++ (void)printDoc:(FSPDFDoc *)doc animated:(BOOL)animated jobName:(nullable NSString *)jobName delegate:(nullable id<UIPrintInteractionControllerDelegate>)delegate completionHandler:(nullable UIPrintInteractionCompletionHandler)completion;
+
+/** @brief Print the rect in the specified view by displaying an UI to select printer.
+ *
+ * @param[in]   doc The pdf document.
+ * @param[in]   rect The rectangle area in the specified UIView.
+ * @param[in]   view  The specified UIView.
+ * @param[in]   animated    Use animation or not .
+ * @param[in]   jobname The printing job name.
+ * @param[in]   delegate    The delegate for printing.
+ * @param[in]   completion  A completion handler to be invoked after printing job is done.
+ *
+ */
++ (void)printDoc:(FSPDFDoc *)doc fromRect:(CGRect)rect inView:(UIView *)view animated:(BOOL)animated jobName:(nullable NSString *)jobName delegate:(nullable id<UIPrintInteractionControllerDelegate>)delegate completionHandler:(nullable UIPrintInteractionCompletionHandler)completion;
+
 @end
 
 NS_ASSUME_NONNULL_END

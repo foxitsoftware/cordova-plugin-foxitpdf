@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -11,9 +11,7 @@
  */
 
 #import "MagnifierView.h"
-#import <FoxitRDK/FSPDFViewControl.h>
-@class UIExtensionsManager;
-@protocol IToolHandler;
+#import "UIExtensionsManager.h"
 
 /**@brief A text markup tool handler to handle its own events. */
 @interface MKToolHandler : NSObject <IToolHandler> {

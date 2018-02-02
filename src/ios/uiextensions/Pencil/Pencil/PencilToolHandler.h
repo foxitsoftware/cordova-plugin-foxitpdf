@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -11,9 +11,10 @@
  */
 
 #import "UIExtensionsManager.h"
+#import "UIExtensionsManager+Private.h"
 #import <FoxitRDK/FSPDFViewControl.h>
 
-@interface PencilToolHandler : NSObject <IToolHandler>
+@interface PencilToolHandler : NSObject <IToolHandler, IAnnotPropertyListener>
 
 @property (nonatomic, assign) FSAnnotType type;
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -14,8 +14,37 @@
 #import "FSAnnotExtent.h"
 #import "Utility.h"
 
+static inline BOOL CGFloatEqual(CGFloat v1, CGFloat v2) {
+    return fabs(v1 - v2) < 1e-4;
+}
+
 static BOOL stringsEqual(NSString *str1, NSString *str2) {
     return (str1 == nil && str2 == nil) || [str1 isEqualToString:str2];
+}
+
+static BOOL pointEqual(FSPointF *pt1, FSPointF *pt2) {
+    return CGFloatEqual(pt1.x, pt2.x) && CGFloatEqual(pt1.y, pt2.y);
+}
+
+static BOOL pointsEqual(NSArray<FSPointF *> *array1, NSArray<FSPointF *> *array2) {
+    if (array1.count != array2.count) {
+        return NO;
+    }
+    for (NSUInteger i = 0; i < array1.count; i++) {
+        if (!pointEqual(array1[i], array2[i])) {
+            return NO;
+        }
+    }
+    return YES;
+}
+
+static BOOL borderInfoEqual(FSBorderInfo *border1, FSBorderInfo *border2) {
+    if (border1 == nil && border1 == nil) {
+        return YES;
+    }
+    return border1 && border2 &&
+           [border1 getStyle] == [border2 getStyle] &&
+           CGFloatEqual([border1 getWidth], [border2 getWidth]);
 }
 
 @implementation FSAnnotAttributes
@@ -44,6 +73,10 @@ static BOOL stringsEqual(NSString *str1, NSString *str2) {
         return [[FSFreeTextAttributes alloc] initWithAnnot:annot];
     case e_annotFileAttachment:
         return [[FSFileAttachmentAttributes alloc] initWithAnnot:annot];
+    case e_annotScreen:
+        return [[FSScreenAttributes alloc] initWithAnnot:annot];
+    case e_annotPolygon:
+        return [[FSPolygonAttributes alloc] initWithAnnot:annot];
     default:
         return [[FSAnnotAttributes alloc] initWithAnnot:annot];
     }
@@ -178,7 +211,7 @@ static BOOL stringsEqual(NSString *str1, NSString *str2) {
 }
 
 - (BOOL)isEqualToAttributes:(FSTextMarkupAttributes *)attributes {
-    BOOL (^isQuadsEqual)() = ^BOOL {
+    BOOL (^isQuadsEqual)(void) = ^BOOL {
         if (self.quads.count != attributes.quads.count) {
             return NO;
         }
@@ -212,6 +245,12 @@ static BOOL stringsEqual(NSString *str1, NSString *str2) {
         self.captionOffset = [line getCaptionOffset];
         self.fillColor = [line getStyleFillColor];
         self.contents = line.contents;
+        
+        if ([[line getIntent] isEqualToString:@"LineDimension"]){
+            self.measureUnit = [line getMeasureUnit:0];
+            self.measureRatio = [line getMeasureRatio];
+            self.measureConversionFactor = [line getMeasureConversionFactor:0];
+        }
     }
     return self;
 }
@@ -234,6 +273,13 @@ static BOOL stringsEqual(NSString *str1, NSString *str2) {
         [annot setCaptionPositionType:self.captionStyle];
     }
     [annot setStyleFillColor:self.fillColor];
+    
+    if ([self.intent isEqualToString:@"LineDimension"]){
+        [annot setMeasureUnit:0 unit:self.measureUnit];
+        [annot setMeasureRatio:self.measureRatio];
+        [annot setMeasureConversionFactor:0 factor:self.measureConversionFactor];
+    }
+    
     [annot resetAppearanceStream];
 }
 
@@ -429,6 +475,81 @@ static BOOL stringsEqual(NSString *str1, NSString *str2) {
         }
     }
     [annot resetAppearanceStream];
+}
+
+// todo wei - (BOOL)isEqualToAttributes:
+
+@end
+
+@implementation FSScreenAttributes
+
+- (instancetype)initWithAnnot:(FSScreen *)annot {
+    if (self = [super initWithAnnot:annot]) {
+        self.intent = [annot getIntent];
+        self.contents = [annot getContent];
+        self.rotation = [annot getRotation];
+        self.markupDict = [annot getMKDict];
+    }
+    return self;
+}
+
+- (void)resetAnnot:(FSScreen *)annot {
+    [super resetAnnot:annot];
+    if (self.intent != nil) {
+        [annot setIntent:self.intent];
+    }
+    [annot setContent:self.contents ?: @""];
+    [annot setRotation:self.rotation];
+    if (self.markupDict) {
+        [annot setMKDict:(FSPDFDictionary*)[self.markupDict cloneObject]]; // use a clone because when annot's markup dict is overwritten the old value is released, use a clone won't affect markupDict property of FSScreenAttributes
+    }
+    [annot resetAppearanceStream];
+}
+
+- (BOOL)isEqualToAttributes:(FSScreenAttributes *)attributes {
+    return self.class == attributes.class &&
+           stringsEqual(self.intent, attributes.intent) &&
+           stringsEqual(self.contents, attributes.contents) &&
+           self.rotation == attributes.rotation &&
+           [super isEqualToAttributes:attributes];
+}
+
+@end
+
+@implementation FSPolygonAttributes
+
+- (instancetype)initWithAnnot:(FSPolygon *)annot {
+    if (self = [super initWithAnnot:annot]) {
+        self.borderInfo = [annot getBorderInfo];
+        self.fillColor = [annot getFillColor];
+        self.vertexes = [Utility getPolygonVertexes:annot];
+        self.contents = [annot getContent];
+    }
+    return self;
+}
+
+- (void)resetAnnot:(FSPolygon *)annot {
+    [super resetAnnot:annot];
+    if (self.borderInfo) {
+        [annot setBorderInfo:self.borderInfo];
+    }
+    if ((0xff000000 & self.fillColor) != 0) {
+        [annot setFillColor:self.fillColor];
+    }
+    [annot setVertexes:self.vertexes];
+    if (self.contents) {
+        [annot setContent:self.contents];
+    }
+    [annot resetAppearanceStream];
+}
+
+- (BOOL)isEqualToAttributes:(FSPolygonAttributes *)attributes {
+    return self.class == attributes.class &&
+           borderInfoEqual(self.borderInfo, attributes.borderInfo) &&
+           self.fillColor == attributes.fillColor &&
+           pointsEqual(self.vertexes, attributes.vertexes) &&
+           stringsEqual(self.contents, attributes.contents) &&
+           [super isEqualToAttributes:attributes];
 }
 
 @end

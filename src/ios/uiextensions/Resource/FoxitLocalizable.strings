@@ -15,6 +15,7 @@
 "kCopy" = "Copy";
 "kDone" = "Done";
 "kSave" = "Save";
+"kDonotSave" = "Don't save";
 "kLoading" = "Loading...";
 "kShare" = "Share";
 "kReplace" = "Replace";
@@ -67,6 +68,10 @@
 "kFileInformation" = "File Information";
 "kReduceFileSize" = "Reduce File Size";
 "kReduceFileSizeDescription" = "You choose to reduce the PDF file size, but it will not be applied to the document until you save the document. You may continue to edit the document.";
+"kAirPrint" = "Wireless Print";
+"kAirPrintNotAvailable" = "Wireless print is not available, please check your system settings.";
+"kScreenCapture" = "Screen Capture";
+"kScreenCaptureVersion" = "Screen Capture supports iOS 6.0 and above, please upgrade your system.";
 
 "kName" = "Name";
 "kAdded" = "Added";
@@ -94,9 +99,10 @@
 "kDocNeedPassword" = "This file is password protected.\nPlease input the password.";
 "kViewModeSingle" = "Single";
 "kViewModeContinuous" = "Continuous";
-"kViewModeTwo" = "Facing";
 "kViewModeThumbnail" = "Thumbnail";
 "kReflow" = "Reflow";
+"kViewModeCover" = "Coverpage";
+"kViewModeNoCover" = "No Cover";
 
 //Crop
 "kCropMode" = "Crop mode";
@@ -145,6 +151,10 @@
 "kReplaceText" = "Replace Text";
 "kAttachment" = "Attachment";
 "kAttachments" = "Attachments";
+"kRotation" = "Rotation";
+"kImage" = "Image";
+"kPolygon" = "Polygon";
+"kCloud" = "Cloud";
 
 "kGraph" = "Graph";
 "kPushpin" = "Pushpin";
@@ -152,8 +162,15 @@
 "kTag" = "Tag";
 
 "kTypewriter" = "Typewriter";
+"kTextbox" = "Textbox";
 "kHintTitleTypewriter" = "Tap screen to add Typewriter";
 "kHintDetailTypewriter" = "Touch and hold Typewriter icon to set option";
+
+"kDistance" = "Distance";
+"kUnit" = "Unit";
+"kDistanceLengthError" = "The value can't be empty or more than 6";
+"kDistanceNumberError" = "The value must be number";
+
 
 //Bookmark
 "kBookmark" = "Reading Bookmarks";
@@ -296,16 +313,18 @@
 "kMoreTextMarkup" = "Text Markup";
 "kMoreDrawing" = "Drawing";
 "kMoreOthers" = "Others";
-"kReadList" = "List";
-"kReadView" = "View";
+"kReadList" = "  List  ";
+"kReadView" = "  View  ";
 "kReadComment" = "Comment";
 "kPropertyFill" = "Fill";
 "kPropertyStamps" = "Stamp";
+"kPropertyImage" = "Image";
 "kMore" = "More";
 "kStyle" = "Appearance";
 "kAnnotContinue" = "Keep tool selected";
 "kAnnotSingle" = "Single Comment";
 "kScreenLock" = "Screen Lock";
+"kPanAndZoom" = "Pan&Zoom";
 "kAutoBrightness" = "Auto-Brightness";
 "kClear" = "Clear";
 "kClearAnnotations" = "Clear all annotations?";
@@ -327,3 +346,4 @@
 "kFailedChangeDocumentAttachmentDescription" = "Failed to change description of document attachment: '%@'";
 "kFailedSaveAttachmentBadFileName" = "There was an error saving this attachment file. Bad file name";
 "kFailedOpenAttachmentBadFileName" = "There was an error opening this attachment file. Bad file name";
+

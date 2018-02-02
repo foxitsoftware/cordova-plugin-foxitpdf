@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -203,7 +203,6 @@
 
 - (void)getOutline:(FSBookmark *)bookmark getOutlineFinishHandler:(GetBookmarkFinishHandler)getOutlineFinishHandler {
     getOutlineFinishHandler = [getOutlineFinishHandler copy];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSArray *bookmarks = [self getOutline:bookmark];
         //here get the bookmark array with bookmarkName, pageIndex and nativeBookmark assigned, but bookmarkIndexes is not assigned yet
         NSMutableArray *fixedBookmarks = [NSMutableArray array];
@@ -212,12 +211,9 @@
             [fixedBookmarks addObject:bookmarkItem];
         }
         if (getOutlineFinishHandler) {
-            dispatch_sync(dispatch_get_main_queue(), ^{
                 getOutlineFinishHandler(fixedBookmarks);
-            });
         }
 
-    });
 }
 
 - (void)loadData:(FSBookmark *)parentBookmark {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -29,7 +29,6 @@
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
-        [_extensionsManager registerToolHandler:self];
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         _taskServer = _extensionsManager.taskServer;
         _type = e_annotCaret;
@@ -98,7 +97,8 @@
     }
 
     int lastIndex = index;
-    for (int i = index; i > 0; i++) {
+    int pageCharCount = [textPage getCharCount];
+    for (int i = index; i < pageCharCount; i++) {
         NSArray *array = [Utility getTextRects:textPage start:i count:1];
         if (array.count == 0 || !array) {
             break;
@@ -115,9 +115,6 @@
         self.currentEditPdfRect = [Utility normalizeFSRect:[Utility CGRect2FSRectF:unionRect]];
         if (selectCharpdfRect.bottom > self.currentEditPdfRect.top) {
             lastIndex = i;
-            break;
-        }
-        if (i == 1000) {
             break;
         }
     }
@@ -260,7 +257,7 @@
             return YES;
         }
     }
-    FSPDFTextSelect *textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
+    
     CGPoint point = [recognizer locationInView:[_pdfViewCtrl getPageView:pageIndex]];
     if (recognizer.state == UIGestureRecognizerStateBegan) {
         self.pageindex = pageIndex;
@@ -302,11 +299,16 @@
         if (self.startPosIndex == -1 || self.endPosIndex == -1) {
             return YES;
         }
-
+        if (pageIndex != self.pageindex) {
+            pageIndex = self.pageindex;
+        }
+        FSPDFTextSelect *textPage = [Utility getTextSelect:_pdfViewCtrl.currentDoc pageIndex:pageIndex];
+        
         BOOL isHorizontal = YES;
         BOOL isLeftToRight = YES;
         BOOL isTopToBottom = YES;
         FSRotation textRotation = e_rotationUnknown;
+
         for (int i = 0; i < [textPage getTextRectCount:self.endPosIndex count:1]; i++) {
             textRotation = [textPage getBaselineRotation:i];
             if (textRotation == e_rotationUnknown)

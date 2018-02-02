@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -19,9 +19,10 @@
 #import "Masonry.h"
 #import "NSMutableArray+Moving.h"
 #import "UniversalEditViewController.h"
+#import "Utility.h"
 #import <QuartzCore/QuartzCore.h>
 
-@interface ReadingBookmarkViewController () <ReadingBookmarkListCellDelegate, UIGestureRecognizerDelegate>
+@interface ReadingBookmarkViewController () <ReadingBookmarkListCellDelegate, TSAlertViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
 
@@ -145,7 +146,13 @@
 
     FSReadingBookmark *bookmarkItem = [_arrayBookmarks objectAtIndex:indexPath.row];
     cell.pageLabel.text = @"";
-    cell.pageLabel.text = [bookmarkItem getTitle];
+    @try {
+        cell.pageLabel.text = [bookmarkItem getTitle];
+    } @catch (NSException *exception) {
+        cell.pageLabel.text = @"";
+    } @finally {
+        
+    }
     cell.accessoryType = UITableViewCellAccessoryNone;
     //    cell.detailButton.object = cell.editView;
     if ([Utility canAssembleDocument:_pdfViewCtrl.currentDoc]) {
@@ -266,15 +273,16 @@
 
     } else {
         BOOL isFullScreen = APPLICATION_ISFULLSCREEN;
-        __block UniversalEditViewController *editController = [[UniversalEditViewController alloc] initWithNibName:[Utility getXibName:@"UniversalEditViewController"] bundle:nil];
+        UniversalEditViewController *editController = [[UniversalEditViewController alloc] initWithNibName:[Utility getXibName:@"UniversalEditViewController"] bundle:nil];
         UINavigationController *editNavController = [[UINavigationController alloc] initWithRootViewController:editController];
         editController.title = FSLocalizedString(@"kRenameBookmark");
         editController.textContent = [bookmark getTitle];
         editController.autoIntoEditing = YES;
         self.currentVC = editNavController;
         self.currentVC = editController;
+        __weak typeof(editController) weakEditController = editController;
         editController.editingCancelHandler = ^{
-            [editController dismissViewControllerAnimated:YES completion:nil];
+            [weakEditController dismissViewControllerAnimated:YES completion:nil];
             [[UIApplication sharedApplication] setStatusBarHidden:isFullScreen withAnimation:UIStatusBarAnimationFade];
         };
         editController.editingDoneHandler = ^(NSString *text) {
@@ -286,7 +294,7 @@
             } else {
                 [bookmark setTitle:text];
                 [self renameBookmark:bookmark];
-                [editController dismissViewControllerAnimated:YES completion:nil];
+                [weakEditController dismissViewControllerAnimated:YES completion:nil];
                 [[UIApplication sharedApplication] setStatusBarHidden:isFullScreen withAnimation:UIStatusBarAnimationFade];
             }
         };
@@ -304,7 +312,7 @@
     NSUInteger pageIndex = [deletedBookmark getPageIndex];
     [_pdfViewCtrl.currentDoc removeReadingBookmark:deletedBookmark];
 
-    NSAssert(deletedBookmark != nil, @"Delete bookmark cannot find the position of page index: %d", pageIndex);
+    NSAssert(deletedBookmark != nil, @"Delete bookmark cannot find the position of page index: %lu", (unsigned long) pageIndex);
     NSUInteger deletePos = [_arrayBookmarks indexOfObject:deletedBookmark];
     [_arrayBookmarks removeObject:deletedBookmark];
     [self.tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:[NSIndexPath indexPathForRow:deletePos inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
@@ -317,6 +325,8 @@
 - (void)reloadtableViewAfterDeleteBookmark {
     [self.tableView reloadData];
 }
+
+#pragma mark <TSAlertViewDelegate>
 
 - (void)alertView:(TSAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     if (alertView.tag == 1) {

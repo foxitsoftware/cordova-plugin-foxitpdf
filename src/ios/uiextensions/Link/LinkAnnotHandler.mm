@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -36,10 +36,7 @@
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
-        [_extensionsManager registerAnnotHandler:self];
         _pdfViewCtrl = _extensionsManager.pdfViewCtrl;
-        [_pdfViewCtrl registerDocEventListener:self];
-        [_pdfViewCtrl registerPageEventListener:self];
         _dictAnnotLink = [[NSMutableDictionary alloc] init];
         _selected = NO;
     }
@@ -96,7 +93,7 @@
     id linkArray = nil;
     @synchronized(_dictAnnotLink) {
         [self reloadAnnotLink:[_pdfViewCtrl.currentDoc getPage:pageIndex]];
-        linkArray = [_dictAnnotLink objectForKey:[NSNumber numberWithInt:pageIndex]];
+        linkArray = [_dictAnnotLink objectForKey:@(pageIndex)];
     }
     if (linkArray && linkArray != [NSNull null]) {
         [linkArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -175,7 +172,8 @@
                                                                   cancelButtonTitle:@"kOK"
                                                                   otherButtonTitles:nil, nil];
                                 [alert show];
-                                return ;
+                                ret = YES;
+                                return;
                             }
                             
                             [self setJumpDocWithPath:path dict:linkDict];
@@ -195,45 +193,50 @@
     FSPDFDoc* doc = [[FSPDFDoc alloc] initWithFilePath:path];
     __block FSErrorCode status = [doc load:nil];
     if (status == e_errPassword) {
-        AlertView* alert = [[AlertView alloc] initWithTitle:nil message:@"kDocNeedPassword" buttonClickHandler:^(UIView *alertView, int buttonIndex){
-            if (buttonIndex == 0) {
-                return ;
-            } else if (buttonIndex == 1) {
-                NSString* password = [alert textFieldAtIndex:1].text;
-                status = [doc load:password];
-                if ((status == e_errSuccess)) {
-                    [_extensionsManager.pdfViewCtrl openDoc:path password:password completion:nil];
-                    _jumpDict = [[NSDictionary alloc] initWithDictionary:dict];
-                }
-            }
-        } cancelButtonTitle:@"kCancel" otherButtonTitles:@"kOK", nil];
-    }
-    if ((status == e_errSuccess)) {
+        AlertView *alert = [[AlertView alloc] initWithTitle:nil
+                                                    message:@"kDocNeedPassword"
+                                         buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
+                                             if (buttonIndex == 0) {
+                                                 return;
+                                             } else if (buttonIndex == 1) {
+                                                 NSString *password = [alertView textFieldAtIndex:1].text;
+                                                 status = [doc load:password];
+                                                 if (status == e_errSuccess) {
+                                                     [_extensionsManager.pdfViewCtrl openDoc:path password:password completion:nil];
+                                                     _jumpDict = [[NSDictionary alloc] initWithDictionary:dict];
+                                                 }
+                                             }
+                                         }
+                                          cancelButtonTitle:@"kCancel"
+                                          otherButtonTitles:@"kOK", nil];
+        [alert show];
+    } else if (status == e_errSuccess) {
         [_extensionsManager.pdfViewCtrl openDoc:path password:nil completion:nil];
         _jumpDict = [[NSDictionary alloc] initWithDictionary:dict];
     }
 }
 
 - (void)setDocWithPath:(NSString*)path dict:(NSDictionary*)dict {
-    FSPDFDoc* doc = [[FSPDFDoc alloc] initWithFilePath:path];
-    __block FSErrorCode status = [doc load:nil];
-    if (status == e_errPassword) {
-        AlertView* alert = [[AlertView alloc] initWithTitle:nil message:@"kDocNeedPassword" buttonClickHandler:^(UIView *alertView, int buttonIndex){
-            if (buttonIndex == 0) {
-                return ;
-            } else if (buttonIndex == 1) {
-                NSString* password = [alert textFieldAtIndex:1].text;
-                status = [doc load:password];
-                if ((status == e_errSuccess)) {
-                    [_extensionsManager.pdfViewCtrl setDoc:doc];
-                    [self jumpToPageWithDict:dict];
-                }
-            }
-        } cancelButtonTitle:@"kCancel" otherButtonTitles:@"kOK", nil];
+    if (path == nil) {
+        return;
     }
-    if ((status == e_errSuccess)) {
-        [_extensionsManager.pdfViewCtrl setDoc:doc];
-        [self jumpToPageWithDict:dict];
+    if ([_extensionsManager.delegate respondsToSelector:@selector(uiextensionsManager:openNewDocAtPath:)]) {
+        BOOL isOpen = [_extensionsManager.delegate uiextensionsManager:_extensionsManager openNewDocAtPath:path];
+        if (isOpen) {
+            [self jumpToPageWithDict:dict];
+        }
+    } else {
+        __weak typeof(self) weakSelf = self;
+        [_extensionsManager saveAndCloseCurrentDoc:^(BOOL success) {
+            if (success) {
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                [strongSelf->_extensionsManager.pdfViewCtrl openDoc:path
+                                                           password:nil
+                                                         completion:^(FSErrorCode error) {
+                                                             [weakSelf jumpToPageWithDict:dict];
+                                                         }];
+            }
+        }];
     }
 }
 
@@ -263,7 +266,7 @@
     id linkArray = nil;
     @synchronized(_dictAnnotLink) {
         [self reloadAnnotLink:[_pdfViewCtrl.currentDoc getPage:pageIndex]];
-        linkArray = [_dictAnnotLink objectForKey:[NSNumber numberWithInt:pageIndex]];
+        linkArray = [_dictAnnotLink objectForKey:@(pageIndex)];
     }
     if (linkArray && linkArray != [NSNull null]) {
         [linkArray enumerateObjectsWithOptions:NSEnumerationReverse
@@ -400,8 +403,8 @@
                         int desIndex = [dest getPageIndex];
 
                         CGRect desRect = [Utility FSRectF2CGRect:rect];
-                        [dict setValue:[NSNumber numberWithInt:e_actionTypeGoto] forKey:LINK_DES_TYPE];
-                        [dict setValue:[NSNumber numberWithInt:desIndex] forKey:LINK_DES_INDEX];
+                        [dict setValue:@(e_actionTypeGoto) forKey:LINK_DES_TYPE];
+                        [dict setValue:@(desIndex) forKey:LINK_DES_INDEX];
                         [dict setValue:[NSValue valueWithCGRect:desRect] forKey:LINK_DES_RECT];
 
                         support = YES;
@@ -413,6 +416,7 @@
                     FSFileSpec *file = [gotoRAction getFileSpec];
                     [dict setValue:file forKey:LINK_DES_FILE];
                     support = YES;
+                    [dict setValue:@(e_actionTypeGoToR) forKey:LINK_DES_TYPE];
                     FSDestination *dest = [gotoRAction getDestination];
                     if (dest) {
                         FSRectF *rect = [[FSRectF alloc] init];
@@ -423,9 +427,10 @@
                         int desIndex = [dest getPageIndex];
                         
                         CGRect desRect = [Utility FSRectF2CGRect:rect];
-                        [dict setValue:[NSNumber numberWithInt:e_actionTypeGoToR] forKey:LINK_DES_TYPE];
-                        [dict setValue:[NSNumber numberWithInt:desIndex] forKey:LINK_DES_INDEX];
+                        [dict setValue:@(desIndex) forKey:LINK_DES_INDEX];
                         [dict setValue:[NSValue valueWithCGRect:desRect] forKey:LINK_DES_RECT];
+                    } else {
+                        [dict setValue:@0 forKey:LINK_DES_INDEX];
                     }
                 }
                 if ([action getType] == e_actionTypeLaunch) {
@@ -433,7 +438,7 @@
                     //fileSpec
                     FSFileSpec* file = [launchAction getFileSpec];
                     [dict setValue:file forKey:LINK_DES_FILE];
-                    [dict setValue:[NSNumber numberWithInt:e_actionTypeLaunch] forKey:LINK_DES_TYPE];
+                    [dict setValue:@(e_actionTypeLaunch) forKey:LINK_DES_TYPE];
                     support = YES;
                 }
                 
@@ -441,7 +446,7 @@
                     FSURIAction *uriAction = (FSURIAction *) action;
                     NSString *uri = [uriAction getURI];
                     [dict setValue:uri forKey:LINK_DES_URL];
-                    [dict setValue:[NSNumber numberWithInt:e_actionTypeURI] forKey:LINK_DES_TYPE];
+                    [dict setValue:@(e_actionTypeURI) forKey:LINK_DES_TYPE];
                     support = YES;
                 }
                 if (support) {

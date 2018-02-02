@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -17,6 +17,7 @@
 #import "ColorUtility.h"
 #import "MASConstraintMaker.h"
 #import "ReplyTableViewController.h"
+#import "UIExtensionsManager+Private.h"
 #import "View+MASAdditions.h"
 #import <UIKit/UIKit.h>
 
@@ -228,6 +229,7 @@
         _editView = nil;
     }
     self.item = nil;
+    [super prepareForReuse];
 }
 
 - (void)handleClickDetailButton {
@@ -253,7 +255,7 @@
 }
 
 - (void)showEditViewAnimated:(BOOL)animated {
-    void (^showEditView)() = ^{
+    void (^showEditView)(void) = ^{
         self.editView.frame = ({
             CGRect frame = self.editView.frame;
             frame.origin.x = self.editView.superview.bounds.size.width - frame.size.width;
@@ -271,7 +273,7 @@
     if (!_editView) {
         return;
     }
-    void (^hideEditView)() = ^{
+    void (^hideEditView)(void) = ^{
         self.editView.frame = ({
             CGRect frame = self.editView.frame;
             frame.origin.x = self.editView.superview.bounds.size.width;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -26,6 +26,8 @@
 typedef void (^CallBackInt)(long property, int value);
 
 @class TaskServer;
+
+NS_ASSUME_NONNULL_BEGIN
 
 #define FOXIT_LOG_ON YES
 
@@ -108,6 +110,10 @@ typedef enum {
 + (CGRect)convertCGRectWithMargin:(CGRect)rect size:(CGSize)size margin:(int)margin;
 /** @brief Get Rect by two points. */
 + (FSRectF *)convertToFSRect:(FSPointF *)p1 p2:(FSPointF *)p2;
+/** @brief Increases the width and height of the rectangle. */
++ (FSRectF *)inflateFSRect:(FSRectF *)rect width:(float)width height:(float)height;
+/** @brief Does it contain provided point ? check if the point is inside this rect. */
++ (BOOL)isPointInFSRect:(FSRectF *)rect point:(FSPointF*)point;
 /** @brief Standard Rect. */
 + (CGRect)getStandardRect:(CGRect)rect;
 /** @brief Get UUID. */
@@ -157,7 +163,7 @@ typedef enum {
 /** @brief Get page size from specified PDF document and page index. */
 + (CGSize)getPDFPageSizeWithIndex:(NSUInteger)index pdfPath:(NSString *)path;
 /** @brief Get security type of specified PDF document. */
-+ (FSEncryptType)getDocumentSecurityType:(NSString *)filePath taskServer:(TaskServer *)taskServer;
++ (FSEncryptType)getDocumentSecurityType:(NSString *)filePath taskServer:(TaskServer *_Nullable)taskServer;
 
 + (NSString *)convert2SysFontString:(NSString *)str;
 
@@ -172,7 +178,8 @@ typedef enum {
 /* get annot rect in page view, taken acount of zoom factor */
 + (CGRect)getAnnotRect:(FSAnnot *)annot pdfViewCtrl:(FSPDFViewCtrl *)pdfViewCtrl;
 + (UIImage *)getAnnotImage:(FSAnnot *)annot pdfViewCtrl:(FSPDFViewCtrl *)pdfViewCtrl;
-+ (UIImage *)drawPage:(FSPDFPage *)page targetSize:(CGSize)targetSize shouldDrawAnnotation:(BOOL)shouldDrawAnnotation isNightMode:(BOOL)isNightMode needPause:(BOOL (^__nullable)())needPause;
++ (UIImage *)drawPage:(FSPDFPage *)page targetSize:(CGSize)targetSize shouldDrawAnnotation:(BOOL)shouldDrawAnnotation needPause:(BOOL (^__nullable)(void))needPause;
++ (void)printPage:(FSPDFPage *)page inContext:(CGContextRef)context inRect:(CGRect)rect shouldDrawAnnotation:(BOOL)shouldDrawAnnotation;
 
 + (int)toStandardFontID:(NSString *)fontName;
 
@@ -215,6 +222,7 @@ typedef enum {
 + (BOOL)isValidIconName:(NSString *)iconName annotType:(FSAnnotType)annotType;
 + (NSArray<NSString *> *)getAllIconLowercaseNames;
 
++ (BOOL)hasSignatureInDocument:(FSPDFDoc *)document;
 + (BOOL)isOwnerOfDoucment:(FSPDFDoc *)document;
 + (BOOL)isDocumentSigned:(FSPDFDoc *)document;
 + (BOOL)canAddAnnotToDocument:(FSPDFDoc *)document;
@@ -225,13 +233,15 @@ typedef enum {
 + (BOOL)canCopyForAssessInDocument:(FSPDFDoc *)document;
 + (BOOL)canModifyContentsInDocument:(FSPDFDoc *)document;
 + (BOOL)canExtractContentsInDocument:(FSPDFDoc *)document;
++ (BOOL)canPrintDocument:(FSPDFDoc *)document;
 + (int)getMDPDigitalSignPermissionInDocument:(FSPDFDoc *)document;
 
 + (void)assignImage:(UIImageView *)imageView rawFrame:(CGRect)frame image:(UIImage *)image;
++ (FSImage *)createFSImageWithUIImage:(UIImage *)image;
 
 + (NSArray *)searchFilesWithFolder:(NSString *)folder recursive:(BOOL)recursive;
 
-+ (void)tryLoadDocument:(FSPDFDoc *)document withPassword:(NSString *)password success:(void (^)(NSString *password))success error:(void (^)(NSString *description))error abort:(void (^)())abort;
++ (void)tryLoadDocument:(FSPDFDoc *)document withPassword:(NSString *)password success:(void (^)(NSString *password))success error:(void (^_Nullable)(NSString *description))error abort:(void (^_Nullable)(void))abort;
 //File/Folder existance
 + (BOOL)isFileOrFolderExistAtPath:(NSString *)path fileOrFolderName:(NSString *)fileOrFolderName;
 
@@ -248,10 +258,49 @@ typedef enum {
 + (FSReadingBookmark *)getReadingBookMarkAtPage:(FSPDFDoc *)doc page:(int)page;
 
 + (BOOL)parsePage:(FSPDFPage *)page;
-+ (BOOL)parsePage:(FSPDFPage *)page flag:(unsigned int)flag pause:(FSPauseCallback *)pause;
++ (BOOL)parsePage:(FSPDFPage *)page flag:(unsigned int)flag pause:(FSPauseCallback *_Nullable)pause;
++ (FSRectF*)getPageBoundary:(FSPDFPage*)page;
 
 + (UIButton *)createButtonWithImage:(UIImage *)image;
 
 + (CGFloat)getUIToolbarPaddingX;
 
++ (BOOL)isSinceiOS:(const NSString *)requiredVersion;
+
++ (void)printDoc:(FSPDFDoc *)doc animated:(BOOL)animated jobName:(nullable NSString *)jobName delegate:(nullable id<UIPrintInteractionControllerDelegate>)delegate completionHandler:(nullable UIPrintInteractionCompletionHandler)completion;
+
++ (void)printDoc:(FSPDFDoc *)doc fromRect:(CGRect)rect inView:(UIView *)view animated:(BOOL)animated jobName:(nullable NSString *)jobName delegate:(nullable id<UIPrintInteractionControllerDelegate>)delegate completionHandler:(nullable UIPrintInteractionCompletionHandler)completion;
+
+////Take screen shot
++ (UIImage *)screenShot:(UIView *)view;
+
+//remove all gesture
++ (void)removeAllGestureRecognizer:(UIView *)view;
+//Crop image
++ (UIImage*)cropImage:(UIImage*)img rect:(CGRect)rect;
+
+// get text rectangles
++ (NSArray *)getTextRects:(FSPDFTextSelect *)fstextPage startCharIndex:(int)startCharIndex endCharIndex:(int)endCharIndex;
+
+// get distance unit info
++ (NSArray *)getDistanceUnitInfo:(NSString *)measureRatio ;
+    
+// get distance between to cgpoint
++ (float)getDistanceFromX:(FSPointF *)start toY:(FSPointF *)end;
+
+// get distance between to cgpoint with unit
++ (float)getDistanceFromX:(FSPointF *)start toY:(FSPointF *)end withUnit:(NSString *)measureRatio;
+
+// move rect inside container rect
++ (CGRect)boundedRectForRect:(CGRect)rect containerRect:(CGRect)containerRect;
+
++ (FSRotation)rotationForValue:(NSValue *)value;
++ (int)valueForRotation:(FSRotation)rotation;
++ (UIImageOrientation)imageOrientationForRotation:(FSRotation)rotation;
+
++ (NSArray<FSPointF *> *)getPolygonVertexes:(FSPolygon *)polygon;
+
 @end
+
+NS_ASSUME_NONNULL_END
+

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -18,14 +18,16 @@
 
 @interface SettingBar ()
 
-@property (nonatomic, strong) UIButton *singleViewBtn;
-@property (nonatomic, strong) UIButton *continueViewBtn;
-@property (nonatomic, strong) UIButton *thumbnailViewBtn;
-@property (nonatomic, strong) UIButton *doubleViewBtn;
-@property (nonatomic, strong) UIButton *reflowBtn;
-@property (nonatomic, strong) UIButton *cropBtn;
-@property (nonatomic, strong) UIButton *screenLockBtn;
-@property (nonatomic, strong) UIButton *nightViewBtn;
+@property (nonatomic, strong, nonnull) UIButton *singleViewBtn;
+@property (nonatomic, strong, nonnull) UIButton *continueViewBtn;
+@property (nonatomic, strong, nonnull) UIButton *thumbnailViewBtn;
+@property (nonatomic, strong, nonnull) UIButton *reflowBtn;
+@property (nonatomic, strong, nonnull) UIButton *cropBtn;
+@property (nonatomic, strong, nonnull) UIButton *screenLockBtn;
+@property (nonatomic, strong, nonnull) UIButton *panAndZoomBtn;
+@property (nonatomic, strong, nonnull) UIButton *nightViewBtn;
+@property (nonatomic, strong, nonnull) UIButton *doubleViewBtn;
+@property (nonatomic, strong, nonnull) UIButton *coverBtn;
 
 - (UIView *_Nullable)getItemView:(SettingItemType)itemType;
 - (void)updateLayoutButtonsWithLayout:(PDF_LAYOUT_MODE)layout;

@@ -431,8 +431,7 @@ static NSString * const kTableViewCellContentView = @"UITableViewCellContentView
     return CGPointMake([self.scrollViewButtonViewLeft utilityButtonsWidth], 0);
 }
 
-- (void)setAppearanceWithBlock:(void (^)())appearanceBlock force:(BOOL)force
-{
+- (void)setAppearanceWithBlock:(void (^)(void))appearanceBlock force:(BOOL)force {
     if (force)
     {
         appearanceBlock();

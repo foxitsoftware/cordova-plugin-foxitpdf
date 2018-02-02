@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -338,11 +338,7 @@ static SearchResult *searchPage(FSPDFTextSearch *fstextSearch, FSPDFPage *page, 
         [self.searchBar becomeFirstResponder];
         self.onSearchState = YES;
 
-        for (id<ISearchEventListener> listener in _extensionsManager.searchListeners) {
-            if ([listener respondsToSelector:@selector(onSearchStarted)]) {
-                [listener onSearchStarted];
-            }
-        }
+        [_extensionsManager onSearchStarted];
     } else {
         [self setTopbarHidden:YES];
         [self.searchBar resignFirstResponder];
@@ -351,11 +347,7 @@ static SearchResult *searchPage(FSPDFTextSearch *fstextSearch, FSPDFPage *page, 
         [self setfoundLabelHidden:YES];
         self.onSearchState = NO;
 
-        for (id<ISearchEventListener> listener in _extensionsManager.searchListeners) {
-            if ([listener respondsToSelector:@selector(onSearchCanceled)]) {
-                [listener onSearchCanceled];
-            }
-        }
+        [_extensionsManager onSearchCanceled];
     }
 }
 
@@ -782,7 +774,7 @@ static SearchResult *searchPage(FSPDFTextSearch *fstextSearch, FSPDFPage *page, 
 
         NSMutableArray *pages = [NSMutableArray array];
         for (int i = 0; i < [_pdfViewCtrl.currentDoc getPageCount]; i++) {
-            [pages addObject:[NSNumber numberWithInt:i]];
+            [pages addObject:@(i)];
         }
         self.selectedSearchResult = nil;
         self.selectedSearchInfo = nil;

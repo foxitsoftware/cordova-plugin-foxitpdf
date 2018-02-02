@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -80,7 +80,6 @@
         self.attachmentCtr = [[AttachmentViewController alloc] initWithStyle:UITableViewStyleGrouped extensionsManager:_extensionsManager module:self];
 
         [self.contentView addSubview:self.attachmentCtr.view];
-        CGRect bounds = self.contentView.bounds;
         [self.attachmentCtr.view mas_makeConstraints:^(MASConstraintMaker *make) {
             make.left.equalTo(self.contentView.mas_left).offset(0);
             make.right.equalTo(self.contentView.mas_right).offset(0);
@@ -147,7 +146,7 @@
     if ([nameTree hasName:fileName]) {
         AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                         message:[NSString stringWithFormat:FSLocalizedString(@"kFailedAddAttachmentForExistedName"), 50]
-                                             buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                             buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                              }
                                               cancelButtonTitle:@"kOK"
                                               otherButtonTitles:nil];
@@ -178,7 +177,7 @@
         } else {
             AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                             message:[NSString stringWithFormat:FSLocalizedString(@"kFailedAddAttachment"), 50]
-                                                 buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                 buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                  }
                                                   cancelButtonTitle:@"kOK"
                                                   otherButtonTitles:nil];
@@ -203,7 +202,7 @@
             if (fileSize > 50 * 1024 * 1024) { // 50MB
                 AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                                 message:[NSString stringWithFormat:FSLocalizedString(@"kAttachmentMaxSize"), 50]
-                                                     buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                     buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                      }
                                                       cancelButtonTitle:@"kOK"
                                                       otherButtonTitles:nil];
@@ -214,9 +213,8 @@
             [self _addDocumentAttachemnt:attachmentFilePath addUndo:NO];
         }
     };
-    typeof(selectDestination) __weak weakSelect = selectDestination;
-    selectDestination.cancelHandler = ^() {
-        [weakSelect dismissViewControllerAnimated:YES completion:nil];
+    selectDestination.cancelHandler = ^(FileSelectDestinationViewController *controller) {
+        [controller dismissViewControllerAnimated:YES completion:nil];
     };
     UINavigationController *selectDestinationNavController = [[UINavigationController alloc] initWithRootViewController:selectDestination];
     selectDestinationNavController.modalPresentationStyle = UIModalPresentationFormSheet;

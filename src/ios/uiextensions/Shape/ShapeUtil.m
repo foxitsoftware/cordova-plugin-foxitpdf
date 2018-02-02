@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -29,6 +29,25 @@
     [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x + rect.size.width / 2.0 - dragWidth / 2, rect.origin.y + rect.size.height - dragWidth / 2, dragWidth, dragWidth)]];
     [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x + rect.size.width - dragWidth / 2, rect.origin.y - dragWidth / 2, dragWidth, dragWidth)]];
     [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x + rect.size.width - dragWidth / 2, rect.origin.y + rect.size.height / 2.0 - dragWidth / 2, dragWidth, dragWidth)]];
+    [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x + rect.size.width - dragWidth / 2, rect.origin.y + rect.size.height - dragWidth / 2, dragWidth, dragWidth)]];
+    return array;
+}
+
++ (NSArray *)getCornerMovePointInRect:(CGRect)rect {
+    if (rect.size.width == 0 || rect.size.height == 0) {
+        return nil;
+    }
+
+    UIImage *dragDot = [UIImage imageNamed:@"annotation_drag.png"];
+    float dragWidth = dragDot.size.width;
+    NSMutableArray *array = [NSMutableArray array];
+    [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x - dragWidth / 2, rect.origin.y - dragWidth / 2, dragWidth, dragWidth)]];
+    //    [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x - dragWidth / 2, rect.origin.y + rect.size.height / 2.0 - dragWidth / 2, dragWidth, dragWidth)]];
+    [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x - dragWidth / 2, rect.origin.y + rect.size.height - dragWidth / 2, dragWidth, dragWidth)]];
+    //    [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x + rect.size.width / 2.0 - dragWidth / 2, rect.origin.y - dragWidth / 2, dragWidth, dragWidth)]];
+    //    [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x + rect.size.width / 2.0 - dragWidth / 2, rect.origin.y + rect.size.height - dragWidth / 2, dragWidth, dragWidth)]];
+    [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x + rect.size.width - dragWidth / 2, rect.origin.y - dragWidth / 2, dragWidth, dragWidth)]];
+    //    [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x + rect.size.width - dragWidth / 2, rect.origin.y + rect.size.height / 2.0 - dragWidth / 2, dragWidth, dragWidth)]];
     [array addObject:[NSValue valueWithCGRect:CGRectMake(rect.origin.x + rect.size.width - dragWidth / 2, rect.origin.y + rect.size.height - dragWidth / 2, dragWidth, dragWidth)]];
     return array;
 }

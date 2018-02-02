@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -25,7 +25,13 @@
     self = [super init];
     if (self) {
         _extensionsManager = extensionsManager;
-        [[SelectToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        SelectToolHandler* toolHandler = [[SelectToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_extensionsManager registerToolHandler:toolHandler];
+        [_extensionsManager registerRotateChangedListener:toolHandler];
+        [_extensionsManager registerGestureEventListener:toolHandler];
+        [_extensionsManager.pdfViewCtrl registerDocEventListener:toolHandler];
+        [_extensionsManager.pdfViewCtrl registerScrollViewEventListener:toolHandler];
+        [_extensionsManager.pdfViewCtrl registerPageEventListener:toolHandler];
     }
     return self;
 }

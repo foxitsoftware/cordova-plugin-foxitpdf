@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -25,10 +25,9 @@
 #import "PanelController.h"
 #import "PanelHost.h"
 
-@interface AttachmentViewController () <IPanelChangedListener, AnnotationListCellDelegate>
+@interface AttachmentViewController () <IPanelChangedListener, AnnotationListCellDelegate, IAnnotEventListener>
 
 @property (nonatomic, assign) BOOL isKeyboardShow;
-@property (nonatomic, assign) BOOL dicrection;
 @property (nonatomic, retain) UIDocumentInteractionController *documentPopoverController;
 @property (nonatomic, strong) NSOperationQueue *loadAttachmentQueue;
 @property (nonatomic, strong) UITapGestureRecognizer *tapGesture;
@@ -49,14 +48,7 @@
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         _panelController = attachmentPanel.panelController;
         _attachmentPanel = attachmentPanel;
-
-        self.allAttachmentsSections = [NSMutableArray array];
-
-        UIWindow *keywindow = [[UIApplication sharedApplication] keyWindow];
-        self.dicrection = UIDeviceOrientationIsLandscape(keywindow.rootViewController.interfaceOrientation);
-
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationChange) name:UIDeviceOrientationDidChangeNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(UpdateDeleteAnnotationsTotal:) name:ANNOLIST_UPDADELETETOTAL object:nil];
+        _allAttachmentsSections = [NSMutableArray array];
         [_panelController registerPanelChangedListener:self];
         [_extensionsManager registerAnnotEventListener:self];
         [_pdfViewCtrl registerDocEventListener:self];
@@ -96,40 +88,14 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidShowNotification object:nil];
 }
 
-- (void)deviceOrientationChange {
-    UIDeviceOrientation currentOri = [[UIDevice currentDevice] orientation];
-
-    if (UIDeviceOrientationIsLandscape(currentOri)) {
-        if (!self.dicrection) {
-            self.dicrection = YES;
-            [[NSNotificationCenter defaultCenter] postNotificationName:ORIENTATIONCHANGED object:nil];
-            [NSObject cancelPreviousPerformRequestsWithTarget:self.tableView selector:@selector(reloadData) object:nil];
-            [self.tableView reloadData];
-            double delayInSeconds = 1.2;
-            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-            dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
-                [self.tableView reloadData];
-            });
-        }
-
-    } else if (UIInterfaceOrientationIsPortrait(currentOri) && currentOri != UIDeviceOrientationPortraitUpsideDown) {
-        if (self.dicrection) {
-            self.dicrection = NO;
-            [[NSNotificationCenter defaultCenter] postNotificationName:ORIENTATIONCHANGED object:nil];
-            [NSObject cancelPreviousPerformRequestsWithTarget:self.tableView selector:@selector(reloadData) object:nil];
-            [self.tableView reloadData];
-            double delayInSeconds = 1.2;
-            dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-            dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
-
-                [self.tableView reloadData];
-            });
-        }
-    }
-}
-
-- (void)UpdateDeleteAnnotationsTotal:(NSNotification *)noti {
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    //    [NSObject cancelPreviousPerformRequestsWithTarget:self.tableView selector:@selector(reloadData) object:nil];
     [self.tableView reloadData];
+    //    double delayInSeconds = 1.2;
+    //    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+    //    dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
+    //        [self.tableView reloadData];
+    //    });
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
@@ -144,7 +110,7 @@
     }
 }
 
-- (void)onAnnotDeleted:(FSPDFPage *)page annot:(FSAnnot *)annot {
+- (void)onAnnotWillDelete:(FSPDFPage *)page annot:(FSAnnot *)annot {
     if (annot.type == e_annotFileAttachment) {
         [self updateAllAttachments:[AttachmentItem itemWithAttachmentAnnotation:(FSFileAttachment *) annot] operation:AnnotationOperation_Delete];
     }
@@ -257,7 +223,7 @@
     labelTotal.textColor = [UIColor colorWithRed:37.f / 255.f green:157.f / 255.f blue:214.f / 255.f alpha:1];
 
     if (section < [array count]) {
-        labelTotal.text = [NSString stringWithFormat:@"%d", [[array objectAtIndex:section] count]];
+        labelTotal.text = [NSString stringWithFormat:@"%lu", (unsigned long) [[array objectAtIndex:section] count]];
     }
 
     [subView addSubview:labelSection];
@@ -443,12 +409,12 @@
             for (AttachmentItem *tmpItem in attachments) {
                 if (attachmentItem.annot) {
                     if ([tmpItem.annot.NM isEqualToString:attachmentItem.annot.NM]) {
-                        index = [attachments indexOfObject:tmpItem];
+                        index = (int) [attachments indexOfObject:tmpItem];
                         break;
                     }
                 } else {
                     if ([tmpItem.fileName isEqualToString:attachmentItem.fileName]) {
-                        index = [attachments indexOfObject:tmpItem];
+                        index = (int) [attachments indexOfObject:tmpItem];
                         break;
                     }
                 }
@@ -679,19 +645,21 @@
         const int pagesPerExecution = 100;
         for (int pageStart = 0; pageStart < pageCount; pageStart += pagesPerExecution) {
             [op addExecutionBlock:^{
-                for (int pageIndex = pageStart; pageIndex < pageStart + pagesPerExecution && pageIndex < pageCount; pageIndex++) {
-                    if (weakOp.isCancelled) {
-                        return;
-                    }
-                    FSPDFPage *page = nil;
-                    @try {
-                        page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
-                    } @catch (NSException *exception) {
-                        continue;
-                    }
-                    NSArray *annots = [Utility getAnnotationsOfType:e_annotFileAttachment inPage:page];
-                    if (annots.count > 0) {
-                        [self loadAllAnnotAttachments:annots];
+                @autoreleasepool {
+                    for (int pageIndex = pageStart; pageIndex < pageStart + pagesPerExecution && pageIndex < pageCount; pageIndex++) {
+                        if (weakOp.isCancelled) {
+                            return;
+                        }
+                        FSPDFPage *page = nil;
+                        @try {
+                            page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+                        } @catch (NSException *exception) {
+                            continue;
+                        }
+                        NSArray *annots = [Utility getAnnotationsOfType:e_annotFileAttachment inPage:page];
+                        if (annots.count > 0) {
+                            [self loadAllAnnotAttachments:annots];
+                        }
                     }
                 }
             }];
@@ -769,14 +737,12 @@
 }
 
 - (void)saveAttachment:(AttachmentItem *)item {
-    NSMutableArray *needCopyFiles = [NSMutableArray array];
-
     FileSelectDestinationViewController *selectDestination = [[FileSelectDestinationViewController alloc] init];
     selectDestination.isRootFileDirectory = YES;
     selectDestination.fileOperatingMode = FileListMode_SaveTo;
     [selectDestination loadFilesWithPath:DOCUMENT_PATH];
     selectDestination.operatingHandler = ^(FileSelectDestinationViewController *controller, NSArray *destinationFolder) {
-        controller.cancelHandler = ^{
+        controller.cancelHandler = ^(FileSelectDestinationViewController *controller) {
             _moveFileAlertCheckType = MoveFileAlertCheckType_Cancel;
         };
         _moveFileAlertCheckType = MoveFileAlertCheckType_Ask;
@@ -830,7 +796,7 @@
         NSString *msg = [NSString stringWithFormat:FSLocalizedString(@"kCopyFileFailed"), item.fileName, error.localizedDescription];
         AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                         message:msg
-                                             buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                             buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                              }
                                               cancelButtonTitle:nil
                                               otherButtonTitles:@"kOK", nil];
@@ -872,7 +838,6 @@
     UITextView *edittextview = (UITextView *) [selectcell.contentView viewWithTag:107];
     edittextview.delegate = self;
     edittextview.hidden = NO;
-    CGRect recr = edittextview.frame;
 
     UILabel *labelContents = (UILabel *) [selectcell.contentView viewWithTag:104];
     labelContents.hidden = YES;
@@ -974,7 +939,7 @@
                 NSString *msg = [NSString stringWithFormat:FSLocalizedString(@"kFailedChangeDocumentAttachmentDescription"), exception.description];
                 AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                                 message:msg
-                                                     buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                     buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                      }
                                                       cancelButtonTitle:nil
                                                       otherButtonTitles:@"kOK", nil];

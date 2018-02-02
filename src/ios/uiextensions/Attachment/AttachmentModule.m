@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -38,8 +38,16 @@
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         self.colors = @[ @0xFF9F40, @0x8080FF, @0xBAE94C, @0xFFF160, @0x996666, @0xFF4C4C, @0x669999, @0xFFFFFF, @0xC3C3C3, @0x000000 ];
         [self loadModule];
-        [[AttachmentAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
-        [[AttachmentToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        
+        AttachmentAnnotHandler* annotHandler = [[AttachmentAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_extensionsManager registerAnnotHandler:annotHandler];
+        [_extensionsManager registerRotateChangedListener:annotHandler];
+        [_extensionsManager registerGestureEventListener:annotHandler];
+        [_extensionsManager.propertyBar registerPropertyBarListener:annotHandler];
+        [_pdfViewCtrl registerScrollViewEventListener:annotHandler];
+        
+        AttachmentToolHandler* toolHandler = [[AttachmentToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_extensionsManager registerToolHandler:toolHandler];
     }
     return self;
 }

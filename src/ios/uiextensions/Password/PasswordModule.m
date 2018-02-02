@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -121,7 +121,7 @@ typedef void (^PasswordCallBack)(BOOL isInputed, NSString *password);
     });
 }
 
-- (void)tryLoadPDFDocument:(FSPDFDoc *)document guessPassword:(NSString *)guessPassword success:(void (^)(NSString *password))success error:(void (^)(NSString *description))error abort:(void (^)())abort {
+- (void)tryLoadPDFDocument:(FSPDFDoc *)document guessPassword:(NSString *)guessPassword success:(void (^)(NSString *password))success error:(void (^)(NSString *description))error abort:(void (^)(void))abort {
     self.pdfDoc = document;
     __weak typeof(self) weakSelf = self;
     FSErrorCode status = [document load:guessPassword];
@@ -310,9 +310,6 @@ typedef void (^PasswordCallBack)(BOOL isInputed, NSString *password);
 
 - (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
     self.passwordType = e_pwdInvalid;
-    @autoreleasepool {
-        self.pdfDoc = nil;
-    }
 }
 
 #pragma mark - encrypt document
@@ -334,7 +331,7 @@ typedef void (^PasswordCallBack)(BOOL isInputed, NSString *password);
         if ([self.pdfDoc isModified]) { // whether to save before encryption?
             AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm"
                                                             message:@"Do you want to save document before encryption?"
-                                                 buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                 buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                      BOOL shouldSaveChanges = (buttonIndex == 1);
                                                      if (!shouldSaveChanges) {
                                                          FSPDFDoc *pdfDoc = [[FSPDFDoc alloc] initWithFilePath:_pdfViewCtrl.filePath];
@@ -383,7 +380,7 @@ typedef void (^PasswordCallBack)(BOOL isInputed, NSString *password);
         dispatch_async(dispatch_get_main_queue(), ^{
             BOOL isOK = [self encryptDocument:self.pdfDoc];
             if (!isOK) {
-                AlertViewButtonClickedHandler buttonClickedHandler = ^(UIView *alertView, int buttonIndex) {
+                AlertViewButtonClickedHandler buttonClickedHandler = ^(UIView *alertView, NSInteger buttonIndex) {
                     if (buttonIndex == 0) { //no
                         //nothing to do
                     } else if (buttonIndex == 1) { //yes
@@ -415,7 +412,7 @@ typedef void (^PasswordCallBack)(BOOL isInputed, NSString *password);
         return;
     }
     __weak typeof(self) weakSelf = self;
-    typedef void (^SuccessCallback)();
+    typedef void (^SuccessCallback)(void);
     __block void (^promptForOwnerPassword)(NSString *title, SuccessCallback success) = ^(NSString *title, SuccessCallback success) {
         [weakSelf promptForPasswordWithTitle:title
                                     callback:^(BOOL isInputed, NSString *password) {
@@ -432,7 +429,7 @@ typedef void (^PasswordCallBack)(BOOL isInputed, NSString *password);
                                         }
                                     }];
     };
-    void (^tryRemoveEncryption)() = ^{
+    void (^tryRemoveEncryption)(void) = ^{
         if ([weakSelf isOwner]) {
             [weakSelf removeEncryption];
         } else {
@@ -444,7 +441,7 @@ typedef void (^PasswordCallBack)(BOOL isInputed, NSString *password);
     if ([self.pdfDoc isModified]) { // whether to save before remove encryption?
         AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm"
                                                         message:@"Do you want to save document before removing encryption?"
-                                             buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                             buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                  BOOL shouldSaveChanges = (buttonIndex == 1);
                                                  if (!shouldSaveChanges) {
                                                      FSPDFDoc *pdfDoc = [[FSPDFDoc alloc] initWithFilePath:_pdfViewCtrl.filePath];
@@ -465,7 +462,7 @@ typedef void (^PasswordCallBack)(BOOL isInputed, NSString *password);
     } else {
         AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm"
                                                         message:@"kEncryptRemovePass"
-                                             buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                             buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                  if (buttonIndex == 0) { // no
                                                      // nothing to do
                                                  } else if (buttonIndex == 1) { // yes
@@ -490,7 +487,7 @@ typedef void (^PasswordCallBack)(BOOL isInputed, NSString *password);
             if (!isOK) {
                 AlertView *alertView = [[AlertView alloc] initWithTitle:@"kTryAgain"
                                                                 message:@"kEncryptAddFail"
-                                                     buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                     buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                          if (buttonIndex == 0) {
                                                              //nothing to do
                                                          } else if (buttonIndex == 1) { //yes

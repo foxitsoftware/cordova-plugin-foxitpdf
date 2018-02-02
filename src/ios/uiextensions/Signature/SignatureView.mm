@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -168,7 +168,14 @@
     FSMatrix *matrix = [[FSMatrix alloc] init];
     //The image is upside down, so the matrix should be reversed.
     [matrix set:[bitmap getWidth] b:0 c:0 d:-[bitmap getHeight] e:0 f:[bitmap getHeight]];
-    [renderer startRenderBitmap:bitmap matrix:matrix clipRect:clipRect interpolation:0 pause:nil];
+    FSProgressive *progressive = [renderer startRenderBitmap:bitmap matrix:matrix clipRect:clipRect interpolation:0 pause:nil];
+    if (progressive) {
+        while (true) {
+            if ([progressive resume] != e_progressToBeContinued) {
+                break;
+            }
+        }
+    }
     [self setNeedsDisplayInRect:self.nextRect];
 }
 

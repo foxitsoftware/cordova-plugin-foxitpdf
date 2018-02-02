@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -22,7 +22,7 @@ typedef enum {
     EDITANNOT_LINE_TYPE_FULL,
 } EDITANNOT_LINE_TYPE;
 
-@interface LineAnnotHandler : NSObject <IAnnotHandler, IPropertyBarListener, IRotationEventListener, IGestureEventListener, IScrollViewEventListener, IAnnotPropertyListener> {
+@interface LineAnnotHandler : NSObject <IAnnotHandler, IPropertyBarListener, IRotationEventListener, IGestureEventListener, IScrollViewEventListener, IAnnotPropertyListener, IDocEventListener> {
     EDITANNOT_LINE_TYPE _editType;
 }
 

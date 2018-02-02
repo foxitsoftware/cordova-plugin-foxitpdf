@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -48,19 +48,21 @@
     if (self) {
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
-        [_extensionsManager registerToolHandler:self];
-        [_extensionsManager registerRotateChangedListener:self];
-        [_extensionsManager.pdfViewCtrl registerDocEventListener:self];
         _taskServer = _extensionsManager.taskServer;
+        _type = e_annotWidget;
         self.docChanging = nil;
         self.isPerformOnce = YES;
         self.isDeleting = NO;
 
         self.docChanging = ^(NSString *newDocPath) {
-            [_pdfViewCtrl openDoc:newDocPath password:nil completion:nil];
+            if ([_extensionsManager.delegate respondsToSelector:@selector(uiextensionsManager:openNewDocAtPath:)]) {
+                BOOL isOpen = [_extensionsManager.delegate uiextensionsManager:_extensionsManager openNewDocAtPath:newDocPath];
+            } else {
+                [extensionsManager.pdfViewCtrl openDoc:newDocPath password:nil completion:nil];
+            }
         };
         self.getDocPath = ^NSString *() {
-            return _pdfViewCtrl.filePath;
+            return extensionsManager.pdfViewCtrl.filePath;
         };
 
         //Create signature data store directory.
@@ -312,7 +314,7 @@
     if (!isSaveTip) {
         AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm"
                                                         message:@"kConfirmSign"
-                                             buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                             buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                  if (buttonIndex == 0) { // no
                                                      [self delete];
                                                      [_extensionsManager setCurrentToolHandler:nil];
@@ -459,10 +461,11 @@
     [selectDestination loadFilesWithPath:DOCUMENT_PATH];
     selectDestination.operatingHandler = ^(FileSelectDestinationViewController *controller, NSArray *destinationFolder) {
         [controller dismissViewControllerAnimated:YES completion:nil];
-        __block void (^inputFileName)() = ^() {
+        typedef void (^NumbBlock)(void);
+        NumbBlock __block inputFileName = ^() {
             InputAlertView *inputAlertView = [[InputAlertView alloc] initWithTitle:@"kInputNewFileName"
                                                                            message:nil
-                                                                buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                                buttonClickHandler:^(UIView *alertView, NSInteger buttonIndex) {
                                                                     if (buttonIndex == 0) {
                                                                         return;
                                                                     }
@@ -473,7 +476,7 @@
                                                                         dispatch_async(dispatch_get_main_queue(), ^{
                                                                             AlertView *alertView = [[AlertView alloc] initWithTitle:@"kWarning"
                                                                                                                             message:@"kIllegalNameWarning"
-                                                                                                                 buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                                                                                 buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                                                                                      dispatch_async(dispatch_get_main_queue(), ^{
                                                                                                                          inputFileName();
                                                                                                                      });
@@ -509,7 +512,7 @@
 
                                                                                 AlertView *alertView = [[AlertView alloc] initWithTitle:@""
                                                                                                                                 message:@"kSaveSignedDocSuccess"
-                                                                                                                     buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                                                                                     buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                                                                                          double delayInSeconds = 0.4;
                                                                                                                          dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
                                                                                                                          dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
@@ -541,7 +544,7 @@
                                                                         dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
                                                                             AlertView *alert = [[AlertView alloc] initWithTitle:@"kWarning"
                                                                                                                         message:@"kFileAlreadyExists"
-                                                                                                             buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                                                                                             buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                                                                                  if (buttonIndex == 0) {
                                                                                                                      dispatch_async(dispatch_get_main_queue(), ^{
                                                                                                                          inputFileName();
@@ -569,11 +572,10 @@
             inputAlertView.usesMessageTextView = NO;
             [inputAlertView show];
         };
-
         inputFileName();
     };
-    selectDestination.cancelHandler = ^{
-        [selectDestination dismissViewControllerAnimated:YES completion:nil];
+    selectDestination.cancelHandler = ^(FileSelectDestinationViewController *controller) {
+        [controller dismissViewControllerAnimated:YES completion:nil];
     };
     UINavigationController *selectDestinationNavController = [[UINavigationController alloc] initWithRootViewController:selectDestination];
     UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;

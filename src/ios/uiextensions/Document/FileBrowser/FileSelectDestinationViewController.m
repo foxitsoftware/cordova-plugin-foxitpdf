@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -206,6 +206,8 @@
     self.navigationController.navigationBar.titleTextAttributes = titleFontAttributes;
 }
 
+#pragma mark <UINavigationControllerDelegate>
+
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     navigationController.navigationBar.tag = 1;
     if (viewController == self) {
@@ -225,7 +227,7 @@
 
 - (void)cancelAction {
     if (self.cancelHandler) {
-        self.cancelHandler();
+        self.cancelHandler(self);
     }
     [[self.navigationController.viewControllers objectAtIndex:0] dismissViewControllerAnimated:YES
                                                                                     completion:^{

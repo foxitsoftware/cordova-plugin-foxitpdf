@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -17,13 +17,13 @@
 #define OS_ISVERSION8 (BOOL)(OS_VERSION.integerValue >= 8)
 #define OS_ISVERSION9 (BOOL)(OS_VERSION.integerValue >= 9)
 
-/** Whether it is iphone. */
+/** Whether it is iphone/ipad. */
 #define DEVICE_iPHONE ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone)
+#define DEVICE_iPAD   ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad)
 
 #define SIZECLASS (OS_ISVERSION8 ? [[UIApplication sharedApplication] delegate].window.traitCollection.horizontalSizeClass : UIUserInterfaceSizeClassCompact)
 
 /** Define notification center observer messages for annotation events. */
-#define ANNOLIST_UPDADELETETOTAL @"AnnoList_UpdateDeleteTotal"
 #define ANNOLIST_UPDATETOTAL @"AnnoList_UpdateTotal"
 #define ANNOTATION_UNREAD_TOTALCOUNT @"AnnotationUnreadTotalcount"
 #define CLEAN_ANNOTATIONLIST @"CLEAN_ANNOTATIONLIST"

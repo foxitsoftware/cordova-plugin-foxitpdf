@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -19,7 +19,7 @@
 @protocol IPropertyBarListener;
 
 /**@brief A text markup annotation handler to handle events between itself and the page. */
-@interface MKAnnotHandler : NSObject <IAnnotHandler, UIPopoverControllerDelegate, IScrollViewEventListener, IGestureEventListener, IRotationEventListener, IPropertyBarListener>
+@interface MKAnnotHandler : NSObject <IAnnotHandler, UIPopoverControllerDelegate, IScrollViewEventListener, IGestureEventListener, IRotationEventListener, IPropertyBarListener, IDocEventListener>
 
 @property (nonatomic, strong) UINavigationController *currentVC;
 

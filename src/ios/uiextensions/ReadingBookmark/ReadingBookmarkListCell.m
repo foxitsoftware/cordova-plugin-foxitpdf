@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -58,10 +58,6 @@
     }
 }
 
-- (void)awakeFromNib {
-    // Initialization code
-}
-
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
 
@@ -81,7 +77,7 @@
 }
 
 - (void)showEditViewAnimated:(BOOL)animated {
-    void (^showEditView)() = ^{
+    void (^showEditView)(void) = ^{
         self.editView.frame = ({
             CGRect frame = self.editView.frame;
             frame.origin.x = self.editView.superview.bounds.size.width - frame.size.width;
@@ -96,7 +92,7 @@
 }
 
 - (void)hideEditViewAnimated:(BOOL)animated {
-    void (^hideEditView)() = ^{
+    void (^hideEditView)(void) = ^{
         if (!_editView) {
             return;
         }
@@ -127,6 +123,7 @@
         [_editView removeFromSuperview];
         _editView = nil;
     }
+    [super prepareForReuse];
 }
 
 #pragma mark <AnnotationListMoreDelegate>

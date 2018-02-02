@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -50,7 +50,7 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
 @property (nonatomic, strong) UIView *levelBottomView;
 @property (nonatomic, strong) NSMutableArray *tempTopButtonArr;
 
-@property (nonatomic, strong) UIView *ipadTopView;
+@property (nonatomic, strong) UIScrollView *ipadTopView;
 @property (nonatomic, strong) UIView *brightnessSwitchView;
 @property (nonatomic, strong) UIView *brightnessSliderView;
 @property (nonatomic, strong) UIView *nightButtonView;
@@ -71,39 +71,41 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
         _isBrightnessManual = NO;
         self.isEnterBg = NO;
         self.isActive = NO;
-        
+
         self.tempSysBrightness = [UIScreen mainScreen].brightness;
-        
+
         UIDevice *device = [UIDevice currentDevice];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationChanged:) name:UIDeviceOrientationDidChangeNotification object:device];
-        
+
         CGRect screenFrame = _pdfViewCtrl.bounds;
         if (!OS_ISVERSION8 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
             screenFrame = CGRectMake(0, 0, screenFrame.size.height, screenFrame.size.width);
         }
-        
+
         self.contentView = [[UIView alloc] initWithFrame:CGRectMake(0, screenFrame.size.height - 250, screenFrame.size.width, DEVICE_iPHONE ? 240 : 200)];
         self.contentView.backgroundColor = [UIColor whiteColor];
         _contentViewFrame = self.contentView.frame;
-        
+
         self.reflowBtn = [SettingBar createItemWithImageAndTitle:FSLocalizedString(@"kReflow") imageNormal:[UIImage imageNamed:@"readview_reflow_normal"] imageSelected:[UIImage imageNamed:@"readview_reflow_selected"] imageDisable:[UIImage imageNamed:@"readview_reflow_selected"]];
-        
+
         self.cropBtn = [SettingBar createItemWithImageAndTitle:FSLocalizedString(@"kCropMode") imageNormal:[UIImage imageNamed:@"readview_crop_normal"] imageSelected:[UIImage imageNamed:@"readview_crop_selected"] imageDisable:[UIImage imageNamed:@"readview_crop_selected"]];
-        
+
         self.screenLockBtn = [SettingBar createItemWithImageAndTitle:FSLocalizedString(@"kScreenLock") imageNormal:[UIImage imageNamed:@"readview_screen_lock_normal"] imageSelected:[UIImage imageNamed:@"readview_screen_lock_selected"] imageDisable:[UIImage imageNamed:@"readview_screen_lock_selected"]];
         
+        self.panAndZoomBtn = [SettingBar createItemWithImageAndTitle:FSLocalizedString(@"kPanAndZoom") imageNormal:[UIImage imageNamed:@"zoom_mode"] imageSelected:[UIImage imageNamed:@"zoom_mode_selected"] imageDisable:[UIImage imageNamed:@"zoom_mode_selected"]];
+
         NSString *kAutoBrightness = FSLocalizedString(@"kAutoBrightness");
-        CGSize titleSize = [Utility getTextSize:kAutoBrightness fontSize:15.0f maxSize:CGSizeMake(200, 100)];
-        
+        //        CGSize titleSize = [Utility getTextSize:kAutoBrightness fontSize:15.0f maxSize:CGSizeMake(200, 100)];
+
         self.brightnessLabel = [[UILabel alloc] init];
         self.brightnessLabel.text = kAutoBrightness;
         self.brightnessLabel.font = [UIFont systemFontOfSize:15.0f];
-        
+
         self.brightnessSwitch = [[UISwitch alloc] init];
-   
+
         UIImage *smaller = [UIImage imageNamed:@"readview_brightness_smaller"];
         UIImage *bigger = [UIImage imageNamed:@"readview_brightness_bigger"];
-        
+
         self.brightnessSmaller = [[UIImageView alloc] initWithImage:smaller];
         self.brightnessBigger = [[UIImageView alloc] initWithImage:bigger];
 
@@ -112,98 +114,98 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
         [self.brightnessControl setThumbImage:[UIImage imageNamed:@"property_linewidth_slider.png"] forState:UIControlStateDisabled];
         self.brightnessControl.minimumValue = 0.2f;
         self.brightnessControl.enabled = !self.brightnessSwitch.on;
-   
-        UIImage *nightImageNormal = [UIImage imageNamed:@"readview_night_normal"];
+
         self.nightViewBtn = [UIButton buttonWithType:UIButtonTypeCustom];
         [self.nightViewBtn setImage:[UIImage imageNamed:@"readview_night_normal"] forState:UIControlStateNormal];
         [self.nightViewBtn setImage:[UIImage imageNamed:@"readview_night_selected"] forState:UIControlStateHighlighted];
         [self.nightViewBtn setImage:[UIImage imageNamed:@"readview_night_selected"] forState:UIControlStateSelected];
-        
+
         self.doubleViewBtn = [[UIButton alloc] init];
-  
+
         if (DEVICE_iPHONE) {
             _levelTopView = [[UIView alloc] init];
             [self.contentView addSubview:_levelTopView];
-            
-            NSDictionary *singleViewBtnInfo = @{@"type" : @0,
-                                                  @"normalImage" :@"readview_mode_bg_normal",
-                                                  @"selectedImage" :@"readview_mode_bg_selected",
-                                                  @"title" : @"kViewModeSingle",
-                                                  @"normalTitleColor" : @0x000000,
-                                                  @"higinlightTitleColor" : @0xffffff,
-                                                  @"selectTitleColor" : @0xffffff,
-                                                  @"titleFont" : @12.f,
-                                                  @"isIphone" : DEVICE_iPHONE ? @"y" : @"n"};
-            
-            NSDictionary *continueViewBtninfo = @{@"type" : @0,
-                                                     @"normalImage" :@"readview_mode_bg_normal",
-                                                     @"selectedImage" :@"readview_mode_bg_selected",
-                                                     @"title" : @"kViewModeContinuous",
-                                                     @"normalTitleColor" : @0x000000,
-                                                     @"higinlightTitleColor" : @0xffffff,
-                                                     @"selectTitleColor" : @0xffffff,
-                                                     @"titleFont" : @12.f,
-                                                     @"isIphone" : DEVICE_iPHONE ? @"y" : @"n"};
-            
-            NSDictionary *thumbnailViewBtnInfo = @{@"type" : @0,
-                                                      @"normalImage" :@"readview_mode_bg_normal",
-                                                      @"selectedImage" :@"readview_mode_bg_selected",
-                                                      @"title" : @"kViewModeThumbnail",
-                                                      @"normalTitleColor" : @0x000000,
-                                                      @"higinlightTitleColor" : @0xffffff,
-                                                      @"selectTitleColor" : @0xffffff,
-                                                      @"titleFont" : @12.f,
-                                                      @"isIphone" : DEVICE_iPHONE ? @"y" : @"n"};
+
+            NSDictionary *singleViewBtnInfo = @{ @"type" : @0,
+                                                 @"normalImage" : @"readview_mode_bg_normal",
+                                                 @"selectedImage" : @"readview_mode_bg_selected",
+                                                 @"title" : @"kViewModeSingle",
+                                                 @"normalTitleColor" : @0x000000,
+                                                 @"higinlightTitleColor" : @0xffffff,
+                                                 @"selectTitleColor" : @0xffffff,
+                                                 @"titleFont" : @12.f,
+                                                 @"isIphone" : DEVICE_iPHONE ? @"y" : @"n" };
+
+            NSDictionary *continueViewBtninfo = @{ @"type" : @0,
+                                                   @"normalImage" : @"readview_mode_bg_normal",
+                                                   @"selectedImage" : @"readview_mode_bg_selected",
+                                                   @"title" : @"kViewModeContinuous",
+                                                   @"normalTitleColor" : @0x000000,
+                                                   @"higinlightTitleColor" : @0xffffff,
+                                                   @"selectTitleColor" : @0xffffff,
+                                                   @"titleFont" : @12.f,
+                                                   @"isIphone" : DEVICE_iPHONE ? @"y" : @"n" };
+
+            NSDictionary *thumbnailViewBtnInfo = @{ @"type" : @0,
+                                                    @"normalImage" : @"readview_mode_bg_normal",
+                                                    @"selectedImage" : @"readview_mode_bg_selected",
+                                                    @"title" : @"kViewModeThumbnail",
+                                                    @"normalTitleColor" : @0x000000,
+                                                    @"higinlightTitleColor" : @0xffffff,
+                                                    @"selectTitleColor" : @0xffffff,
+                                                    @"titleFont" : @12.f,
+                                                    @"isIphone" : DEVICE_iPHONE ? @"y" : @"n" };
             NSArray *levelTopArr = [NSArray array];
 
             if (self.extensionsManager.modulesConfig.loadThumbnail) {
-                levelTopArr = @[singleViewBtnInfo,continueViewBtninfo,thumbnailViewBtnInfo];
-            }else{
-                levelTopArr = @[singleViewBtnInfo,continueViewBtninfo];
+                levelTopArr = @[ singleViewBtnInfo, continueViewBtninfo, thumbnailViewBtnInfo ];
+            } else {
+                levelTopArr = @[ singleViewBtnInfo, continueViewBtninfo ];
             }
-            
+
             _tempTopButtonArr = [[NSMutableArray alloc] init];
-            int i = 0;
-            for (i; i < levelTopArr.count; i++ ) {
+
+            for (int i = 0; i < levelTopArr.count; i++) {
                 NSDictionary *buttoninfo = [levelTopArr objectAtIndex:i];
-                
+
                 UIButton *button = [self createButtonWith:buttoninfo];
                 [_tempTopButtonArr addObject:button];
             }
-            
-            self.singleViewBtn = (UIButton *)[_tempTopButtonArr objectAtIndex:0];
-            self.continueViewBtn = (UIButton *)[_tempTopButtonArr objectAtIndex:1];
-            
+
+            self.singleViewBtn = (UIButton *) [_tempTopButtonArr objectAtIndex:0];
+            self.continueViewBtn = (UIButton *) [_tempTopButtonArr objectAtIndex:1];
+
             if (self.extensionsManager.modulesConfig.loadThumbnail) {
-                self.thumbnailViewBtn = (UIButton *)[_tempTopButtonArr objectAtIndex:2];
+                self.thumbnailViewBtn = (UIButton *) [_tempTopButtonArr objectAtIndex:2];
                 [_levelTopView addSubview:self.thumbnailViewBtn];
             }
-            
+
             [_levelTopView addSubview:self.singleViewBtn];
             [_levelTopView addSubview:self.continueViewBtn];
-            
+
             _levelBottomView = [[UIView alloc] init];
             [self.contentView addSubview:_levelBottomView];
-    
+
             [_levelBottomView addSubview:self.reflowBtn];
             [_levelBottomView addSubview:self.screenLockBtn];
             [_levelBottomView addSubview:self.cropBtn];
-            
+            [_levelBottomView addSubview:self.panAndZoomBtn];
+
             _levelSecondView = [[UIView alloc] init];
             [self.contentView addSubview:_levelSecondView];
-            
+
             [_levelSecondView addSubview:self.brightnessLabel];
             [_levelSecondView addSubview:self.brightnessSwitch];
-            
+
             _levelThirdView = [[UIView alloc] init];
             [self.contentView addSubview:_levelThirdView];
-            
+
             [_levelThirdView addSubview:self.brightnessSmaller];
             [_levelThirdView addSubview:self.brightnessBigger];
             [_levelThirdView addSubview:self.brightnessControl];
-            
+
             [self.contentView addSubview:self.nightViewBtn];
-            
+
             UIView *divideView = [self makeDividLine:CGRectMake(0, 0, CGRectGetWidth(_pdfViewCtrl.bounds), [Utility realPX:1.0f]) withColor:0xe6e6e6 andDirection:KDividLineTypeHorizontal];
             [_levelTopView addSubview:divideView];
             [divideView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -212,7 +214,7 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
                 make.height.mas_equalTo([Utility realPX:1.0f]);
                 make.bottom.mas_equalTo(divideView.superview).offset([Utility realPX:1.0f]);
             }];
-            
+
             UIView *divideView1 = [self makeDividLine:CGRectMake(0, 0, CGRectGetWidth(_pdfViewCtrl.bounds), [Utility realPX:1.0f]) withColor:0xe6e6e6 andDirection:KDividLineTypeHorizontal];
             [_levelThirdView addSubview:divideView1];
             [divideView1 mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -221,11 +223,11 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
                 make.height.mas_equalTo([Utility realPX:1.0f]);
                 make.bottom.mas_equalTo(divideView1.superview).offset([Utility realPX:1.0f]);
             }];
-            
+
             UIView *divideView2 = [self makeDividLine:CGRectMake(0, 0, [Utility realPX:1.0f], 30) withColor:0xe6e6e6 andDirection:KDividLineTypeVertical];
             divideView2.center = CGPointMake(divideView2.center.x, 140);
             [_levelThirdView addSubview:divideView2];
-            
+
             [divideView2 mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.mas_equalTo(divideView2.superview).offset(10);
                 make.height.mas_equalTo(40);
@@ -234,43 +236,51 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
             }];
         } else {
             self.singleViewBtn = [SettingBar createItemWithImageAndTitle:FSLocalizedString(@"kViewModeSingle") imageNormal:[UIImage imageNamed:@"readview_single_normal"] imageSelected:[UIImage imageNamed:@"readview_single_selected"] imageDisable:[UIImage imageNamed:@"readview_single_selected"]];
-            
+
             self.continueViewBtn = [SettingBar createItemWithImageAndTitle:FSLocalizedString(@"kViewModeContinuous") imageNormal:[UIImage imageNamed:@"readview_continue_normal"] imageSelected:[UIImage imageNamed:@"readview_continue_selected"] imageDisable:[UIImage imageNamed:@"readview_continue_selected"]];
+
+            self.doubleViewBtn = [SettingBar createItemWithImageAndTitle:FSLocalizedString(@"kViewModeNoCover") imageNormal:[UIImage imageNamed:@"readview_nocoverpage_normal"] imageSelected:[UIImage imageNamed:@"readview_nocoverpage_selected"] imageDisable:[UIImage imageNamed:@"readview_nocoverpage_selected"]];
             
-            self.doubleViewBtn = [SettingBar createItemWithImageAndTitle:FSLocalizedString(@"kViewModeTwo") imageNormal:[UIImage imageNamed:@"readview_double_normal"] imageSelected:[UIImage imageNamed:@"readview_double_selected"] imageDisable:[UIImage imageNamed:@"readview_double_selected"]];
-            
+            self.coverBtn = [SettingBar createItemWithImageAndTitle:FSLocalizedString(@"kViewModeCover") imageNormal:[UIImage imageNamed:@"readview_coverpage_normal"] imageSelected:[UIImage imageNamed:@"readview_coverpage_selected"] imageDisable:[UIImage imageNamed:@"readview_coverpage_selected"]];
+
             if (self.extensionsManager.modulesConfig.loadThumbnail) {
                 self.thumbnailViewBtn = [SettingBar createItemWithImageAndTitle:FSLocalizedString(@"kViewModeThumbnail") imageNormal:[UIImage imageNamed:@"readview_thumail_normal"] imageSelected:[UIImage imageNamed:@"readview_thumail_selected"] imageDisable:[UIImage imageNamed:@"readview_thumail_selected"]];
             }
 
-            _ipadTopView = [[UIView alloc] init];
+            _ipadTopView = [[UIScrollView alloc] init];
+            _ipadTopView.frame = CGRectMake(0, 0, self.contentView.frame.size.width, 100);
+            _ipadTopView.showsHorizontalScrollIndicator = NO;
             [self.contentView addSubview:_ipadTopView];
             
+            _ipadTopView.contentSize = CGSizeMake(self.contentView.frame.size.width, 100);
+
             [_ipadTopView addSubview:self.singleViewBtn];
             [_ipadTopView addSubview:self.continueViewBtn];
             [_ipadTopView addSubview:self.doubleViewBtn];
+            [_ipadTopView addSubview:self.coverBtn];
             if (self.extensionsManager.modulesConfig.loadThumbnail)
                 [_ipadTopView addSubview:self.thumbnailViewBtn];
             [_ipadTopView addSubview:self.reflowBtn];
             [_ipadTopView addSubview:self.screenLockBtn];
             [_ipadTopView addSubview:self.cropBtn];
-    
-            if (self.extensionsManager.modulesConfig.loadThumbnail){
-                _ipadTopButtonArr = [@[self.singleViewBtn,self.continueViewBtn,self.doubleViewBtn,self.thumbnailViewBtn,self.reflowBtn,self.screenLockBtn,self.cropBtn] mutableCopy];
-            }else{
-                _ipadTopButtonArr = [@[self.singleViewBtn,self.continueViewBtn,self.doubleViewBtn,self.reflowBtn,self.screenLockBtn,self.cropBtn] mutableCopy];
+            [_ipadTopView addSubview:self.panAndZoomBtn];
+
+            if (self.extensionsManager.modulesConfig.loadThumbnail) {
+                _ipadTopButtonArr = [@[ self.singleViewBtn, self.continueViewBtn, self.doubleViewBtn, self.coverBtn, self.thumbnailViewBtn, self.reflowBtn, self.screenLockBtn, self.cropBtn, self.panAndZoomBtn ] mutableCopy];
+            } else {
+                _ipadTopButtonArr = [@[ self.singleViewBtn, self.continueViewBtn, self.doubleViewBtn, self.coverBtn, self.reflowBtn, self.screenLockBtn, self.cropBtn, self.panAndZoomBtn] mutableCopy];
             }
             _brightnessSwitchView = [[UIView alloc] init];
             _brightnessSwitchView.clipsToBounds = YES;
             [self.contentView addSubview:_brightnessSwitchView];
-            
+
             _brightnessSliderView = [[UIView alloc] init];
             _brightnessSliderView.clipsToBounds = YES;
             [self.contentView addSubview:_brightnessSliderView];
-            
+
             _nightButtonView = [[UIView alloc] init];
             [self.contentView addSubview:_nightButtonView];
-            
+
             [_brightnessSwitchView addSubview:self.brightnessLabel];
             [_brightnessSwitchView addSubview:self.brightnessSwitch];
             [_brightnessSliderView addSubview:self.brightnessSmaller];
@@ -279,12 +289,13 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
             [_nightButtonView addSubview:self.nightViewBtn];
             
             UIView *divideView = [self makeDividLine:CGRectMake(0, 0, CGRectGetWidth(_pdfViewCtrl.bounds) - 60, [Utility realPX:1.0f]) withColor:0xe6e6e6 andDirection:KDividLineTypeHorizontal];
-            [_ipadTopView addSubview:divideView];
+            [self.contentView addSubview:divideView];
+            
             [divideView mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.left.mas_equalTo(divideView.superview).offset(30);
                 make.right.mas_equalTo(divideView.superview).offset(-30);
                 make.height.mas_equalTo([Utility realPX:1.0f]);
-                make.bottom.mas_equalTo(divideView.superview);
+                make.top.mas_equalTo(divideView.superview).offset(101);
             }];
             
             UIView *verticalView1 = [self makeDividLine:CGRectMake(0, 0, [Utility realPX:1.0f], 40) withColor:0xe6e6e6 andDirection:KDividLineTypeVertical];
@@ -292,38 +303,38 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
             [verticalView1 mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.mas_equalTo(verticalView1.superview).offset(30);
                 make.height.mas_equalTo(40);
-                make.width.mas_equalTo([Utility realPX:1.0f]);
+                make.width.mas_equalTo([Utility realPX:2.0f]);
                 make.right.mas_equalTo(verticalView1.superview).offset([Utility realPX:1.0f]);
             }];
-            
+
             UIView *verticalView2 = [self makeDividLine:CGRectMake(0, 0, [Utility realPX:1.0f], 40) withColor:0xe6e6e6 andDirection:KDividLineTypeVertical];
             [_brightnessSliderView addSubview:verticalView2];
             [verticalView2 mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.mas_equalTo(verticalView2.superview).offset(30);
                 make.height.mas_equalTo(40);
-                make.width.mas_equalTo([Utility realPX:1.0f]);
+                make.width.mas_equalTo([Utility realPX:2.0f]);
                 make.right.mas_equalTo(verticalView2.superview).offset([Utility realPX:1.0f]);
             }];
         }
-        
+
         [self addBtnTarget];
         [self updateBtnLayout];
     }
     return self;
 }
 
--(UIView *)makeDividLine:(CGRect)frame withColor:(UInt32)colorValue andDirection:(KDividLineType)direction{
+- (UIView *)makeDividLine:(CGRect)frame withColor:(UInt32)colorValue andDirection:(KDividLineType)direction {
     UIView *divideView = [[UIView alloc] initWithFrame:frame];
     divideView.backgroundColor = [UIColor colorWithRGBHex:colorValue];
-    if (direction == KDividLineTypeHorizontal){
+    if (direction == KDividLineTypeHorizontal) {
         divideView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleRightMargin;
-    }else{
+    } else {
         divideView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     }
     return divideView;
 }
 
--(NSMutableArray *)getShowBtnFromArray:(NSMutableArray *)sourceArray {
+- (NSMutableArray *)getShowBtnFromArray:(NSMutableArray *)sourceArray {
     NSMutableArray *_tempArr = [NSMutableArray array];
     for (int i = 0; i < sourceArray.count; i++) {
         UIButton *button = [sourceArray objectAtIndex:i];
@@ -331,186 +342,185 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
             [_tempArr addObject:button];
         }
     }
-    
+
     return _tempArr;
 }
 
--(void)updateBtnLayout {
+- (void)updateBtnLayout {
     self.contentView.frame = _contentViewFrame;
     NSString *kAutoBrightness = FSLocalizedString(@"kAutoBrightness");
     CGSize titleSize = [Utility getTextSize:kAutoBrightness fontSize:15.0f maxSize:CGSizeMake(200, 100)];
-    
+
     UIImage *smaller = [UIImage imageNamed:@"readview_brightness_smaller"];
     UIImage *bigger = [UIImage imageNamed:@"readview_brightness_bigger"];
     UIImage *nightImageNormal = [UIImage imageNamed:@"readview_night_normal"];
-    
-    if(DEVICE_iPHONE) {
-        self.bottomButtonArr = [@[self.reflowBtn,self.screenLockBtn,self.cropBtn] mutableCopy];
-        
-        NSMutableArray *topBtnArr =[self getShowBtnFromArray:_tempTopButtonArr];
+
+    if (DEVICE_iPHONE) {
+        self.bottomButtonArr = [@[ self.reflowBtn, self.screenLockBtn, self.cropBtn, self.panAndZoomBtn ] mutableCopy];
+
+        NSMutableArray *topBtnArr = [self getShowBtnFromArray:_tempTopButtonArr];
         if (topBtnArr.count == 0) {
             CGRect frame = self.contentView.frame;
             frame.size.height -= 50;
             self.contentView.frame = frame;
-            
+
             _levelTopView.clipsToBounds = YES;
             [_levelTopView mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.top.left.right.mas_equalTo(self.contentView);
                 make.height.mas_equalTo(0);
             }];
-        }else{
+        } else {
             [_levelTopView mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.top.left.right.mas_equalTo(self.contentView);
                 make.height.mas_equalTo(50);
             }];
-            
+
             UIButton __block *toplastButton = nil;
             [topBtnArr enumerateObjectsUsingBlock:^(UIButton *button, NSUInteger idx, BOOL *stop) {
                 [button mas_remakeConstraints:^(MASConstraintMaker *make) {
                     make.top.mas_equalTo(10);
                     make.height.mas_equalTo(30);
                     make.left.mas_equalTo(toplastButton ? toplastButton.mas_right : button.superview.mas_left).with.offset(20.f);
-                    
-                    if (topBtnArr.count < 2){
+
+                    if (topBtnArr.count < 2) {
                         make.right.mas_equalTo(self.contentView).with.offset(-20.f);
-                    }else{
+                    } else {
                         make.width.mas_equalTo(self.contentView).dividedBy(topBtnArr.count).with.offset(-30);
                     }
-                    
+
                     toplastButton = button;
                 }];
             }];
         }
-        
+
         [self.brightnessLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.width.mas_equalTo(titleSize.width);
             make.left.mas_equalTo(20);
             make.centerY.mas_equalTo(self.brightnessLabel.superview.mas_centerY);
         }];
-        
+
         [self.brightnessSwitch mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.right.mas_equalTo(self.brightnessSwitch.superview.mas_right).with.offset(-20);
             make.centerY.mas_equalTo(self.brightnessLabel.superview.mas_centerY);
         }];
-        
+
         [_levelThirdView mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.top.mas_equalTo(_levelSecondView.mas_bottom);
             make.left.mas_equalTo(self.contentView);
             make.height.mas_equalTo(60);
-            
-            MASConstraint *widthConstraint = make.width.mas_equalTo(self.contentView).multipliedBy((float)2/3);
+            make.width.mas_equalTo(self.contentView).multipliedBy((float) 2 / 3);
         }];
-        
+
         [self.brightnessSmaller mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.width.mas_equalTo(smaller.size.width);
             make.left.mas_equalTo(20);
             make.centerY.mas_equalTo(self.brightnessSmaller.superview.mas_centerY);
         }];
-        
+
         [self.brightnessBigger mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.width.mas_equalTo(bigger.size.width);
             make.right.mas_equalTo(self.brightnessBigger.superview.mas_right);
             make.centerY.mas_equalTo(self.brightnessBigger.superview.mas_centerY);
         }];
-        
+
         [self.brightnessControl mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.left.equalTo(self.brightnessSmaller.mas_right).offset(10);
             make.right.equalTo(self.brightnessBigger.mas_left).offset(-10);
             make.centerY.equalTo(self.brightnessBigger.mas_centerY);
             make.height.mas_equalTo(40);
         }];
-        
+
         if (self.brightnessControl.hidden && self.nightViewBtn.hidden) {
             _levelThirdView.clipsToBounds = YES;
             [_levelThirdView mas_updateConstraints:^(MASConstraintMaker *make) {
                 make.height.mas_equalTo(0);
             }];
-            
+
             CGRect frame = self.contentView.frame;
             frame.size.height -= 60;
             self.contentView.frame = frame;
         }
-        
+
         NSMutableArray *bottomBtnArr = [self getShowBtnFromArray:self.bottomButtonArr];
-        
+
         if (bottomBtnArr.count == 0) {
             CGRect frame = self.contentView.frame;
             frame.size.height -= 80;
             self.contentView.frame = frame;
-            
+
             _levelBottomView.clipsToBounds = YES;
             [_levelBottomView mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.bottom.left.right.mas_equalTo(self.contentView);
                 make.height.mas_equalTo(0);
             }];
-        }else{
+        } else {
             [_levelBottomView mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.bottom.left.right.mas_equalTo(self.contentView);
                 make.height.mas_equalTo(80);
             }];
-            
+
             UIView __block *lastButton = nil;
             [bottomBtnArr enumerateObjectsUsingBlock:^(UIButton *button, NSUInteger idx, BOOL *stop) {
                 [button mas_remakeConstraints:^(MASConstraintMaker *make) {
                     make.width.mas_equalTo(button.frame.size.width);
                     make.height.mas_equalTo(button.frame.size.height);
-                    make.left.mas_equalTo(lastButton ? lastButton.mas_right : button.superview.mas_left).with.offset(lastButton ? 30 : 20);
+                    make.left.mas_equalTo(lastButton ? lastButton.mas_right : button.superview.mas_left).with.offset(lastButton ? 15 : 15);
                     make.bottom.mas_equalTo(button.superview.mas_bottom).offset(-10);
                     lastButton = button;
                 }];
             }];
         }
-        
-        if (self.brightnessControl.hidden){
+
+        if (self.brightnessControl.hidden) {
             _levelThirdView.clipsToBounds = YES;
             [_levelThirdView mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.height.mas_equalTo(0);
             }];
-            
+
             CGRect frame = self.contentView.frame;
             frame.size.height -= 50;
             self.contentView.frame = frame;
-            
+
             _levelSecondView.clipsToBounds = YES;
             [_levelSecondView mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.top.mas_equalTo(_levelTopView.mas_bottom);
                 make.left.right.mas_equalTo(self.contentView);
                 make.height.mas_equalTo(0);
             }];
-            
+
             [self.nightViewBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.left.mas_equalTo(self.nightViewBtn.superview).with.offset(20);
                 make.width.mas_equalTo(nightImageNormal.size.width);
-                
-                if (bottomBtnArr.count == 0){
+
+                if (bottomBtnArr.count == 0) {
                     make.bottom.mas_equalTo(self.nightViewBtn.superview).with.offset(-10);
-                }else {
-                    make.bottom.mas_equalTo(self.nightViewBtn.superview).with.offset(-80-10);
+                } else {
+                    make.bottom.mas_equalTo(self.nightViewBtn.superview).with.offset(-80 - 10);
                 }
             }];
-        }else{
+        } else {
             [_levelSecondView mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.top.mas_equalTo(_levelTopView.mas_bottom);
                 make.left.right.mas_equalTo(self.contentView);
                 make.height.mas_equalTo(50);
             }];
-            
+
             [self.nightViewBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.right.mas_equalTo(self.nightViewBtn.superview.mas_right).with.offset(-20);
                 make.centerY.mas_equalTo(_levelThirdView.mas_centerY);
-                
+
                 make.width.mas_equalTo(nightImageNormal.size.width);
             }];
         }
-    }else{
+    } else {
         [_ipadTopView mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.height.mas_equalTo(100);
             make.centerX.equalTo(self.contentView.mas_centerX);
             make.top.equalTo(self.contentView.mas_top).offset(0);
             make.width.mas_equalTo(self.contentView);
         }];
-        
-        NSMutableArray *tempIpadTopBtnArr =[self getShowBtnFromArray:_ipadTopButtonArr];
+
+        NSMutableArray *tempIpadTopBtnArr = [self getShowBtnFromArray:_ipadTopButtonArr];
         if (tempIpadTopBtnArr.count == 0) {
             _ipadTopView.clipsToBounds = YES;
             [_ipadTopView mas_updateConstraints:^(MASConstraintMaker *make) {
@@ -519,45 +529,46 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
             CGRect frame = self.contentView.frame;
             frame.size.height -= 100;
             self.contentView.frame = frame;
-        }else{
+        } else {
             UIButton __block *lastButton = nil;
             [tempIpadTopBtnArr enumerateObjectsUsingBlock:^(UIButton *button, NSUInteger idx, BOOL *stop) {
                 [button mas_remakeConstraints:^(MASConstraintMaker *make) {
                     make.width.equalTo(@(button.frame.size.width));
                     make.height.equalTo(@(button.frame.size.height));
-                    make.left.mas_equalTo(lastButton ? lastButton.mas_right : button.superview.mas_left).with.offset(lastButton ? 44 : 30);
+                    make.left.mas_equalTo(lastButton ? lastButton.mas_right : button.superview.mas_left).with.offset(lastButton ? 30 : 30);
                     make.centerY.equalTo(button.superview.mas_centerY);
-                    
+
                     lastButton = button;
                 }];
             }];
+            _ipadTopView.contentSize = CGSizeMake(lastButton.frame.origin.x + lastButton.frame.size.width + 30, 100);
         }
-        
+
         NSMutableArray *ipadBottomViewArr = [[NSMutableArray alloc] init];
 
         self.brightnessLabel.hidden = YES;
-        if (!self.brightnessControl.hidden){
+        if (!self.brightnessControl.hidden) {
             self.brightnessLabel.hidden = NO;
             [ipadBottomViewArr addObject:_brightnessSwitchView];
-            
+
             [ipadBottomViewArr addObject:_brightnessSliderView];
         }
-        
-        if (!self.nightViewBtn.hidden){
+
+        if (!self.nightViewBtn.hidden) {
             [ipadBottomViewArr addObject:_nightButtonView];
         }
-        
+
         if (ipadBottomViewArr.count == 0) {
             CGRect frame = self.contentView.frame;
             frame.size.height -= 100;
             self.contentView.frame = frame;
-            
-            [@[_brightnessSwitchView,_brightnessSliderView,_nightButtonView] mas_remakeConstraints:^(MASConstraintMaker *make) {
+
+            [@[ _brightnessSwitchView, _brightnessSliderView, _nightButtonView ] mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.height.mas_equalTo(0);
             }];
-        }else{
-            if(self.nightViewBtn.hidden){
-                [_nightButtonView mas_remakeConstraints:^(MASConstraintMaker *make) {
+        } else {
+            if (self.nightViewBtn.hidden) {
+                [_nightButtonView mas_remakeConstraints:^(MASConstraintMaker *make){
                 }];
             }
             UIView __block *lastView = nil;
@@ -577,31 +588,31 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
                 lastView = view;
             }];
         }
-        
+
         [self.brightnessSwitch mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.centerY.mas_equalTo(self.brightnessSwitch.superview.mas_centerY);
             make.centerX.mas_equalTo(self.brightnessLabel.superview.mas_centerX).offset(50);
         }];
-        
+
         [self.brightnessLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.width.mas_equalTo(titleSize.width);
             make.height.mas_equalTo(titleSize.height);
             make.centerY.mas_equalTo(self.brightnessLabel.superview.mas_centerY);
             make.centerX.mas_equalTo(self.brightnessLabel.superview.mas_centerX).offset(-50);
         }];
-        
+
         if (self.brightnessControl.hidden) {
-            NSArray *tempSliderArr = @[self.brightnessSmaller,self.brightnessBigger,self.brightnessControl];
+            NSArray *tempSliderArr = @[ self.brightnessSmaller, self.brightnessBigger, self.brightnessControl ];
             [tempSliderArr mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.width.mas_equalTo(0);
             }];
-        }else{
+        } else {
             [self.brightnessSmaller mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.width.mas_equalTo(smaller.size.width);
                 make.left.mas_equalTo(self.brightnessSmaller.superview.mas_left).offset(20);
                 make.centerY.mas_equalTo(self.brightnessSmaller.superview.mas_centerY);
             }];
-            
+
             [self.brightnessBigger mas_remakeConstraints:^(MASConstraintMaker *make) {
                 make.width.mas_equalTo(bigger.size.width);
                 make.right.mas_equalTo(self.brightnessBigger.superview.mas_right).offset(-20);
@@ -614,7 +625,7 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
                 make.height.mas_equalTo(40);
             }];
         }
-        
+
         [self.nightViewBtn mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.width.mas_equalTo(nightImageNormal.size.width);
             make.centerY.mas_equalTo(self.nightViewBtn.superview.mas_centerY);
@@ -623,43 +634,48 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
     }
 }
 
--(void)addBtnTarget {
+- (void)addBtnTarget {
     [self.singleViewBtn addTarget:self action:@selector(singleClicked) forControlEvents:UIControlEventTouchUpInside];
     [self.continueViewBtn addTarget:self action:@selector(continueClicked) forControlEvents:UIControlEventTouchUpInside];
-    
+
     if (self.extensionsManager.modulesConfig.loadThumbnail) {
         [self.thumbnailViewBtn addTarget:self action:@selector(thumbnailClicked) forControlEvents:UIControlEventTouchUpInside];
     }
-    
+
     [self.reflowBtn addTarget:self action:@selector(reflowClicked) forControlEvents:UIControlEventTouchUpInside];
     [self.cropBtn addTarget:self action:@selector(cropClicked) forControlEvents:UIControlEventTouchUpInside];
     [self.screenLockBtn addTarget:self action:@selector(screenClicked) forControlEvents:UIControlEventTouchUpInside];
+    [self.panAndZoomBtn addTarget:self action:@selector(panAndZoomClicked) forControlEvents:UIControlEventTouchUpInside];
     
     [self.brightnessSwitch addTarget:self action:@selector(onSwitchClicked) forControlEvents:UIControlEventValueChanged];
-    
+
     [self.brightnessControl addTarget:self action:@selector(sliderChangedValue) forControlEvents:UIControlEventValueChanged];
     [self.brightnessControl addTarget:self action:@selector(sliderChangedEndValue) forControlEvents:UIControlEventTouchUpInside];
-    
+
     [self.nightViewBtn addTarget:self action:@selector(nightModeClicked) forControlEvents:UIControlEventTouchUpInside];
+
+    [self.doubleViewBtn addTarget:self action:@selector(doubleClicked) forControlEvents:UIControlEventTouchUpInside];
     
     [self.doubleViewBtn addTarget:self action:@selector(doubleClicked) forControlEvents:UIControlEventTouchUpInside];
+    [self.coverBtn addTarget:self action:@selector(coverClicked) forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (UIButton *)createButtonWith:(NSDictionary *)buttoninfo {
     UIButton *button = [UIButton buttonWithType:[buttoninfo[@"type"] intValue]];
-    UIImage *viewbgNormal = [[UIImage imageNamed:[NSString stringWithFormat:buttoninfo[@"normalImage"]]] resizableImageWithCapInsets:UIEdgeInsetsMake(14, 19, 14, 19)];
-    UIImage *viewSelected = [[UIImage imageNamed:[NSString stringWithFormat:buttoninfo[@"selectedImage"]]] resizableImageWithCapInsets:UIEdgeInsetsMake(14, 19, 14, 19)];
-    
+
+    UIImage *viewbgNormal = [[UIImage imageNamed:buttoninfo[@"normalImage"]] resizableImageWithCapInsets:UIEdgeInsetsMake(14, 19, 14, 19)];
+    UIImage *viewSelected = [[UIImage imageNamed:buttoninfo[@"selectedImage"]] resizableImageWithCapInsets:UIEdgeInsetsMake(14, 19, 14, 19)];
+
     [button setBackgroundImage:viewbgNormal forState:UIControlStateNormal];
     [button setBackgroundImage:viewSelected forState:UIControlStateHighlighted];
     [button setBackgroundImage:viewSelected forState:UIControlStateSelected];
-    
+
     [button setTitle:FSLocalizedString(buttoninfo[@"title"]) forState:UIControlStateNormal];
-    
-    [button setTitleColor:[UIColor colorWithRGBHex:buttoninfo[@"normalTitleColor"]] forState:UIControlStateNormal];
-    [button setTitleColor:[UIColor colorWithRGBHex:buttoninfo[@"higinlightTitleColor"]] forState:UIControlStateHighlighted];
-    [button setTitleColor:[UIColor colorWithRGBHex:buttoninfo[@"selectTitleColor"]] forState:UIControlStateSelected];
-    
+
+    [button setTitleColor:[UIColor colorWithRGBHex:[buttoninfo[@"normalTitleColor"] unsignedIntValue]] forState:UIControlStateNormal];
+    [button setTitleColor:[UIColor colorWithRGBHex:[buttoninfo[@"higinlightTitleColor"] unsignedIntValue]] forState:UIControlStateHighlighted];
+    [button setTitleColor:[UIColor colorWithRGBHex:[buttoninfo[@"selectTitleColor"] unsignedIntValue]] forState:UIControlStateSelected];
+
     button.titleLabel.font = [UIFont systemFontOfSize:[buttoninfo[@"titleFont"] floatValue]];
     return button;
 }
@@ -714,10 +730,18 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
     }
 }
 
+- (void)coverClicked {
+    [self updateLayoutButtonsWithLayout:PDF_LAYOUT_MODE_TWO_RIGHT];
+    if ([self.delegate respondsToSelector:@selector(settingBarCoverPageLayout:)]) {
+        [self.delegate settingBarCoverPageLayout:self];
+    }
+}
+
 - (void)thumbnailClicked {
     self.singleViewBtn.selected = NO;
     self.continueViewBtn.selected = NO;
     self.doubleViewBtn.selected = NO;
+    self.coverBtn.selected = NO;
     self.thumbnailViewBtn.selected = YES;
     if ([self.delegate respondsToSelector:@selector(settingBarThumbnail:)]) {
         [self.delegate settingBarThumbnail:self];
@@ -745,11 +769,37 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
     }
 }
 
+- (void)panAndZoomClicked {
+    //self.panAndZoomBtn.selected = !self.panAndZoomBtn.selected;
+    if ([self.delegate respondsToSelector:@selector(settingBarPanAndZoom:)]) {
+        [self.delegate settingBarPanAndZoom:self];
+    }
+}
+
 - (void)nightModeClicked {
     self.nightViewBtn.selected = !self.nightViewBtn.selected;
     if ([self.delegate respondsToSelector:@selector(settingBar:setNightMode:)]) {
         [self.delegate settingBar:self setNightMode:self.nightViewBtn.selected];
     }
+}
+
+# pragma mark - get setting bar items show/hide status.
+-(NSMutableDictionary *)getItemHiddenStatus{
+    NSMutableDictionary *settingbarInfo = [@{} mutableCopy];
+    
+    [settingbarInfo setObject:self.singleViewBtn.isHidden ? @"YES":@"NO" forKey:@"SingleViewBtn"];
+    [settingbarInfo setObject:self.continueViewBtn.isHidden ? @"YES":@"NO" forKey:@"ContinueViewBtn"];
+    [settingbarInfo setObject:self.doubleViewBtn.isHidden ? @"YES":@"NO" forKey:@"DoubleViewBtn"];
+    [settingbarInfo setObject:self.coverBtn.isHidden ? @"YES":@"NO" forKey:@"CoverPageBtn"];
+    [settingbarInfo setObject:self.thumbnailViewBtn.isHidden ? @"YES":@"NO" forKey:@"ThumbnailViewBtn"];
+    [settingbarInfo setObject:self.reflowBtn.isHidden ? @"YES":@"NO" forKey:@"FeflowBtn"];
+    [settingbarInfo setObject:self.cropBtn.isHidden ? @"YES":@"NO" forKey:@"CropBtn"];
+    [settingbarInfo setObject:self.panAndZoomBtn.isHidden ? @"YES":@"NO" forKey:@"PanAndZoomBtn"];
+    [settingbarInfo setObject:self.screenLockBtn.isHidden ? @"YES":@"NO" forKey:@"ScreenLockBtn"];
+    [settingbarInfo setObject:self.nightViewBtn.isHidden ? @"YES":@"NO" forKey:@"NightViewBtn"];
+    [settingbarInfo setObject:self.brightnessControl.isHidden ? @"YES":@"NO" forKey:@"BrightnessControl"];
+    
+    return settingbarInfo;
 }
 
 - (void)setItem:(SettingItemType)itemType hidden:(BOOL)hidden {
@@ -759,26 +809,30 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
 
 - (UIView *_Nullable)getItemView:(SettingItemType)itemType {
     switch (itemType) {
-        case SINGLE:
-            return self.singleViewBtn;
-        case CONTINUOUS:
-            return self.continueViewBtn;
-        case DOUBLEPAGE:
-            return self.doubleViewBtn;
-        case THUMBNAIL:
-            return self.thumbnailViewBtn;
-        case REFLOW:
-            return self.reflowBtn;
-        case CROPPAGE:
-            return self.cropBtn;
-        case LOCKSCREEN:
-            return self.screenLockBtn;
-        case NIGHTMODE:
-            return self.nightViewBtn;
-        case BRIGHTNESS:
-            return self.brightnessControl;
-        default:
-            return nil;
+    case SINGLE:
+        return self.singleViewBtn;
+    case CONTINUOUS:
+        return self.continueViewBtn;
+    case DOUBLEPAGE:
+        return self.doubleViewBtn;
+    case COVERPAGE:
+        return self.coverBtn;
+    case THUMBNAIL:
+        return self.thumbnailViewBtn;
+    case REFLOW:
+        return self.reflowBtn;
+    case CROPPAGE:
+        return self.cropBtn;
+    case LOCKSCREEN:
+        return self.screenLockBtn;
+    case NIGHTMODE:
+        return self.nightViewBtn;
+    case BRIGHTNESS:
+        return self.brightnessControl;
+    case PANZOOM:
+        return self.panAndZoomBtn;
+    default:
+        return nil;
     }
 }
 
@@ -786,8 +840,12 @@ typedef NS_ENUM(NSUInteger, KDividLineType) {
     self.singleViewBtn.selected = layout == PDF_LAYOUT_MODE_SINGLE;
     self.continueViewBtn.selected = layout == PDF_LAYOUT_MODE_CONTINUOUS;
     self.doubleViewBtn.selected = layout == PDF_LAYOUT_MODE_TWO;
+    self.coverBtn.selected = layout == PDF_LAYOUT_MODE_TWO_RIGHT;
     self.reflowBtn.selected = layout == PDF_LAYOUT_MODE_REFLOW;
     self.thumbnailViewBtn.selected = NO;
+
+    self.cropBtn.selected = [_pdfViewCtrl getCropMode] != PDF_CROP_MODE_NONE ? YES : NO;
+    self.panAndZoomBtn.enabled = self.cropBtn.selected?NO:YES;
 }
 
 + (UIButton *)createItemWithImageAndTitle:(NSString *)title

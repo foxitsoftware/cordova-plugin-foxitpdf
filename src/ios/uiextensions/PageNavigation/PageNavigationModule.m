@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -102,6 +102,30 @@
     // copied from single container scroll view
     NSString *ret;
     int pageCount = [_pdfViewCtrl getPageCount];
+    
+    if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_RIGHT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_MIDDLE) {
+        if(pageIndex == 0 || pageIndex == 1) {
+            ret = [NSString stringWithFormat:@"%d", pageIndex + 1];
+        } else{
+            if(pageCount % 2 == 1){
+                pageIndex--;
+                ret = [NSString stringWithFormat:@"%d,%d", pageIndex + 1, pageIndex + 2];
+            }else{
+                if(pageIndex == pageCount-1){
+                    ret = [NSString stringWithFormat:@"%d", pageIndex + 1];
+                }else{
+                    pageIndex--;
+                    ret = [NSString stringWithFormat:@"%d,%d", pageIndex + 1, pageIndex + 2];
+                }
+            }
+        }
+        
+        if (needTotal) {
+            ret = [NSString stringWithFormat:@"%@/%d", ret, pageCount];
+        }
+        return ret;
+    }
+    
     if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO &&
         !(pageCount % 2 == 1 && (pageIndex == pageCount - 1))) {
         if (pageIndex % 2 == 1) {
@@ -144,8 +168,18 @@
         self.pageNumBar.layer.borderWidth = 1.0f;
         self.pageNumBar.layer.cornerRadius = 4.0f;
 
-        [_gotoPageToolbar addSubview:self.goBtn];
-        [_gotoPageToolbar addSubview:self.pageNumBar];
+        if (IOS11_OR_LATER) {
+            UIBarButtonItem *goBtnItem = [[UIBarButtonItem alloc] initWithCustomView:self.goBtn];
+            UIBarButtonItem *leftPadding = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+            leftPadding.width = -10.f;
+            UIBarButtonItem *pageNumBarItem = [[UIBarButtonItem alloc] initWithCustomView:self.pageNumBar];
+            UIBarButtonItem *itemSeperator = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+            itemSeperator.width = 10;
+            _gotoPageToolbar.items = @[leftPadding, pageNumBarItem, itemSeperator, goBtnItem];
+        } else {
+            [_gotoPageToolbar addSubview:self.goBtn];
+            [_gotoPageToolbar addSubview:self.pageNumBar];
+        }
 
         UIView *divideView = [[UIView alloc] init];
         divideView.backgroundColor = [UIColor colorWithRGBHex:0x949494];
@@ -164,7 +198,7 @@
         AlertView *alertView = [[AlertView alloc]
                  initWithTitle:@"kWarning"
                        message:[NSString stringWithFormat:@"%@ %d - %d", FSLocalizedString(@"kWrongPageNumber"), 1, [_pdfViewCtrl getPageCount]]
-            buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+            buttonClickHandler:^(UIView *alertView, NSInteger buttonIndex) {
                 [self showGotoPageToolbar:nil];
             }
              cancelButtonTitle:nil
@@ -176,8 +210,14 @@
 }
 
 - (BOOL)gotoPage:(int)index animated:(BOOL)animated {
-    NSAssert1(index >= -1 && index < [_pdfViewCtrl getPageCount], @"Attempt to go to page index out of range: %d", index);
-    if (index >= 0 && index < [_pdfViewCtrl getPageCount]) {
+    int pageCount = [_pdfViewCtrl getPageCount];
+    if ([_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_LEFT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_RIGHT || [_pdfViewCtrl getPageLayoutMode] == PDF_LAYOUT_MODE_TWO_MIDDLE) {
+        pageCount = pageCount +1;
+    }
+    
+    NSAssert1(index >= -1 && index < pageCount, @"Attempt to go to page index out of range: %d", index);
+    
+    if (index >= 0 && index < pageCount) {
         if (YES) {
             [self.pageNumBar resignFirstResponder];
             self.gotoPageToolbar.hidden = YES;
@@ -373,7 +413,7 @@
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
     CGSize sizeName = [self.goBtn.titleLabel.text boundingRectWithSize:CGSizeMake(MAXFLOAT, 0.0) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName : self.goBtn.titleLabel.font, NSParagraphStyleAttributeName : paragraphStyle} context:nil].size;
     self.goBtn.frame = CGRectMake(frame.size.width - 10 - sizeName.width, (44 - sizeName.height) / 2, sizeName.width, sizeName.height);
-    self.pageNumBar.frame = CGRectMake(10, 8, (int) self.goBtn.frame.origin.x - 20, 30);
+    self.pageNumBar.frame = CGRectMake(10, 8, IOS11_OR_LATER ? (int) self.goBtn.frame.origin.x - 20 -20 : (int) self.goBtn.frame.origin.x - 20, 30);
     [self addPageNumberView];
     [self setPageCountLabel];
 }
@@ -411,7 +451,7 @@
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
     CGSize sizeName = [self.goBtn.titleLabel.text boundingRectWithSize:CGSizeMake(MAXFLOAT, 0.0) options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName : self.goBtn.titleLabel.font, NSParagraphStyleAttributeName : paragraphStyle} context:nil].size;
     self.goBtn.frame = CGRectMake(frame.size.width - 10 - sizeName.width, (44 - sizeName.height) / 2, sizeName.width, sizeName.height);
-    self.pageNumBar.frame = CGRectMake(10, 8, (int) self.goBtn.frame.origin.x - 20, 30);
+    self.pageNumBar.frame = CGRectMake(10, 8, IOS11_OR_LATER ? (int) self.goBtn.frame.origin.x - 20 -20 : (int) self.goBtn.frame.origin.x - 20, 30);
     [self setPageCountLabel];
     int state = [_extensionsManager getState];
     if (state == STATE_THUMBNAIL || state == STATE_ANNOTTOOL || state == STATE_EDIT || state == STATE_SIGNATURE || _extensionsManager.isFullScreen) {
@@ -454,7 +494,7 @@
     if (state == STATE_THUMBNAIL || state == STATE_ANNOTTOOL || state == STATE_EDIT || state == STATE_SIGNATURE) {
         self.pageNumView.hidden = YES;
     } else {
-        if (state == STATE_NORMAL) {
+        if (state == STATE_NORMAL || state == STATE_REFLOW) {
             [self setPageCountLabel];
         }
         self.pageNumView.hidden = NO;

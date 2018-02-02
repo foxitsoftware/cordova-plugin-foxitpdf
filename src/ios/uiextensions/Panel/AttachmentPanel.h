@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -21,7 +21,7 @@
 /** @brief Attachment panel to show the list of all attachments in the document. */
 @interface AttachmentPanel : NSObject <IPanelSpec, IDocEventListener>
 
-@property (nonatomic, strong) PanelButton *addButton;
+@property (nonatomic, strong) UIButton *addButton;
 @property (nonatomic, strong) AttachmentViewController *attachmentCtr;
 @property (nonatomic, strong) FSPanelController *panelController;
 

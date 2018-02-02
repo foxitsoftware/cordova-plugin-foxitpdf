@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -116,7 +116,7 @@
     if ([_bookmarkCtrl getBookmarkCount] > 0) {
         AlertView *alertView = [[AlertView alloc] initWithTitle:@"kConfirm"
                                                         message:@"kClearBookmark"
-                                             buttonClickHandler:^(UIView *alertView, int buttonIndex) {
+                                             buttonClickHandler:^(AlertView *alertView, NSInteger buttonIndex) {
                                                  if (buttonIndex == 1) {        // no
                                                  } else if (buttonIndex == 0) { // yes
                                                      [_bookmarkCtrl clearData:YES];
@@ -150,7 +150,7 @@
 #pragma mark--- IDocEventListener
 
 - (void)onDocOpened:(FSPDFDoc *)document error:(int)error {
-    [_bookmarkCtrl clearData:NO];
+//    [_bookmarkCtrl clearData:NO];
     [_bookmarkCtrl loadData];
     if (![Utility canAssembleDocument:document]) {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -167,6 +167,7 @@
 }
 
 - (void)onDocWillClose:(FSPDFDoc *)document {
+    [_bookmarkCtrl clearData:NO];
     if (self.bookmarkCtrl.currentVC) {
         if ([self.bookmarkCtrl.currentVC isKindOfClass:[UINavigationController class]]) {
             [(UINavigationController *) self.bookmarkCtrl.currentVC dismissViewControllerAnimated:NO completion:nil];

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -37,7 +37,6 @@
     self = [super init];
     if (self) {
         self.extensionsManager = extensionsManager;
-        [self.extensionsManager registerToolHandler:self];
         self.pdfViewCtrl = extensionsManager.pdfViewCtrl;
         self.taskServer = self.extensionsManager.taskServer;
         self.type = e_annotCaret;
@@ -98,7 +97,8 @@
     }
 
     int lastIndex = index;
-    for (int i = index; i > 0; i++) {
+    int pageCharCount = [textPage getCharCount];
+    for (int i = index; i < pageCharCount; i++) {
         NSArray *array = [Utility getTextRects:textPage start:i count:1];
         if (array.count == 0 || !array) {
             break;
@@ -115,9 +115,6 @@
         self.currentEditPdfRect = [Utility normalizeFSRect:[Utility CGRect2FSRectF:unionRect]];
         if (selectCharpdfRect.bottom > self.currentEditPdfRect.top) {
             lastIndex = i;
-            break;
-        }
-        if (i == 1000) {
             break;
         }
     }

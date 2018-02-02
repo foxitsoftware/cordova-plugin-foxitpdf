@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -24,6 +24,8 @@
 #define TAG_ITEM_IMPORTFORM 25
 #define TAG_ITEM_EXPORTFORM 26
 #define TAG_ITEM_PASSWORD 17
+#define TAG_ITEM_WIRELESSPRINT 14
+#define TAG_ITEM_CROP 16
 
 #define EDIT_ITEM_STROKEOUT 8
 #define EDIT_ITEM_UNDERLINE 10

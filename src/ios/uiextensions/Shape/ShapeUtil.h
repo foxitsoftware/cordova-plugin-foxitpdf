@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -17,6 +17,7 @@
 @interface ShapeUtil : NSObject
 
 + (NSArray *)getMovePointInRect:(CGRect)rect;
++ (NSArray *)getCornerMovePointInRect:(CGRect)rect;
 + (EDIT_ANNOT_RECT_TYPE)getEditTypeWithPoint:(CGPoint)point rect:(CGRect)rect defaultEditType:(EDIT_ANNOT_RECT_TYPE)defaultEditType;
 
 @end

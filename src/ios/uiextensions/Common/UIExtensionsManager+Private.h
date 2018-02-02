@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -66,6 +66,8 @@
 - (void)onAnnotFontNameChanged:(NSString *)fontName annotType:(FSAnnotType)annotType;
 - (void)onAnnotFontSizeChanged:(unsigned int)fontSize annotType:(FSAnnotType)annotType;
 - (void)onAnnotIconChanged:(int)icon annotType:(FSAnnotType)annotType;
+- (void)onAnnotDistanceUnitChanged:(int)icon annotType:(FSAnnotType)annotType;
+- (void)onAnnotRotationChanged:(FSRotation)rotation annotType:(FSAnnotType)annotType;
 @end
 
 /** @brief The undo/redo listener. */
@@ -95,7 +97,7 @@
 @protocol FSPageOrganizerDelegate;
 
 /** @brief Private implementation for extension manager, these properites and methods are not supposed to be called. */
-@interface UIExtensionsManager () <FSUndo, IDrawEventListener, IPropertyValueChangedListener, IGestureEventListener, IScrollViewEventListener>
+@interface UIExtensionsManager () <FSUndo, IDrawEventListener, IPropertyValueChangedListener, IGestureEventListener, IScrollViewEventListener, ISearchEventListener>
 @property (nonatomic, strong) MenuView *more;
 @property (nonatomic, strong) TbBaseBar *editBar;
 @property (nonatomic, strong) TbBaseBar *editDoneBar;
@@ -121,6 +123,8 @@
 @property (nonatomic, assign) int attachmentIcon;
 @property (nonatomic, assign) int eraserLineWidth;
 @property (nonatomic, assign) int stampIcon;
+@property (nonatomic, strong) NSString *distanceUnit;
+@property (nonatomic, assign) FSRotation screenAnnotRotation;
 @property (nonatomic, strong) PropertyBar *propertyBar;
 @property (nonatomic, strong) TaskServer *taskServer;
 @property (nonatomic, strong) MenuControl *menuControl;
@@ -157,6 +161,8 @@
 - (void)setAnnotFontName:(NSString *)fontName annotType:(FSAnnotType)annotType;
 - (int)filterAnnotType:(FSAnnotType)annotType;
 - (id<IAnnotHandler>)getAnnotHandlerByAnnot:(FSAnnot *)annot;
+
+- (void)saveAndCloseCurrentDoc:(void (^_Nullable)(BOOL success))completion;
 
 - (void)registerRotateChangedListener:(id<IRotationEventListener>)listener;
 - (void)unregisterRotateChangedListener:(id<IRotationEventListener>)listener;

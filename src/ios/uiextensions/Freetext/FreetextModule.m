@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -38,8 +38,17 @@
         _extensionsManager = extensionsManager;
         [_extensionsManager registerAnnotPropertyListener:self];
         [self loadModule];
-        [[FtAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
-        [[FtToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        FtAnnotHandler* annotHandler = [[FtAnnotHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_extensionsManager registerAnnotHandler:annotHandler];
+        [_extensionsManager registerRotateChangedListener:annotHandler];
+        [_extensionsManager registerGestureEventListener:annotHandler];
+        [_extensionsManager.propertyBar registerPropertyBarListener:annotHandler];
+        [_extensionsManager.pdfViewCtrl registerScrollViewEventListener:annotHandler];
+        
+        FtToolHandler* toolHandler = [[FtToolHandler alloc] initWithUIExtensionsManager:extensionsManager];
+        [_extensionsManager registerToolHandler:toolHandler];
+        [_extensionsManager registerRotateChangedListener:toolHandler];
+        [_extensionsManager.pdfViewCtrl registerScrollViewEventListener:toolHandler];
     }
     return self;
 }
@@ -160,7 +169,7 @@
 #pragma mark - IAnnotPropertyListener
 
 - (void)onAnnotColorChanged:(unsigned int)color annotType:(FSAnnotType)annotType {
-    if (annotType == e_annotFreeText) {
+    if (annotType == e_annotFreeText && [[_extensionsManager.currentToolHandler getName] isEqualToString:Tool_Freetext]) {
         [self.propertyItem setInsideCircleColor:color];
     }
 }

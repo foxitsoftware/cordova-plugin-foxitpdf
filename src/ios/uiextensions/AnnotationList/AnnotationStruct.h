@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -20,7 +20,6 @@ typedef void (^GetAnnotationFoundHandler)(NSArray *array, int currentPageIndex, 
 /**@brief Utility class for loading all the annotations on the document. */
 @interface AnnotationStruct : NSObject
 
-+ (void)getAnnotation:(GetAnnotationFoundHandler)getAnnotationFoundHandler CleanupIfFailed:(void (^)())cleanup;
 + (NSString *)annotationImageName:(AnnotationItem *)annotation;
 + (NSMutableDictionary *)getAnnotationStructWithAnnos:(NSArray *)annosarray;
 + (NSArray *)getAllChildNodesWithSuperAnnotation:(AnnotationItem *)superanno annoStruct:(NSDictionary *)annostruct;

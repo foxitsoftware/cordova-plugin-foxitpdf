@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -31,7 +31,6 @@
 @property (nonatomic, assign) CGRect currentRect;
 @property (nonatomic, assign) CGRect currentRealRect;
 @property (nonatomic, assign) int currentEditPointIndex;
-@property (nonatomic, strong) NSMutableArray *arrayPageCropRects;
 @property (nonatomic, strong) CropPDFView *pdfView;
 
 - (instancetype)initWithCropPDFView:(CropPDFView *)pdfView;
@@ -47,7 +46,8 @@
 
 @property (nonatomic, strong) CropPDFView *pdfView;
 @property (nonatomic, strong) CropView *cropView;
-@property (assign, nonatomic) BOOL isApply2All;
+@property (assign, nonatomic) BOOL isApplyToAllOddPages;
+@property (assign, nonatomic) BOOL isApplyToAllEvenPages;
 @end
 
 @implementation CropViewController
@@ -56,7 +56,8 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
-        self.isApply2All = NO;
+        self.isApplyToAllOddPages = NO;
+        self.isApplyToAllEvenPages = NO;
     }
     return self;
 }
@@ -70,7 +71,6 @@
 - (void)setExtension:(UIExtensionsManager *)extensionsManager {
     _extensionsManager = extensionsManager;
     _pdfViewCtrl = extensionsManager.pdfViewCtrl;
-    _extensionsManager = extensionsManager;
 }
 
 - (void)viewDidLoad {
@@ -112,11 +112,6 @@
     self.buttonPageIndex.enabled = NO;
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-    [self.cropView.arrayPageCropRects removeAllObjects];
-    [super viewWillDisappear:animated];
-}
-
 - (CGRect)getPageContentCGRect:(FSPDFPage *)page isWholePage:(BOOL)isWholePage {
     CGRect rect = CGRectZero;
 
@@ -151,7 +146,7 @@
         newRectBBox.top = rectBBox.top;
         newRectBBox.bottom = rectBBox.bottom;
 
-        CGRect newRect;
+        CGRect newRect = CGRectZero;
         FSRotation rotation = [page getRotation];
         switch (rotation) {
         case e_rotation0:
@@ -211,6 +206,7 @@
     @try {
         page = [_pdfViewCtrl.currentDoc getPage:self.pdfView.pageIndex];
     } @catch (NSException *_) {
+        self.cropView.currentRect = CGRectMake(0, 0, 0, 0);
         return;
     }
     float pageWidth = [page getWidth];
@@ -230,7 +226,13 @@
     self.cropView.originalRect = [self getPageContentCGRect:[_pdfViewCtrl.currentDoc getPage:self.pdfView.pageIndex] isWholePage:NO];
     int margin = 15;
     self.cropView.originalRect = [Utility convertCGRectWithMargin:self.cropView.originalRect size:self.cropView.originalSize margin:margin];
-    self.cropView.currentRect = [self.cropView.arrayPageCropRects[self.pdfView.pageIndex] CGRectValue];
+    self.cropView.currentRect = ({
+        CGSize pageSize = CGSizeMake(pageWidth, pageHeight);
+        CGRect pageContentRect = [self getPageContentCGRect:page isWholePage:YES];
+        int margin = 15;
+        CGRect pageCropRect = [Utility convertCGRectWithMargin:pageContentRect size:pageSize margin:margin];
+        pageCropRect;
+    });
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -245,24 +247,6 @@
         self.cropView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.cropView.opaque = NO;
         self.cropView.userInteractionEnabled = YES;
-
-        for (int i = 0; i < [_pdfViewCtrl getPageCount]; i++) {
-            FSPDFPage *page = nil;
-            @try {
-                page = [_pdfViewCtrl.currentDoc getPage:i];
-            }
-                @catch(NSException* e)
-            {
-                continue;
-            }
-            float pageWidth = [page getWidth];
-            float pageHeight = [page getHeight];
-            CGSize pageSize = CGSizeMake(pageWidth, pageHeight);
-            CGRect pageCropRect = [self getPageContentCGRect:[_pdfViewCtrl.currentDoc getPage:i] isWholePage:YES];
-            int margin = 15;
-            pageCropRect = [Utility convertCGRectWithMargin:pageCropRect size:pageSize margin:margin];
-            [self.cropView.arrayPageCropRects addObject:[NSValue valueWithCGRect:pageCropRect]];
-        }
 
         [self calcCurrentPreviewedCropRects];
         [self setPreviousAndNextBtnEnable];
@@ -339,15 +323,18 @@
 }
 
 - (IBAction)apply2allClicked:(id)sender {
-    self.isApply2All = YES;
-    for (int i = 0; i < self.cropView.arrayPageCropRects.count; i++) {
-        self.cropView.arrayPageCropRects[i] = [NSValue valueWithCGRect:self.cropView.currentRect];
-    }
+    self.isApplyToAllOddPages = YES;
+    self.isApplyToAllEvenPages = YES;
 }
 
 - (IBAction)apply2oddevenClicked:(id)sender {
-    for (int i = self.pdfView.pageIndex & 1; i < self.cropView.arrayPageCropRects.count; i += 2) {
-        self.cropView.arrayPageCropRects[i] = [NSValue valueWithCGRect:self.cropView.currentRect];
+    UIButton *button = (UIButton *)sender;
+    if ([@"Use on Odd" isEqualToString:button.titleLabel.text]) {
+        self.isApplyToAllOddPages = YES;
+        self.isApplyToAllEvenPages = NO;
+    } else {
+        self.isApplyToAllOddPages = NO;
+        self.isApplyToAllEvenPages = YES;
     }
 }
 
@@ -380,6 +367,8 @@
         [self.pdfView setNeedsDisplay];
         [self.cropView setNeedsDisplay];
     }
+    self.isApplyToAllOddPages = NO;
+    self.isApplyToAllEvenPages = NO;
 }
 
 - (IBAction)nextPageClicked:(id)sender {
@@ -390,6 +379,8 @@
         [self.pdfView setNeedsDisplay];
         [self.cropView setNeedsDisplay];
     }
+    self.isApplyToAllOddPages = NO;
+    self.isApplyToAllEvenPages = NO;
 }
 
 - (IBAction)smartCropClicked:(id)sender {
@@ -409,23 +400,44 @@
 - (IBAction)noCropClicked:(id)sender {
     ((UIButton *) [_extensionsManager.settingBar getItemView:CROPPAGE]).selected = NO;
     [_pdfViewCtrl setCropMode:PDF_CROP_MODE_NONE];
+    _extensionsManager.settingBar.panAndZoomBtn.enabled = YES;
     [self close];
 }
 
 - (IBAction)doneClicked:(id)sender {
-    int pageCount = [_pdfViewCtrl getPageCount];
-    for (int i = 0; i < pageCount; i++) {
-        FSPDFPage *page = [_pdfViewCtrl.currentDoc getPage:i];
+    int currentPageIndex = self.cropView.pdfView.pageIndex;
+    CGRect cropRect = self.cropView.currentRect;
+
+    void (^setPageCropRect)(int pageIndex) = ^(int pageIndex) {
+        FSPDFPage *page = nil;
+        @try {
+            page = [_pdfViewCtrl.currentDoc getPage:pageIndex];
+        } @catch (NSException *e) {
+            return;
+        }
         float pageWidth = [page getWidth];
         float pageHeight = [page getHeight];
         CGSize pageSize = CGSizeMake(pageWidth, pageHeight);
-        UIEdgeInsets insets = [Utility convertCGRect2Insets:[self.cropView.arrayPageCropRects[i] CGRectValue] size:pageSize];
+
+        UIEdgeInsets insets = [Utility convertCGRect2Insets:cropRect size:pageSize];
         FSRectF *pdfrect = [[FSRectF alloc] init];
         pdfrect.top = insets.top;
         pdfrect.left = insets.left;
         pdfrect.bottom = pageSize.height - insets.bottom;
         pdfrect.right = pageSize.width - insets.right;
-        [_pdfViewCtrl setCropPageRect:i pdfRect:pdfrect];
+        [_pdfViewCtrl setCropPageRect:pageIndex pdfRect:pdfrect];
+    };
+    setPageCropRect(currentPageIndex);
+    int pageCount = [_pdfViewCtrl getPageCount];
+    for (int i = 0; i < pageCount; i++) {
+        if (i == currentPageIndex) {
+            continue;
+        }
+        if (i % 2 == 1 && self.isApplyToAllEvenPages) {
+            setPageCropRect(i);
+        } else if (i % 2 == 0 && self.isApplyToAllOddPages) {
+            setPageCropRect(i);
+        }
     }
 
     [_pdfViewCtrl setCropMode:PDF_CROP_MODE_CUSTOMIZED];
@@ -433,7 +445,8 @@
 }
 
 - (void)close {
-    self.isApply2All = NO;
+    self.isApplyToAllOddPages = NO;
+    self.isApplyToAllEvenPages = NO;
     if (self.cropViewClosedHandler) {
         self.cropViewClosedHandler();
     }
@@ -481,10 +494,8 @@
     img = [self drawPage:clipRect.size.width * trans.a dibHeight:clipRect.size.height * -trans.d pdfX:-clipRect.origin.x * trans.a pdfY:-clipRect.origin.y * -trans.d pdfWidth:_width * trans.a pdfHeight:_height * -trans.d];
 
     if (!img) {
-        if (![NSThread isMainThread]) {
-            CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 1.0);
-            CGContextFillRect(context, clipRect);
-        }
+        CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 1.0);
+        CGContextFillRect(context, clipRect);
         return;
     }
 
@@ -537,13 +548,23 @@
 #endif
         [fsrenderer setTransformAnnotIcon:NO];
         FSMatrix *fsmatrix = [page getDisplayMatrix:newPdfX yPos:newPdfY xSize:newPdfWidth ySize:newPdfHeight rotate:e_rotation0];
-        if (self.pdfViewCtrl.isNightMode) {
+        if (self.pdfViewCtrl.colorMode == e_colorModeMapping) {
 #ifndef CONTEXT_DRAW
             //set background color of bitmap to black
-            memset(pBuf, 0x00, size);
+            UIColor *backgroundColor = self.pdfViewCtrl.mappingModeBackgroundColor;
+            int8_t r = (int8_t)(backgroundColor.red * 255);
+            int8_t g = (int8_t)(backgroundColor.green * 255);
+            int8_t b = (int8_t)(backgroundColor.blue * 255);
+            int8_t(*pixel)[3];
+            for (pixel = (typeof(pixel)) pBuf; (char *) pixel < (char *) pBuf + size; pixel++) {
+                int8_t *channel = (int8_t *) pixel;
+                channel[0] = r;
+                channel[1] = g;
+                channel[2] = b;
+            }
 #endif
             [fsrenderer setColorMode:e_colorModeMapping];
-            [fsrenderer setMappingModeColors:UX_BG_COLOR_NIGHT_PAGEVIEW foreColor:UX_TEXT_COLOR_NIGHT];
+            [fsrenderer setMappingModeColors:self.pdfViewCtrl.mappingModeBackgroundColor.argbHex foreColor:self.pdfViewCtrl.mappingModeForegroundColor.argbHex];
         } else {
 #ifdef CONTEXT_DRAW
             CGContextSetRGBFillColor(context, 1, 1, 1, 1);
@@ -554,7 +575,7 @@
 #endif
         }
 
-        void (^releaseRender)() = ^() {
+        void (^releaseRender)(void) = ^(void) {
 #ifdef CONTEXT_DRAW
             UIGraphicsEndImageContext();
 #endif
@@ -602,17 +623,8 @@
 
         self.pdfView = pdfView;
         _currentRealRect = CGRectZero;
-        self.arrayPageCropRects = [NSMutableArray array];
     }
     return self;
-}
-
-- (void)dealloc {
-}
-
-- (void)setCurrentRect:(CGRect)currentRect {
-    _currentRect = currentRect;
-    self.arrayPageCropRects[self.pdfView.pageIndex] = [NSValue valueWithCGRect:_currentRect];
 }
 
 - (void)resetDefaultCrop {
@@ -660,7 +672,7 @@
             CGRect dotRect = [obj CGRectValue];
             dotRect = CGRectInset(dotRect, -20, -20);
             if (CGRectContainsPoint(dotRect, point)) {
-                _currentEditPointIndex = idx;
+                _currentEditPointIndex = (int) idx;
                 *stop = YES;
             }
         }];

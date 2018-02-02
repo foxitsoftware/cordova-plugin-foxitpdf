@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -56,11 +56,11 @@
     [_groupTags removeAllObjects];
     [_groupTags addObjectsFromArray:[self.groupDic allKeys]];
     [self.groupTags sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        
-        NSComparisonResult result = [[NSNumber numberWithInt:[obj1 intValue]] compare:[NSNumber numberWithInt:[obj2 intValue]]];
+
+        NSComparisonResult result = [obj1 compare:obj2];
         return result;
     }];
-    
+
     [_tableView.tableView reloadData];
 }
 
@@ -72,49 +72,49 @@
     return self.navi.view;
 }
 
--(void)getDeepCopyDataSource{
-    if(!_moreViewCopyDic){
+- (void)getDeepCopyDataSource {
+    if (!_moreViewCopyDic) {
         NSMutableDictionary *groupDicArr = [[NSMutableDictionary alloc] init];
         for (id key in _groupDic) {
             MenuGroup *group = [_groupDic objectForKey:key];
-            
+
             NSMutableArray *mvMenuItemArr = [[NSMutableArray alloc] init];
 
             for (MvMenuItem *item in [group getItems]) {
                 [mvMenuItemArr addObject:item];
             }
-            
+
             [groupDicArr setObject:mvMenuItemArr forKey:key];
         }
-        
+
         _moreViewCopyDic = [groupDicArr mutableCopy];
     }
 }
 
--(void)resetViewData{
+- (void)resetViewData {
     [self getDeepCopyDataSource];
     NSMutableDictionary *groupDicArr = [[NSMutableDictionary alloc] init];
     for (id key in _moreViewCopyDic) {
         NSMutableArray *groupArr = [_moreViewCopyDic objectForKey:key];
         MenuGroup *group = [[MenuGroup alloc] init];
-        group.tag = key;
+        group.tag = [key integerValue];
         switch ([key integerValue]) {
-            case TAG_GROUP_FILE:
-                group.title = FSLocalizedString(@"kOtherDocumentsFile");
-                break;
-            case TAG_GROUP_PROTECT:
-                group.title = FSLocalizedString(@"kSecurity");
-                break;
-            case TAG_GROUP_FORM:
-                group.title = FSLocalizedString(@"kForm");
-                break;
-            default:
-                break;
+        case TAG_GROUP_FILE:
+            group.title = FSLocalizedString(@"kOtherDocumentsFile");
+            break;
+        case TAG_GROUP_PROTECT:
+            group.title = FSLocalizedString(@"kSecurity");
+            break;
+        case TAG_GROUP_FORM:
+            group.title = FSLocalizedString(@"kForm");
+            break;
+        default:
+            break;
         }
         [group setItems:[groupArr mutableCopy]];
         [groupDicArr setObject:group forKey:key];
     }
-    
+
     _groupDic = groupDicArr;
     [self reloadData];
 }
@@ -122,13 +122,13 @@
 #pragma mark - more view group item element hide/show
 - (void)setMoreViewItemHiddenWithGroup:(NSUInteger)groupTag andItemTag:(NSUInteger)itemTag hidden:(BOOL)isHidden {
     [self getDeepCopyDataSource];
-    
+
     if (isHidden) {
         [self removeMenuItem:groupTag WithItemTag:itemTag];
-    }else{
-        if ([[_moreViewCopyDic allKeys] containsObject:[NSString stringWithFormat:@"%d",groupTag]]) {
-            NSArray *groupArr = [_moreViewCopyDic objectForKey:[NSString stringWithFormat:@"%d",groupTag]];
-            
+    } else {
+        if ([[_moreViewCopyDic allKeys] containsObject:@(groupTag)]) {
+            NSArray *groupArr = [_moreViewCopyDic objectForKey:@(groupTag)];
+
             MvMenuItem *waitAddItem = [[MvMenuItem alloc] init];
             for (MvMenuItem *item in groupArr) {
                 if (item.tag == itemTag) {
@@ -136,23 +136,23 @@
                     break;
                 }
             }
-            
-            MenuGroup *group = [_groupDic objectForKey:[NSString stringWithFormat:@"%d",groupTag]];
+
+            MenuGroup *group = [_groupDic objectForKey:@(groupTag)];
             if (!group) {
                 group = [[MenuGroup alloc] init];
                 group.tag = groupTag;
-                switch ([[NSString stringWithFormat:@"%ul",groupTag] intValue]) {
-                    case TAG_GROUP_FILE:
-                        group.title = FSLocalizedString(@"kOtherDocumentsFile");
-                        break;
-                    case TAG_GROUP_PROTECT:
-                        group.title = FSLocalizedString(@"kSecurity");
-                        break;
-                    case TAG_GROUP_FORM:
-                        group.title = FSLocalizedString(@"kForm");
-                        break;
-                    default:
-                        break;
+                switch (groupTag) {
+                case TAG_GROUP_FILE:
+                    group.title = FSLocalizedString(@"kOtherDocumentsFile");
+                    break;
+                case TAG_GROUP_PROTECT:
+                    group.title = FSLocalizedString(@"kSecurity");
+                    break;
+                case TAG_GROUP_FORM:
+                    group.title = FSLocalizedString(@"kForm");
+                    break;
+                default:
+                    break;
                 }
                 [self addGroup:group];
             }
@@ -164,17 +164,17 @@
 }
 
 #pragma mark - more view group element hide/show
--(void)setMoreViewItemHiddenWithGroup:(NSUInteger)groupTag hidden:(BOOL)isHidden {
-    if(!_moreViewRemoveGropDic){
+- (void)setMoreViewItemHiddenWithGroup:(NSUInteger)groupTag hidden:(BOOL)isHidden {
+    if (!_moreViewRemoveGropDic) {
         _moreViewRemoveGropDic = [_groupDic mutableCopy];
     }
-    
+
     if (isHidden) {
         [self removeGroup:groupTag];
-    }else{
-        if ([[_moreViewRemoveGropDic allKeys] containsObject:[NSString stringWithFormat:@"%d",groupTag]]) {
-            if (![[_groupDic allKeys] containsObject:[NSString stringWithFormat:@"%d",groupTag]]) {
-                MenuGroup *group = [_moreViewRemoveGropDic objectForKey:[NSString stringWithFormat:@"%d",groupTag]];
+    } else {
+        if ([[_moreViewRemoveGropDic allKeys] containsObject:@(groupTag)]) {
+            if (![[_groupDic allKeys] containsObject:@(groupTag)]) {
+                MenuGroup *group = [_moreViewRemoveGropDic objectForKey:@(groupTag)];
                 [self addGroup:group];
             }
         }
@@ -182,31 +182,31 @@
 }
 
 - (void)addGroup:(MenuGroup *)group {
-    [self.groupDic setObject:group forKey:[NSString stringWithFormat:@"%lu", (unsigned long) group.tag]];
+    [self.groupDic setObject:group forKey:@(group.tag)];
     [_groupTags removeAllObjects];
     [_groupTags addObjectsFromArray:[self.groupDic allKeys]];
     [self.groupTags sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
 
-        NSComparisonResult result = [[NSNumber numberWithInt:[obj1 intValue]] compare:[NSNumber numberWithInt:[obj2 intValue]]];
+        NSComparisonResult result = [obj1 compare:obj2];
         return result;
     }];
 }
 
 - (void)addMenuItem:(NSUInteger)groupTag withItem:(MvMenuItem *)item {
-    MenuGroup *group = [self.groupDic objectForKey:[NSString stringWithFormat:@"%lu", (unsigned long) groupTag]];
+    MenuGroup *group = [self.groupDic objectForKey:@(groupTag)];
     [[group getItems] addObject:item];
     [[group getItems] sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
 
         MvMenuItem *item1 = (MvMenuItem *) obj1;
         MvMenuItem *item2 = (MvMenuItem *) obj2;
-        NSComparisonResult result = [[NSNumber numberWithLong:(long) item1.tag] compare:[NSNumber numberWithLong:(long) item2.tag]];
+        NSComparisonResult result = [@(item1.tag) compare:@(item2.tag)];
         return result;
     }];
 }
 
 - (void)removeMenuItem:(NSUInteger)groupTag WithItemTag:(NSUInteger)itemTag {
-    if ([self.groupDic objectForKey:[NSString stringWithFormat:@"%lu", (unsigned long) groupTag]]) {
-        MenuGroup *group = [self.groupDic objectForKey:[NSString stringWithFormat:@"%lu", (unsigned long) groupTag]];
+    if ([self.groupDic objectForKey:@(groupTag)]) {
+        MenuGroup *group = [self.groupDic objectForKey:@(groupTag)];
         NSMutableArray *items = [group getItems];
         for (int i = 0; i < [items count]; i++) {
             MvMenuItem *item = [items objectAtIndex:i];
@@ -219,27 +219,27 @@
 
             MvMenuItem *item1 = (MvMenuItem *) obj1;
             MvMenuItem *item2 = (MvMenuItem *) obj2;
-            NSComparisonResult result = [[NSNumber numberWithLong:(long) item1.tag] compare:[NSNumber numberWithLong:(long) item2.tag]];
+            NSComparisonResult result = [@(item1.tag) compare:@(item2.tag)];
             return result;
         }];
-        
+
         if ([group getItems].count == 0) {
             [self removeGroup:groupTag];
             return;
         }
-        
+
         [self reloadData];
     }
 }
 
 - (void)removeGroup:(NSUInteger)tag {
-    if ([self.groupDic objectForKey:[NSString stringWithFormat:@"%lu", (unsigned long) tag]]) {
-        [self.groupDic removeObjectForKey:[NSString stringWithFormat:@"%lu", (unsigned long) tag]];
+    if ([self.groupDic objectForKey:@(tag)]) {
+        [self.groupDic removeObjectForKey:@(tag)];
         [_groupTags removeAllObjects];
         [_groupTags addObjectsFromArray:[self.groupDic allKeys]];
         [self.groupTags sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
 
-            NSComparisonResult result = [[NSNumber numberWithInt:[obj1 intValue]] compare:[NSNumber numberWithInt:[obj2 intValue]]];
+            NSComparisonResult result = [obj1 compare:obj2];
             return result;
         }];
         [self.tableView.tableView reloadData];
@@ -247,7 +247,7 @@
 }
 
 - (MenuGroup *)getGroup:(NSUInteger)tag {
-    return [self.groupDic objectForKey:[NSString stringWithFormat:@"%lu", (unsigned long) tag]];
+    return [self.groupDic objectForKey:@(tag)];
 }
 
 #pragma mak UITableViewDataSource UITableViewDelegate

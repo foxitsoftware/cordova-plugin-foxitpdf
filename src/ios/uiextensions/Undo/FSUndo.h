@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -14,28 +14,26 @@
 #import <FoxitRDK/FSPDFViewControl.h>
 
 @class UndoItem;
+@protocol IAnnotHandler;
+
 typedef void (^UndoBlock)(UndoItem *item);
 typedef void (^RedoBlock)(UndoItem *item);
 
 @interface UndoItem : NSObject
+
 @property (nonatomic, copy) UndoBlock undo;
 @property (nonatomic, copy) RedoBlock redo;
 @property (nonatomic, assign) int pageIndex;
+
 + (instancetype)itemWithUndo:(UndoBlock)undo redo:(RedoBlock)redo pageIndex:(int)pageIndex;
-+ (instancetype)itemByMergingUndoItemInArray:(NSArray<UndoItem *> *)undoItemArray;
-@end
 
-@protocol IAnnotHandler;
++ (instancetype)itemByMergingItems:(NSArray<UndoItem *> *)items;
 
-@interface UndoModifyAnnot : UndoItem
-+ (instancetype)createWithOldAttributes:(FSAnnotAttributes *)oldAttributes newAttributes:(FSAnnotAttributes *)newAttributes pdfViewCtrl:(FSPDFViewCtrl *)pdfViewCtrl page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler;
-@end
++ (instancetype)itemForUndoModifyAnnotWithOldAttributes:(FSAnnotAttributes *)oldAttributes newAttributes:(FSAnnotAttributes *)newAttributes pdfViewCtrl:(FSPDFViewCtrl *)pdfViewCtrl page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler;
 
-@interface UndoAddAnnot : UndoItem
-+ (instancetype)createWithAttributes:(FSAnnotAttributes *)attributes page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler;
-@end
++ (instancetype)itemForUndoAddAnnotWithAttributes:(FSAnnotAttributes *)attributes page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler;
 
-@interface UndoDeleteAnnot : UndoItem
-+ (instancetype)createWithAttributes:(FSAnnotAttributes *)attributes page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler;
++ (instancetype)itemForUndoDeleteAnnotWithAttributes:(FSAnnotAttributes *)attributes page:(FSPDFPage *)page annotHandler:(id<IAnnotHandler>)annotHandler;
+
 @end
 

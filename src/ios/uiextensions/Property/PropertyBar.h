@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -18,7 +18,9 @@
 #import "LineWidthLayout.h"
 #import "OpacityItem.h"
 #import "OpacityLayout.h"
+#import "RotationLayout.h"
 #import <Foundation/Foundation.h>
+#import "DistanceUnitLayout.h"
 
 #define TABHEIGHT 44
 #define LAYOUTTITLEHEIGHT 20
@@ -34,12 +36,15 @@ static const long PROPERTY_FONTSIZE = 0x00000010;
 static const long PROPERTY_ICONTYPE = 0x00000100;
 static const long PROPERTY_ATTACHMENT_ICONTYPE = 0x00000040;
 static const long PROPERTY_ALL = 0x0000003F;
+static const long PROPERTY_DISTANCE_UNIT = 0x00001000;
+static const long PROPERTY_ROTATION = 0x00000080; // image only
 
 enum Property_TabType {
     TAB_FILL = 100,
     TAB_BORDER,
     TAB_FONT,
     TAB_TYPE,
+    TAB_DISTANCE_UNIT,
 };
 
 typedef enum Property_TabType Property_TabType;
@@ -84,5 +89,5 @@ typedef enum Property_TabType Property_TabType;
 
 - (void)registerPropertyBarListener:(id<IPropertyBarListener>)listener;
 - (void)unregisterPropertyBarListener:(id<IPropertyBarListener>)listener;
-
+- (void)setDistanceLayoutsForbidEdit;
 @end

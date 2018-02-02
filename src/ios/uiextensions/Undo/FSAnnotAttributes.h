@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -61,6 +61,9 @@
 @property (nonatomic, strong) NSString *captionStyle;
 @property (nonatomic, assign) unsigned int fillColor;
 @property (nonatomic, strong) NSString *contents;
+@property (nonatomic, strong) NSString *measureRatio;
+@property (nonatomic, strong) NSString *measureUnit;
+@property (nonatomic, assign) float measureConversionFactor;
 @end
 
 @interface FSInkAttributes : FSAnnotAttributes
@@ -98,4 +101,18 @@
 @property (nonatomic, strong) NSString *contents;
 @property (nonatomic, strong) FSDateTime *fileCreationTime;
 @property (nonatomic, strong) FSDateTime *fileModificationTime;
+@end
+
+@interface FSScreenAttributes : FSAnnotAttributes
+@property (nonatomic, strong) NSString *contents;
+@property (nonatomic, copy) NSString *intent;
+@property (nonatomic) FSRotation rotation;
+@property (nonatomic, strong) FSPDFDictionary *markupDict;
+@end
+
+@interface FSPolygonAttributes : FSAnnotAttributes
+@property (nonatomic, strong) FSBorderInfo *borderInfo;
+@property (nonatomic) unsigned int fillColor;
+@property (nonatomic, strong) NSArray<FSPointF *> *vertexes;
+@property (nonatomic, strong) NSString *contents;
 @end

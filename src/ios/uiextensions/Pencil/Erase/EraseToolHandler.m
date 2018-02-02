@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -45,7 +45,6 @@
         _extensionsManager = extensionsManager;
         _pdfViewCtrl = extensionsManager.pdfViewCtrl;
         _taskServer = _extensionsManager.taskServer;
-        [_extensionsManager registerToolHandler:self];
         _type = e_annotUnknownType; // todo
 
         self.pencilAnnotationArray = nil;

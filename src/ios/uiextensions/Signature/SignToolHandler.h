@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -11,7 +11,7 @@
  */
 
 #import "../DigitalSignature/DigitalSignatureCom.h"
-#import <FoxitRDK/FSPDFViewControl.h>
+#import "../UIExtensionsManager.h"
 
 @protocol IToolHandler;
 @protocol IRotationEventListener;
@@ -19,7 +19,7 @@
 @class UIExtensionsManager;
 
 typedef void (^onDocChanging)(NSString *newDocPath);
-typedef NSString * (^onGetDocPath)();
+typedef NSString * (^onGetDocPath)(void);
 
 @interface SignToolHandler : NSObject <IToolHandler, IRotationEventListener, IDocEventListener> {
     FSRectF *_signatureRect;
@@ -37,6 +37,7 @@ typedef NSString * (^onGetDocPath)();
 @property (nonatomic, strong) AnnotationSignature *signature;
 @property (nonatomic, copy) onDocChanging docChanging;
 @property (nonatomic, copy) onGetDocPath getDocPath;
+@property (nonatomic, assign) FSAnnotType type;
 
 - (instancetype)initWithUIExtensionsManager:(UIExtensionsManager *)extensionsManager;
 - (void)changedSignImage;
