@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2017, Foxit Software Inc..
+ * Copyright (C) 2003-2018, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -39,7 +39,14 @@ typedef enum {
     /** @brief	Facing mode. */
     PDF_LAYOUT_MODE_TWO,
     /** @brief	Reflow mode. */
-    PDF_LAYOUT_MODE_REFLOW
+    PDF_LAYOUT_MODE_REFLOW,
+    /** @brief	Facing mode. Cover page left */
+    PDF_LAYOUT_MODE_TWO_LEFT,
+    /** @brief	Facing mode. Cover page right */
+    PDF_LAYOUT_MODE_TWO_RIGHT,
+    /** @brief	Facing mode. Cover page middle */
+    PDF_LAYOUT_MODE_TWO_MIDDLE,
+    
 } PDF_LAYOUT_MODE;
 
 /**
@@ -139,7 +146,11 @@ typedef enum {
  * @param[in]	document	PDF document instance which is opened.
  * @param[in]	error		Error code. Please refer to {@link FSErrorCode::e_errSuccess FSErrorCode::e_errXXX} values and it should be one of these values.
  */
-- (void)onDocOpened:(FSPDFDoc *)document error:(int)error;
+- (void)onDocOpened:(FSPDFDoc * _Nullable)document error:(int)error;
+/**
+ * @brief Triggered when the document is modified.
+ */
+- (void)onDocModified:(FSPDFDoc *)document;
 /** 
  * @brief	Triggered when the document will be closed. 
  *
@@ -152,7 +163,7 @@ typedef enum {
  * @param[in]	document	PDF document instance which is closed.
  * @param[in]	error		Error code. Please refer to {@link FSErrorCode::e_errSuccess FSErrorCode::e_errXXX} values and it should be one of these values.
  */
-- (void)onDocClosed:(FSPDFDoc *)document error:(int)error;
+- (void)onDocClosed:(FSPDFDoc * _Nullable)document error:(int)error;
 /** 
  * @brief	Triggered when the document will be saved. 
  *
@@ -255,7 +266,7 @@ typedef enum {
 
 /** @brief	The page layout event listener. */
 @protocol ILayoutEventListener <NSObject>
-@required
+@optional
 /** 
  * @brief	Triggered when current page layout mode is changed.
  *
@@ -265,6 +276,10 @@ typedef enum {
  *									Please refer to {@link PDF_LAYOUT_MODE::PDF_LAYOUT_MODE_UNKNOWN PDF_LAYOUT_MODE::PDF_LAYOUT_MODE_XXX} values and this should be one of these values.
  */
 - (void)onLayoutModeChanged:(PDF_LAYOUT_MODE)oldLayoutMode newLayoutMode:(PDF_LAYOUT_MODE)newLayoutMode;
+/**
+ * @brief    Triggered when current page layout is finished.
+ */
+- (void)onLayoutFinished;
 @end
 
 /** @brief	The event listener for scroll view, which is the container of page views. */
@@ -496,7 +511,7 @@ typedef enum {
  *
  * @return <b>YES</b> means success, while <b>NO</b> means fail.
  */
-- (BOOL)insertPagesFromDocument:(FSPDFDoc *__nonnull)document withSourceIndexes:(NSArray<NSNumber *> *)sourcePagesIndexes flags:(FSImportFlags)flags layerName:(NSString *)layerName atIndex:(NSUInteger)pageIndex;
+- (BOOL)insertPagesFromDocument:(FSPDFDoc *__nonnull)document withSourceIndexes:(NSArray<NSNumber *> *)sourcePagesIndexes flags:(FSImportFlags)flags layerName:(NSString *__nullable)layerName atIndex:(NSUInteger)pageIndex;
 
 @end
 
@@ -520,11 +535,20 @@ typedef enum {
 @interface FSPDFViewCtrl : UIView <IRotationEventListener, FSPageOrganizerDelegate>
 
 /** @brief	The UI extensions manager. UI extensions manager will implement the UI related features such as annotation, outline.*/
-@property (nonatomic, weak) id<FSPDFUIExtensionsManager> extensionsManager;
+@property (nonatomic, weak, nullable) id<FSPDFUIExtensionsManager> extensionsManager;
 /** @brief	The current PDF document. */
-@property (nonatomic, strong) FSPDFDoc *currentDoc;
-/** @brief	If current reading mode is night mode: <b>YES</b> means in night mode, while <b>NO</b> means not in night mode. */
+@property (nonatomic, strong, nullable) FSPDFDoc *currentDoc;
+/** @brief	Night mode. A convenient way to set {@link FSPDFViewControl::colorMode} to {@link FSRenderColorMode::e_colorModeMapping} and set corresponding colors. */
 @property (nonatomic, assign) BOOL isNightMode;
+/**
+ * @brief   Color mode.
+ * @details Defaults to {@link FSRenderColorMode::e_colorModeNormal}. Note that you need to set {@link FSPDFViewCtrl::mappingModeBackgroundColor} and {@link FSPDFViewCtrl::mappingModeForegroundColor} first when set color mode to {@link FSRenderColorMode::e_colorModeMapping}.
+ */
+@property (nonatomic, assign) FSRenderColorMode colorMode;
+/** @brief   Background color for {@link FSRenderColorMode::e_colorModeMapping} color mode. */
+@property (nonatomic, strong, nullable) UIColor *mappingModeBackgroundColor;
+/** @brief   Foreground color for {@link FSRenderColorMode::e_colorModeMapping} color mode. */
+@property (nonatomic, strong, nullable) UIColor *mappingModeForegroundColor;
 /** @brief	Get or set position of display view from the bottom of control. */
 @property (nonatomic, assign) int bottomOffset;
 /** @brief	Whether or not should view control recover itself when runs out of memory. Default is YES. */
@@ -565,7 +589,7 @@ typedef enum {
  *
  * @param[in]	listener	An event listener for page layout to be registered.
  */
-- (void)registerLayoutChangedEventListener:(id<ILayoutEventListener>)listener;
+- (void)registerLayoutEventListener:(id<ILayoutEventListener>)listener;
 /** 
  * @brief	Register an event listener for gesture.
  *
@@ -627,7 +651,7 @@ typedef enum {
  *
  * @param[in]	listener	An event listener for page layout to be unregistered.
  */
-- (void)unregisterLayoutChangedEventListener:(id<ILayoutEventListener>)listener;
+- (void)unregisterLayoutEventListener:(id<ILayoutEventListener>)listener;
 
 #pragma mark - Open/Close/Save Document
 /** 
@@ -651,7 +675,7 @@ typedef enum {
  *							Set it to <b>nil</b> if the password is unknown.
  * @param[in]   completion  The callback will be called when current document object becomes available or the view control fail to open the document.
  */
-- (void)openDoc:(NSString *)filePath password:(NSString *_Nullable)password completion:(void (^)(FSErrorCode error))completion;
+- (void)openDoc:(NSString *)filePath password:(NSString *_Nullable)password completion:(void (^_Nullable)(FSErrorCode error))completion;
 /** 
  * @brief	Open PDF document from a memory buffer.
  *
@@ -660,24 +684,23 @@ typedef enum {
  *							Set it to <b>nil</b> if the password is unknown.
  * @param[in]   completion  The callback will be called when document becomes available or fail to open the document.
  */
-- (void)openDocFromMemory:(NSData *)buffer password:(NSString *_Nullable)password completion:(void (^)(FSErrorCode error))completion;
+- (void)openDocFromMemory:(NSData *)buffer password:(NSString *_Nullable)password completion:(void (^_Nullable)(FSErrorCode error))completion;
 /** 
  * @brief	Close the document.
  *
  * @param[in]	cleanup		A callback function to clean up caller managed resources.
  */
-- (void)closeDoc:(void (^_Nullable)())cleanup;
+- (void)closeDoc:(void (^_Nullable)(void))cleanup;
 
 /** 
  * @brief	Save the document to a specified file path with saving flag.
  *
  * @param[in]	filePath	File path for the new saved PDF file.
  * @param[in]	flag		Document saving flags. 
- *							STATE_NORMAL
  *
  * @return	<b>YES</b> means the saving is successfully finished, while <b>NO</b> means failure.
  */
-- (BOOL)saveDoc:(NSString *)filePath flag:(int)flag;
+- (BOOL)saveDoc:(NSString *)filePath flag:(FSSaveFlags)flag;
 
 #pragma mark - Get Page
 /** 
@@ -841,7 +864,9 @@ typedef enum {
 
 #pragma mark - Zoom
 /** 
- * @brief	Get the zoom level. Valid range: from 1.0 to 5.0 for reflow mode, others 1.0 to 10.0.
+ * @brief	Get the zoom level. Valid range: from 1.0 to 20.0 for reflow mode, others 1.0 to 10.0.
+ *
+ * @details For the layout mode except reflow, 1.0 represents that the pdf pages would fit to the width of the view control.
  *
  * @return	Zoom level.
  */
@@ -849,13 +874,17 @@ typedef enum {
 /** 
  * @brief	Set the zoom level.
  *
- * @param[in]	zoom	New zoom level.Valid range: from 1.0 to 5.0 for reflow mode, others 1.0 to 10.0.
+ * @details For the layout mode except reflow, 1.0 represents that the pdf pages would fit to the width of the view control.
+ *
+ * @param[in]	zoom	New zoom level.Valid range: from 1.0 to 20.0 for reflow mode, others 1.0 to 10.0.
  */
 - (void)setZoom:(float)zoom;
 /** 
  * @brief	Zoom page from the specified position.
  *
- * @param[in]	zoom	New zoom level.
+ * @details For the layout mode except reflow, 1.0 represents that the pdf pages would fit to the width of the view control.
+ *
+ * @param[in]	zoom	New zoom level.Valid range: from 1.0 to 20.0 for reflow mode, others 1.0 to 10.0.
  * @param[in]	origin	A specified position, in display view space.
  */
 - (void)setZoom:(float)zoom origin:(CGPoint)origin;
@@ -884,6 +913,12 @@ typedef enum {
 - (void)setPageLayoutMode:(PDF_LAYOUT_MODE)mode;
 
 #pragma mark - Crop mode
+/**
+ * @brief	Get crop mode.
+ *
+ * @return	crop mode. PDF_CROP_MODE_NONE if the current view mode is not crop.
+ */
+- (PDF_CROP_MODE)getCropMode ;
 /**
  * @brief	Set the page crop mode.
  *
@@ -963,6 +998,15 @@ typedef enum {
  */
 - (double)getVScrollRange;
 
+/**
+ * @brief    Scroll display view by the specified offset.
+ * @param[in]   distanceX   The distance along the X axis that has been scrolled.
+ * @param[in]   distanceY   The distance along the Y axis that has been scrolled.
+ * @param[in]   pageIndex   Page index. Valid range: from 0 to (<CODE>count</CODE>-1).
+ *                  <CODE>count</CODE>is the page count.
+ */
+- (void)scrollDisplayView:(float)distanceX distanceY: (float)distanceY;
+
 #pragma mark - Viewer dimension
 /** 
  * @brief	Get the width of the display view.
@@ -1035,7 +1079,7 @@ typedef enum {
             The pdf file is not changed. This method can be called multi-times.
  *
  * @param[in]	pageView	User-defined view to be appended as the last page view. 
-                            Note that it CAN'T be subview of FSPDFViewControl, that is, it's invalid to append a view returned by {@link FSPDFViewControl::getPageView:} {@link FSPDFViewControl::getOverlayView:} or {@link FSPDFViewControl::getDisplayView:}.
+                            Note that it should NOT be a subview of FSPDFViewControl, that is, it's invalid to append a view returned by {@link FSPDFViewControl::getPageView:} {@link FSPDFViewControl::getOverlayView:} or {@link FSPDFViewControl::getDisplayView:}.
  * @return <b>YES</b> means success, while <b>NO</b> means failure.
  */
 - (BOOL)appendPageView:(UIView *)pageView;
@@ -1190,8 +1234,7 @@ typedef enum {
  * @brief	Refresh the display view.
  */
 - (void)refresh;
-
-/** 
+/**
  * @brief	Do the recovering when Foxit PDF SDK runs out of memory.
  *
  * @details	Foxit PDF SDK will call this method automatically. 
@@ -1199,6 +1242,23 @@ typedef enum {
  *          restored.
  */
 + (void)recoverForOOM;
+
+@end
+
+@interface FSPDFViewCtrl (async)
+
+/**
+ * @brief    Open PDF document from a specified URL.
+ *
+ * @param[in]   url        PDF URL.
+ * @param[in]   password   The password string, used to load the PDF document content. It can be either user password or owner password.
+ *                         Set it to <b>nil</b> if the password is unknown.
+ * @param[in]   completion  The callback will be called when current document object becomes available or the view control fail to open the document.
+ *
+ * Note that it will create a temporary file as cache for downloading the PDF file. The cache will be
+ * removed after closing the document.
+ */
+- (void)openDocAtURL:(NSURL *)url password:(NSString *)password completion:(void (^)(FSErrorCode error))completion;
 
 @end
 

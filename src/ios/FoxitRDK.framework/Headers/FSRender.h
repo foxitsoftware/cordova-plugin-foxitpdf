@@ -547,11 +547,7 @@ typedef NS_ENUM(NSUInteger, FSDeviceType) {
 -(int)getHeight;
 
 /**
- * @brief Get frame count.
- *
- * @details Currently,
- *          this function does not support
- *          {@link FSEventFlag::e_eventFlagShiftKey FSEventFlag::e_eventFlagXXX}.
+ * @brief Get image frame count.
  *
  * @return The frame count.
  */
@@ -602,10 +598,7 @@ typedef NS_ENUM(NSUInteger, FSDeviceType) {
 /**
  * @brief Add a bitmap as a frame.
  *
- * @details Currently, this function does not support
- *          {@link FSEventFlag::e_eventFlagShiftKey FSEventFlag::e_eventFlagXXX},
- *          {@link FSImageType::e_imageTypeUnknown FSImageType::e_imageTypeUnknown} .<br>
- *          For supporting image types:
+ * @details For supporting image types:
  *          <ul>
  *          <li>If current image's type is {@link FSImageType::e_imageTypeTIF FSImageType::e_imageTypeTIF},
  *              {@link FSImageType::e_imageTypeGIF FSImageType::e_imageTypeGIF} or

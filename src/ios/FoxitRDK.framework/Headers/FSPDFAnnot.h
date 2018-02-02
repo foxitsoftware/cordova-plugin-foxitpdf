@@ -524,7 +524,7 @@ typedef NS_ENUM(NSUInteger, FSAnnotMKIconCaptionRelation) {
  *
  * @return None.
  */
--(void)set: (float)width style: (FSBorderStyle)style intensity: (float)intensity dashPhase: (float)dashPhase dashes: (float *)dashes dashCount: (int)dashCount;
+-(void)set: (float)width style: (FSBorderStyle)style intensity: (float)intensity dashPhase: (float)dashPhase dashes: (NSArray<NSNumber *> *)dashes;
 /**
  * @brief	Set border width, in points.
  *
@@ -2341,6 +2341,18 @@ typedef NS_ENUM(NSUInteger, FSAnnotMKIconCaptionRelation) {
  * @param[in]	offset		New offset values .
  */
 -(void)setCaptionOffset : (FSOffset*)offset;
+/** brief The ratio string should be like: "1/4 in = 1 ft",indicating that 1/4 inches in default user space is equivalent to 1 foot in real-world measurements. */
+-(void)setMeasureRatio: (NSString *)ratio;
+/** brief Get the measurement ratio string. */
+-(NSString *)getMeasureRatio;
+/** brief Set the the displaying unit label. The measure type should be set to 0, only distance measurement is supported. */
+-(void)setMeasureUnit: (int)measureType unit: (NSString *)unit;
+/** brief Get the displaying unit label. The measure type should be set to 0, only distance measurement is supported. */
+-(NSString *)getMeasureUnit: (int)measureType;
+/** brief The measure type should be set to 0, only distance measurement is supported. */
+-(void)setMeasureConversionFactor: (int)measureType factor: (float)factor;
+/** brief The measure type should be set to 0, only distance measurement is supported. */
+-(float)getMeasureConversionFactor: (int)measureType;
 /** @brief	Free the object. */
 -(void)dealloc;
 @end
@@ -3403,6 +3415,42 @@ typedef NS_ENUM(NSUInteger, FSIconScaleWayType) {
 -(id)initWithIconFit: (FSIconFit*)iconFit;
 /** @brief Set property values. */
 -(void)set: (FSIconScaleWayType)type proportionalScaling: (BOOL)proportionalScaling horizontalFraction: (float)horizontalFraction verticalFraction: (float)verticalFraction fitBounds: (BOOL)fitBounds;
+
+-(void)dealloc;
+
+@end
+
+/**
+ * @brief This class represents the screen annotation.
+ */
+@interface FSScreen : FSMarkup
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(void*)getCptr;
+/** @brief SWIG proxy related function, it's deprecated to use it. */
+-(id)initWithCptr: (void*)cptr swigOwnCObject: (BOOL)ownCObject;
+/** @brief Set first frame of image to this screen annotation. */
+-(BOOL)setImage: (FSImage*)img;
+/** @brief Get the appearance characteristics dictionary. If the dictionary will not set back to this annot, then caller should release it.*/
+-(FSPDFDictionary*) getMKDict;
+/** @brief Set the appearance characteristics dictionary. Caller should not release the dictionary, annot itself will do.*/
+-(void)setMKDict: (FSPDFDictionary*) dict;
+/** @brief Set the rotation of the image. */
+-(void)setRotation: (FSRotation)rotate;
+/** @brief Get the rotation of the image. */
+-(FSRotation)getRotation;
+/**
+ * @brief Reset appearance stream.
+ *
+ * @details Annotation's appearance is stored as stream in PDF document.
+ *          When any appearance related property is changed by corresponding setting functions,
+ *          if user wants the effect to be shown in annotation's appearance, current function should be called.
+ *
+ * @return <b>YES</b> means success, while <b>NO</b> means failure.
+ *
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(BOOL)resetAppearanceStream;
 
 -(void)dealloc;
 

@@ -829,7 +829,7 @@ typedef NS_OPTIONS(NSUInteger, FSFormFieldFlags) {
  *
  * @return	<b>YES</b> means success, while <b>NO</b> means failure.
  */
--(BOOL)setFocus: (FSFormControl*)control;
+-(BOOL)setFocus: (FSFormControl * _Nullable)control;
 
 /**
  * @brief	Decide whether to highlight form fields or not.

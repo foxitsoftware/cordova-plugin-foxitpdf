@@ -790,7 +790,7 @@ typedef NS_OPTIONS(NSUInteger, FSImportFlags) {
  *
  * @return A progressive object for later resuming the work, return nil if the work is already finished and no more work is required.
  */
--(FSProgressive* _Nullable)startImportPages: (int)dstIndex flags: (unsigned int)flags layerName: (NSString *)layerName srcDoc: (FSPDFDoc *)srcDoc pageRanges: (int *)pageRanges count: (int)count pause: (FSPauseCallback* _Nullable)pause;
+-(FSProgressive* _Nullable)startImportPages: (int)dstIndex flags: (FSImportFlags)flags layerName: (NSString * _Nullable)layerName srcDoc: (FSPDFDoc *)srcDoc pageRanges: (int *)pageRanges count: (int)count pause: (FSPauseCallback* _Nullable)pause;
 
 
 /**

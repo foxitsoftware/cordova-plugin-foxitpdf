@@ -330,7 +330,7 @@ typedef NS_ENUM(NSUInteger, FSLineCapStyle) {
  *
  * @return None.
  */
--(void)set: (FSRenderBlendMode)blendMode lineWidth: (float)lineWidth lineJoin: (FSLineJoinStyle)lineJoin miterLimit: (float)miterLimit lineCap: (FSLineCapStyle)lineCap dashPhase: (float)dashPhase dashes: (float *)dashes dashCount: (int)dashCount;
+-(void)set: (FSRenderBlendMode)blendMode lineWidth: (float)lineWidth lineJoin: (FSLineJoinStyle)lineJoin miterLimit: (float)miterLimit lineCap: (FSLineCapStyle)lineCap dashPhase: (float)dashPhase dashes: (NSArray<NSNumber *> *)dashes;
 
 -(id)init;
 

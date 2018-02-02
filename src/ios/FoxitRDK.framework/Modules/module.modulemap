@@ -1,0 +1,8 @@
+framework module FoxitRDK {
+    umbrella header "FSPDFViewControl.h"
+    
+    header "FSPDFObjC.h"
+    
+    export *
+    module * { export * }
+}

@@ -47,6 +47,7 @@ extern "C" {
 @class FSPDFGraphicsObjects;
 @class FSSecurityCallback;
 @class FSAnnot;
+@protocol FSDocEventCallback;
     
 NS_ASSUME_NONNULL_BEGIN
     
@@ -720,7 +721,7 @@ typedef NS_ENUM(NSUInteger, FSProgressType) {
  *
  * @return	<b>YES</b> means successfully, otherwise return <b>NO</b>.
  */
-+(BOOL)tryException: (void(^)())tryBlock error:(__autoreleasing NSError **)error;
++(BOOL)tryException: (void(^)(void))tryBlock error:(__autoreleasing NSError **)error;
 
 @end
     
@@ -1158,6 +1159,31 @@ typedef NS_ENUM(NSUInteger, FSProgressType) {
  * @return	The library version string.
  */
 +(NSString*)getVersion;
+/**
+ * @brief Set the upper limit of PDF library cache size.
+ *
+ * @details If no cache size limit is set by application, the cache size will be set to 200 MegaBytes
+ *          internally by default.
+ *
+ * @param[in] size  The upper limit of the cache, in MegaBytes, 0~4096.
+ *                  If set to 0, the mean is not use limit of cache size.
+ *
+ * @return <b>true</b> means success, while <b>false</b> means failure.
+ */
++(bool)setCacheSize: (unsigned int)size;
+
+/**
+ * @brief Enable or disable javascript for PDF.
+ *
+ * @details Javascript for PDF is enabled by default.
+ *
+ * @param[in] enable_javascript  <b>true</b> means to enable javascript, and <b>false</b> means to
+ *                               disable javascript. If this function is not called, javascript for
+ *                               PDF is enabled by default.
+ *
+ * @return <b>true</b> means success, while <b>false</b> means failure.
+ */
++(bool)enableJavaScript: (bool)enable_javascript;
 
 /**
  * @brief	Get the authority of a specific module.
@@ -1227,7 +1253,7 @@ typedef NS_ENUM(NSUInteger, FSProgressType) {
  *
  * @exception	e_errParam		Value of input parameter is invalid.
  */
-+(BOOL)registerSignatureHandler: (NSString *)filter subFilter: (NSString *)subFilter signatureHandler: (FSSignatureCallback *)signatureHandler;
++(BOOL)registerSignatureHandler: (NSString *)filter subFilter: (NSString *)subFilter signatureHandler: (FSSignatureCallback * _Nullable)signatureHandler;
 
 /**
  * @brief	Register a security handler to Foxit PDF SDK for decryption of the PDF files with special encryption filters.
@@ -1885,12 +1911,106 @@ typedef  FSPointF FSOffset;
  * @return A new font object.If there is any error, this function will return <b>nil</b>.
  */
 -(id)initWithStandardFontID :(FSStandardFontID) fontID;
+
+/**
+ * @brief Construct a font from a font file.
+ *
+ * @param[in] font_file_path  A full path to an existing font file (including file name and extension),
+ *                            in UTF-8 string.
+ * @param[in] face_index      The zero-based face index. Valid range: from 0 to (<i>count</i>-1).
+ *                            Please call the system functions to get the <i>faceCount</i>.
+ * @param[in] charset         The charset of the font to be created. Please refer to
+ *                            {@link foxit::e_fontCharsetANSI FSFontCharSet::e_fontCharsetXXX} values
+ *                            and this should be one of these values.
+ *
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(id)initWithFontFile :(NSString*) font_file_path face_index:(int)face_index charset:(FSFontCharSet)charset;
+
 /**
  * @brief	Retrieve the face name.
  *
  * @return	The face name. It would be in UTF-8 encoding.
  */
--(NSString*) getName;
+-(NSString*)getName;
+
+/**
+ * @brief Judge whether the current font is bold or not.
+ *
+ * @return <b>true</b> means bold, while <b>false</b> means not.
+ *
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(bool)isBold;
+
+/**
+ * @brief Judge whether the current font object is italic or not.
+ *
+ * @return <b>true</b> means italic, while <b>false</b> means not.
+ *
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(bool)isItalic;
+
+/**
+ * @brief Judge whether current font is embedded in a specified PDF document or not.
+ *
+ * @param[in] document  A PDF document object. It should not be <b>NULL</b>.
+ *
+ * @return <b>true</b> means the font is embedded in the PDF document, while <b>false</b> means not.
+ *
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(bool)isEmbedded:(FSPDFDoc*) document;
+
+/**
+ * @brief Get an ascent value of the current font.
+ *
+ * @return The ascent value.
+ *
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(int)getAscent;
+
+/**
+ * @brief Get a descent value of the current font.
+ *
+ * @return The descent value.
+ *
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(int)getDescent;
+
+/**
+ * @brief Get a specific character bounding box of a font.
+ *
+ * @param[in] unicode  A character unicode value.
+ *
+ * @return The character bounding box.
+ *
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(FSRectI*)getCharBBox: (unsigned int)unicode;
+
+/**
+ * @brief Get a specific character width of a font.
+ *
+ * @param[in] unicode  A character unicode value.
+ *
+ * @return Character width.
+ *
+ * @throws FSException For more information about exception values,
+ *                     please refer to {@link foxit::e_errFile FSErrorCode::e_errXXX}.
+ */
+-(float)getCharWidth: (unsigned int)unicode;
+
 /** @brief Free the object. */
 -(void)dealloc;
 
@@ -2091,7 +2211,7 @@ typedef  FSPointF FSOffset;
  * @details	All the functions in this class are used as callback functions 
  *			and should be implemented by user, to do file reading in a customized way.
  */
-@protocol FSFileReadCallback <NSObject>
+@protocol FSFileReadCallback
 @required
 /**
  * @brief	Required callback function used to get the total size of the file.
@@ -2117,7 +2237,8 @@ typedef  FSPointF FSOffset;
  */
 typedef NS_ENUM(NSUInteger, Type) {
     /** @brief This means current callback object conforms to {@link FSFileReadCallback} protocol. */
-    e_TypeNormal = 0
+    e_TypeNormal = 0,
+    e_TypeAsync = 1
 };
 /**
  * @brief Get the type of file reading callback.
@@ -2127,6 +2248,47 @@ typedef NS_ENUM(NSUInteger, Type) {
  * @return The type of current file reading callback. It would always be {@link FSFileReadCallback::e_TypeNormal}.
  */
 -(Type)getType;
+@end
+    
+/**
+ * @brief Class to represents a callback object to do file reading asynchronously.
+ *
+ * @details This class is derived from class FSFileReadCallback. All the pure virtual functions in this class
+ *          and its base class are used as callback functions and should be implemented by user,
+ *          in order to asynchronously read file data (especially used for loading document), in a customized way.
+ *
+ * @see FSFileReadCallback
+ */
+@protocol FSAsyncFileReadCallback <FSFileReadCallback>
+/**
+* @brief A callback function used to check whether the specified data section is available or not.
+*
+* @details A data section is available only if all bytes in the section are available.
+*
+* @param[in] offset  The offset in file.
+* @param[in] size    The size of the data section, which is to be checked if available.
+*
+* @return <b>TRUE</b> means the specified data section is available,
+*         while <b>FALSE</b> means the specified data section is not available yet.
+*/
+-(BOOL)isDataAvail: (long long)offset size: (long long)size;
+/**
+* @brief A callback function used to add offset and size to specify a data section,
+*        which should be downloaded by application then.
+*
+* @details Foxit PDF SDK would call this callback function
+*          to report downloading hints for the download manager of application.<br>
+*          The position (as offset) and size of the section may not be accurate
+*          because part of the section might already be available.
+*          The download manager must manage this to maximize download efficiency.
+*
+* @param[in] offset  The offset of a data section, which is to be hinted.
+* @param[in] size    The size of the data section.
+*
+* @return <b>TRUE</b> means success, while <b>FALSE</b> means failure.
+*/
+-(BOOL)addDownloadHint: (long long)offset size: (long long)size;
+
 @end
     
 /**

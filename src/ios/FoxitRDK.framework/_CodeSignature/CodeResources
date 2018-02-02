@@ -4,17 +4,13 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>FoxitRDK_emu</key>
-		<data>
-		QpjTPvDF8nP1f9FCjs4fbzRe4yg=
-		</data>
 		<key>Headers/FSAction.h</key>
 		<data>
 		d6RM3FWwqeW8yd+hYNBL3wZSLWg=
 		</data>
 		<key>Headers/FSCommon.h</key>
 		<data>
-		g2A0wif3htvqIQNT1jKxlEz/Cso=
+		rAx3mUYqXlWeaygX3BSpg4+9ALY=
 		</data>
 		<key>Headers/FSFDF.h</key>
 		<data>
@@ -26,19 +22,19 @@
 		</data>
 		<key>Headers/FSPDFAnnot.h</key>
 		<data>
-		KElSQIhNuD9sQ0zjD5GbKXXTCFk=
+		dOzNZpvte3o+4BL2RD+JRsI/n8k=
 		</data>
 		<key>Headers/FSPDFDoc.h</key>
 		<data>
-		NOSLlIQn0hmHhlsfo92gSUoeNoQ=
+		6J2iPEaUzj6khHuFO2+keG8GczI=
 		</data>
 		<key>Headers/FSPDFForm.h</key>
 		<data>
-		A9SncARWaxDKrkJJ2Z1GLltr/TI=
+		o4ROhOJhmqm2h5ZwlLPNyzFb7rU=
 		</data>
 		<key>Headers/FSPDFGraphicsObject.h</key>
 		<data>
-		LJq2oIi0ij249g+szwhQkWeVphY=
+		9DV5tdDHyIcWcLmpeaVKk/9Rci8=
 		</data>
 		<key>Headers/FSPDFLayer.h</key>
 		<data>
@@ -70,7 +66,7 @@
 		</data>
 		<key>Headers/FSPDFViewControl.h</key>
 		<data>
-		LHFiedj/BUu3KYcpJXqzsnhQEL8=
+		pcq85bAreFs8CnVEJu/CpWJTC60=
 		</data>
 		<key>Headers/FSPressureSenseInk.h</key>
 		<data>
@@ -78,7 +74,7 @@
 		</data>
 		<key>Headers/FSRender.h</key>
 		<data>
-		hS2qrxBw4GUSLTVA6pgAzKxwGEo=
+		w/cYimIDOviwAdtZHlnNMOD3KiY=
 		</data>
 		<key>Headers/FSWatermark.h</key>
 		<data>
@@ -86,7 +82,11 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		Z519nnnI48dlioDaniyxo8pXNe0=
+		cbUspHr7pKLkLKeWQALpfCev6Yk=
+		</data>
+		<key>Modules/module.modulemap</key>
+		<data>
+		t5WUJp1D2XOe6I6GLvN2noPek3o=
 		</data>
 		<key>en.lproj/InfoPlist.strings</key>
 		<dict>
@@ -100,17 +100,6 @@
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>FoxitRDK_emu</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			QpjTPvDF8nP1f9FCjs4fbzRe4yg=
-			</data>
-			<key>hash2</key>
-			<data>
-			ja8pNlDD1/Dv0KtridF+rkIH530gR4itkGQw/op8cus=
-			</data>
-		</dict>
 		<key>Headers/FSAction.h</key>
 		<dict>
 			<key>hash</key>
@@ -126,11 +115,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			g2A0wif3htvqIQNT1jKxlEz/Cso=
+			rAx3mUYqXlWeaygX3BSpg4+9ALY=
 			</data>
 			<key>hash2</key>
 			<data>
-			p9nEC3wWmt0lU0G+WFInu5qbZNEmrRfjOG1EtbqW0Cs=
+			JP7eUMPbHxHz9I07yXDHarAxZBT5Yeq17idOzJvi5cU=
 			</data>
 		</dict>
 		<key>Headers/FSFDF.h</key>
@@ -159,44 +148,44 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			KElSQIhNuD9sQ0zjD5GbKXXTCFk=
+			dOzNZpvte3o+4BL2RD+JRsI/n8k=
 			</data>
 			<key>hash2</key>
 			<data>
-			xQyHOaZlsyYbLoCvXV0SHep/9KBM5c2M9HBiR6oN4g8=
+			X2zFi0vQW4jrquosmyE27TlUJrRiqzjCSzZosIICnBM=
 			</data>
 		</dict>
 		<key>Headers/FSPDFDoc.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			NOSLlIQn0hmHhlsfo92gSUoeNoQ=
+			6J2iPEaUzj6khHuFO2+keG8GczI=
 			</data>
 			<key>hash2</key>
 			<data>
-			6gHOHcCFuULJDA7DzjzOmtlceXfR/BxhelWNxpj31CY=
+			q7Jg64oL6do/q6a21PwMA0OwdqfzB944YVbCAzn3fOQ=
 			</data>
 		</dict>
 		<key>Headers/FSPDFForm.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			A9SncARWaxDKrkJJ2Z1GLltr/TI=
+			o4ROhOJhmqm2h5ZwlLPNyzFb7rU=
 			</data>
 			<key>hash2</key>
 			<data>
-			HvZmQ5DXv38I4piNSobU02qy+DxDjxHaNTmiugLI778=
+			Z5Nwgt6VtoMGx6xPczC6fx/QRYFavo+WYx2y02lnCm8=
 			</data>
 		</dict>
 		<key>Headers/FSPDFGraphicsObject.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			LJq2oIi0ij249g+szwhQkWeVphY=
+			9DV5tdDHyIcWcLmpeaVKk/9Rci8=
 			</data>
 			<key>hash2</key>
 			<data>
-			cJ3BqD9ujxsskJ7kp6n8RWmn6T9K6N5e+qlDWsYFbjw=
+			ibBpQ635LLm0FiGLHc+zbytKiMJNNiKGqLrBv/Qu6oU=
 			</data>
 		</dict>
 		<key>Headers/FSPDFLayer.h</key>
@@ -280,11 +269,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			LHFiedj/BUu3KYcpJXqzsnhQEL8=
+			pcq85bAreFs8CnVEJu/CpWJTC60=
 			</data>
 			<key>hash2</key>
 			<data>
-			H+/txY6By4KbKcW4ZNfelCPpw5UBPy9M4fjkhTw00PI=
+			SCyu/iIf6jghIydtYMzzqtd4IqWvfYLnap7JyNTWVUQ=
 			</data>
 		</dict>
 		<key>Headers/FSPressureSenseInk.h</key>
@@ -302,11 +291,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			hS2qrxBw4GUSLTVA6pgAzKxwGEo=
+			w/cYimIDOviwAdtZHlnNMOD3KiY=
 			</data>
 			<key>hash2</key>
 			<data>
-			3KQoB1PELOfMIIvoYAFTkDBkmFF2uzb33wzpJP6OvL0=
+			5Oap19zDhdWhdoRYd0VO7qSF3fOckil/LVP3zt0D3E8=
 			</data>
 		</dict>
 		<key>Headers/FSWatermark.h</key>
@@ -318,6 +307,17 @@
 			<key>hash2</key>
 			<data>
 			Wh14Ic5pY5fstuhRto0zVJv8xs+DRWBb3yziAr4po7g=
+			</data>
+		</dict>
+		<key>Modules/module.modulemap</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			t5WUJp1D2XOe6I6GLvN2noPek3o=
+			</data>
+			<key>hash2</key>
+			<data>
+			qh1XLguQ1n0IcXgz1J09xfaScYWIs4AZL/+cfN5Ev1Y=
 			</data>
 		</dict>
 		<key>en.lproj/InfoPlist.strings</key>
