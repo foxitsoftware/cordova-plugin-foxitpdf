@@ -6,12 +6,16 @@
 #import "uiextensions/UIExtensionsManager.h"
 
 
-NSString *SN = @"Ljs06YddedKXpyZ7qymbkAe1EFe1jstVhjZXa5aXvrPPzGF3l36HHQ==";
-NSString *UNLOCK = @"ezJvj90ntBhz9LvoL0WQjY7NL4K81WvxfWfgcutRsppWR4/JzmaDxKzphJp0Qh8ydhGQUB7Fm/B/Uoc+/etFj3VvOgh+85PS/TSEHVVoS40YW96WOlgUaeac4DrlXHVNg528UOumzHxeH/GY510NHROP3ZJljR6C/d9AsdzSJx/qRPpoidG99h8Jkk4sqPFGhK0Fy0V4jtUrzyjDhR/303bOyI6k26PtttlfLg1Lsvyf+LgQE99mryKDjWrX64cU+dnub5ShxwMqvV/CTlY3Zj2fPSXR02xW1MJ8DKRlVeqURxCihfdX2BfPyQ+a0nwKgy6E8vFwD2yMVaT/BRJMSOel+C6CHadKZOyXILn+kvZum4pfY6OGuV3Ialvd7LPXNN2yW79kHDKheHoWbvmT/t9sdjwEqIXpnxVI4LUzLsPbeJtXTZBsjXyXpoX4I0lsIO+fGoa8N5SQS5RILd7cCFYLLzTkfKSpHXwWtmV8efpcW+JlCS9KzF5UhfDfv4dhdKCq35lrUdxg8TYSjh3xHNQz1OcpsKdHsOm83GvNwUY+O942u32f50i17g6AOCPpthZCli1B3qwoGQQMnOYTcATzbzODRXEape2j50uJybrpuSrSPa0hReSfHM3C9ndA7PdPzkHF5aHxmyKh9RNRgBbegdbnuBkzBkP1WzDxGmbRIjlF4sjvc2PhAnXMSQOea6N4fsurKAsH//KFpKzb7uJGF+Fi+F59qyR/iRDe1LiPHkrz8d9oTZsBj9tB8YXCzMcioNAR4ABLKdMMr5rSCgZMYc/AbZViLBvMMg3hVnaDFItcEVBH2pq3Y79J4e/1zPmnxsovsxyqaOTXdslQMtcgKIL5Jl17EvlA9FzjKemrUOzeOFZjF+i9WXs5H40ZPcKM/dsy2FNGVCTHiqzoIYumgfPSMYKCKWzby8vNiWU+nFXV8QrQB8v8DYv69Sm7k5uqb70G6l2Q2+yrlgntCeNM+JQDGkt3BEVAt22AuyfW6oNXYh/h9M20STvpu2pP8VidkhakFCk1uoWz8WVn79jMn5lzClbdfj0k1E3ZulClT/PdrmbmPuIjg8XwnKTfpUHyT9UhHVwdKRhPqisb4sXU8zEK4QTDjnkL8OOY7PD0885xDFySR3GG9ooBt4goUSRiM4oN6npPb/y8CN+X4VHThT2rNXOERw0TNj8Ho47pL5XZEbNoULTrk5gLCS9lDwNO3qE5B1DyiLW+qqH7S3NA";
+NSString *SN = @"aDNKDiqm639Z6RqqBazD6rJ3vxkm10zmBVjI06KM/B6bDumXrvGGKg==";
+NSString *UNLOCK = @"ezJvj93HtGhz9LvoL0WQjY6n7q2DskrbykNKI0MicbTltpNxCSRq01lkum771xm7FU5HIH1Y7tkt96WmUUxWWbbz3DJUlfS0Zl+6yWiJuLLzCzdx3DiGbddA1Ls2GIJlGxzw71jx/kk04SCEJN01e1QmkdKCoioOZ3Ic0FWJqSdaBaNyQPPPjzwS6q/2wqb7iJwAsuloQgesJRzGuMhFEMxrZENO7OXARDChZKZ05s0kR+YIXb/hRoFmqK53cq8nAGrcLUKlhwjJfqpNQ8yklgozymeFIH6PMhHIi2ndBtFEG7dxB0totxK7b+PMZO5ws6o/kL0jdd1r8PHoc5Z13goHyzLENxUjnvd7Wu4NISj0C9361GgVPaddyAIUWt0Gmlo1AHy6vWXxvw6Gq467tA+TKX8Bj4Qjk6AZBr99tuA/MP+PCEYWNMN7WBfUYJ1d9ZqrRWE7gZB/uQe2Zz3Za78TekGuNcTa9DCvgWRk6hv7TJDhLwx18OcliKIFYTYhFHJne/NjYTuYa0HRd83leL/jiidwNqAWORVmMT2Nnx6wwXpdtamRq1GTy7PSt3F/wHyusNQnLj7pYdbvhaVLnuueKLM6XceKiyctJet4eO3VsXd627ObLdCc9MMfYq3enKRnV28dLj+/paV59c9mlg1U2UKIV+L3pjxVKAd8V4Y3GdtV+ITRMYLKzuS6a7rbX8Tt5XY6wygAovuc77Ne7rc8W8R2bfiLjTWtkcYBtJllXTPkLx6js9I/8P4ifqx4mJatw3r1Y4Ehhcl6g+KbTDGVhyKOox1VzSRq1Y1AJD5FDX/WZWOUurQEf95jxFbhrBtLD5tU4lGqwJT8vav/PBdHOJc/Fnr4lRFZTxa0cD1/WGEf1Yi5ypvoWH0TRY4bnlct3vzn2vn+CMy7FdFF9a8gHwOQf2Xq4IKYeRENHdBiSW2Z16anU21I6iONRXpzdPYxKJ8RDOfNPakiSYiFAsucRMynliZBe5DSOQ5cIq3BWcbXiZkllTiN/TUfKvhDKzHRlo7W45mPp+kKwqKuArQL+XC4PaJHtJxQgc9aqJksw1okB6qVrqAcOf2bRGYH8SZgWDikbh3JoRD2O6HhK1Mzgy6/FT87dndannoYhd52C0Dl+DcXrW7aIzpzxg5GSD91hRfg9/m8ZCt6D8jNFammIe7FNIxUNYNeZpnYODqQ2r8C/3pCynyr+2/ZoIqsIeZRBrMLmWkcITxG8WTqbg==";
 
 @interface FoxitPdf : CDVPlugin <IDocEventListener>{
     // Member variables go here.
 }
+@property (nonatomic, strong) NSArray *topToolbarVerticalConstraints;
+@property (nonatomic, strong) UIExtensionsManager *extensionsMgr;
+@property (nonatomic, strong) FSPDFViewCtrl *pdfViewControl;
+@property (nonatomic, strong) UIViewController *pdfViewController;
 
 - (void)Preview:(CDVInvokedUrlCommand *)command;
 @end
@@ -27,7 +31,7 @@ NSString *UNLOCK = @"ezJvj90ntBhz9LvoL0WQjY7NL4K81WvxfWfgcutRsppWR4/JzmaDxKzphJp
     
     NSString *docDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSLog(@"%@", docDir);
-
+    
     // URL
     NSString *filePath = [command.arguments objectAtIndex:0];
     
@@ -65,20 +69,19 @@ NSString *UNLOCK = @"ezJvj90ntBhz9LvoL0WQjY7NL4K81WvxfWfgcutRsppWR4/JzmaDxKzphJp
         return;
     }
     
-    FSPDFViewCtrl *viewcontrol = [[FSPDFViewCtrl alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.pdfViewControl = [[FSPDFViewCtrl alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    [self.pdfViewControl registerDocEventListener:self];
     
     NSString *configPath = [[NSBundle mainBundle] pathForResource:@"uiextensions_config" ofType:@"json"];
-    
-    UIExtensionsManager *extensionMgr = [[UIExtensionsManager alloc] initWithPDFViewControl:viewcontrol configuration:[NSData dataWithContentsOfFile:configPath]];
-    
-    viewcontrol.extensionsManager = extensionMgr;
-    [viewcontrol registerDocEventListener:self];
+    self.extensionsMgr = [[UIExtensionsManager alloc] initWithPDFViewControl:self.pdfViewControl configuration:[NSData dataWithContentsOfFile:configPath]];
+    self.pdfViewControl.extensionsManager = self.extensionsMgr;
+    self.extensionsMgr.delegate = self;
     
     //load doc
     if (filePath == nil) {
         filePath = [[NSBundle mainBundle] pathForResource:@"getting_started_ios" ofType:@"pdf"];
     }
-
+    
     if (e_errSuccess != eRet) {
         NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Check License" message:errMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
@@ -86,10 +89,10 @@ NSString *UNLOCK = @"ezJvj90ntBhz9LvoL0WQjY7NL4K81WvxfWfgcutRsppWR4/JzmaDxKzphJp
         return;
     }
     
-    UIViewController *previewController = [[UIViewController alloc] init];
-    previewController.view = viewcontrol;
+    self.pdfViewController = [[UIViewController alloc] init];
+    self.pdfViewController.view = self.pdfViewControl;
     
-    [viewcontrol openDoc:filePath
+    [self.pdfViewControl openDoc:filePath
                         password:nil
                       completion:^(FSErrorCode error) {
                           if (error != e_errSuccess) {
@@ -103,7 +106,17 @@ NSString *UNLOCK = @"ezJvj90ntBhz9LvoL0WQjY7NL4K81WvxfWfgcutRsppWR4/JzmaDxKzphJp
                           }
                       }];
     
-    [self.viewController presentViewController:previewController animated:YES completion:nil];
+    UINavigationController *test = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
+    test.navigationBarHidden = YES;
+    UIViewController *top = [UIApplication sharedApplication].keyWindow.rootViewController;
+    [top presentViewController:test animated:YES completion:nil];
+    
+    [self wrapTopToolbar];
+    self.topToolbarVerticalConstraints = @[];
+    
+    self.extensionsMgr.goBack = ^() {
+        [self.viewController dismissViewControllerAnimated:YES completion:nil];
+    };
 }
 
 #pragma mark <IDocEventListener>
@@ -114,12 +127,6 @@ NSString *UNLOCK = @"ezJvj90ntBhz9LvoL0WQjY7NL4K81WvxfWfgcutRsppWR4/JzmaDxKzphJp
 
 - (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
     // Called when a document is closed.
-    [self.viewController dismissViewControllerAnimated:YES completion:nil];
-}
-
-# pragma mark -- close preview
--(void)close{
-    [self.viewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 # pragma mark -- isExistAtPath
@@ -129,4 +136,65 @@ NSString *UNLOCK = @"ezJvj90ntBhz9LvoL0WQjY7NL4K81WvxfWfgcutRsppWR4/JzmaDxKzphJp
     return isExist;
 }
 
+#pragma mark <UIExtensionsManagerDelegate>
+- (void)uiextensionsManager:(UIExtensionsManager *)uiextensionsManager setTopToolBarHidden:(BOOL)hidden {
+    UIToolbar *topToolbar = self.extensionsMgr.topToolbar;
+    UIView *topToolbarWrapper = topToolbar.superview;
+    id topGuide = self.pdfViewController.topLayoutGuide;
+    assert(topGuide);
+    
+    [self.pdfViewControl removeConstraints:self.topToolbarVerticalConstraints];
+    if (!hidden) {
+        NSMutableArray *contraints = @[].mutableCopy;
+        [contraints addObjectsFromArray:
+         [NSLayoutConstraint constraintsWithVisualFormat:@"V:[topGuide]-0-[topToolbar(44)]"
+                                                 options:0
+                                                 metrics:nil
+                                                   views:NSDictionaryOfVariableBindings(topToolbar, topGuide)]];
+        [contraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-0-[topToolbarWrapper]"
+                                                                                options:0
+                                                                                metrics:nil
+                                                                                  views:NSDictionaryOfVariableBindings(topToolbarWrapper)]];
+        self.topToolbarVerticalConstraints = contraints;
+        
+    } else {
+        self.topToolbarVerticalConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:[topToolbarWrapper]-0-[topGuide]"
+                                                                                     options:0
+                                                                                     metrics:nil
+                                                                                       views:NSDictionaryOfVariableBindings(topToolbarWrapper, topGuide)];
+    }
+    [self.pdfViewControl addConstraints:self.topToolbarVerticalConstraints];
+    [UIView animateWithDuration:0.3
+                     animations:^{
+                         [self.pdfViewControl layoutIfNeeded];
+                     }];
+}
+
+- (void)wrapTopToolbar {
+    // let status bar be translucent. top toolbar is top layout guide (below status bar), so we need a wrapper to cover the status bar.
+    UIToolbar *topToolbar = self.extensionsMgr.topToolbar;
+    [topToolbar setTranslatesAutoresizingMaskIntoConstraints:NO];
+    
+    UIView *topToolbarWrapper = [[UIToolbar alloc] init];
+    [topToolbarWrapper setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [self.pdfViewControl insertSubview:topToolbarWrapper belowSubview:topToolbar];
+    [topToolbarWrapper addSubview:topToolbar];
+    
+    [self.pdfViewControl addConstraints:
+     [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[topToolbarWrapper]-0-|"
+                                             options:0
+                                             metrics:nil
+                                               views:NSDictionaryOfVariableBindings(topToolbarWrapper)]];
+    [topToolbarWrapper addConstraints:
+     [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[topToolbar]-0-|"
+                                             options:0
+                                             metrics:nil
+                                               views:NSDictionaryOfVariableBindings(topToolbar)]];
+    [topToolbarWrapper addConstraints:
+     [NSLayoutConstraint constraintsWithVisualFormat:@"V:[topToolbar]-0-|"
+                                             options:0
+                                             metrics:nil
+                                               views:NSDictionaryOfVariableBindings(topToolbar)]];
+}
 @end
+
