@@ -27,10 +27,11 @@ cordova plugin add cordova-plugin-foxitpdf
 
 Because of some large file in our project ,if you update faild please try the other way
 1. clone this project
-2. add plugin from local by this command : cordova plugin add ~/abc/cordova-plugin-foxitpdf (this adress replace yourself)
+2. add plugin from local by this command : 
+cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by your own)
 
 ## Note
-    we just provide Trial key for 10 days ，if you try this plugin and the faild maybe the key is invalid .so please note the key.
+    we just provide Trial key for 10 days ，if you try this plugin and then faild maybe the key is invalid .so please note the key expiration tiem.
     if you want longer time key , please contact us.
 
     now the key expiration day is ## 3-11 ,please note.
