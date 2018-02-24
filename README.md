@@ -20,13 +20,23 @@
 # cordova-plugin-foxitpdf
     This plugin adds the ability to easily preview any PDF file in your Cordova application
 
-## Major update
-    Now our plugin is also using Foxit RDK 5.1
-
 ## Installation
 ```bash
 cordova plugin add cordova-plugin-foxitpdf
 ```
+
+Because of some large file in our project ,if you update faild please try the other way
+1. clone this project
+2. add plugin from local by this command : cordova plugin add ~/abc/cordova-plugin-foxitpdf (this adress replace yourself)
+
+## Note
+    we just provide Trial key for 10 days ，if you try this plugin and the faild maybe the key is invalid .so please note the key.
+    if you want longer time key , please contact us.
+
+    now the key expiration day is ## 3-11 ,please note.
+
+## Major update
+    Now our plugin is also using Foxit RDK 5.1
 
 ## Usage Instructions for iOS
 Thanks to the new version, and now we use the plug-in iOS only need a few simple steps on it (no longer like the 3.0 version of the kind of cumbersome operation)
