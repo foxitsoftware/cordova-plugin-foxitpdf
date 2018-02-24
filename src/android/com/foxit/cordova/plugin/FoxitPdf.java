@@ -18,8 +18,8 @@ import org.json.JSONException;
  */
 public class FoxitPdf extends CordovaPlugin {
 
-    private final static String sn = "aDNKDiqm639Z6RqqBazD6rJ3vxkm10zmBVjI06KM/B6bDumXrvGGKg==";
-    private final static String key = "ezJvj93HtGhz9LvoL0WQjY6n7q2DskrbykNKI0MicbTltpNxCSRq01lkum771xm7FU5HIH1Y7tkt96WmUUxWWbbz3DJUlfS0Zl+6yWiJuLLzCzdx3DiGbddA1Ls2GIJlGxzw71jx/kk04SCEJN01e1QmkdKCoioOZ3Ic0FWJqSdaBaNyQPPPjzwS6q/2wqb7iJwAsuloQgesJRzGuMhFEMxrZENO7OXARDChZKZ05s0kR+YIXb/hRoFmqK53cq8nAGrcLUKlhwjJfqpNQ8yklgozymeFIH6PMhHIi2ndBtFEG7dxB0totxK7b+PMZO5ws6o/kL0jdd1r8PHoc5Z13goHyzLENxUjnvd7Wu4NISj0C9361GgVPaddyAIUWt0Gmlo1AHy6vWXxvw6Gq467tA+TKX8Bj4Qjk6AZBr99tuA/MP+PCEYWNMN7WBfUYJ1d9ZqrRWE7gZB/uQe2Zz3Za78TekGuNcTa9DCvgWRk6hv7TJDhLwx18OcliKIFYTYhFHJne/NjYTuYa0HRd83leL/jiidwNqAWORVmMT2Nnx6wwXpdtamRq1GTy7PSt3F/wHyusNQnLj7pYdbvhaVLnuueKLM6XceKiyctJet4eO3VsXd627ObLdCc9MMfYq3enKRnV28dLj+/paV59c9mlg1U2UKIV+L3pjxVKAd8V4Y3GdtV+ITRMYLKzuS6a7rbX8Tt5XY6wygAovuc77Ne7rc8W8R2bfiLjTWtkcYBtJllXTPkLx6js9I/8P4ifqx4mJatw3r1Y4Ehhcl6g+KbTDGVhyKOox1VzSRq1Y1AJD5FDX/WZWOUurQEf95jxFbhrBtLD5tU4lGqwJT8vav/PBdHOJc/Fnr4lRFZTxa0cD1/WGEf1Yi5ypvoWH0TRY4bnlct3vzn2vn+CMy7FdFF9a8gHwOQf2Xq4IKYeRENHdBiSW2Z16anU21I6iONRXpzdPYxKJ8RDOfNPakiSYiFAsucRMynliZBe5DSOQ5cIq3BWcbXiZkllTiN/TUfKvhDKzHRlo7W45mPp+kKwqKuArQL+XC4PaJHtJxQgc9aqJksw1okB6qVrqAcOf2bRGYH8SZgWDikbh3JoRD2O6HhK1Mzgy6/FT87dndannoYhd52C0Dl+DcXrW7aIzpzxg5GSD91hRfg9/m8ZCt6D8jNFammIe7FNIxUNYNeZpnYODqQ2r8C/3pCynyr+2/ZoIqsIeZRBrMLmWkcITxG8WTqbg==";
+    private final static String sn = "MvD5a4qu0ec8nuKMaSZdrqjrANCqd3YQEwOqlrTCgUO5i7/lQNpJbg==";
+    private final static String key = "ezKXjl0mvB5z9JsXIVWofHdLDOkEiYekSxjqXg/HjXLfSwtHlN9kezVMTo7lWfm1RW1WwA4TRMUtXhjqK/55exaTe4PaQkb+nqMd/Pw8yvg6ZNmXPTCkKbAAIB99Ezq12TutSF1ksYuCPSM31cQfJjrcY2IDYKop+aFnIS5uquP56fYZeduEsyCOFHCZi0ihT+H4a3CDgHgPvcBApA1MdgyM80sWm+A/tn3+IfbujVHf0UAIbLbTujDRPaOiAKzD8ciBliNCXslfXLMjTkpLPM+JlKRRb7DUTHpsX0Nv1cqfLaJ39GUe4ev9NVDkntBU0qgJ2A72OhO8v6sf9NMcStXGsAU6Zq1JmULZj2GAlARjLCg2IPdigW5Aizn6dbJPXLdw1wmDalq72ZTS6nXYVE3wLuqHjKEjuOVfOXryYCCJXY1gP3ZUU1ELaCQRIBVCh6K2ZV4XIthA31EogV25Xgr4cssap3/kp5gzJxCigQR+Z6tVB3nGKJj6mNgM8wLdKSB6pKQ5NlcJ975U6iwqTg8k5QTwkOFd7cCbZvjvU2rcGGbPEWz6E+ltkl6klBgQ38TOTxi1J1+0fy5/QxQTeaAUBtdfPPFejbxbklFDd50x8Ij5GZv7f8Xofan8SHOUturY6Z9e4pE0sM0Z5w1yGIC60H1EYyZDWp9ust23wFJPnKRYdwO35lWhCWs34IPf2tcNT1enmtBUL9cHOnB2yIRA+VEhSWFqCYxLfmYDuxiQOcnwdtZfFW95H0keckrddCQTRb/niqGPgoZiG91+jZYDont1H0Ku9S9XJtLBF+jK+ncG462plkzd2ICqkIVZmQpebKV8sbdeflWPBQA9dw72Fn1TyRKZA9PR29tOo8kk9qdgsnNtNv+aIWGZyqvr0+Xr6OnqGtG4MCCAz8vxlcbhAvuaYRACpEOAcCdLAPkdr/HmQHK1dP4YZGzMzBGLmqPMxmqfAp40oPzC5ewZi2XnwjFGBQTlREQ4iJb0tUMffAsggpVrFuxSkxlCTnOUVy6XoZYyILAn8EFel3QVVz/xEjhON7K68NakHzmQbQOXs0xrkaIZJCQJKrZJtBUXkNn94Hx3JDTad301ebpsPY7mtS7gKRG8rq8SHXuw8GJglHTcvIocbA/RN5vQ5hLpB2DdrnRjxMFyycXCsYGUbfdPHihFZvn5+TwaCa/rEW+GyISQp0xSyyIiHkjN3W6Wfgb9";
 
     private static int errCode = PDFException.e_errSuccess;
     static {
@@ -29,7 +29,17 @@ public class FoxitPdf extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
-        this.init(callbackContext);
+        try {
+            Library.init(sn, key);
+        } catch (PDFException e) {
+            errCode = e.getLastError();
+            callbackContext.error("Failed to initialize Foxit library.");
+            return false;
+        }
+
+        errCode = PDFException.e_errSuccess;
+        callbackContext.success("Succeed to initialize Foxit library.");
+
         if (action.equals("init")) {
 
             return true;
@@ -40,18 +50,6 @@ public class FoxitPdf extends CordovaPlugin {
         }
 
         return false;
-    }
-
-    private void init(CallbackContext callbackContext) {
-        try {
-            Library.init(sn, key);
-        } catch (PDFException e) {
-            errCode = e.getLastError();
-            callbackContext.error("Failed to initialize Foxit library.");
-        }
-
-        errCode = PDFException.e_errSuccess;
-        callbackContext.error("Succeed to initialize Foxit library.");
     }
 
     private void openDoc(final String path, final CallbackContext callbackContext) {

@@ -39,9 +39,10 @@
         <source-file src="src/android/com/foxit/cordova/plugin/FoxitPdf.java" target-dir="src/com/foxit/cordova/plugin"/>
         <source-file src="src/android/com/foxit/cordova/plugin/ReaderActivity.java" target-dir="src/com/foxit/cordova/plugin"/>
         <source-file src="src/android/libs/armeabi-v7a/librdk.so" target-dir="libs/armeabi-v7a"/>
-		<source-file src="src/android/libs/x86/librdk.so" target-dir="libs/x86"/>
+		    <source-file src="src/android/libs/x86/librdk.so" target-dir="libs/x86"/>
+        <source-file src="src/android/libs/arm64-v8a/librdk.so" target-dir="libs/arm64-v8a"/>
 
-        <framework src="src/android/libs/FoxitRDKUIExtensions.gradle" custom="true" type="gradleReference" />
         <resource-file src="src/android/libs/FoxitRDKUIExtensions.aar" target="libs/FoxitRDKUIExtensions.aar"/>
+        <framework src="src/android/libs/FoxitRDKUIExtensions.gradle" custom="true" type="gradleReference" />
     </platform>
 </plugin>
