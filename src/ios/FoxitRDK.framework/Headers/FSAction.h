@@ -269,6 +269,9 @@ typedef NS_ENUM(NSUInteger, FSNewWindowFlag) {
     /** @brief SWIG proxy related property, it's deprecated to use it. */
     BOOL swigCMemOwn;
 }
+/** @brief Create action. */
++ (instancetype)actionWithCptr:(void*)cPtr swigOwnCObject: (BOOL)ownCObject;
+
 /** @brief SWIG proxy related function, it's deprecated to use it. */
 -(void*)getCptr;
 /** @brief SWIG proxy related function, it's deprecated to use it. */
