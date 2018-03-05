@@ -27,7 +27,7 @@ cordova plugin add cordova-plugin-foxitpdf
 
 Because of some large file in our project ,if you update faild please try the other way
 1. clone this project
-2. add plugin from local by this command : 
+2. add plugin from local by this command :
 cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by your own)
 
 ## Note
@@ -192,7 +192,16 @@ function preview(){
 
 ## Attention
 
-The product is still in the early stage of development. We will continue to focus on refining and improving this project.
+1.The product is still in the early stage of development. We will continue to focus on refining and improving this project.
+
+2. if you cordova version is 7.0.0 maybe you will encounter this problem
+no such file or directory, open 'xxxx/platforms/android/AndroidManifest.xml'
+this is cordova bug,on this link has solution:
+https://cordova.apache.org/announcements/2017/12/04/cordova-android-7.0.0.html
+>
+However this a major breaking change for people creating standalone Cordova Android projects. This also means that the locations of files have changed and have been brought in line to the structure used by Android Studio.
+This may affect plugin.xml files and config.xml files that use edit-config, and make it so plugins that use edit-config will not be able to be compatible with both Android 6.x and Android 7.x. To fix this issue, please do the following in your XML files
+
 
 ## Feedback or contribution code
 
