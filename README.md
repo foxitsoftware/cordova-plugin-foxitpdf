@@ -102,7 +102,27 @@ The preparatory work has been completed，Now,you can use this code everywhere i
 	Portrait , Landscape Left , Landscape Right
 </s>
 
+## window.FoxitPdf.addEventListener
 
+> Adds a listener for an event
+
+    window.FoxitPdf.addEventListener(eventname,callback);
+
+- __eventname__: the event to listen for _(String)_
+
+  - __onDocSaved__: event fires when document saved.
+
+- __callback__: the function that executes when the event fires. The function is passed an `InAppBrowserEvent` object as a parameter.
+
+## Example
+
+```javascript
+
+window.FoxitPdf.addEventListener('onDocSaved',function(data){
+  console.log('onDocSaved callback ',data);
+});
+
+```
 
 
 ## Usage Instructions for Android
