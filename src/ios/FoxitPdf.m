@@ -17,6 +17,8 @@ NSString *UNLOCK = @"ezJvj93HvBh39LusL0W0ja6n7P901Et7D1kNPS1MELvfNklxI+pXl0k2vWX
 @property (nonatomic, strong) FSPDFViewCtrl *pdfViewControl;
 @property (nonatomic, strong) UIViewController *pdfViewController;
 
+@property (nonatomic, strong) CDVInvokedUrlCommand *pluginCommand;
+
 - (void)Preview:(CDVInvokedUrlCommand *)command;
 @end
 
@@ -28,6 +30,7 @@ NSString *UNLOCK = @"ezJvj93HvBh39LusL0W0ja6n7P901Et7D1kNPS1MELvfNklxI+pXl0k2vWX
 - (void)Preview:(CDVInvokedUrlCommand*)command
 {
     CDVPluginResult *pluginResult = nil;
+    self.pluginCommand = command;
     
     NSString *docDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSLog(@"%@", docDir);
@@ -54,6 +57,7 @@ NSString *UNLOCK = @"ezJvj93HvBh39LusL0W0ja6n7P901Et7D1kNPS1MELvfNklxI+pXl0k2vWX
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"file not found"];
     }
     
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     
 }
@@ -127,6 +131,13 @@ NSString *UNLOCK = @"ezJvj93HvBh39LusL0W0ja6n7P901Et7D1kNPS1MELvfNklxI+pXl0k2vWX
 
 - (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
     // Called when a document is closed.
+}
+- (void)onDocSaved:(FSPDFDoc *)document error:(int)error{
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                  messageAsDictionary:@{@"type":@"onDocSaved", @"info":@"info"}];
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
 }
 
 # pragma mark -- isExistAtPath
