@@ -1,7 +1,9 @@
 package com.foxit.cordova.plugin;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.RelativeLayout;
 import android.support.v4.app.FragmentActivity;
@@ -9,8 +11,10 @@ import android.support.v4.app.FragmentActivity;
 import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.pdfreader.impl.PDFReader;
+import com.foxit.sdk.pdf.PDFDoc;
 
 import org.apache.cordova.CordovaActivity;
+import org.apache.cordova.LOG;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -19,6 +23,7 @@ import java.nio.charset.Charset;
 
 public class ReaderActivity extends FragmentActivity {
 
+    public PDFViewCtrl pdfViewCtrl;
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         return super.onCreateOptionsMenu(menu);
@@ -32,7 +37,7 @@ public class ReaderActivity extends FragmentActivity {
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
-        PDFViewCtrl pdfViewCtrl = new PDFViewCtrl(this);
+        pdfViewCtrl = new PDFViewCtrl(this);
 
         relativeLayout.addView(pdfViewCtrl, params);
         relativeLayout.setWillNotDraw(false);
@@ -65,10 +70,55 @@ public class ReaderActivity extends FragmentActivity {
 
         pdfViewCtrl.setUIExtensionsManager(uiextensionsManager);
 
+        pdfViewCtrl.registerDocEventListener(docListener);
+
         PDFReader mPDFReader = (PDFReader) uiextensionsManager.getPDFReader();
         mPDFReader.onCreate(this, pdfViewCtrl, null);
         mPDFReader.openDocument(getIntent().getExtras().getString("path"), null);
         setContentView(mPDFReader.getContentView());
         mPDFReader.onStart(this);
+
     }
+
+    PDFViewCtrl.IDocEventListener docListener = new PDFViewCtrl.IDocEventListener() {
+        @Override
+        public void onDocWillOpen() {
+        }
+
+        @Override
+        public void onDocOpened(PDFDoc pdfDoc, int errCode) {
+        }
+
+        @Override
+        public void onDocModified(PDFDoc pdfDoc) {
+
+        }
+
+        @Override
+        public void onDocWillClose(PDFDoc pdfDoc) {
+        }
+
+        @Override
+        public void onDocClosed(PDFDoc pdfDoc, int i) {
+        }
+
+        @Override
+        public void onDocWillSave(PDFDoc pdfDoc) {
+        }
+
+        @Override
+        public void onDocSaved(PDFDoc pdfDoc, int i) {
+            Intent intent = new Intent();
+
+            intent.putExtra("key", "info");
+
+            setResult(RESULT_OK, intent);
+
+            pdfViewCtrl.unregisterDocEventListener(this);
+
+            finish();
+        }
+
+
+    };
 }
