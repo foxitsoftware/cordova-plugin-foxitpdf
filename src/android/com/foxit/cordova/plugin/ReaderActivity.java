@@ -19,9 +19,11 @@ import org.apache.cordova.LOG;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-
+import android.content.res.Configuration;
+import android.view.KeyEvent;
 
 public class ReaderActivity extends FragmentActivity {
+    public PDFReader mPDFReader;
 
     public PDFViewCtrl pdfViewCtrl;
     @Override
@@ -72,12 +74,80 @@ public class ReaderActivity extends FragmentActivity {
 
         pdfViewCtrl.registerDocEventListener(docListener);
 
-        PDFReader mPDFReader = (PDFReader) uiextensionsManager.getPDFReader();
+        mPDFReader = (PDFReader) uiextensionsManager.getPDFReader();
         mPDFReader.onCreate(this, pdfViewCtrl, null);
         mPDFReader.openDocument(getIntent().getExtras().getString("path"), null);
         setContentView(mPDFReader.getContentView());
         mPDFReader.onStart(this);
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(mPDFReader == null)
+            return;
+        mPDFReader.onStart(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(mPDFReader == null)
+            return;
+        mPDFReader.onPause(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(mPDFReader == null)
+            return;
+        mPDFReader.onResume(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(mPDFReader == null)
+            return;
+        mPDFReader.onStop(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(mPDFReader != null)
+            mPDFReader.onDestroy(this);
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(mPDFReader != null)
+            mPDFReader.onActivityResult(this, requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if(mPDFReader == null)
+            return;
+        mPDFReader.onConfigurationChanged(this, newConfig);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (mPDFReader != null && mPDFReader.onKeyDown(this, keyCode, event))
+            return true;
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (mPDFReader != null && !mPDFReader.onPrepareOptionsMenu(this, menu))
+            return false;
+        return super.onPrepareOptionsMenu(menu);
     }
 
     PDFViewCtrl.IDocEventListener docListener = new PDFViewCtrl.IDocEventListener() {
