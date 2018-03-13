@@ -50,8 +50,7 @@ Thanks to the new version, and now we use the plug-in iOS only need a few simple
 -    Maybe xcode does not help us to add FoxitRDK.framework or libFoxitRDKUIExtensions.a correctly
 -    Just delete it and re-add it
 ```   
-3. Target -> Build Phases -> Copy Bundle Resources ->  +  -> `uiextensions_config.json`
-4. Target -> Build Phases -> Copy Bundle Resources ->  +  -> `Resource`
+3. Target -> Build Phases -> Copy Bundle Resources ->  +  -> `Resource`
 
     Resource folder -- found in the `Plugins/cordova-plugin-foxitpdf/uiextensions/resource` folder
 
