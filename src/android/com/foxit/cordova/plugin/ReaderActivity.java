@@ -73,10 +73,10 @@ public class ReaderActivity extends FragmentActivity {
         pdfViewCtrl.setUIExtensionsManager(uiextensionsManager);
 
         pdfViewCtrl.registerDocEventListener(docListener);
-
+        String path = getIntent().getExtras().getString("path").replace("file://", "");
         mPDFReader = (PDFReader) uiextensionsManager.getPDFReader();
         mPDFReader.onCreate(this, pdfViewCtrl, null);
-        mPDFReader.openDocument(getIntent().getExtras().getString("path"), null);
+        mPDFReader.openDocument(path, null);
         setContentView(mPDFReader.getContentView());
         mPDFReader.onStart(this);
 
