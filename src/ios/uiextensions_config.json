@@ -1,0 +1,38 @@
+{
+    "modules": {
+        "thumbnail": true,
+        "readingBookmark": true,
+        "outline": true,
+        "tools": {
+            "Insert": true,
+            "Eraser": true,
+            "Line": true,
+            "Arrow": true,
+            "Selection": true,
+            "Underline": true,
+            "Replace": true,
+            "StrikeOut": true,
+            "Note": true,
+            "Highlight": true,
+            "Squiggly": true,
+            "Oval": true,
+            "Freetext": true,
+            "Stamp": true,
+            "Rectangle": true,
+            "Pencil": true,
+            "Textbox": true,
+            "Callout": true,
+            "Polygon": true,
+            "Cloud": true,
+            "Image": true,
+            "Distance": true,
+            "PolyLine": true
+        },
+        "attachment": true,
+        "signature": true,
+        "search": true,
+        "pageNavigation": true,
+        "form": true,
+        "encryption": true
+    }
+}

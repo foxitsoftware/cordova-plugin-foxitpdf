@@ -1,0 +1,39 @@
+{
+    "modules": {
+        "readingbookmark": true,
+        "outline": true,
+//        "annotations":true,
+        "annotations": {
+            "highlight": true,
+            "underline": true,
+            "squiggly": true,
+            "strikeout": true,
+            "inserttext": true,
+            "replacetext": true,
+            "line": true,
+            "rectangle": true,
+            "oval": true,
+            "arrow": true,
+            "pencil": true,
+            "eraser": true,
+            "typewriter": true,
+            "textbox": true,
+            "callout": true,
+            "note": true,
+            "stamp": true,
+            "polygon": true,
+            "cloud":true,
+            "polyline":true,
+            "distance":true,
+            "image":true
+        },
+        "thumbnail" : true,
+        "attachment": true,
+        "signature": true,
+        "search": true,
+        "pageNavigation": true,
+        "form": true,
+        "selection": true,
+        "encryption" : true
+    }
+}
