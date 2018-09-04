@@ -61,6 +61,7 @@ Thanks to the new Foxit PDF SDK for iOS 6.1 API, the iOS version of the cordova 
     or use the method `Add Files to xxx`, remembering to check the option `Create Group`
 4. Target -> General -> Linked Frameworks and Libraries ->  +  -> WebKit.framework
 
+
 > `Note` Do not forget to add pdf files  
    You can add the PDF to Copy Bundle Resources directly. Just left-click the project, find 'Copy Bundle Resources' in the 'Build Phases' tab, click on the + button, and choose the file to add. You can refer to any PDF file, just add it to the Xcode’s Copy Bundle Resources.
 
