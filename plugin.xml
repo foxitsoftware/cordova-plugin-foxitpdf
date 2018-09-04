@@ -16,9 +16,6 @@
             </feature>
         </config-file>
         <source-file src="src/ios/FoxitPdf.m"/>
-        <source-file compiler-flags="-fno-objc-arc" framework="true" src="src/ios/libFoxitRDKUIExtensions.a"/>
-        <framework custom="true" src="src/ios/FoxitRDK.framework"/>
-        <source-file src="src/ios/uiextensions"/>
         <source-file src="src/ios/uiextensions_config.json"/>
         <preference name="CAMERA_USAGE_DESCRIPTION" default=" " />
         <config-file target="*-Info.plist" parent="NSCameraUsageDescription">
@@ -72,7 +69,7 @@
         <resource-file src="src/android/libs/FoxitRDKUIExtensions.aar" target="libs/FoxitRDKUIExtensions.aar"/>
 
         <resource-file src="src/android/assets/uiextensions_config.json" target="assets/www/plugins/cordova-plugin-foxitpdf/uiextensions_config.json" />
-     
+
         <framework src="src/android/libs/FoxitRDKUIExtensions.gradle" custom="true" type="gradleReference" />
     </platform>
 </plugin>
