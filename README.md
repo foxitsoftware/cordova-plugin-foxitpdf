@@ -49,6 +49,7 @@ cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by yo
 ## Usage Instructions for iOS
 Thanks to the new Foxit PDF SDK for iOS 6.1 API, the iOS version of the cordova plug-in only needs a few simple steps to deploy (It involves much lighter operations when compared to our previous version 3.0)
 
+
 1. Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (Please use Foxit PDF SDK for iOS 6.1 )
 2. Add dynamic framework
     "FoxitRDK.framework" and "uiextensionsDynamic.framework"
