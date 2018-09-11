@@ -54,12 +54,7 @@ Thanks to the new Foxit PDF SDK for iOS 6.1 API, the iOS version of the cordova 
 2. Add dynamic framework
     "FoxitRDK.framework" and "uiextensionsDynamic.framework"
     to framework folder and also to Xcode’s Embedded Binaries  
-3. Target -> Build Phases -> Copy Bundle Resources ->  +  -> `Resource`
-
-    Resource folder -- found in the `libs/uiextensions/resource` folder
-
-    or use the method `Add Files to xxx`, remembering to check the option `Create Group`
-4. Target -> General -> Linked Frameworks and Libraries ->  +  -> WebKit.framework
+3. Target -> General -> Linked Frameworks and Libraries ->  +  -> WebKit.framework
 
 
 > `Note` Do not forget to add pdf files  
