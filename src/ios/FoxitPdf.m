@@ -145,7 +145,18 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqX8Iklssh9qvOZTXwsIO/MBC0bmgJ1qz4F0lwleIbZ
     
     self.extensionsMgr.goBack = ^() {
         [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+        [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
     };
+
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleStatusBarOrientationChange:)
+                                                name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
+    
+}
+
+#pragma mark - rotate event
+- (void)handleStatusBarOrientationChange: (NSNotification *)notification{
+    UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    [self.extensionsMgr didRotateFromInterfaceOrientation:interfaceOrientation];
 }
 
 #pragma mark <IDocEventListener>
