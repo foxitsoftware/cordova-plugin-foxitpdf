@@ -130,8 +130,11 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 &nbsp;&nbsp;
 
 ## Usage Instructions for Android
-No change is needed when using the plugin in Android, you can use the functions as seen in the sample code below:
+1:Download `foxit_mobile_pdf_sdk_android_en.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use `foxit_mobile_pdf_sdk_android_en.zip` for version 6.1 )
 
+2:Unzip `foxit_mobile_pdf_sdk_android_en.zip` and copy libs folder into the component android folder.
+
+you can use the functions as seen in the sample code below :
 ```js
 var successcallback = function(data){
   console.log(data);
