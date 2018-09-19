@@ -49,9 +49,13 @@ cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by yo
 ## Usage Instructions for iOS
 Thanks to the new version, and now we use the plug-in iOS only need a few simple steps on it (no longer like the 3.0 version of the kind of cumbersome operation)
 
+Prepare
+Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (Please use Foxit PDF SDK for iOS 5.1 )
+
 1. Target -> Build setting -> Other Linker Flags -> + ->  `-lstdc++`
     ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/ios_step1.png)
-2. If appear FoxitRDK.framework `image not found` error, Make sure that Target -> General -> Embedded Binaries -> have FoxitRDK.framework
+2. Add dynamic framework "FoxitRDK.framework" and static framework "libFoxitRDKUIExtensions.a"
+If appear FoxitRDK.framework `image not found` error, Make sure that Target -> General -> Embedded Binaries -> have FoxitRDK.framework
 ```diff
 -PS:
 -    Maybe xcode does not help us to add FoxitRDK.framework or libFoxitRDKUIExtensions.a correctly
@@ -59,7 +63,7 @@ Thanks to the new version, and now we use the plug-in iOS only need a few simple
 ```   
 3. Target -> Build Phases -> Copy Bundle Resources ->  +  -> `Resource`
 
-    Resource folder -- found in the `Plugins/cordova-plugin-foxitpdf/uiextensions/resource` folder
+    Resource folder -- found in the `libs/uiextensions/resource` folder
 
     or use the method of `Add Files to xxx` ,remember check the option of `Create Group`
 4. Target -> General -> Linked Frameworks and Libraries ->  +  -> WebKit.framework
