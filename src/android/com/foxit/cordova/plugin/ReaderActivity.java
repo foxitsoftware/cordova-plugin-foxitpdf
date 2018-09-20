@@ -17,6 +17,7 @@ import android.view.Menu;
 import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.pdf.PDFDoc;
 import com.foxit.uiextensions.UIExtensionsManager;
+import com.foxit.uiextensions.modules.connectpdf.account.AccountModule;
 import com.foxit.uiextensions.utils.AppTheme;
 import com.foxit.uiextensions.utils.UIToast;
 
@@ -59,6 +60,7 @@ public class ReaderActivity extends FragmentActivity {
         pdfViewCtrl.setUIExtensionsManager(uiextensionsManager);
         pdfViewCtrl.registerDocEventListener(docListener);
         uiextensionsManager.onCreate(this, pdfViewCtrl, null);
+        AccountModule.getInstance().onCreate(this, savedInstanceState);
 
         String filePathSaveTo = getIntent().getExtras().getString("filePathSaveTo");
         if (!TextUtils.isEmpty(filePathSaveTo)) {
@@ -127,6 +129,7 @@ public class ReaderActivity extends FragmentActivity {
     protected void onDestroy() {
         if (uiextensionsManager != null)
             uiextensionsManager.onDestroy(this);
+        AccountModule.getInstance().onDestroy(this);
         super.onDestroy();
     }
 
