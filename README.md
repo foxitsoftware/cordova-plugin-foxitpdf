@@ -44,7 +44,7 @@ cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by yo
     Please note the current key expiration date is ## 10-15.
 
 ## Major update
-    Now our plugin is using Foxit PDF SDK version 6.1 for Android ,Foxit PDF SDK version 6.1 for iOS .
+    Now our plugin is using Foxit PDF SDK version 6.2 for Android ,Foxit PDF SDK version 6.1 for iOS .
 
 ## Usage Instructions for iOS
 Thanks to the new Foxit PDF SDK for iOS 6.1 API, the iOS version of the cordova plug-in only needs a few simple steps to deploy (It involves much lighter operations when compared to our previous version 3.0)
@@ -130,9 +130,11 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 &nbsp;&nbsp;
 
 ## Usage Instructions for Android
-1:Download `foxit_mobile_pdf_sdk_android_en.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use `foxit_mobile_pdf_sdk_android_en.zip` for version 6.1 )
+1:Download `foxit_mobile_pdf_sdk_android_en.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use `version 6.2` of `foxit_mobile_pdf_sdk_android_en.zip` )
 
 2:Unzip `foxit_mobile_pdf_sdk_android_en.zip` and copy libs folder into the component android folder.
+
+3:Replace `rdk_sn` and `rdk_key` in the `com.foxit.cordova.plugin.FoxitPdf` class, `rdk_key` and `rdk_sn` can be found in the libs folder of `foxit_mobile_pdf_sdk_android_en.zip`.
 
 you can use the functions as seen in the sample code below :
 ```js
