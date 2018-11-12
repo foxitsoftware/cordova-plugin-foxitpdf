@@ -1,16 +1,16 @@
-repositories{    
+repositories{
   jcenter()
   flatDir {
-      dirs 'libs'
+      dirs '../libs'
    }
 }
 
 dependencies {
-    compile(name:'FoxitRDK', ext:'aar')
-    compile(name:'FoxitRDKUIExtensions', ext:'aar')
-    compile 'com.android.support:appcompat-v7:25.0.0'
-    compile 'com.android.support:recyclerview-v7:25.0.0'
-    compile 'com.edmodo:cropper:1.0.1'
+    implementation(name:'FoxitRDK', ext:'aar')
+    implementation(name:'FoxitRDKUIExtensions', ext:'aar')
+    implementation 'com.android.support:appcompat-v7:25.0.0'
+    implementation 'com.android.support:recyclerview-v7:25.0.0'
+    implementation 'com.edmodo:cropper:1.0.1'
 }
 
 android {

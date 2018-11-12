@@ -2,7 +2,7 @@
     "modules": {
         "readingbookmark": true,
         "outline": true,
-//        "annotations":true,
+        // "annotations":true,
         "annotations": {
             "highlight": true,
             "underline": true,
@@ -25,7 +25,9 @@
             "cloud":true,
             "polyline":true,
             "distance":true,
-            "image":true
+            "image":true,
+            "audio":true,
+            "video":true
         },
         "thumbnail" : true,
         "attachment": true,
