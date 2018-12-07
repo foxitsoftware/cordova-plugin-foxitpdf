@@ -58,6 +58,7 @@ public class ReaderActivity extends FragmentActivity {
         uiextensionsManager = new UIExtensionsManager(this, pdfViewCtrl, config);
         uiextensionsManager.setAttachedActivity(this);
         pdfViewCtrl.setUIExtensionsManager(uiextensionsManager);
+        pdfViewCtrl.setAttachedActivity(this);
         pdfViewCtrl.registerDocEventListener(docListener);
         uiextensionsManager.onCreate(this, pdfViewCtrl, null);
         AccountModule.getInstance().onCreate(this, savedInstanceState);
@@ -137,7 +138,7 @@ public class ReaderActivity extends FragmentActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (uiextensionsManager != null)
-            uiextensionsManager.onActivityResult(this, requestCode, resultCode, data);
+            uiextensionsManager.handleActivityResult(this, requestCode, resultCode, data);
     }
 
     @Override

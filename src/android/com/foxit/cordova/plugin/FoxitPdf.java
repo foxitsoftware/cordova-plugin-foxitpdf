@@ -79,6 +79,7 @@ public class FoxitPdf extends CordovaPlugin {
 
         if (errCode != Constants.e_ErrSuccess) {
             callbackContext.error("Please initialize Foxit library Firstly.");
+            return;
         }
 
         final Context context = this.cordova.getActivity();

@@ -11,6 +11,9 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:25.0.0'
     implementation 'com.android.support:recyclerview-v7:25.0.0'
     implementation 'com.edmodo:cropper:1.0.1'
+    implementation('com.microsoft.aad:adal:1.1.16') {}
+    implementation(name: 'RMSSDK-4.2-release', ext: 'aar')
+    implementation(name: 'rms-sdk-ui', ext: 'aar')
 }
 
 android {
