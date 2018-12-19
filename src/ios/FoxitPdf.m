@@ -46,7 +46,7 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     
     NSString *jsfilePathSaveTo = [options objectForKey:@"filePathSaveTo"];
     if (jsfilePathSaveTo && jsfilePathSaveTo.length >0 ) {
-        NSURL *filePathSaveTo = [[NSURL alloc] initWithString:jsfilePathSaveTo];
+        NSURL *filePathSaveTo = [NSURL fileURLWithPath:jsfilePathSaveTo];
         self.filePathSaveTo = filePathSaveTo.path;
     }else{
         self.filePathSaveTo  = nil;
@@ -57,10 +57,10 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     NSString *filePath = [options objectForKey:@"filePath"];
     
     // check file exist
-    NSURL *fileURL = [[NSURL alloc] initWithString:filePath];
-    BOOL isFileExist = [self isExistAtPath:fileURL.path];
     
-    if (filePath != nil && filePath.length > 0  && isFileExist) {
+    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
+    
+    if (filePath != nil && filePath.length > 0) {
         // preview
         [self FoxitPdfPreview:fileURL.path];
         
@@ -69,9 +69,7 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
         tmpCommandCallbackID = command.callbackId;
     } else {
         NSString* errMsg = [NSString stringWithFormat:@"file not find"];
-        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error" message:errMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [alert show];
-        
+        [self showAlertViewWithTitle:@"Error" message:errMsg];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"file not found"];
     }
     
@@ -81,17 +79,19 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
 }
 
 # pragma mark -- Foxit preview
+static FSFileListViewController *fileVC;
 -(void)FoxitPdfPreview:(NSString *)filePath {
     // init foxit sdk
     FSErrorCode eRet = [FSLibrary initialize:SN key:UNLOCK];
+    if (!fileVC) fileVC = [[FSFileListViewController alloc] init];
     if (FSErrSuccess != eRet) {
         NSString* errMsg = [NSString stringWithFormat:@"Invalid license"];
-        UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Check License" message:errMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [alert show];
+        [self showAlertViewWithTitle:@"Check License" message:errMsg];
         return;
     }
     
     self.pdfViewControl = [[FSPDFViewCtrl alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    [self.pdfViewControl setRMSAppClientId:@"972b6681-fa03-4b6b-817b-c8c10d38bd20" redirectURI:@"com.foxitsoftware.com.mobilepdf-for-ios://authorize"];
     [self.pdfViewControl registerDocEventListener:self];
     
     NSString *configPath = [[NSBundle mainBundle] pathForResource:@"uiextensions_config" ofType:@"json"];
@@ -106,8 +106,7 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     
     if (FSErrSuccess != eRet) {
         NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Check License" message:errMsg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [alert show];
+        [self showAlertViewWithTitle:@"Check License" message:errMsg];
         return;
     }
     
@@ -118,27 +117,22 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
         self.extensionsMgr.preventOverrideFilePath = self.filePathSaveTo;
     }
     
+     __weak FoxitPdf* weakSelf = self;
+    
     [self.pdfViewControl openDoc:filePath
                         password:nil
                       completion:^(FSErrorCode error) {
                           if (error != FSErrSuccess) {
-                              UIAlertView *alert = [[UIAlertView alloc]
-                                                    initWithTitle:@"error"
-                                                    message:@"Failed to open the document"
-                                                    delegate:nil
-                                                    cancelButtonTitle:nil
-                                                    otherButtonTitles:@"ok", nil];
-                              [alert show];
+                              [weakSelf showAlertViewWithTitle:@"error" message:@"Failed to open the document"];
+                          }else{
+                              // Run later to avoid the "took a long time" log message.
+                              dispatch_async(dispatch_get_main_queue(), ^{
+                                  [weakSelf.viewController presentViewController:weakSelf.pdfViewController animated:YES completion:nil];
+                              });
                           }
                       }];
-    
-    __weak FoxitPdf* weakSelf = self;
-    self.pdfViewController.modalPresentationStyle = UIModalPresentationFullScreen;
-    
-    // Run later to avoid the "took a long time" log message.
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [weakSelf.viewController presentViewController:self.pdfViewController animated:YES completion:nil];
-    });
+//    self.pdfViewController.modalPresentationStyle = UIModalPresentationFullScreen;
+
     
     [self wrapTopToolbar];
     self.topToolbarVerticalConstraints = @[];
@@ -151,6 +145,29 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleStatusBarOrientationChange:)
                                                 name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
     
+}
+
+- (FSClientInfo *)getClientInfo {
+    FSClientInfo *client_info = [[FSClientInfo alloc] init];
+    client_info.device_id = [[UIDevice currentDevice] identifierForVendor].UUIDString;
+    client_info.device_name = [UIDevice currentDevice].name;
+    client_info.device_model = [[UIDevice currentDevice] model];
+    client_info.mac_address = @"mac_address";
+    client_info.os = [NSString stringWithFormat:@"%@ %@",
+                      [[UIDevice currentDevice] systemName], [[UIDevice currentDevice] systemVersion]];
+    client_info.product_name = @"RDK";
+    client_info.product_vendor = @"Foxit";
+    client_info.product_version = @"5.2.0";
+    client_info.product_language = [[NSLocale preferredLanguages] objectAtIndex:0];
+    
+    return client_info;
+}
+
+- (void)showAlertViewWithTitle:(NSString *)title message:(NSString *)message{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
+        [alert show];
+    });
 }
 
 #pragma mark - rotate event
