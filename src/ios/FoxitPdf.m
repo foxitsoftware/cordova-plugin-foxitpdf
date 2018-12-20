@@ -45,6 +45,7 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     }
     
     NSString *jsfilePathSaveTo = [options objectForKey:@"filePathSaveTo"];
+    jsfilePathSaveTo = [jsfilePathSaveTo stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     if (jsfilePathSaveTo && jsfilePathSaveTo.length >0 ) {
         NSURL *filePathSaveTo = [NSURL fileURLWithPath:jsfilePathSaveTo];
         self.filePathSaveTo = filePathSaveTo.path;
@@ -57,10 +58,11 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     NSString *filePath = [options objectForKey:@"filePath"];
     
     // check file exist
+    filePath = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSURL *fileURL = [[NSURL alloc] initWithString:filePath];
+    BOOL isFileExist = [self isExistAtPath:fileURL.path];
     
-    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
-    
-    if (filePath != nil && filePath.length > 0) {
+    if (filePath != nil && filePath.length > 0 && isFileExist) {
         // preview
         [self FoxitPdfPreview:fileURL.path];
         
@@ -118,12 +120,13 @@ static FSFileListViewController *fileVC;
     }
     
      __weak FoxitPdf* weakSelf = self;
-    
     [self.pdfViewControl openDoc:filePath
                         password:nil
                       completion:^(FSErrorCode error) {
                           if (error != FSErrSuccess) {
                               [weakSelf showAlertViewWithTitle:@"error" message:@"Failed to open the document"];
+                              [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+                              [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
                           }else{
                               // Run later to avoid the "took a long time" log message.
                               dispatch_async(dispatch_get_main_queue(), ^{
@@ -132,7 +135,6 @@ static FSFileListViewController *fileVC;
                           }
                       }];
 //    self.pdfViewController.modalPresentationStyle = UIModalPresentationFullScreen;
-
     
     [self wrapTopToolbar];
     self.topToolbarVerticalConstraints = @[];
