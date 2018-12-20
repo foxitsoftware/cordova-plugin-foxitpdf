@@ -45,6 +45,7 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     }
     
     NSString *jsfilePathSaveTo = [options objectForKey:@"filePathSaveTo"];
+    jsfilePathSaveTo = [jsfilePathSaveTo stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     if (jsfilePathSaveTo && jsfilePathSaveTo.length >0 ) {
         NSURL *filePathSaveTo = [[NSURL alloc] initWithString:jsfilePathSaveTo];
         self.filePathSaveTo = filePathSaveTo.path;
@@ -57,6 +58,7 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     NSString *filePath = [options objectForKey:@"filePath"];
     
     // check file exist
+    filePath = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSURL *fileURL = [[NSURL alloc] initWithString:filePath];
     BOOL isFileExist = [self isExistAtPath:fileURL.path];
     
@@ -92,7 +94,10 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     }
     
     self.pdfViewControl = [[FSPDFViewCtrl alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    [self.pdfViewControl setRMSAppClientId:@"972b6681-fa03-4b6b-817b-c8c10d38bd20" redirectURI:@"com.foxitsoftware.com.mobilepdf-for-ios://authorize"];
     [self.pdfViewControl registerDocEventListener:self];
+    
+    FSFileListViewController *filelistViewController = [[FSFileListViewController alloc] init];
     
     NSString *configPath = [[NSBundle mainBundle] pathForResource:@"uiextensions_config" ofType:@"json"];
     self.extensionsMgr = [[UIExtensionsManager alloc] initWithPDFViewControl:self.pdfViewControl configuration:[NSData dataWithContentsOfFile:configPath]];
@@ -118,6 +123,7 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
         self.extensionsMgr.preventOverrideFilePath = self.filePathSaveTo;
     }
     
+    __weak FoxitPdf* weakSelf = self;
     [self.pdfViewControl openDoc:filePath
                         password:nil
                       completion:^(FSErrorCode error) {
@@ -129,10 +135,12 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
                                                     cancelButtonTitle:nil
                                                     otherButtonTitles:@"ok", nil];
                               [alert show];
+                              
+                              [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+                              [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
                           }
                       }];
     
-    __weak FoxitPdf* weakSelf = self;
     self.pdfViewController.modalPresentationStyle = UIModalPresentationFullScreen;
     
     // Run later to avoid the "took a long time" log message.
