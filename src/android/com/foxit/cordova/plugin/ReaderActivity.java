@@ -86,11 +86,13 @@ public class ReaderActivity extends FragmentActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_EXTERNAL_STORAGE && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            uiextensionsManager.openDocument(getIntent().getExtras().getString("path"), null);
-        } else {
-            UIToast.getInstance(getApplicationContext()).show("Permission Denied");
-            setResult();
+        if (requestCode == REQUEST_EXTERNAL_STORAGE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                uiextensionsManager.openDocument(getIntent().getExtras().getString("path"), null);
+            }else {
+                UIToast.getInstance(getApplicationContext()).show("Permission Denied");
+                setResult();
+            }
         }
     }
 
