@@ -45,9 +45,10 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     }
     
     NSString *jsfilePathSaveTo = [options objectForKey:@"filePathSaveTo"];
+    jsfilePathSaveTo = [jsfilePathSaveTo stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     if (jsfilePathSaveTo && jsfilePathSaveTo.length >0 ) {
         NSURL *filePathSaveTo = [NSURL fileURLWithPath:jsfilePathSaveTo];
-        self.filePathSaveTo = filePathSaveTo.path;
+        self.filePathSaveTo = [filePathSaveTo.path stringByRemovingPercentEncoding];
     }else{
         self.filePathSaveTo  = nil;
     }
@@ -57,10 +58,13 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
     NSString *filePath = [options objectForKey:@"filePath"];
     
     // check file exist
+    filePath = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSURL *fileURL = [[NSURL alloc] initWithString:filePath];
+    [fileURL.path stringByRemovingPercentEncoding];
     
-    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
+    BOOL isFileExist = [self isExistAtPath:fileURL.path];
     
-    if (filePath != nil && filePath.length > 0) {
+    if (filePath != nil && filePath.length > 0 && isFileExist) {
         // preview
         [self FoxitPdfPreview:fileURL.path];
         
@@ -117,12 +121,14 @@ static FSFileListViewController *fileVC;
         self.extensionsMgr.preventOverrideFilePath = self.filePathSaveTo;
     }
     
-     __weak FoxitPdf* weakSelf = self;
+    __weak FoxitPdf* weakSelf = self;
     [self.pdfViewControl openDoc:filePath
                         password:nil
                       completion:^(FSErrorCode error) {
                           if (error != FSErrSuccess) {
                               [weakSelf showAlertViewWithTitle:@"error" message:@"Failed to open the document"];
+                              [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+                              [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
                           }else{
                               // Run later to avoid the "took a long time" log message.
                               dispatch_async(dispatch_get_main_queue(), ^{
@@ -130,8 +136,8 @@ static FSFileListViewController *fileVC;
                               });
                           }
                       }];
-//    self.pdfViewController.modalPresentationStyle = UIModalPresentationFullScreen;
-
+    //    self.pdfViewController.modalPresentationStyle = UIModalPresentationFullScreen;
+    
     [self wrapTopToolbar];
     self.topToolbarVerticalConstraints = @[];
     
@@ -139,7 +145,7 @@ static FSFileListViewController *fileVC;
         [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
         [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
     };
-
+    
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleStatusBarOrientationChange:)
                                                 name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
     
