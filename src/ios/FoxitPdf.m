@@ -126,8 +126,13 @@ static FSFileListViewController *fileVC;
                         password:nil
                       completion:^(FSErrorCode error) {
                           if (error != FSErrSuccess) {
-                              [weakSelf showAlertViewWithTitle:@"error" message:@"Failed to open the document"];
-                              [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+                              dispatch_time_t delayTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC));
+                              
+                              dispatch_after(delayTime, dispatch_get_main_queue(), ^{
+                                  [weakSelf showAlertViewWithTitle:@"error" message:@"Failed to open the document"];
+                                  [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+                              });
+                              
                               [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
                           }else{
                               // Run later to avoid the "took a long time" log message.
