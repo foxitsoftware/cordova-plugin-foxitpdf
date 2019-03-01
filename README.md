@@ -130,13 +130,15 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 &nbsp;&nbsp;
 
 ## Usage Instructions for Android
-1:Download `foxit_mobile_pdf_sdk_android_en.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use `version 6.2.1` of `foxit_mobile_pdf_sdk_android_en.zip` )
+1:Download `foxit_mobile_pdf_sdk_android_en.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 6.3)
 
 2:Unzip `foxit_mobile_pdf_sdk_android_en.zip` and copy libs folder into the component android folder.
 
 3:Initialize the plugin with ` window.FoxitPdf.initialize` .
 
 4:Open the document with `window.FoxitPdf.openDocument` after initialization is complete.
+
+## API Reference
 
 #### window.FoxitPdf.initialize (Android)
 
