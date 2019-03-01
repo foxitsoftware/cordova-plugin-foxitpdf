@@ -17,6 +17,7 @@
     "pdf",
     "foxit",
     "preview",
+    "openDocument",
     "ecosystem:cordova",
     "cordova-ios",
     "cordova-android"

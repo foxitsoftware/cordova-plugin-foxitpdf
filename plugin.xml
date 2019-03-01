@@ -4,7 +4,7 @@
     <name>cordova-plugin-foxitpdf</name>
     <description>cordova pdf preview plugin with Foxit Pdf sdk</description>
     <author>huang niu</author>
-    <keywords>pdf,perview,foxit</keywords>
+    <keywords>pdf,perview,openDocument,foxit</keywords>
     <license>Apache 2.0 License</license>
     <js-module name="FoxitPdf" src="www/FoxitPdf.js">
         <clobbers target="window.FoxitPdf"/>

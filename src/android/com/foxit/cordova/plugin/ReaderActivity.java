@@ -12,11 +12,11 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.KeyEvent;
-import android.view.Menu;
 
 import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.pdf.PDFDoc;
 import com.foxit.uiextensions.UIExtensionsManager;
+import com.foxit.uiextensions.config.Config;
 import com.foxit.uiextensions.modules.connectpdf.account.AccountModule;
 import com.foxit.uiextensions.utils.AppTheme;
 import com.foxit.uiextensions.utils.UIToast;
@@ -36,21 +36,15 @@ public class ReaderActivity extends FragmentActivity {
     };
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppTheme.setThemeFullScreen(this);
 
-
-        UIExtensionsManager.Config config = null;
+        Config config = null;
         try {
             String configPath = "www/plugins/cordova-plugin-foxitpdf/uiextensions_config.json";
             InputStream stream = getApplicationContext().getResources().getAssets().open(configPath);
-            config = new UIExtensionsManager.Config(stream);
+            config = new Config(stream);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -82,14 +76,13 @@ public class ReaderActivity extends FragmentActivity {
         setContentView(uiextensionsManager.getContentView());
     }
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_EXTERNAL_STORAGE) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 uiextensionsManager.openDocument(getIntent().getExtras().getString("path"), null);
-            }else {
+            } else {
                 UIToast.getInstance(getApplicationContext()).show("Permission Denied");
                 setResult();
             }
@@ -146,9 +139,8 @@ public class ReaderActivity extends FragmentActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (uiextensionsManager == null)
-            return;
-        uiextensionsManager.onConfigurationChanged(this, newConfig);
+        if (uiextensionsManager != null)
+            uiextensionsManager.onConfigurationChanged(this, newConfig);
     }
 
     @Override
@@ -156,13 +148,6 @@ public class ReaderActivity extends FragmentActivity {
         if (uiextensionsManager != null && uiextensionsManager.onKeyDown(this, keyCode, event))
             return true;
         return super.onKeyDown(keyCode, event);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        if (uiextensionsManager != null && !uiextensionsManager.onPrepareOptionsMenu(this, menu))
-            return false;
-        return super.onPrepareOptionsMenu(menu);
     }
 
     PDFViewCtrl.IDocEventListener docListener = new PDFViewCtrl.IDocEventListener() {
@@ -200,4 +185,5 @@ public class ReaderActivity extends FragmentActivity {
         pdfViewCtrl.unregisterDocEventListener(docListener);
         finish();
     }
+
 }

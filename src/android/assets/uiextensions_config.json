@@ -2,14 +2,14 @@
     "modules": {
         "readingbookmark": true,
         "outline": true,
-        // "annotations":true,
+//        "annotations":true,
         "annotations": {
             "highlight": true,
             "underline": true,
             "squiggly": true,
             "strikeout": true,
-            "inserttext": true,
-            "replacetext": true,
+            "insert": true,
+            "replace": true,
             "line": true,
             "rectangle": true,
             "oval": true,
@@ -22,20 +22,130 @@
             "note": true,
             "stamp": true,
             "polygon": true,
-            "cloud":true,
-            "polyline":true,
-            "distance":true,
-            "image":true,
-            "audio":true,
-            "video":true
+            "cloud": true,
+            "polyline": true,
+            "distance": true,
+            "image": true,
+            "audio": true,
+            "video": true
         },
-        "thumbnail" : true,
+        "thumbnail": true,
         "attachment": true,
         "signature": true,
         "search": true,
-        "pageNavigation": true,
+        "navigation": true,
         "form": true,
         "selection": true,
-        "encryption" : true
+        "encryption": true
+    },
+    "permissions": {
+         "runJavaScript": true,
+         "copyText": true,
+         "disableLink": false
+    },
+    "uiSettings": {
+      "displayMode": "Single", //("Single"/"Continous"/"Facing"/"CoverLeft"/"CoverMiddle"/"CoverRight"/"Reflow"
+                                  // Note: /"CoverLeft"/"CoverMiddle"/"CoverRight" currently only support CoverRight)
+      "zoomMode": "FitWidth", //("FitWidth"/"FitPage")
+      "colorMode": "Normal", //("Normal"/"Night"/"Map")
+      "mapForegroundColor": "#5d5b71", //Effective only when colorMode is "Map" and "Night" mode is not.
+      "mapBackgroundColor": "#00001b", //Effective only when colorMode is "Map" and "Night" mode is not.
+      "disableFormNavigationBar": false,
+      "highlightForm": true,
+      "highlightFormColor": "#200066cc", //Set the highlight color with alpha
+      "highlightLink": true,
+      "highlightLinkColor": "#16007fff", //Set the highlight color with alpha
+      "fullscreen": false, /// Enter the full screen immediately after opening. If the user clicks on the page, the toolbar will be displayed. After 5 seconds, if it is in full screen mode, the toolbar and other auxiliary toolbar buttons will be hidden automatically.
+      "annotations": {
+               "continuouslyAdd": false,
+                "highlight": {
+                  "color": "#ffff00", "opacity": 1.0 //opacity: 0.0f - 1.0f, Use default configuration if out of range.
+                },
+                "underline": {
+                  "color": "#66cc33", "opacity": 1.0
+                },
+                "squiggly": {
+                  "color": "#ff6633", "opacity": 1.0
+                },
+                "strikeout": {
+                  "color": "#ff0000", "opacity": 1.0
+                },
+                "insert": {
+                  "color": "#993399", "opacity": 1.0
+                },
+                "replace": {
+                  "color": "#0000ff", "opacity": 1.0
+                },
+                "line": {
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2 //thickness: 1 - 12, Use default configuration if out of range.
+                },
+                "rectangle": {
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                },
+                "oval": {
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                },
+                "arrow": {
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                },
+                "pencil": {
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                },
+                "polygon": {
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                },
+                "cloud": {
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                },
+                "polyline": {
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                },
+                "typewriter": {
+                  "textColor": "#0000ff",
+                  "opacity": 1.0,
+                  "textFace": "Courier", // textFace:"Courier"/"Helvetica"/"Times"
+                  "textSize": 18 // testSize > 0
+                },
+                "textbox": {
+                  "color": "#ff0000",
+                  "textColor": "#0000ff",
+                  "opacity": 1.0,
+                  "textFace": "Courier", // textFace:"Courier"/"Helvetica"/"Times"
+                  "textSize": 18
+                },
+                "callout": {
+                  "color": "#ff0000",
+                  "textColor": "#0000ff",
+                  "opacity": 1.0,
+                  "textFace": "Courier", // textFace:"Courier"/"Helvetica"/"Times"
+                  "textSize": 18
+                },
+                "note": {
+                  "color": "#ff6633",
+                  "opacity": 1.0,
+                  "icon": "Comment" //icon：Comment/Key/Note/Help/NewParagraph/Paragraph/Insert
+                },
+                "attachment": {
+                  "color": "#ff6633",
+                  "opacity": 1.0,
+                  "icon": "PushPin" //icon：Graph/PushPin/Paperclip/Tag
+                },
+                "image": {
+                   "rotation": 0, //rotation: 0/90/180/270.
+                  "opacity": 1.0
+                },
+                "distance": {
+                   "color": "#ff0000",
+                   "opacity": 1.0,
+                   "thickness": 2,
+                   "scaleFromUnit": "inch",//Unit: pt/inch/ft/yd/p/mm/cm/m
+                   "scaleToUnit": "inch",//Unit: pt/inch/ft/yd/p/mm/cm/m
+                   "scaleFromValue": 1,
+                   "scaleToValue": 1
+                }
+        },
+        "signature": {
+            "color": "#000000", "thickness": 4
+        }
     }
 }
