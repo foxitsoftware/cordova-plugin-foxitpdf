@@ -47,10 +47,10 @@ cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by yo
     Now our plugin is using Foxit PDF SDK version 6.3 for Android ,Foxit PDF SDK version 6.2.1 for iOS .
 
 ## Usage Instructions for iOS
-Thanks to the new Foxit PDF SDK for iOS 6.2.1 API, the iOS version of the cordova plug-in only needs a few simple steps to deploy (It involves much lighter operations when compared to our previous version 6.1)
+Thanks to the new Foxit PDF SDK for iOS 6.3 API, the iOS version of the cordova plug-in only needs a few simple steps to deploy (It involves much lighter operations when compared to our previous version 6.1)
 
 
-1. Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (Please use Foxit PDF SDK for iOS 6.2.1 )
+1. Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (Please use Foxit PDF SDK for iOS 6.3 )
 2. Add dynamic framework
     "FoxitRDK.framework" and "uiextensionsDynamic.framework"
     to framework folder and also to Xcode’s Embedded Binaries  
@@ -65,20 +65,61 @@ Thanks to the new Foxit PDF SDK for iOS 6.2.1 API, the iOS version of the cordov
 Now that the preparatory work has been completed，you can use this code everywhere in your project.
 
 
-## window.FoxitPdf.preview
+## window.FoxitPdf.initialize 
 
-> Preview function
+> initialize = function(options, successcallback, errorcallback)
 
-    window.FoxitPdf.preview(options,successcallback,errorcallback);
+```javascript
+let initOptions = {
+    'foxit_sn': xxx, // rdk_sn
+    'foxit_key': xxx, // rdk_key
+}
+window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
+```    
 
-- __options__: Previews configuration options. We now support two options:
+- __options__: Initialization options.
 
-  - __filePath__: Document path you wish to open
-  - __filePathSaveTo__: Document path that prevents overwriting on the preview file  _(if set)_
+- __foxit_sn__: the `rdk_sn`
+- __foxit_key__: the `rdk_key`  
 
-- __successcallback__: This function is executed when the preview is successful. The function is passed an object as a parameter.
+`foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxit_mobile_pdf_sdk_ios_en.zip`.
 
-- __errorcallback__: This function is executed when the preview fails. The function is passed an object as a parameter.
+- __successcallback__: This function is executed when the initialization is successful. The function is passed an object as a parameter.
+
+- __errorcallback__: This function is executed when the initialization fails. The function is passed an object as a parameter.
+
+## Example (In iOS)
+
+```javascript
+let initOptions = {
+    'foxit_sn': 'xxx',
+    'foxit_key': 'xxx'
+};
+window.FoxitPdf.initialize(initOptions,function(succ){console.log('succ',succ);},function(err){console.log('err',err);});
+```
+
+## window.FoxitPdf.openDocument
+
+> openDocument = function(options, successcallback, errorcallback)
+
+```javascript
+let options = {
+'filePath': xxx,
+'filePathSaveTo': xxx
+};
+window.FoxitPdf.openDocument(options,successcallback,errorcallback);
+```    
+
+-__Note__: The document can only be opened if the initialization is successful.
+
+- __options__: Open the configuration options for the document. We now support two options:
+
+- __filePath__: Document path you wish to open
+- __filePathSaveTo__: Document path that prevents overwriting on the preview file  _(if set)_
+
+- __successcallback__: This function is executed when the document opens successfully. The function is passed an object as a parameter.
+
+- __errorcallback__: This function is executed when the document fails to open. The function is passed an object as a parameter.
 
 
 ## Example (In iOS)
@@ -89,7 +130,7 @@ let pdfviewOptions = {
   'filePath':cordova.file.applicationDirectory + 'getting_started_ios.pdf',
   'filePathSaveTo': cordova.file.documentsDirectory + 'getting_started_ios_2.pdf',
 };
-window.FoxitPdf.preview(pdfviewOptions,
+window.FoxitPdf.openDocument(pdfviewOptions,
   function(succ){
     console.log('succ',succ);
   },function(err){

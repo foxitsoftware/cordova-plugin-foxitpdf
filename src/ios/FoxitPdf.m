@@ -5,11 +5,6 @@
 #import <FoxitRDK/FSPDFViewControl.h>
 #import <uiextensionsDynamic/uiextensionsDynamic.h>
 
-
-
-NSString *SN = @"bqtPqJXM3tVmLYMw3mgUwjLPx0UOd3Cbqg2CNIkgu0KuUPonSVmDxQ==";
-NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPpwG3DJeVUCVBNz+EQlthgUzBkbNgWhSLL6Ukv/FGJjTBrm642ffdWUWWKEaWbWQ1srEw4+8f72amQFJHhZo7d53A5FgqTw7x39i+Xl63DLOSHG2QVCIZO8lLs7bE3fwuFD6Klx/Qzrn7s3oT81fEpP5UgMTDttZINOaL8LWTCho5phYqqiRAQ5XUfgRoFlqK57cq8jQGLcLULEh2nJCn7UhtW9UY/6SbEf95LWtOTHGI6S1sunR35i8PWeBmAJThuFuBYpoJl8JSl8eixd2jAiUQ8EwwjXCwQeEkZUxVFSuTfkGsFdyPGbvNqFqiQb7w74F8aaXc3Vl36iRvQNesl+9ebxCR77uSMg15U94LoEdK0P+JWLS60QKR7d/LyjzckKZ5lfPZ2qAvR1+4zaAw78aaXUwlwN7P8luig+XU564NmNfFqZAd+TvfLzfFKsEEoJ1B/H3r4MEJ6p5w6hiigAnFQQN5mksJblt+1msoYKnTflcYcaf7tv3sv1MKvLz8+SgTi1BfBhOd2WEXqeqmqUxetz2XHgSDbf0i0egh/XzPFeEafPLkZCjfjaA8LcWxZkhetSuqzqNuI+rBtPsrsIQbcu9xTH/HskFXEi3UHsX2LGm5zNa2vaTJQKO/Lyic57DbNh+SDvpAmIUuQeTMt9mvcZzFIkKuc0D/Ufbf/vfdd1mmxvFN0t9OjBZvknAvcROYdzDHYWsytXR7EvTrS2BI7KHTaEVRPIETDcmj5R5GebPx1bgZZVIcdTckA99rgxbv93LO/598Orblr04d/yvUmAOL/DEyaxNcOJx7HcvAHiCTYP6B0FidABKMadgt73gVDIZDguWGrt3QG6vDIEMQzRuxCTP5md4pNdNezkHDwxWGTUr95PXbGYxcRNqecePhHUqXyxCTUfGAGkwWdwHQU9oIzYt7eODzCBJZedynsrTKFpNQpvbx4LZlIZ56Wis3CmAQ7fKbf0qFva+fU3mqII6/mARtg+URnz6NqcK/kqsD7et5uuYr96YomISyeBtLSUplEflEokObf4XsNl/c779p5qZs79DEYYyME6z9NBswhxjkkxsq4Se5RYQKbFTAS3wrwqXJ4qywXiRHgFAPyrwdw0KXRYT3/IiFJ+ygI+vaypfK1BHdGvHi3BAGeaKLzwRFhFJ90kQArQBzabuWHzj8f/9Hs=";
-
 @interface FoxitPdf : CDVPlugin <IDocEventListener,UIExtensionsManagerDelegate>{
     // Member variables go here.
 }
@@ -29,9 +24,40 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
 {
     NSString *tmpCommandCallbackID;
 }
+static FSFileListViewController *fileVC;
+static FSErrorCode initializeCode = FSErrUnknown;
+- (void)initialize:(CDVInvokedUrlCommand*)command{
+    // init foxit sdk
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    NSDictionary *options = [command argumentAtIndex:0];
+    if ([options isKindOfClass:[NSNull class]]) {
+        [self showAlertViewWithTitle:@"Check License" message:errMsg];
+        return;
+    }
+    
+    if (initializeCode == FSErrSuccess) {
+        return;
+    }
+    
+    initializeCode = [FSLibrary initialize:options[@"foxit_sn"] key:options[@"foxit_key"]];
+    if (!fileVC) fileVC = [[FSFileListViewController alloc] init];
+    if (initializeCode != FSErrSuccess) {
+        [self showAlertViewWithTitle:@"Check License" message:errMsg];
+    }
+}
+
+- (void)openDocument:(CDVInvokedUrlCommand*)command{
+    [self Preview:command];
+}
 
 - (void)Preview:(CDVInvokedUrlCommand*)command
 {
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        [self showAlertViewWithTitle:@"Check License" message:errMsg];
+        return;
+    }
     CDVPluginResult *pluginResult = nil;
     self.pluginCommand = command;
     
@@ -83,16 +109,7 @@ NSString *UNLOCK = @"ezJvj18mvB539PsXZqXcIklsLeajS1uJbsdKB3VmELeRxklqf9iSxqwvpPp
 }
 
 # pragma mark -- Foxit preview
-static FSFileListViewController *fileVC;
 -(void)FoxitPdfPreview:(NSString *)filePath {
-    // init foxit sdk
-    FSErrorCode eRet = [FSLibrary initialize:SN key:UNLOCK];
-    if (!fileVC) fileVC = [[FSFileListViewController alloc] init];
-    if (FSErrSuccess != eRet) {
-        NSString* errMsg = [NSString stringWithFormat:@"Invalid license"];
-        [self showAlertViewWithTitle:@"Check License" message:errMsg];
-        return;
-    }
     
     self.pdfViewControl = [[FSPDFViewCtrl alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     [self.pdfViewControl setRMSAppClientId:@"972b6681-fa03-4b6b-817b-c8c10d38bd20" redirectURI:@"com.foxitsoftware.com.mobilepdf-for-ios://authorize"];
@@ -106,12 +123,6 @@ static FSFileListViewController *fileVC;
     //load doc
     if (filePath == nil) {
         filePath = [[NSBundle mainBundle] pathForResource:@"getting_started_ios" ofType:@"pdf"];
-    }
-    
-    if (FSErrSuccess != eRet) {
-        NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
-        [self showAlertViewWithTitle:@"Check License" message:errMsg];
-        return;
     }
     
     self.pdfViewController = [[UIViewController alloc] init];

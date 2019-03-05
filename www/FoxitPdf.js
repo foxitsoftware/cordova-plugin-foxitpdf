@@ -1,3 +1,4 @@
+cordova.define("cordova-plugin-foxitpdf.FoxitPdf", function(require, exports, module) {
 var exec = require('cordova/exec');
 var channel = require('cordova/channel');
 
@@ -15,10 +16,6 @@ pdf.prototype._eventHandler = function (event) {
      successfunction(event);
    }
 }
-
-pdf.prototype.init = function(success, error) {
-    exec(success, error, "FoxitPdf", "init", []);
-};
 
 pdf.prototype.initialize = function(arg0, success, error) {
     exec(success, error, "FoxitPdf", "initialize", [arg0]);
@@ -50,3 +47,5 @@ pdf.prototype.removeEventListener = function (eventname, f) {
 
 var pdf = new pdf();
 module.exports = pdf;
+
+});
