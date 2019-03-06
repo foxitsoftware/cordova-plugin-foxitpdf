@@ -44,7 +44,7 @@ cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by yo
     Please note the current key expiration date is ## 1-28 2019.
 
 ## Major update
-    Now our plugin is using Foxit PDF SDK version 6.3 for Android ,Foxit PDF SDK version 6.2.1 for iOS .
+    Now our plugin is using Foxit PDF SDK version 6.3 for Android ,Foxit PDF SDK version 6.3 for iOS .
 
 ## Usage Instructions for iOS
 Thanks to the new Foxit PDF SDK for iOS 6.3 API, the iOS version of the cordova plug-in only needs a few simple steps to deploy (It involves much lighter operations when compared to our previous version 6.1)
