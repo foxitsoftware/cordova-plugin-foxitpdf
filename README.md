@@ -90,7 +90,7 @@ window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
 - __foxit_sn__: the `rdk_sn`
 - __foxit_key__: the `rdk_key`  
 
-`foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxit_mobile_pdf_sdk_ios_en.zip`.
+`foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_ios.zip`.
 
 - __successcallback__: This function is executed when the initialization is successful. The function is passed an object as a parameter.
 
@@ -179,9 +179,9 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 &nbsp;&nbsp;
 
 ## Usage Instructions for Android
-1:Download `foxit_mobile_pdf_sdk_android_en.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 6.3)
+1:Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 6.3)
 
-2:Unzip `foxit_mobile_pdf_sdk_android_en.zip` and copy libs folder into the component android folder.
+2:Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component android folder.
 
 3:Initialize the plugin with ` window.FoxitPdf.initialize` .
 
@@ -206,7 +206,7 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
   - __foxit_sn__: the `rdk_sn`
   - __foxit_key__: the `rdk_key`  
 
-   `foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxit_mobile_pdf_sdk_android_en.zip`.
+   `foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_android.zip`.
   
 - __successcallback__: This function is executed when the initialization is successful. The function is passed an object as a parameter.
 
@@ -259,10 +259,10 @@ var errorcallback = function(data){
   console.log(data);
 }
 let pdfviewOptions = {
-  'filePath':'/mnt/sdcard/getting_started_ios.pdf',
-  'filePathSaveTo': '/mnt/sdcard/getting_started_ios2.pdf',
+  'filePath': xxx, // Document path you wish to open. e.g. /mnt/sdcard/getting_started_ios.pdf
+  'filePathSaveTo': xxx // Document path that prevents overwriting on the preview file  _(if set)_. e.g. '/mnt/sdcard/getting_started_ios2.pdf'
 };
-window.FoxitPdf.preview(pdfviewOptions,successcallback,errorcallback);
+window.FoxitPdf.openDocument(pdfviewOptions,successcallback,errorcallback);
 ```
 
 
