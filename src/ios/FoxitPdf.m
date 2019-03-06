@@ -26,6 +26,8 @@
 }
 static FSFileListViewController *fileVC;
 static FSErrorCode initializeCode = FSErrUnknown;
+static NSString *initializeSN;
+static NSString *initializeKey;
 - (void)initialize:(CDVInvokedUrlCommand*)command{
     // init foxit sdk
     
@@ -36,14 +38,20 @@ static FSErrorCode initializeCode = FSErrUnknown;
         return;
     }
     
-    if (initializeCode == FSErrSuccess) {
-        return;
-    }
+    NSString *sn = options[@"foxit_sn"];
+    NSString *key = options[@"foxit_key"];
     
-    initializeCode = [FSLibrary initialize:options[@"foxit_sn"] key:options[@"foxit_key"]];
-    if (!fileVC) fileVC = [[FSFileListViewController alloc] init];
-    if (initializeCode != FSErrSuccess) {
-        [self showAlertViewWithTitle:@"Check License" message:errMsg];
+    if (![initializeSN isEqualToString:sn] || ![initializeKey isEqualToString:key]) {
+        if (initializeCode == FSErrSuccess) [FSLibrary destroy];
+        initializeCode = [FSLibrary initialize:sn key:key];
+        if (initializeCode != FSErrSuccess) {
+            [self showAlertViewWithTitle:@"Check License" message:errMsg];
+            return;
+        }else{
+            initializeSN = sn;
+            initializeKey = key;
+        }
+        if (!fileVC) fileVC = [[FSFileListViewController alloc] init];
     }
 }
 
