@@ -19,9 +19,15 @@
 
 # cordova-plugin-foxitpdf
     This plugin adds the ability to easily preview any PDF file in your Cordova application
-    
+  
+- [Installation](#installation)
+- [Usage Instructions for iOS](#usage-instructions-for-ios)
+- [Usage Instructions for Android](#usage-instructions-for-android)
+- [API Reference](#api-reference)
+- [Supported Platforms](#supported-platforms)
+- [Quick Example](#quick-example)
+- [Attention](#attention)
 - [Versions](#versions)
-
 ## Installation
 ```bash
 cordova plugin add cordova-plugin-foxitpdf
@@ -342,9 +348,11 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 ## Versions
 
->[v6.2.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2.1).
->[v6.2](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2).
->[v6.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.1).
+>[v6.2.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2.1)
+
+>[v6.2](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2)
+
+>[v6.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.1)
 
 ## Feedback or contribution code
 
