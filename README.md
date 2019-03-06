@@ -19,6 +19,8 @@
 
 # cordova-plugin-foxitpdf
     This plugin adds the ability to easily preview any PDF file in your Cordova application
+    
+- [Versions](#versions)
 
 ## Installation
 ```bash
@@ -127,8 +129,8 @@ window.FoxitPdf.openDocument(options,successcallback,errorcallback);
 ```javascript
 
 let pdfviewOptions = {
-  'filePath':cordova.file.applicationDirectory + 'getting_started_ios.pdf',
-  'filePathSaveTo': cordova.file.documentsDirectory + 'getting_started_ios_2.pdf',
+  'filePath':cordova.file.applicationDirectory + 'sample.pdf',
+  'filePathSaveTo': cordova.file.documentsDirectory + 'sample2.pdf',
 };
 window.FoxitPdf.openDocument(pdfviewOptions,
   function(succ){
@@ -286,7 +288,7 @@ Please see our forum for more detailed information:
 
 
 
-## IOS Quirks
+## iOS Quirks
 
 1. The first argument in the preview method currently only supports absolute paths for incoming files.
 
@@ -325,7 +327,6 @@ window.FoxitPdf.preview(pdfviewOptions,
 
 ```
 
-
 ## Attention
 
 1. The product is still in its early stage of development. We will continue to focus on refining and improving this project.
@@ -339,6 +340,11 @@ https://cordova.apache.org/announcements/2017/12/04/cordova-android-7.0.0.html
 This may affect plugin.xml files and config.xml files that use edit-config, and make it so plugins that use edit-config will not be able to be compatible with both Android 6.x and Android 7.x. To fix this issue, please do the following in your XML files
 
 
+## Versions
+
+>[v6.2.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2.1).
+>[v6.2](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2).
+>[v6.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.1).
 
 ## Feedback or contribution code
 
