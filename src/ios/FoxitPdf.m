@@ -83,6 +83,9 @@ static NSString *initializeKey;
     if (jsfilePathSaveTo && jsfilePathSaveTo.length >0 ) {
         NSURL *filePathSaveTo = [NSURL fileURLWithPath:jsfilePathSaveTo];
         self.filePathSaveTo = [filePathSaveTo.path stringByRemovingPercentEncoding];
+        if ([self.filePathSaveTo hasPrefix:@"/file:/"]) {
+            self.filePathSaveTo = [self.filePathSaveTo stringByReplacingOccurrencesOfString:@"/file:/" withString:@""];
+        }
     }else{
         self.filePathSaveTo  = nil;
     }
