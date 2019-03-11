@@ -1,38 +1,172 @@
 {
     "modules": {
-        "thumbnail": true,
-        "readingBookmark": true,
+        "readingbookmark": true,
         "outline": true,
-        "tools": {
-            "Insert": true,
-            "Eraser": true,
-            "Line": true,
-            "Arrow": true,
-            "Selection": true,
-            "Underline": true,
-            "Replace": true,
-            "StrikeOut": true,
-            "Note": true,
-            "Highlight": true,
-            "Squiggly": true,
-            "Oval": true,
-            "Freetext": true,
-            "Stamp": true,
-            "Rectangle": true,
-            "Pencil": true,
-            "Textbox": true,
-            "Callout": true,
-            "Polygon": true,
-            "Cloud": true,
-            "Image": true,
-            "Distance": true,
-            "PolyLine": true
+        "annotations": {
+            "highlight": true,
+            "underline": true,
+            "squiggly": true,
+            "strikeout": true,
+            "insert": true,
+            "replace": true,
+            "line": true,
+            "rectangle": true,
+            "oval": true,
+            "arrow": true,
+            "pencil": true,
+            "eraser": true,
+            "typewriter": true,
+            "textbox": true,
+            "callout": true,
+            "note": true,
+            "stamp": true,
+            "polygon": true,
+            "cloud": true,
+            "polyline": true,
+            "distance": true,
+            "image": true,
+            "audio": true,
+            "video": true
         },
+        "thumbnail": true,
         "attachment": true,
         "signature": true,
         "search": true,
-        "pageNavigation": true,
+        "navigation": true,
         "form": true,
+        "selection": true,
         "encryption": true
+    },
+    "permissions": {
+        "runJavaScript" : true,
+        "copyText" : true,
+        "disableLink" : false
+    },
+    "uiSettings": {
+        "displayMode" : "Single",
+        "colorMode" : "Normal",
+        "zoomMode" : "FitWidth",
+        "mapForegroundColor" : "#5d5b71",
+        "mapBackgroundColor" : "#00001b",
+        "disableFormNavigationBar" : false,
+        "highlightForm" : true,
+        "highlightLink" : true,
+        "highlightLinkColor" : "#16007fff",
+        "highlightFormColor":"#200066cc",
+        "fullscreen" : false,
+        "annotations": {
+            "continuouslyAdd" : false,
+            "highlight": {
+                "color" : "#ffff00",
+                "opacity" : 1.0
+            },
+            "underline": {
+                "color" : "#66cc33",
+                "opacity" : 1.0
+            },
+            "squiggly": {
+                "color" : "#ff6633",
+                "opacity" : 1.0
+            },
+            "strikeout": {
+                "color" : "#ff0000",
+                "opacity" : 1.0
+            },
+            "insert": {
+                "color" : "#993399",
+                "opacity" : 1.0
+            },
+            "replace": {
+                "color" : "#0000ff",
+                "opacity" : 1.0
+            },
+            "line": {
+                "color" : "#ff0000",
+                "opacity" : 1.0,
+                "thickness" : 2
+            },
+            "rectangle": {
+                "color" : "#ff0000",
+                "opacity" : 1.0,
+                "thickness" : 2
+            },
+            "oval": {
+                "color" : "#ff0000",
+                "opacity" : 1.0,
+                "thickness" : 2
+            },
+            "arrow": {
+                "color" : "#ff0000",
+                "opacity" : 1.0,
+                "thickness" : 2
+            },
+            "pencil": {
+                "color" : "#ff0000",
+                "opacity" : 1.0,
+                "thickness" : 2
+            },
+            "polygon": {
+                "color" : "#ff0000",
+                "opacity" : 1.0,
+                "thickness" : 2
+            },
+            "cloud": {
+                "color" : "#ff0000",
+                "opacity" : 1.0,
+                "thickness" : 2
+            },
+            "polyline": {
+                "color" : "#ff0000",
+                "opacity" : 1.0,
+                "thickness" : 2
+            },
+            "typewriter": {
+                "textColor" : "#0000ff",
+                "opacity" : 1.0,
+                "textFace" : "Courier",
+                "textSize" : 18.0
+            },
+            "textbox": {
+                "color" : "#ff0000",
+                "textColor": "#0000ff",
+                "opacity" : 1.0,
+                "textFace" : "Courier",
+                "textSize" : 18.0
+            },
+            "callout": {
+                "color": "#ff0000",
+                "textColor": "#0000ff",
+                "opacity" : 1.0,
+                "textFace" : "Courier",
+                "textSize" : 18.0
+            },
+            "note": {
+                "color" : "#ff6633",
+                "opacity" : 1.0,
+                "icon" : "Comment"
+            },
+            "attachment": {
+                "color" : "#ff6633",
+                "opacity" : 1.0,
+                "icon" : "Pushpin"
+            },
+            "image": {
+                "rotation" : 0,
+                "opacity" : 1.0
+            },
+            "distance": {
+                "color" : "#ff0000",
+                "opacity" : 1.0,
+                "thickness" : 2,
+                "scaleFromUnit" : "inch",
+                "scaleToUnit" : "inch",
+                "scaleFromValue" : 1,
+                "scaleToValue" : 1
+            }
+        },
+        "signature": {
+        "color" : "#000000",
+        "thickness" : 4
+        }
     }
 }
