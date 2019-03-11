@@ -21,9 +21,13 @@ import org.json.JSONObject;
  */
 public class FoxitPdf extends CordovaPlugin {
     private static final String RDK_DOCSAVED_EVENT = "onDocSaved";
-    private static int errCode = Constants.e_ErrSuccess;
+    private static final int result_flag = 1000;
 
-    private final static int result_flag = 1000;
+    private static int errCode = Constants.e_ErrInvalidLicense;
+    private static String mLastSn;
+    private static String mLastKey;
+    private static boolean isLibraryInited = false;
+
     private CallbackContext callbackContext;
 
     @Override
@@ -35,7 +39,16 @@ public class FoxitPdf extends CordovaPlugin {
             String sn = options.getString("foxit_sn");
             String key = options.getString("foxit_key");
 
-            errCode = Library.initialize(sn, key);
+            if (isLibraryInited == false){
+                errCode = Library.initialize(sn, key);
+                isLibraryInited = true;
+            } else if(!mLastSn.equals(sn) || !mLastKey.equals(key)){
+                Library.release();
+                errCode = Library.initialize(sn, key);
+            }
+
+            mLastSn = sn;
+            mLastKey = key;
             switch (errCode) {
                 case Constants.e_ErrSuccess:
                     return true;
