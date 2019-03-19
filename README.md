@@ -19,7 +19,15 @@
 
 # cordova-plugin-foxitpdf
     This plugin adds the ability to easily preview any PDF file in your Cordova application
-
+  
+- [Installation](#installation)
+- [Usage Instructions for iOS](#usage-instructions-for-ios)
+- [Usage Instructions for Android](#usage-instructions-for-android)
+- [API Reference](#api-reference)
+- [Supported Platforms](#supported-platforms)
+- [Quick Example](#quick-example)
+- [Attention](#attention)
+- [Versions](#versions)
 ## Installation
 ```bash
 cordova plugin add cordova-plugin-foxitpdf
@@ -44,13 +52,13 @@ cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by yo
     Please note the current key expiration date is ## 1-28 2019.
 
 ## Major update
-    Now our plugin is using Foxit PDF SDK version 6.2.1 for Android ,Foxit PDF SDK version 6.2.1 for iOS .
+    Now our plugin is using Foxit PDF SDK version 6.3 for Android ,Foxit PDF SDK version 6.3 for iOS .
 
 ## Usage Instructions for iOS
-Thanks to the new Foxit PDF SDK for iOS 6.2.1 API, the iOS version of the cordova plug-in only needs a few simple steps to deploy (It involves much lighter operations when compared to our previous version 6.1)
+Thanks to the new Foxit PDF SDK for iOS 6.3 API, the iOS version of the cordova plug-in only needs a few simple steps to deploy (It involves much lighter operations when compared to our previous version 6.1)
 
 
-1. Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (Please use Foxit PDF SDK for iOS 6.2.1 )
+1. Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (Please use Foxit PDF SDK for iOS 6.3 )
 2. Add dynamic framework
     "FoxitRDK.framework" and "uiextensionsDynamic.framework"
     to framework folder and also to Xcode’s Embedded Binaries  
@@ -65,20 +73,61 @@ Thanks to the new Foxit PDF SDK for iOS 6.2.1 API, the iOS version of the cordov
 Now that the preparatory work has been completed，you can use this code everywhere in your project.
 
 
-## window.FoxitPdf.preview
+## window.FoxitPdf.initialize 
 
-> Preview function
+> initialize = function(options, successcallback, errorcallback)
 
-    window.FoxitPdf.preview(options,successcallback,errorcallback);
+```javascript
+let initOptions = {
+    'foxit_sn': xxx, // rdk_sn
+    'foxit_key': xxx, // rdk_key
+}
+window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
+```    
 
-- __options__: Previews configuration options. We now support two options:
+- __options__: Initialization options.
 
-  - __filePath__: Document path you wish to open
-  - __filePathSaveTo__: Document path that prevents overwriting on the preview file  _(if set)_
+- __foxit_sn__: the `rdk_sn`
+- __foxit_key__: the `rdk_key`  
 
-- __successcallback__: This function is executed when the preview is successful. The function is passed an object as a parameter.
+`foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_ios.zip`.
 
-- __errorcallback__: This function is executed when the preview fails. The function is passed an object as a parameter.
+- __successcallback__: This function is executed when the initialization is successful. The function is passed an object as a parameter.
+
+- __errorcallback__: This function is executed when the initialization fails. The function is passed an object as a parameter.
+
+## Example (In iOS)
+
+```javascript
+let initOptions = {
+    'foxit_sn': 'xxx',
+    'foxit_key': 'xxx'
+};
+window.FoxitPdf.initialize(initOptions,function(succ){console.log('succ',succ);},function(err){console.log('err',err);});
+```
+
+## window.FoxitPdf.openDocument
+
+> openDocument = function(options, successcallback, errorcallback)
+
+```javascript
+let options = {
+'filePath': xxx,
+'filePathSaveTo': xxx
+};
+window.FoxitPdf.openDocument(options,successcallback,errorcallback);
+```    
+
+-__Note__: The document can only be opened if the initialization is successful.
+
+- __options__: Open the configuration options for the document. We now support two options:
+
+- __filePath__: Document path you wish to open
+- __filePathSaveTo__: Document path that prevents overwriting on the preview file  _(if set)_
+
+- __successcallback__: This function is executed when the document opens successfully. The function is passed an object as a parameter.
+
+- __errorcallback__: This function is executed when the document fails to open. The function is passed an object as a parameter.
 
 
 ## Example (In iOS)
@@ -86,10 +135,10 @@ Now that the preparatory work has been completed，you can use this code everywh
 ```javascript
 
 let pdfviewOptions = {
-  'filePath':cordova.file.applicationDirectory + 'getting_started_ios.pdf',
-  'filePathSaveTo': cordova.file.documentsDirectory + 'getting_started_ios_2.pdf',
+  'filePath':cordova.file.applicationDirectory + 'sample.pdf',
+  'filePathSaveTo': cordova.file.documentsDirectory + 'sample2.pdf',
 };
-window.FoxitPdf.preview(pdfviewOptions,
+window.FoxitPdf.openDocument(pdfviewOptions,
   function(succ){
     console.log('succ',succ);
   },function(err){
@@ -130,29 +179,91 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 &nbsp;&nbsp;
 
 ## Usage Instructions for Android
-1:Download `foxit_mobile_pdf_sdk_android_en.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use `version 6.2.1` of `foxit_mobile_pdf_sdk_android_en.zip` )
+1:Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 6.3)
 
-2:Unzip `foxit_mobile_pdf_sdk_android_en.zip` and copy libs folder into the component android folder.
+2:Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component android folder.
 
-3:Replace `rdk_sn` and `rdk_key` in the `com.foxit.cordova.plugin.FoxitPdf` class, `rdk_key` and `rdk_sn` can be found in the libs folder of `foxit_mobile_pdf_sdk_android_en.zip`.
+3:Initialize the plugin with ` window.FoxitPdf.initialize` .
 
-you can use the functions as seen in the sample code below :
+4:Open the document with `window.FoxitPdf.openDocument` after initialization is complete.
+
+## API Reference
+
+#### window.FoxitPdf.initialize (Android)
+
+> initialize = function(options, successcallback, errorcallback)
+
 ```js
+     let initOptions = {
+        'foxit_sn': xxx,
+        'foxit_key': xxx
+     }
+    window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
+```    
+    
+- __options__: Initialization options.
+
+  - __foxit_sn__: the `rdk_sn`
+  - __foxit_key__: the `rdk_key`  
+
+   `foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_android.zip`.
+  
+- __successcallback__: This function is executed when the initialization is successful. The function is passed an object as a parameter.
+
+- __errorcallback__: This function is executed when the initialization fails. The function is passed an object as a parameter.
+
+
+#### window.FoxitPdf.openDocument (Android)
+
+> openDocument = function(options, successcallback, errorcallback)
+
+```js
+    let options = {
+        'filePath': xxx,
+        'filePathSaveTo': xxx
+    };
+    window.FoxitPdf.openDocument(options,successcallback,errorcallback);
+```    
+
+-__Note__: The document can only be opened if the initialization is successful.
+
+- __options__: Open the configuration options for the document. We now support two options:
+
+  - __filePath__: Document path you wish to open
+  - __filePathSaveTo__: Document path that prevents overwriting on the preview file  _(if set)_
+
+- __successcallback__: This function is executed when the document opens successfully. The function is passed an object as a parameter.
+
+- __errorcallback__: This function is executed when the document fails to open. The function is passed an object as a parameter.
+
+### Example( android)
+```js
+// First Step: Initialization
+var success = function(data){
+  console.log(data);
+}
+var error = function(data){
+  console.log(data);
+}
+let initOptions = {
+  'foxit_sn': xxx, // rdk_sn
+  'foxit_key': xxx, // rdk_key
+};
+window.FoxitPdf.initialize(initOptions,success,error);
+  
+// Second Step: Open document
 var successcallback = function(data){
   console.log(data);
 }
 var errorcallback = function(data){
   console.log(data);
 }
-// var filePath = "/mnt/sdcard/getting_started_ios.pdf";
 let pdfviewOptions = {
-  'filePath':'/mnt/sdcard/getting_started_ios.pdf',
-  'filePathSaveTo': '/mnt/sdcard/getting_started_ios2.pdf',
+  'filePath': xxx, // Document path you wish to open. e.g. /mnt/sdcard/getting_started_ios.pdf
+  'filePathSaveTo': xxx // Document path that prevents overwriting on the preview file  _(if set)_. e.g. '/mnt/sdcard/getting_started_ios2.pdf'
 };
-window.FoxitPdf.preview(pdfviewOptions,successcallback,errorcallback);
+window.FoxitPdf.openDocument(pdfviewOptions,successcallback,errorcallback);
 ```
-
-Replace the file addresses with your own files
 
 
 &nbsp;&nbsp;
@@ -183,7 +294,7 @@ Please see our forum for more detailed information:
 
 
 
-## IOS Quirks
+## iOS Quirks
 
 1. The first argument in the preview method currently only supports absolute paths for incoming files.
 
@@ -222,7 +333,6 @@ window.FoxitPdf.preview(pdfviewOptions,
 
 ```
 
-
 ## Attention
 
 1. The product is still in its early stage of development. We will continue to focus on refining and improving this project.
@@ -236,6 +346,13 @@ https://cordova.apache.org/announcements/2017/12/04/cordova-android-7.0.0.html
 This may affect plugin.xml files and config.xml files that use edit-config, and make it so plugins that use edit-config will not be able to be compatible with both Android 6.x and Android 7.x. To fix this issue, please do the following in your XML files
 
 
+## Versions
+
+>[v6.2.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2.1)
+
+>[v6.2](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2)
+
+>[v6.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.1)
 
 ## Feedback or contribution code
 

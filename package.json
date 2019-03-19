@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-foxitpdf",
-  "version": "6.2.1",
+  "version": "6.3.0",
   "description": "cordova pdf preview plugin with Foxit Pdf sdk",
   "cordova": {
     "id": "cordova-plugin-foxitpdf",
@@ -17,6 +17,7 @@
     "pdf",
     "foxit",
     "preview",
+    "openDocument",
     "ecosystem:cordova",
     "cordova-ios",
     "cordova-android"
