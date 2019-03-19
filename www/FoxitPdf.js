@@ -16,13 +16,18 @@ pdf.prototype._eventHandler = function (event) {
    }
 }
 
-pdf.prototype.init = function(success, error) {
-    exec(success, error, "FoxitPdf", "init", []);
+pdf.prototype.initialize = function(arg0, success, error) {
+    exec(success, error, "FoxitPdf", "initialize", [arg0]);
 };
 
 pdf.prototype.preview =  function(arg0, success, error) {
     successfunction = success
     exec(this._eventHandler, error, "FoxitPdf", "Preview", [arg0]);
+};
+
+pdf.prototype.openDocument =  function(arg0, success, error) {
+    successfunction = success
+    exec(this._eventHandler, error, "FoxitPdf", "openDocument", [arg0]);
 };
 
 pdf.prototype.addEventListener = function (eventname, f) {
