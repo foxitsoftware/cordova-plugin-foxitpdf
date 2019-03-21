@@ -191,78 +191,70 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 
 #### window.FoxitPdf.initialize (Android)
 
-> initialize = function(options, successcallback, errorcallback)
+> initialize = function(sn, key)
 
 ```js
-     let initOptions = {
-        'foxit_sn': xxx,
-        'foxit_key': xxx
-     }
+
+    var sn = 'foxit_sn';
+    var key = 'foxit_key';
+
     window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
 ```    
-    
-- __options__: Initialization options.
 
   - __foxit_sn__: the `rdk_sn`
   - __foxit_key__: the `rdk_key`  
 
    `foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_android.zip`.
-  
-- __successcallback__: This function is executed when the initialization is successful. The function is passed an object as a parameter.
-
-- __errorcallback__: This function is executed when the initialization fails. The function is passed an object as a parameter.
 
 
 #### window.FoxitPdf.openDocument (Android)
 
-> openDocument = function(options, successcallback, errorcallback)
+> openDocument = function(path, password)
 
 ```js
-    let options = {
-        'filePath': xxx,
-        'filePathSaveTo': xxx
-    };
-    window.FoxitPdf.openDocument(options,successcallback,errorcallback);
+
+    var path = 'Your file path';
+    var password = 'password'; // If the PDF document is not encrypted by password, just pass an empty string.
+
+    window.FoxitPdf.openDocument(path, password);
 ```    
 
 -__Note__: The document can only be opened if the initialization is successful.
 
-- __options__: Open the configuration options for the document. We now support two options:
+  - __path__: Document path you wish to open
+  - __password__: The password used to load the PDF document content. It can be either user password or owner password.
+  If the PDF document is not encrypted by password, just pass an empty string.
 
-  - __filePath__: Document path you wish to open
-  - __filePathSaveTo__: Document path that prevents overwriting on the preview file  _(if set)_
+#### window.FoxitPdf.setSavePath (Android)
 
-- __successcallback__: This function is executed when the document opens successfully. The function is passed an object as a parameter.
+> setSavePath = function(savePath)
 
-- __errorcallback__: This function is executed when the document fails to open. The function is passed an object as a parameter.
+```js
+
+    var savePath = 'Your file path';// Document path that prevents overwriting on the preview file  _(if set)_
+
+    window.FoxitPdf.setSavePath(savePath);
+```    
+
+  - __savePath__: Document path that prevents overwriting on the preview file  _(if set)_
+
 
 ### Example( android)
 ```js
-// First Step: Initialization
-var success = function(data){
-  console.log(data);
-}
-var error = function(data){
-  console.log(data);
-}
-let initOptions = {
-  'foxit_sn': xxx, // rdk_sn
-  'foxit_key': xxx, // rdk_key
-};
-window.FoxitPdf.initialize(initOptions,success,error);
-  
-// Second Step: Open document
-var successcallback = function(data){
-  console.log(data);
-}
-var errorcallback = function(data){
-  console.log(data);
-}
-let pdfviewOptions = {
-  'filePath': xxx, // Document path you wish to open. e.g. /mnt/sdcard/getting_started_ios.pdf
-  'filePathSaveTo': xxx // Document path that prevents overwriting on the preview file  _(if set)_. e.g. '/mnt/sdcard/getting_started_ios2.pdf'
-};
-window.FoxitPdf.openDocument(pdfviewOptions,successcallback,errorcallback);
+
+	// First Step: Initialization
+    var sn = 'foxit_sn'; // rdk_sn
+    var key = 'foxit_key'; // rdk_key
+	window.FoxitPdf.initialize(sn, key);
+	  
+	// Second Step: Open document
+    var path = 'Your file path'; // Document path you wish to open. e.g. /mnt/sdcard/getting_started_android.pdf
+    var password = 'password';
+	window.FoxitPdf.openDocument(path, passowrd);
+
+	// Third step: set save path (can be set before open document)
+	var savePath = 'xxx'; //Document path that prevents overwriting on the preview file  _(if set)_. e.g. /mnt/sdcard/getting_started_android_save.pdf
+	window.FoxitPdf.setSavePath(savePath);
 ```
 
 
@@ -347,6 +339,7 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 
 ## Versions
+>[v6.3.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.3.0)
 
 >[v6.2.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2.1)
 

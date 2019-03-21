@@ -14,10 +14,15 @@ pdf.prototype._eventHandler = function (event) {
    }else{
      successfunction(event);
    }
-}
+};
 
-pdf.prototype.initialize = function(arg0, success, error) {
-    exec(success, error, "FoxitPdf", "initialize", [arg0]);
+pdf.prototype.initialize = function(sn, key) {
+    return new Promise(function(success, error) {
+      exec(success, error, "FoxitPdf", "initialize", [{
+        'foxit_sn': sn,
+        'foxit_key': key,
+      }]);
+    });
 };
 
 pdf.prototype.preview =  function(arg0, success, error) {
@@ -25,9 +30,22 @@ pdf.prototype.preview =  function(arg0, success, error) {
     exec(this._eventHandler, error, "FoxitPdf", "Preview", [arg0]);
 };
 
-pdf.prototype.openDocument =  function(arg0, success, error) {
-    successfunction = success
-    exec(this._eventHandler, error, "FoxitPdf", "openDocument", [arg0]);
+pdf.prototype.openDocument = function(path, password) {
+    return new Promise(function(success, error) {
+        successfunction = success;
+        exec(this._eventHandler, error, "FoxitPdf", "openDocument", [{
+            'path': path,
+            'password': password,
+        }]);
+    });
+};
+
+pdf.prototype.setSavePath = function(savePath) {
+    return new Promise(function(success, error) {
+        exec(success, error, "FoxitPdf", "setSavePath", [{
+            'savePath': savePath,
+        }]);
+    });
 };
 
 pdf.prototype.addEventListener = function (eventname, f) {

@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.foxit.sdk.common.Constants;
 import com.foxit.sdk.common.Library;
+import com.foxit.uiextensions.UIExtensionsManager;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -29,6 +30,7 @@ public class FoxitPdf extends CordovaPlugin {
     private static boolean isLibraryInited = false;
 
     private CallbackContext callbackContext;
+    private String mSavePath = null;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -59,7 +61,7 @@ public class FoxitPdf extends CordovaPlugin {
                     callbackContext.error("Failed to initialize Foxit library.");
                     return false;
             }
-        } else if (action.equals("Preview") || action.equals("openDocument")) {
+        } else if (action.equals("Preview")) {
             if (errCode != Constants.e_ErrSuccess) {
                 callbackContext.error("Please initialize Foxit library Firstly.");
                 return false;
@@ -68,13 +70,32 @@ public class FoxitPdf extends CordovaPlugin {
             JSONObject options = args.optJSONObject(0);
             String filePath = options.getString("filePath");
             String fileSavePath = options.getString("filePathSaveTo");
-            openDoc(filePath, fileSavePath, callbackContext);
+            openDoc(filePath, null, fileSavePath, callbackContext);
+            return true;
+        } else if (action.equals("openDocument")) {
+            if (errCode != Constants.e_ErrSuccess) {
+                callbackContext.error("Please initialize Foxit library Firstly.");
+                return false;
+            }
+
+            JSONObject options = args.optJSONObject(0);
+            String filePath = options.getString("path");
+            String pw = options.getString("password");
+            byte[] password = null;
+            if (!TextUtils.isEmpty(pw)) {
+                password = pw.getBytes();
+            }
+            openDoc(filePath, password, mSavePath, callbackContext);
+        } else if (action.equals("setSavePath")) {
+            JSONObject options = args.optJSONObject(0);
+            String savePath = options.getString("savePath");
+            setSavePath(savePath, callbackContext);
             return true;
         }
         return false;
     }
 
-    private void openDoc(String inputPath, String outPath, CallbackContext callbackContext) {
+    private void openDoc(String inputPath, byte[]password, String outPath, CallbackContext callbackContext) {
         if (inputPath == null || inputPath.trim().length() < 1) {
             callbackContext.error("Please input validate path.");
             return;
@@ -83,15 +104,16 @@ public class FoxitPdf extends CordovaPlugin {
         this.cordova.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                openDocument(inputPath, outPath, callbackContext);
+                openDocument(inputPath, password, outPath, callbackContext);
             }
         });
     }
 
-    private void openDocument(String inputPath, String outPath, CallbackContext callbackContext) {
+    private void openDocument(String inputPath, byte[] password, String outPath, CallbackContext callbackContext) {
         Intent intent = new Intent(this.cordova.getActivity(), ReaderActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("path", inputPath);
+        bundle.putByteArray("password", password);
         bundle.putString("filePathSaveTo", TextUtils.isEmpty(outPath) ? "" : outPath);
         intent.putExtras(bundle);
         this.cordova.startActivityForResult(this, intent, result_flag);
@@ -100,6 +122,17 @@ public class FoxitPdf extends CordovaPlugin {
         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, "Succeed open this file");
         pluginResult.setKeepCallback(true);
         this.callbackContext.sendPluginResult(pluginResult);
+    }
+
+    private void setSavePath(String savePath, CallbackContext callbackContext) {
+        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getUIExtensionsManager() == null) {
+            mSavePath = savePath;
+            return;
+        }
+
+        if (!TextUtils.isEmpty(savePath)) {
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).setSavePath(savePath);
+        }
     }
 
     @Override
@@ -116,12 +149,13 @@ public class FoxitPdf extends CordovaPlugin {
                     PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
                     result.setKeepCallback(true);
                     callbackContext.sendPluginResult(result);
-                    if (!true) {
-                        callbackContext = null;
-                    }
+//                    if (!true) {
+//                        callbackContext = null;
+//                    }
                 }
             } catch (JSONException ex) {
-                Log.e("JSONException", "URI passed in has caused a JSON error.");
+//                Log.e("JSONException", "URI passed in has caused a JSON error.");
+                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
             }
         }
     }
