@@ -2,12 +2,17 @@ package com.foxit.cordova.plugin;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Range;
 
+import com.foxit.sdk.PDFException;
+import com.foxit.sdk.Task;
 import com.foxit.sdk.common.Constants;
 import com.foxit.sdk.common.Library;
+import com.foxit.sdk.fdf.FDFDoc;
 import com.foxit.uiextensions.UIExtensionsManager;
 
 import org.apache.cordova.CallbackContext;
@@ -31,6 +36,7 @@ public class FoxitPdf extends CordovaPlugin {
 
     private CallbackContext callbackContext;
     private String mSavePath = null;
+    private boolean success;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -53,6 +59,7 @@ public class FoxitPdf extends CordovaPlugin {
             mLastKey = key;
             switch (errCode) {
                 case Constants.e_ErrSuccess:
+                    callbackContext.success();
                     return true;
                 case Constants.e_ErrInvalidLicense:
                     callbackContext.error("The License is invalid!");
@@ -86,10 +93,49 @@ public class FoxitPdf extends CordovaPlugin {
                 password = pw.getBytes();
             }
             openDoc(filePath, password, mSavePath, callbackContext);
+            return true;
         } else if (action.equals("setSavePath")) {
             JSONObject options = args.optJSONObject(0);
             String savePath = options.getString("savePath");
             setSavePath(savePath, callbackContext);
+            return true;
+        } else if (action.equals("importFromFDF")) {
+            JSONObject options = args.optJSONObject(0);
+            JSONArray pageRangeArray = options.getJSONArray("pageRange");
+            int len = pageRangeArray.length();
+            if (len != 0 && len % 2 != 0) {
+                callbackContext.error("Please input right page range.");
+                return false;
+            }
+
+            com.foxit.sdk.common.Range range = new com.foxit.sdk.common.Range();
+            for (int i = 0; i < len; i += 2) {
+                range.addSegment(pageRangeArray.getInt(i), pageRangeArray.getInt(i) + pageRangeArray.getInt(i + 1) - 1, com.foxit.sdk.common.Range.e_All);
+            }
+
+            String fdfPath = options.getString("fdfPath");
+            int type = options.getInt("dataType");
+            importFromFDF(fdfPath, type, range, callbackContext);
+            return true;
+        } else if (action.equals("exportToFDF")) {
+            JSONObject options = args.optJSONObject(0);
+            JSONArray pageRangeArray = options.getJSONArray("pageRange");
+            int len = pageRangeArray.length();
+            if (len != 0 && len % 2 != 0) {
+                callbackContext.error("Please input right page range.");
+                return false;
+            }
+
+            com.foxit.sdk.common.Range range = new com.foxit.sdk.common.Range();
+            for (int i = 0; i < len; i += 2) {
+                range.addSegment(pageRangeArray.getInt(i), pageRangeArray.getInt(i) + pageRangeArray.getInt(i + 1) - 1, com.foxit.sdk.common.Range.e_All);
+            }
+
+            int fdfDocType = options.getInt("fdfDocType");
+            int type = options.getInt("dataType");
+            String exportPath = options.getString("exportPath");
+
+            exportToFDF(fdfDocType, type, range, exportPath, callbackContext);
             return true;
         }
         return false;
@@ -133,6 +179,79 @@ public class FoxitPdf extends CordovaPlugin {
         if (!TextUtils.isEmpty(savePath)) {
             ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).setSavePath(savePath);
         }
+        callbackContext.success();
+    }
+
+    private void importFromFDF(String fdfPath, int type, com.foxit.sdk.common.Range range, CallbackContext callbackContext) {
+        if (fdfPath == null || fdfPath.trim().length() < 1) {
+            callbackContext.error("Please input validate path.");
+            return;
+        }
+
+        if (ReaderActivity.pdfViewCtrl == null) {
+            callbackContext.error("Please open document first.");
+            return;
+        }
+
+        com.foxit.sdk.Task.CallBack callBack = new Task.CallBack() {
+            @Override
+            public void result(Task task) {
+                if (success) {
+                    int[] pages = ReaderActivity.pdfViewCtrl.getVisiblePages();
+                    for (int i = 0; i < pages.length; i ++) {
+                        Rect rect = new Rect(0, 0, ReaderActivity.pdfViewCtrl.getPageViewWidth(i), ReaderActivity.pdfViewCtrl.getPageViewHeight(i));
+                        ReaderActivity.pdfViewCtrl.refresh(i, rect);
+                    }
+                    callbackContext.success();
+                }
+            }
+        };
+        ReaderActivity.pdfViewCtrl.addTask(new Task(callBack) {
+            @Override
+            protected void execute() {
+                try {
+                    FDFDoc fdfDoc = new FDFDoc(fdfPath);
+                    success = false;
+                    success = ReaderActivity.pdfViewCtrl.getDoc().importFromFDF(fdfDoc, type, range);
+                } catch (PDFException e) {
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void exportToFDF(int fdfDocType, int type, com.foxit.sdk.common.Range range, String exportPath, CallbackContext callbackContext) {
+        if (exportPath == null || exportPath.trim().length() < 1) {
+            callbackContext.error("Please input validate path.");
+            return;
+        }
+        if (ReaderActivity.pdfViewCtrl == null) {
+            callbackContext.error("Please open document first.");
+            return;
+        }
+
+        com.foxit.sdk.Task.CallBack callBack = new Task.CallBack() {
+            @Override
+            public void result(Task task) {
+            }
+        };
+        ReaderActivity.pdfViewCtrl.addTask(new Task(callBack) {
+            @Override
+            protected void execute() {
+                try {
+                    FDFDoc fdfDoc = new FDFDoc(fdfDocType);
+                    success = false;
+                    success = ReaderActivity.pdfViewCtrl.getDoc().exportToFDF(fdfDoc, type, range);
+                    if (success) {
+                        success = fdfDoc.saveAs(exportPath);
+                    }
+
+                    if (success) callbackContext.success();
+                } catch (PDFException e) {
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        });
     }
 
     @Override

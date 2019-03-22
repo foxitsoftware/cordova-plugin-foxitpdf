@@ -239,6 +239,44 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
   - __savePath__: Document path that prevents overwriting on the preview file  _(if set)_
 
 
+#### window.FoxitPdf.importFromFDF (Android)
+
+> importFromFDF = function(fdf_doc_path, data_type, page_range = [])
+
+```js
+
+    var fdf_doc_path = 'Your file path';// FDF file path 
+    var data_type = '0x0002';
+    window.FoxitPdf.importFromFDF(fdfPath, data_type);
+```    
+
+  - __`fdf_doc_path`__: A valid fdf file path, from which form fields and annotations will be imported.
+  - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
+	1. `0x0001` : Form fields are to imported from or exported to FDF/XFDF document. 
+	2. `0x0002` : Annotations are to imported from or exported to FDF/XFDF document. 
+	3. `0x0004` : Annotations (except link annotations) are to imported from or exported to FDF/XFDF document.
+  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. `it should contains at least 2 numbers, and the count of elements should be a multiples of 2.`  Default value: an empty range by default and not set any value.
+
+#### window.FoxitPdf.exportToFDF (Android)
+
+> exportToFDF = function(fdf_doc_type, data_type, export_path, page_range = [])
+
+```js
+
+    var fdf_doc_type = 0;
+    var exportPath = '/mnt/sdcard/FoxitSDK/annot_export.fdf';
+    var data_type = '0x0002';
+    window.FoxitPdf.exportToFDF(fdfPath, data_type);
+```    
+
+  - __`fdf_doc_type`__: FDF document type. `0 means FDF, and 1 means XFDF`.
+  - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
+	1. `0x0001` : Form fields are to imported from or exported to FDF/XFDF document. 
+	2. `0x0002` : Annotations are to imported from or exported to FDF/XFDF document. 
+	3. `0x0004` : Annotations (except link annotations) are to imported from or exported to FDF/XFDF document.
+  - __`export_path`__: A valid path to which form fields and annotations will be exported.
+  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. `it should contains at least 2 numbers, and the count of elements should be a multiples of 2.`  Default value: an empty range by default and not set any value.
+
 ### Example( android)
 ```js
 
