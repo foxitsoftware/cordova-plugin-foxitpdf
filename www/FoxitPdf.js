@@ -78,17 +78,18 @@ pdf.prototype.importFromFDF = function(fdf_doc_path, data_type, page_range = [])
     });
 };
 
-pdf.prototype.exportToFDF = function(fdf_doc_type, data_type, export_path, page_range = []) {
+pdf.prototype.exportToFDF = function(export_path, data_type, fdf_doc_type, page_range = []) {
     return new Promise(function(resolve, reject) {
         if (!(page_range && page_range instanceof Array)) {
             error('page range is not array');
             return;
         }
         exec(resolve, reject, "FoxitPdf", "exportToFDF", [{
-            'fdfDocType': fdf_doc_type,
-            'dataType': data_type,
-            'pageRange': page_range,
             'exportPath': export_path,
+            'dataType': data_type,
+            'fdfDocType': fdf_doc_type,
+            'pageRange': page_range,
+            
         }]);
     });
 };
