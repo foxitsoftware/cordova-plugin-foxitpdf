@@ -75,14 +75,12 @@ Now that the preparatory work has been completed，you can use this code everywh
 
 ## window.FoxitPdf.initialize 
 
-> initialize = function(options, successcallback, errorcallback)
+> initialize = function(sn, key)
 
 ```javascript
-let initOptions = {
-    'foxit_sn': xxx, // rdk_sn
-    'foxit_key': xxx, // rdk_key
-}
-window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
+ var sn = 'foxit_sn';
+ var key = 'foxit_key';
+ window.FoxitPdf.initialize(sn,key);
 ```    
 
 - __options__: Initialization options.
@@ -92,69 +90,39 @@ window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
 
 `foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_ios.zip`.
 
-- __successcallback__: This function is executed when the initialization is successful. The function is passed an object as a parameter.
-
-- __errorcallback__: This function is executed when the initialization fails. The function is passed an object as a parameter.
-
-## Example (In iOS)
-
-```javascript
-let initOptions = {
-    'foxit_sn': 'xxx',
-    'foxit_key': 'xxx'
-};
-window.FoxitPdf.initialize(initOptions,function(succ){console.log('succ',succ);},function(err){console.log('err',err);});
-```
-
 ## window.FoxitPdf.openDocument
 
-> openDocument = function(options, successcallback, errorcallback)
+> openDocument = function(path, password)
 
 ```javascript
-let options = {
-'filePath': xxx,
-'filePathSaveTo': xxx
-};
-window.FoxitPdf.openDocument(options,successcallback,errorcallback);
+    var path = 'Your file path';
+    var password = 'password'; // If the PDF document is not encrypted by password, just pass an empty string.
+
+    window.FoxitPdf.openDocument(path, password);
 ```    
 
 -__Note__: The document can only be opened if the initialization is successful.
 
-- __options__: Open the configuration options for the document. We now support two options:
+  - __path__: Document path you wish to open
+  - __password__: The password used to load the PDF document content. It can be either user password or owner password.
+  If the PDF document is not encrypted by password, just pass an empty string.
+  
+## window.FoxitPdf.setSavePath (iOS)
 
-- __filePath__: Document path you wish to open
-- __filePathSaveTo__: Document path that prevents overwriting on the preview file  _(if set)_
+> setSavePath = function(savePath)
 
-- __successcallback__: This function is executed when the document opens successfully. The function is passed an object as a parameter.
+```js
 
-- __errorcallback__: This function is executed when the document fails to open. The function is passed an object as a parameter.
+    var savePath = 'Your file path';// Document path that prevents overwriting on the preview file  _(if set)_
 
+    window.FoxitPdf.setSavePath(savePath);
+```    
 
-## Example (In iOS)
-
-```javascript
-
-let pdfviewOptions = {
-  'filePath':cordova.file.applicationDirectory + 'sample.pdf',
-  'filePathSaveTo': cordova.file.documentsDirectory + 'sample2.pdf',
-};
-window.FoxitPdf.openDocument(pdfviewOptions,
-  function(succ){
-    console.log('succ',succ);
-  },function(err){
-    console.log('err',err);
-  });
-
-```
-Replace the file addresses with your own files
-
-&nbsp;&nbsp;
+  - __savePath__: Document path that prevents overwriting on the preview file  _(if set)_
 
 ## window.FoxitPdf.addEventListener
 
-
 > Add a listener for an event
-
 
     window.FoxitPdf.addEventListener(eventname,callback);
 
@@ -163,7 +131,6 @@ Replace the file addresses with your own files
   - __onDocSaved__: This event fires when the document is saved.
 
 - __callback__: This function is executed when the event fires. The function is passed an object as a parameter.
-
 
 
 ## Example
