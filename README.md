@@ -49,7 +49,7 @@ cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by yo
     The trial key period provided is 10 days，if you try the plugin and fail to access, it may be due to an invalid/expired key. Please note the key expiration date.
     If you need an extension of your trial period key, please contact us.
 
-    Please note the current key expiration date is ## 1-28 2019.
+    Please note the current key expiration date is ## 4-15 2019.
 
 ## Major update
     Now our plugin is using Foxit PDF SDK version 6.3 for Android ,Foxit PDF SDK version 6.3 for iOS .
