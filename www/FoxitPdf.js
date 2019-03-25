@@ -67,7 +67,7 @@ pdf.prototype.removeEventListener = function (eventname, f) {
 pdf.prototype.importFromFDF = function(fdf_doc_path, data_type, page_range = []) {
     return new Promise(function(resolve, reject) {
         if (!(page_range && page_range instanceof Array)) {
-            error('page range is not array');
+            reject('page range is not array');
             return;
         }
         exec(resolve, reject, "FoxitPdf", "importFromFDF", [{
@@ -81,7 +81,7 @@ pdf.prototype.importFromFDF = function(fdf_doc_path, data_type, page_range = [])
 pdf.prototype.exportToFDF = function(export_path, data_type, fdf_doc_type, page_range = []) {
     return new Promise(function(resolve, reject) {
         if (!(page_range && page_range instanceof Array)) {
-            error('page range is not array');
+            reject('page range is not array');
             return;
         }
         exec(resolve, reject, "FoxitPdf", "exportToFDF", [{
@@ -89,7 +89,6 @@ pdf.prototype.exportToFDF = function(export_path, data_type, fdf_doc_type, page_
             'dataType': data_type,
             'fdfDocType': fdf_doc_type,
             'pageRange': page_range,
-            
         }]);
     });
 };
