@@ -16,6 +16,7 @@
 @property (nonatomic, strong) CDVInvokedUrlCommand *pluginCommand;
 
 @property (nonatomic, strong) NSString *filePathSaveTo;
+@property (nonatomic, copy) NSString *filePassword;
 
 - (void)Preview:(CDVInvokedUrlCommand *)command;
 @end
@@ -59,6 +60,26 @@ static NSString *initializeKey;
     [self Preview:command];
 }
 
+- (void)setSavePath:(CDVInvokedUrlCommand*)command{
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = [NSDictionary dictionary];
+    }
+    
+    NSString *savePath = [options objectForKey:@"savePath"];
+    savePath = [savePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    if (savePath.length >0 ) {
+        NSURL *filePathSaveTo = [NSURL fileURLWithPath:savePath];
+        self.filePathSaveTo = [filePathSaveTo.path stringByRemovingPercentEncoding];
+        if ([self.filePathSaveTo hasPrefix:@"/file:/"]) {
+            self.filePathSaveTo = [self.filePathSaveTo stringByReplacingOccurrencesOfString:@"/file:/" withString:@""];
+        }
+    }else{
+        self.filePathSaveTo  = nil;
+    }
+}
+
 - (void)Preview:(CDVInvokedUrlCommand*)command
 {
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
@@ -78,21 +99,22 @@ static NSString *initializeKey;
         options = [NSDictionary dictionary];
     }
     
-    NSString *jsfilePathSaveTo = [options objectForKey:@"filePathSaveTo"];
-    jsfilePathSaveTo = [jsfilePathSaveTo stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    if (jsfilePathSaveTo && jsfilePathSaveTo.length >0 ) {
-        NSURL *filePathSaveTo = [NSURL fileURLWithPath:jsfilePathSaveTo];
-        self.filePathSaveTo = [filePathSaveTo.path stringByRemovingPercentEncoding];
-        if ([self.filePathSaveTo hasPrefix:@"/file:/"]) {
-            self.filePathSaveTo = [self.filePathSaveTo stringByReplacingOccurrencesOfString:@"/file:/" withString:@""];
-        }
-    }else{
-        self.filePathSaveTo  = nil;
+    NSString *password = [options objectForKey:@"password"];
+    password = [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    if (password.length >0 ) {
+        self.filePassword = password;
+//        NSURL *filePathSaveTo = [NSURL fileURLWithPath:jsfilePathSaveTo];
+//        self.filePathSaveTo = [filePathSaveTo.path stringByRemovingPercentEncoding];
+//        if ([self.filePathSaveTo hasPrefix:@"/file:/"]) {
+//            self.filePathSaveTo = [self.filePathSaveTo stringByReplacingOccurrencesOfString:@"/file:/" withString:@""];
+//        }
+//    }else{
+//        self.filePathSaveTo  = nil;
     }
     
     // URL
     //    NSString *filePath = [command.arguments objectAtIndex:0];
-    NSString *filePath = [options objectForKey:@"filePath"];
+    NSString *filePath = [options objectForKey:@"path"];
     
     // check file exist
     filePath = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
@@ -145,11 +167,16 @@ static NSString *initializeKey;
     
     __weak FoxitPdf* weakSelf = self;
     [self.pdfViewControl openDoc:filePath
-                        password:nil
+                        password:self.filePassword
                       completion:^(FSErrorCode error) {
                           if (error != FSErrSuccess) {
-                              [weakSelf showAlertViewWithTitle:@"error" message:@"Failed to open the document"];
-                              [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+                              dispatch_time_t delayTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC));
+                              
+                              dispatch_after(delayTime, dispatch_get_main_queue(), ^{
+                                  [weakSelf showAlertViewWithTitle:@"error" message:@"Failed to open the document"];
+                                  [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+                              });
+                              
                               [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
                           }else{
                               // Run later to avoid the "took a long time" log message.
