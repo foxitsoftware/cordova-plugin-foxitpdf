@@ -32,10 +32,17 @@ static NSString *initializeKey;
 - (void)initialize:(CDVInvokedUrlCommand*)command{
     // init foxit sdk
     
-    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+
     NSDictionary *options = [command argumentAtIndex:0];
     if ([options isKindOfClass:[NSNull class]]) {
-        [self showAlertViewWithTitle:@"Check License" message:errMsg];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
+        block();
         return;
     }
     
@@ -46,13 +53,19 @@ static NSString *initializeKey;
         if (initializeCode == FSErrSuccess) [FSLibrary destroy];
         initializeCode = [FSLibrary initialize:sn key:key];
         if (initializeCode != FSErrSuccess) {
-            [self showAlertViewWithTitle:@"Check License" message:errMsg];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
+            block();
             return;
         }else{
             initializeSN = sn;
             initializeKey = key;
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialize succeeded"];
+            block();
         }
         if (!fileVC) fileVC = [[FSFileListViewController alloc] init];
+    }else{
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialized"];
+        block();
     }
 }
 
@@ -68,27 +81,169 @@ static NSString *initializeKey;
     }
     
     NSString *savePath = [options objectForKey:@"savePath"];
-    savePath = [savePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    if (savePath.length >0 ) {
-        NSURL *filePathSaveTo = [NSURL fileURLWithPath:savePath];
-        self.filePathSaveTo = [filePathSaveTo.path stringByRemovingPercentEncoding];
-        if ([self.filePathSaveTo hasPrefix:@"/file:/"]) {
-            self.filePathSaveTo = [self.filePathSaveTo stringByReplacingOccurrencesOfString:@"/file:/" withString:@""];
-        }
+    self.filePathSaveTo = [self correctFilePath:savePath];
+    
+    CDVPluginResult *pluginResult = nil;
+    if (self.filePathSaveTo) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"set savePath succeeded"];
     }else{
-        self.filePathSaveTo  = nil;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"set savePath failed"];
+    }
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
+}
+
+- (void)importFromFDF:(CDVInvokedUrlCommand*)command{
+
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = [NSDictionary dictionary];
+    }
+    
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+
+    
+    NSString *fdfPath = [options objectForKey:@"fdfPath"];
+    fdfPath = [self correctFilePath:fdfPath];
+    if (!fdfPath) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"fdfPath is not found"];
+        block();
+        return;
+    }
+    
+    if ([self.extensionsMgr.pdfViewCtrl.currentDoc isEmpty] || !self.extensionsMgr.pdfViewCtrl.currentDoc) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
+        block();
+        return;
+    }
+    
+    NSNumber *types = [options objectForKey:@"dataType"];
+    NSArray *pageRange = [options objectForKey:@"pageRange"];
+    
+    FSFDFDoc *fdoc = [[FSFDFDoc alloc] initWithPath:fdfPath];
+    if ([fdoc isEmpty]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"fdf doc is is empty"];
+        block();
+        return;
+    }
+    FSPDFDoc *doc = self.extensionsMgr.pdfViewCtrl.currentDoc;
+    FSRange *range = [[FSRange alloc] init];
+    
+    for (int i = 0; i < pageRange.count; i++) {
+        NSArray *rangeNum = pageRange[i];
+        if ([rangeNum isKindOfClass:[NSArray class]] && rangeNum.count == 0) {
+            int start = [(NSNumber *)rangeNum[0] intValue];
+            int end = [(NSNumber *)rangeNum[1] intValue];
+            [range addSegment:start end_index:end filter:FSRangeAll];
+        }
+    }
+    
+    @try {
+        BOOL flag = [doc importFromFDF:fdoc types:types.intValue page_range:range];
+        if (flag) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Successfully import the fdf doc"];
+            block();
+            [self.extensionsMgr.pdfViewCtrl refresh:self.extensionsMgr.pdfViewCtrl.getCurrentPage];
+         }
+    } @catch (NSException *exception) {
+        NSLog(@"Import the FDF failed");
+    }
+}
+
+- (void)exportToFDF:(CDVInvokedUrlCommand*)command{
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = [NSDictionary dictionary];
+    }
+    
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    
+    NSString *exportPath = [options objectForKey:@"exportPath"];
+    exportPath = [self correctFilePath:exportPath];
+    if (!exportPath) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"exportPath is error"];
+        block();
+        return;
+    }
+    
+    if ([self.extensionsMgr.pdfViewCtrl.currentDoc isEmpty] || !self.extensionsMgr.pdfViewCtrl.currentDoc) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
+        block();
+        return;
+    }
+    
+    NSNumber *types = [options objectForKey:@"dataType"];
+    NSArray *pageRange = [options objectForKey:@"pageRange"];
+    NSNumber *fdfDocType = [options objectForKey:@"fdfDocType"];
+    
+    FSFDFDoc *fdoc = [[FSFDFDoc alloc] initWithType:fdfDocType.intValue];
+    if ([fdoc isEmpty]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"fdf doc is is empty"];
+        block();
+        return;
+    }
+    FSPDFDoc *doc = self.extensionsMgr.pdfViewCtrl.currentDoc;
+    FSRange *range = [[FSRange alloc] init];
+    
+    for (int i = 0; i < pageRange.count; i++) {
+        NSArray *rangeNum = pageRange[i];
+        if ([rangeNum isKindOfClass:[NSArray class]] && rangeNum.count == 0) {
+            int start = [(NSNumber *)rangeNum[0] intValue];
+            int end = [(NSNumber *)rangeNum[1] intValue];
+            [range addSegment:start end_index:end filter:FSRangeAll];
+        }
+    }
+    
+    @try {
+        BOOL flag = [doc exportToFDF:fdoc types:types.intValue page_range:range];
+        if (flag) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Successfully export the fdf doc"];
+            block();
+            [self.extensionsMgr.pdfViewCtrl refresh:self.extensionsMgr.pdfViewCtrl.getCurrentPage];
+            if ([fdoc saveAs:exportPath]) {
+                NSLog(@"Successfully save the fdf doc");
+            }
+        }else{
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Export the FDF failed"];
+            block();
+        }
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Export the FDF failed"];
+        block();
     }
 }
 
 - (void)Preview:(CDVInvokedUrlCommand*)command
 {
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
     if (FSErrSuccess != initializeCode) {
-        [self showAlertViewWithTitle:@"Check License" message:errMsg];
+         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        block();
         return;
     }
-    CDVPluginResult *pluginResult = nil;
-    self.pluginCommand = command;
     
     NSString *docDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSLog(@"%@", docDir);
@@ -103,13 +258,6 @@ static NSString *initializeKey;
     password = [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     if (password.length >0 ) {
         self.filePassword = password;
-//        NSURL *filePathSaveTo = [NSURL fileURLWithPath:jsfilePathSaveTo];
-//        self.filePathSaveTo = [filePathSaveTo.path stringByRemovingPercentEncoding];
-//        if ([self.filePathSaveTo hasPrefix:@"/file:/"]) {
-//            self.filePathSaveTo = [self.filePathSaveTo stringByReplacingOccurrencesOfString:@"/file:/" withString:@""];
-//        }
-//    }else{
-//        self.filePathSaveTo  = nil;
     }
     
     // URL
@@ -126,19 +274,10 @@ static NSString *initializeKey;
     if (filePath != nil && filePath.length > 0 && isFileExist) {
         // preview
         [self FoxitPdfPreview:fileURL.path];
-        
-        // result object
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"preview success"];
-        tmpCommandCallbackID = command.callbackId;
     } else {
-        NSString* errMsg = [NSString stringWithFormat:@"file not find"];
-        [self showAlertViewWithTitle:@"Error" message:errMsg];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"file not found"];
+        block();
     }
-    
-    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
 }
 
 # pragma mark -- Foxit preview
@@ -165,11 +304,23 @@ static NSString *initializeKey;
         self.extensionsMgr.preventOverrideFilePath = self.filePathSaveTo;
     }
     
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
+    };
+    
     __weak FoxitPdf* weakSelf = self;
     [self.pdfViewControl openDoc:filePath
                         password:self.filePassword
                       completion:^(FSErrorCode error) {
                           if (error != FSErrSuccess) {
+                              
+                              pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                           messageAsDictionary:@{@"FSErrorCode":@(FSErrSuccess), @"info":@"failed open the pdf"}];
+                              block();
+                              
                               dispatch_time_t delayTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC));
                               
                               dispatch_after(delayTime, dispatch_get_main_queue(), ^{
@@ -179,6 +330,9 @@ static NSString *initializeKey;
                               
                               [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
                           }else{
+                              pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                           messageAsDictionary:@{@"FSErrorCode":@(FSErrSuccess), @"info":@"Open the document successfully"}];
+                              block();
                               // Run later to avoid the "took a long time" log message.
                               dispatch_async(dispatch_get_main_queue(), ^{
                                   [weakSelf.viewController presentViewController:weakSelf.pdfViewController animated:YES completion:nil];
@@ -312,6 +466,19 @@ static NSString *initializeKey;
                                              options:0
                                              metrics:nil
                                                views:NSDictionaryOfVariableBindings(topToolbar)]];
+}
+
+- (NSString *)correctFilePath:(NSString *)filePath{
+    NSString *path = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    if (path.length >0 ) {
+        NSURL *filePathSaveTo = [NSURL fileURLWithPath:path];
+        path = [filePathSaveTo.path stringByRemovingPercentEncoding];
+        if ([path hasPrefix:@"/file:/"]) {
+            path = [path stringByReplacingOccurrencesOfString:@"/file:" withString:@""];
+        }
+        return path;
+    }
+    return nil;
 }
 @end
 
