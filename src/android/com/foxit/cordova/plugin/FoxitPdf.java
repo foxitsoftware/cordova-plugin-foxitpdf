@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
-import android.util.Range;
 
 import com.foxit.sdk.PDFException;
 import com.foxit.sdk.Task;
@@ -196,6 +194,7 @@ public class FoxitPdf extends CordovaPlugin {
             @Override
             public void result(Task task) {
                 if (success) {
+                    ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
                     int[] pages = ReaderActivity.pdfViewCtrl.getVisiblePages();
                     for (int i = 0; i < pages.length; i ++) {
                         Rect rect = new Rect(0, 0, ReaderActivity.pdfViewCtrl.getPageViewWidth(i), ReaderActivity.pdfViewCtrl.getPageViewHeight(i));
