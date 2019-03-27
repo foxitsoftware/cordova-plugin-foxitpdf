@@ -19,7 +19,7 @@
 
 # cordova-plugin-foxitpdf
     This plugin adds the ability to easily preview any PDF file in your Cordova application
-  
+
 - [Installation](#installation)
 - [Usage Instructions for iOS](#usage-instructions-for-ios)
 - [Usage Instructions for Android](#usage-instructions-for-android)
@@ -49,7 +49,7 @@ cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by yo
     The trial key period provided is 10 days，if you try the plugin and fail to access, it may be due to an invalid/expired key. Please note the key expiration date.
     If you need an extension of your trial period key, please contact us.
 
-    Please note the current key expiration date is ## 1-28 2019.
+    Please note the current key expiration date is ## 4-15 2019.
 
 ## Major update
     Now our plugin is using Foxit PDF SDK version 6.3 for Android ,Foxit PDF SDK version 6.3 for iOS .
@@ -73,12 +73,12 @@ Thanks to the new Foxit PDF SDK for iOS 6.3 API, the iOS version of the cordova 
 Now that the preparatory work has been completed，you can use this code everywhere in your project.
 
 
-## window.FoxitPdf.initialize 
+## window.FoxitPdf.initialize
 
 > initialize = function(options, successcallback, errorcallback)
 
 ```javascript
-let initOptions = {
+var initOptions = {
     'foxit_sn': xxx, // rdk_sn
     'foxit_key': xxx, // rdk_key
 }
@@ -99,7 +99,7 @@ window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
 ## Example (In iOS)
 
 ```javascript
-let initOptions = {
+var initOptions = {
     'foxit_sn': 'xxx',
     'foxit_key': 'xxx'
 };
@@ -111,7 +111,7 @@ window.FoxitPdf.initialize(initOptions,function(succ){console.log('succ',succ);}
 > openDocument = function(options, successcallback, errorcallback)
 
 ```javascript
-let options = {
+var options = {
 'filePath': xxx,
 'filePathSaveTo': xxx
 };
@@ -134,7 +134,7 @@ window.FoxitPdf.openDocument(options,successcallback,errorcallback);
 
 ```javascript
 
-let pdfviewOptions = {
+var pdfviewOptions = {
   'filePath':cordova.file.applicationDirectory + 'sample.pdf',
   'filePathSaveTo': cordova.file.documentsDirectory + 'sample2.pdf',
 };
@@ -194,20 +194,20 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 > initialize = function(options, successcallback, errorcallback)
 
 ```js
-     let initOptions = {
+     var initOptions = {
         'foxit_sn': xxx,
         'foxit_key': xxx
      }
     window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
 ```    
-    
+
 - __options__: Initialization options.
 
   - __foxit_sn__: the `rdk_sn`
   - __foxit_key__: the `rdk_key`  
 
    `foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_android.zip`.
-  
+
 - __successcallback__: This function is executed when the initialization is successful. The function is passed an object as a parameter.
 
 - __errorcallback__: This function is executed when the initialization fails. The function is passed an object as a parameter.
@@ -218,7 +218,7 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 > openDocument = function(options, successcallback, errorcallback)
 
 ```js
-    let options = {
+    var options = {
         'filePath': xxx,
         'filePathSaveTo': xxx
     };
@@ -245,12 +245,12 @@ var success = function(data){
 var error = function(data){
   console.log(data);
 }
-let initOptions = {
+var initOptions = {
   'foxit_sn': xxx, // rdk_sn
   'foxit_key': xxx, // rdk_key
 };
 window.FoxitPdf.initialize(initOptions,success,error);
-  
+
 // Second Step: Open document
 var successcallback = function(data){
   console.log(data);
@@ -258,7 +258,7 @@ var successcallback = function(data){
 var errorcallback = function(data){
   console.log(data);
 }
-let pdfviewOptions = {
+var pdfviewOptions = {
   'filePath': xxx, // Document path you wish to open. e.g. /mnt/sdcard/getting_started_ios.pdf
   'filePathSaveTo': xxx // Document path that prevents overwriting on the preview file  _(if set)_. e.g. '/mnt/sdcard/getting_started_ios2.pdf'
 };
@@ -320,7 +320,7 @@ A PDF file needs to be placed in the project beforehand. The location is in the 
 
 ```javascript
 
-let pdfviewOptions = {
+var pdfviewOptions = {
   'filePath':cordova.file.applicationDirectory + 'getting_started_ios.pdf',
   'filePathSaveTo': cordova.file.documentsDirectory + 'getting_started_ios_2.pdf',
 };
