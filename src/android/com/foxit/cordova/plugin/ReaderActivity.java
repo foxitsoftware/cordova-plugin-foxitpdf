@@ -157,6 +157,7 @@ public class ReaderActivity extends FragmentActivity {
 
         @Override
         public void onDocOpened(PDFDoc pdfDoc, int errCode) {
+            FoxitPdf.onDocOpened(errCode);
         }
 
         @Override

@@ -2,6 +2,7 @@ var exec = require('cordova/exec');
 var channel = require('cordova/channel');
 
 channels = {
+    'onDocOpened': channel.create('onDocOpened'),
     'onDocSaved': channel.create('onDocSaved'),
 };
 
