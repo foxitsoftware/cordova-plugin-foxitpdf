@@ -112,9 +112,7 @@ Now that the preparatory work has been completed，you can use this code everywh
 > setSavePath = function(savePath)
 
 ```js
-
     var savePath = 'Your file path';// Document path that prevents overwriting on the preview file  _(if set)_
-
     window.FoxitPdf.setSavePath(savePath);
 ```    
 
@@ -125,9 +123,8 @@ Now that the preparatory work has been completed，you can use this code everywh
 > importFromFDF = function(fdf_doc_path, data_type, page_range = [])
 
 ```js
-
     var fdf_doc_path = 'Your file path';// FDF file path 
-    var data_type = '0x0002';
+    var data_type = 0x0002;
     var page_range = [[0,1],[2,3]]
     window.FoxitPdf.importFromFDF(fdfPath, data_type);
 ```    
@@ -148,7 +145,7 @@ Now that the preparatory work has been completed，you can use this code everywh
     var fdf_doc_type = 0;
     var exportPath = '/Documents/annot_export.fdf';
     var page_range = [[0,1],[2,3]]
-    var data_type = '0x0002';
+    var data_type = 0x0002;
     window.FoxitPdf.exportToFDF(fdfPath, data_type, fdf_doc_type, page_range);
 ```  
   
@@ -181,6 +178,10 @@ Now that the preparatory work has been completed，you can use this code everywh
 
 window.FoxitPdf.addEventListener('onDocSaved',function(data){
   console.log('onDocSaved callback ',data);
+});
+
+window.FoxitPdf.addEventListener('onDocOpened',function(data){
+  console.log('onDocOpened callback ',data);
 });
 
 ```
@@ -255,7 +256,7 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 ```js
 
     var fdf_doc_path = 'Your file path';// FDF file path 
-    var data_type = '0x0002';
+    var data_type = 0x0002;
     window.FoxitPdf.importFromFDF(fdfPath, data_type);
 ```    
 
@@ -274,7 +275,7 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 
     var fdf_doc_type = 0;
     var exportPath = '/mnt/sdcard/FoxitSDK/annot_export.fdf';
-    var data_type = '0x0002';
+    var data_type = 0x0002;
     window.FoxitPdf.exportToFDF(fdfPath, data_type);
 ```  
   
@@ -359,16 +360,20 @@ A PDF file needs to be placed in the project beforehand. The location is in the 
 
 ```javascript
 
-let pdfviewOptions = {
-  'filePath':cordova.file.applicationDirectory + 'getting_started_ios.pdf',
-  'filePathSaveTo': cordova.file.documentsDirectory + 'getting_started_ios_2.pdf',
-};
-window.FoxitPdf.preview(pdfviewOptions,
-  function(succ){
-    console.log('succ',succ);
-  },function(err){
-    console.log('err',err);
-  });
+var filePathSaveTo = cordova.file.documentsDirectory + 'getting_started_ios_2.pdf'
+window.FoxitPdf.setSavePath(filePathSaveTo);
+
+var filePath cordova.file.applicationDirectory + 'getting_started_ios.pdf';
+window.FoxitPdf.openDocument(filePath,'');
+
+window.FoxitPdf.addEventListener('onDocOpened',function(data){
+                                     console.log('onDocOpened callback ',data);
+                                     console.log('onDocOpened callback info',data.info);
+                                     if (data.error == 0){
+                                        var data_type = 0x0002;
+                                        window.FoxitPdf.importFromFDF(cordova.file.documentsDirectory + 'Annot_all.fdf',data_type, [[0, 1]]);
+                                     }
+                                     });
 
 ```
 
