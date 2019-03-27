@@ -109,7 +109,6 @@ static NSString *initializeKey;
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
 
-    
     NSString *fdfPath = [options objectForKey:@"fdfPath"];
     fdfPath = [self correctFilePath:fdfPath];
     if (!fdfPath) {
@@ -171,7 +170,6 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
-    
     
     NSString *exportPath = [options objectForKey:@"exportPath"];
     exportPath = [self correctFilePath:exportPath];
@@ -387,6 +385,12 @@ static NSString *initializeKey;
 
 - (void)onDocOpened:(FSPDFDoc *)document error:(int)error {
     // Called when a document is opened.
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                  messageAsDictionary:@{@"type":@"onDocOpened", @"info":@"info", @"error":@(error)}];
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
 }
 
 - (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
@@ -394,7 +398,7 @@ static NSString *initializeKey;
 }
 - (void)onDocSaved:(FSPDFDoc *)document error:(int)error{
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                                  messageAsDictionary:@{@"type":@"onDocSaved", @"info":@"info"}];
+                                                  messageAsDictionary:@{@"type":@"onDocSaved", @"info":@"info", @"error":@(error)}];
     [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
