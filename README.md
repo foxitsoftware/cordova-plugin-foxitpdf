@@ -170,6 +170,7 @@ Now that the preparatory work has been completed，you can use this code everywh
 - __eventname__: The name of the event to listen for _(String)_
 
   - __onDocSaved__: This event fires when the document is saved.
+  - __onDocOpened__: This event fires when the document is Opened.
 
 - __callback__: This function is executed when the event fires. The function is passed an object as a parameter.
 
