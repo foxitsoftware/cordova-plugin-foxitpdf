@@ -65,7 +65,8 @@ pdf.prototype.removeEventListener = function (eventname, f) {
     }
 };
 
-pdf.prototype.importFromFDF = function(fdf_doc_path, data_type, page_range = []) {
+pdf.prototype.importFromFDF = function(fdf_doc_path, data_type, page_range) {
+    if (typeof page_range === 'undefined') {page_range = [];}
     return new Promise(function(resolve, reject) {
         if (!(page_range && page_range instanceof Array)) {
             reject('page range is not array');
@@ -79,7 +80,8 @@ pdf.prototype.importFromFDF = function(fdf_doc_path, data_type, page_range = [])
     });
 };
 
-pdf.prototype.exportToFDF = function(export_path, data_type, fdf_doc_type, page_range = []) {
+pdf.prototype.exportToFDF = function(export_path, data_type, fdf_doc_type, page_range) {
+    if (typeof page_range === 'undefined') {page_range = [];}
     return new Promise(function(resolve, reject) {
         if (!(page_range && page_range instanceof Array)) {
             reject('page range is not array');
