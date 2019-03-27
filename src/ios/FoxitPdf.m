@@ -150,6 +150,7 @@ static NSString *initializeKey;
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Successfully import the fdf doc"];
             block();
             [self.extensionsMgr.pdfViewCtrl refresh:self.extensionsMgr.pdfViewCtrl.getCurrentPage];
+            self.extensionsMgr.isDocModified = YES;
          }
     } @catch (NSException *exception) {
         NSLog(@"Import the FDF failed");
