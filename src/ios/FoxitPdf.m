@@ -137,7 +137,7 @@ static NSString *initializeKey;
     
     for (int i = 0; i < pageRange.count; i++) {
         NSArray *rangeNum = pageRange[i];
-        if ([rangeNum isKindOfClass:[NSArray class]] && rangeNum.count == 0) {
+        if ([rangeNum isKindOfClass:[NSArray class]] && rangeNum.count != 0) {
             int start = [(NSNumber *)rangeNum[0] intValue];
             int end = [(NSNumber *)rangeNum[1] intValue];
             [range addSegment:start end_index:end filter:FSRangeAll];
@@ -149,7 +149,7 @@ static NSString *initializeKey;
         if (flag) {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Successfully import the fdf doc"];
             block();
-            [self.extensionsMgr.pdfViewCtrl refresh:self.extensionsMgr.pdfViewCtrl.getCurrentPage];
+            [self.extensionsMgr.pdfViewCtrl refresh];
             self.extensionsMgr.isDocModified = YES;
          }
     } @catch (NSException *exception) {
@@ -201,7 +201,7 @@ static NSString *initializeKey;
     
     for (int i = 0; i < pageRange.count; i++) {
         NSArray *rangeNum = pageRange[i];
-        if ([rangeNum isKindOfClass:[NSArray class]] && rangeNum.count == 0) {
+        if ([rangeNum isKindOfClass:[NSArray class]] && rangeNum.count != 0) {
             int start = [(NSNumber *)rangeNum[0] intValue];
             int end = [(NSNumber *)rangeNum[1] intValue];
             [range addSegment:start end_index:end filter:FSRangeAll];
