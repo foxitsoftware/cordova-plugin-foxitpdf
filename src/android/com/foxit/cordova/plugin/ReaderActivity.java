@@ -26,7 +26,7 @@ import java.io.InputStream;
 
 public class ReaderActivity extends FragmentActivity {
 
-    public PDFViewCtrl pdfViewCtrl;
+    public static PDFViewCtrl pdfViewCtrl;
     private UIExtensionsManager uiextensionsManager;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -67,10 +67,10 @@ public class ReaderActivity extends FragmentActivity {
             if (permission != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
             } else {
-                uiextensionsManager.openDocument(getIntent().getExtras().getString("path"), null);
+                uiextensionsManager.openDocument(getIntent().getStringExtra("path"), getIntent().getByteArrayExtra("password"));
             }
         } else {
-            uiextensionsManager.openDocument(getIntent().getExtras().getString("path"), null);
+            uiextensionsManager.openDocument(getIntent().getStringExtra("path"), getIntent().getByteArrayExtra("password"));
         }
 
         setContentView(uiextensionsManager.getContentView());
@@ -81,7 +81,7 @@ public class ReaderActivity extends FragmentActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_EXTERNAL_STORAGE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                uiextensionsManager.openDocument(getIntent().getExtras().getString("path"), null);
+                uiextensionsManager.openDocument(getIntent().getStringExtra("path"), getIntent().getByteArrayExtra("password"));
             } else {
                 UIToast.getInstance(getApplicationContext()).show("Permission Denied");
                 setResult();
@@ -157,6 +157,7 @@ public class ReaderActivity extends FragmentActivity {
 
         @Override
         public void onDocOpened(PDFDoc pdfDoc, int errCode) {
+            FoxitPdf.onDocOpened(errCode);
         }
 
         @Override
