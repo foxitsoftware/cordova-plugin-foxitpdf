@@ -397,6 +397,15 @@ static NSString *initializeKey;
 - (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
     // Called when a document is closed.
 }
+
+- (void)onDocWillSave:(FSPDFDoc *)document {
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                  messageAsDictionary:@{@"type":@"onDocWillSave", @"info":@"info"}];
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
+}
+
 - (void)onDocSaved:(FSPDFDoc *)document error:(int)error{
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                                   messageAsDictionary:@{@"type":@"onDocSaved", @"info":@"info", @"error":@(error)}];
