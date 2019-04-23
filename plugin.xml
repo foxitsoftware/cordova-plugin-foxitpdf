@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-foxitpdf" version="6.3.2" xmlns="http://apache.org/cordova/ns/plugins/1.0"
+<plugin id="cordova-plugin-foxitpdf" version="6.3.3" xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android">
     <name>cordova-plugin-foxitpdf</name>
     <description>cordova pdf preview plugin with Foxit Pdf sdk</description>
-    <author>huang niu</author>
+    <author>Foxit PDF SDK Team</author>
     <keywords>pdf,perview,openDocument,foxit</keywords>
     <license>Apache 2.0 License</license>
     <js-module name="FoxitPdf" src="www/FoxitPdf.js">
