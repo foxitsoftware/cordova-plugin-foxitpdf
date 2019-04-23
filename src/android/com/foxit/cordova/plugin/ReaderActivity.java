@@ -170,6 +170,7 @@ public class ReaderActivity extends FragmentActivity {
 
         @Override
         public void onDocWillSave(PDFDoc pdfDoc) {
+            FoxitPdf.onDocWillSave();
         }
 
         @Override

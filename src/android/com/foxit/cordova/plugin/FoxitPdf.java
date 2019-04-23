@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import com.foxit.sdk.PDFException;
-import com.foxit.sdk.Task;
+import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.common.Constants;
 import com.foxit.sdk.common.Library;
 import com.foxit.sdk.fdf.FDFDoc;
@@ -25,6 +25,7 @@ import org.json.JSONObject;
  */
 public class FoxitPdf extends CordovaPlugin {
     private static final String RDK_DOCSAVED_EVENT = "onDocSaved";
+    private static final String RDK_DOCWILLSAVE_EVENT = "onDocWillSave";
     private static final String RDK_DOCOPENED_EVENT = "onDocOpened";
     private static final int result_flag = 1000;
 
@@ -35,7 +36,6 @@ public class FoxitPdf extends CordovaPlugin {
 
     private static CallbackContext callbackContext;
     private String mSavePath = null;
-    private boolean success;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -190,67 +190,63 @@ public class FoxitPdf extends CordovaPlugin {
             return false;
         }
 
-        com.foxit.sdk.Task.CallBack callBack = new Task.CallBack() {
-            @Override
-            public void result(Task task) {
+        try {
+            PDFViewCtrl.lock();
+            boolean success = false;
+            if (ReaderActivity.pdfViewCtrl.getDoc() != null) {
+                FDFDoc fdfDoc = new FDFDoc(fdfPath);
+                success = ReaderActivity.pdfViewCtrl.getDoc().importFromFDF(fdfDoc, type, range);
+
                 if (success) {
-                    ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
+                    ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
                     int[] pages = ReaderActivity.pdfViewCtrl.getVisiblePages();
-                    for (int i = 0; i < pages.length; i ++) {
+                    for (int i = 0; i < pages.length; i++) {
                         Rect rect = new Rect(0, 0, ReaderActivity.pdfViewCtrl.getPageViewWidth(i), ReaderActivity.pdfViewCtrl.getPageViewHeight(i));
                         ReaderActivity.pdfViewCtrl.refresh(i, rect);
                     }
                     callbackContext.success();
+                    return true;
                 }
             }
-        };
-        ReaderActivity.pdfViewCtrl.addTask(new Task(callBack) {
-            @Override
-            protected void execute() {
-                try {
-                    FDFDoc fdfDoc = new FDFDoc(fdfPath);
-                    success = false;
-                    success = ReaderActivity.pdfViewCtrl.getDoc().importFromFDF(fdfDoc, type, range);
-                } catch (PDFException e) {
-                    callbackContext.error(e.getMessage());
-                }
-            }
-        });
-        return true;
+            callbackContext.error("Unknown error");
+        } catch (PDFException e) {
+            callbackContext.error(e.getMessage());
+        } finally {
+            PDFViewCtrl.unlock();
+        }
+        return false;
     }
 
     private boolean exportToFDF(int fdfDocType, int type, com.foxit.sdk.common.Range range, String exportPath, CallbackContext callbackContext) {
-        if (exportPath == null || exportPath.trim().length() < 1) {
-            callbackContext.error("Please input validate path.");
-            return false;
-        }
-        if (ReaderActivity.pdfViewCtrl == null) {
-            callbackContext.error("Please open document first.");
-            return false;
-        }
-
-        com.foxit.sdk.Task.CallBack callBack = new Task.CallBack() {
-            @Override
-            public void result(Task task) {
+        try {
+            if (exportPath == null || exportPath.trim().length() < 1) {
+                callbackContext.error("Please input validate path.");
+                return false;
             }
-        };
-        ReaderActivity.pdfViewCtrl.addTask(new Task(callBack) {
-            @Override
-            protected void execute() {
-                try {
-                    FDFDoc fdfDoc = new FDFDoc(fdfDocType);
-                    success = false;
-                    success = ReaderActivity.pdfViewCtrl.getDoc().exportToFDF(fdfDoc, type, range);
-                    if (success) {
-                        success = fdfDoc.saveAs(exportPath);
-                    }
-
-                    if (success) callbackContext.success();
-                } catch (PDFException e) {
-                    callbackContext.error(e.getMessage());
+            if (ReaderActivity.pdfViewCtrl == null) {
+                callbackContext.error("Please open document first.");
+                return false;
+            }
+            boolean success = false;
+            PDFViewCtrl.lock();
+            if (ReaderActivity.pdfViewCtrl.getDoc() != null) {
+                FDFDoc fdfDoc = new FDFDoc(fdfDocType);
+                success = ReaderActivity.pdfViewCtrl.getDoc().exportToFDF(fdfDoc, type, range);
+                if (success) {
+                    success = fdfDoc.saveAs(exportPath);
                 }
             }
-        });
+            if (success) {
+                callbackContext.success();
+            } else {
+                callbackContext.error("Unknown error");
+            }
+        } catch (PDFException e) {
+            callbackContext.error(e.getMessage());
+            return false;
+        } finally {
+            PDFViewCtrl.unlock();
+        }
         return true;
     }
 
@@ -274,7 +270,7 @@ public class FoxitPdf extends CordovaPlugin {
                 }
             } catch (JSONException ex) {
 //                Log.e("JSONException", "URI passed in has caused a JSON error.");
-                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
             }
         }
     }
@@ -297,6 +293,20 @@ public class FoxitPdf extends CordovaPlugin {
             } catch (JSONException e) {
                 callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
             }
+        }
+    }
+
+    public static void onDocWillSave() {
+        try {
+            if (callbackContext != null) {
+                JSONObject obj = new JSONObject();
+                obj.put("type", RDK_DOCWILLSAVE_EVENT);
+                PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            }
+        } catch (JSONException ex) {
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
     }
 

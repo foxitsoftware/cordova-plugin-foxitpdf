@@ -166,6 +166,7 @@ Now that the preparatory work has been completed，you can use this code everywh
 
 - __eventname__: The name of the event to listen for _(String)_
 
+  - __onDocWillSave__: This event fires when the document will be saved.
   - __onDocSaved__: This event fires when the document is saved.
   - __onDocOpened__: This event fires when the document is Opened.
 
