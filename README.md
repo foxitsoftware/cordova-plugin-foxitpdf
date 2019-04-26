@@ -19,7 +19,7 @@
 
 # cordova-plugin-foxitpdf
     This plugin adds the ability to easily preview any PDF file in your Cordova application
-
+  
 - [Installation](#installation)
 - [Usage Instructions for iOS](#usage-instructions-for-ios)
 - [Usage Instructions for Android](#usage-instructions-for-android)
@@ -73,16 +73,14 @@ Thanks to the new Foxit PDF SDK for iOS 6.3 API, the iOS version of the cordova 
 Now that the preparatory work has been completed，you can use this code everywhere in your project.
 
 
-## window.FoxitPdf.initialize
+## window.FoxitPdf.initialize 
 
-> initialize = function(options, successcallback, errorcallback)
+> initialize = function(sn, key)
 
 ```javascript
-var initOptions = {
-    'foxit_sn': xxx, // rdk_sn
-    'foxit_key': xxx, // rdk_key
-}
-window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
+ var sn = 'foxit_sn';
+ var key = 'foxit_key';
+ window.FoxitPdf.initialize(sn,key);
 ```    
 
 - __options__: Initialization options.
@@ -92,78 +90,87 @@ window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
 
 `foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_ios.zip`.
 
-- __successcallback__: This function is executed when the initialization is successful. The function is passed an object as a parameter.
-
-- __errorcallback__: This function is executed when the initialization fails. The function is passed an object as a parameter.
-
-## Example (In iOS)
-
-```javascript
-var initOptions = {
-    'foxit_sn': 'xxx',
-    'foxit_key': 'xxx'
-};
-window.FoxitPdf.initialize(initOptions,function(succ){console.log('succ',succ);},function(err){console.log('err',err);});
-```
-
 ## window.FoxitPdf.openDocument
 
-> openDocument = function(options, successcallback, errorcallback)
+> openDocument = function(path, password)
 
 ```javascript
-var options = {
-'filePath': xxx,
-'filePathSaveTo': xxx
-};
-window.FoxitPdf.openDocument(options,successcallback,errorcallback);
+    var path = 'Your file path';
+    var password = 'password'; // If the PDF document is not encrypted by password, just pass an empty string.
+
+    window.FoxitPdf.openDocument(path, password);
 ```    
 
 -__Note__: The document can only be opened if the initialization is successful.
 
-- __options__: Open the configuration options for the document. We now support two options:
+  - __path__: Document path you wish to open
+  - __password__: The password used to load the PDF document content. It can be either user password or owner password.
+  If the PDF document is not encrypted by password, just pass an empty string.
+  
+## window.FoxitPdf.setSavePath (iOS)
 
-- __filePath__: Document path you wish to open
-- __filePathSaveTo__: Document path that prevents overwriting on the preview file  _(if set)_
+> setSavePath = function(savePath)
 
-- __successcallback__: This function is executed when the document opens successfully. The function is passed an object as a parameter.
+```js
+    var savePath = 'Your file path';// Document path that prevents overwriting on the preview file  _(if set)_
+    window.FoxitPdf.setSavePath(savePath);
+```    
 
-- __errorcallback__: This function is executed when the document fails to open. The function is passed an object as a parameter.
+  - __savePath__: Document path that prevents overwriting on the preview file  _(if set)_
+  
+## window.FoxitPdf.importFromFDF (iOS)
 
+> importFromFDF = function(fdf_doc_path, data_type, page_range = [])
 
-## Example (In iOS)
+```js
+    var fdf_doc_path = 'Your file path';// FDF file path 
+    var data_type = 0x0002;
+    var page_range = [[0,1],[2,3]]
+    window.FoxitPdf.importFromFDF(fdf_doc_path, data_type, page_range);
+```    
 
-```javascript
+  - __`fdf_doc_path`__: A valid fdf file path, from which form fields and annotations will be imported.
+  - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
+	1. `0x0001` : Form fields are imported from or exported to FDF/XFDF document. 
+	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet) are imported from or exported to FDF/XFDF document. 
+	3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
+  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. `it should contains at least 2 numbers, and the count of elements should be a multiples of 2.`  Default value: an empty range by default and not set any value.It only support annotations.
 
-var pdfviewOptions = {
-  'filePath':cordova.file.applicationDirectory + 'sample.pdf',
-  'filePathSaveTo': cordova.file.documentsDirectory + 'sample2.pdf',
-};
-window.FoxitPdf.openDocument(pdfviewOptions,
-  function(succ){
-    console.log('succ',succ);
-  },function(err){
-    console.log('err',err);
-  });
+## window.FoxitPdf.exportToFDF (iOS)
 
-```
-Replace the file addresses with your own files
+> exportToFDF = function(export_path, data_type, fdf_doc_type, page_range = [])
 
-&nbsp;&nbsp;
+```js
+
+    var fdf_doc_type = 0;
+    var export_path = '/Documents/annot_export.fdf';
+    var page_range = [[0,1],[2,3]]
+    var data_type = 0x0002;
+    window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type, page_range);
+```  
+  
+  - __`export_path`__: A valid path to which form fields and annotations will be exported.
+  - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
+	1. `0x0001` : Form fields are imported from or exported to FDF/XFDF document. 
+	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet) are imported from or exported to FDF/XFDF document. 
+	3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
+  - __`fdf_doc_type`__: FDF document type. `0 means FDF, and 1 means XFDF`.
+  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. `it should contains at least 2 numbers, and the count of elements should be a multiples of 2.`  Default value: an empty range by default and not set any value.It only support annotations.
+
 
 ## window.FoxitPdf.addEventListener
 
-
 > Add a listener for an event
-
 
     window.FoxitPdf.addEventListener(eventname,callback);
 
 - __eventname__: The name of the event to listen for _(String)_
 
+  - __onDocWillSave__: This event fires when the document will be saved.
   - __onDocSaved__: This event fires when the document is saved.
+  - __onDocOpened__: This event fires when the document is Opened.
 
 - __callback__: This function is executed when the event fires. The function is passed an object as a parameter.
-
 
 
 ## Example
@@ -172,6 +179,10 @@ Replace the file addresses with your own files
 
 window.FoxitPdf.addEventListener('onDocSaved',function(data){
   console.log('onDocSaved callback ',data);
+});
+
+window.FoxitPdf.addEventListener('onDocOpened',function(data){
+  console.log('onDocOpened callback ',data);
 });
 
 ```
@@ -191,78 +202,116 @@ window.FoxitPdf.addEventListener('onDocSaved',function(data){
 
 #### window.FoxitPdf.initialize (Android)
 
-> initialize = function(options, successcallback, errorcallback)
+> initialize = function(sn, key)
 
 ```js
-     var initOptions = {
-        'foxit_sn': xxx,
-        'foxit_key': xxx
-     }
-    window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
-```    
 
-- __options__: Initialization options.
+    var sn = 'foxit_sn';
+    var key = 'foxit_key';
+
+    window.FoxitPdf.initialize(sn, key);
+```    
 
   - __foxit_sn__: the `rdk_sn`
   - __foxit_key__: the `rdk_key`  
 
    `foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_android.zip`.
 
-- __successcallback__: This function is executed when the initialization is successful. The function is passed an object as a parameter.
-
-- __errorcallback__: This function is executed when the initialization fails. The function is passed an object as a parameter.
-
 
 #### window.FoxitPdf.openDocument (Android)
 
-> openDocument = function(options, successcallback, errorcallback)
+> openDocument = function(path, password)
 
 ```js
-    var options = {
-        'filePath': xxx,
-        'filePathSaveTo': xxx
-    };
-    window.FoxitPdf.openDocument(options,successcallback,errorcallback);
+
+    var path = 'Your file path';
+    var password = 'password'; // If the PDF document is not encrypted by password, just pass an empty string.
+
+    window.FoxitPdf.openDocument(path, password);
 ```    
 
 -__Note__: The document can only be opened if the initialization is successful.
 
-- __options__: Open the configuration options for the document. We now support two options:
+  - __path__: Document path you wish to open
+  - __password__: The password used to load the PDF document content. It can be either user password or owner password.
+  If the PDF document is not encrypted by password, just pass an empty string.
 
-  - __filePath__: Document path you wish to open
-  - __filePathSaveTo__: Document path that prevents overwriting on the preview file  _(if set)_
+#### window.FoxitPdf.setSavePath (Android)
 
-- __successcallback__: This function is executed when the document opens successfully. The function is passed an object as a parameter.
+> setSavePath = function(savePath)
 
-- __errorcallback__: This function is executed when the document fails to open. The function is passed an object as a parameter.
+```js
+
+    var savePath = 'Your file path';// Document path that prevents overwriting on the preview file  _(if set)_
+
+    window.FoxitPdf.setSavePath(savePath);
+```    
+
+  - __savePath__: Document path that prevents overwriting on the preview file  _(if set)_
+
+
+#### window.FoxitPdf.importFromFDF (Android)
+
+> importFromFDF = function(fdf_doc_path, data_type, page_range = [])
+
+```js
+
+    var fdf_doc_path = 'Your file path';// FDF file path 
+    var data_type = 0x0002;
+    window.FoxitPdf.importFromFDF(fdf_doc_path, data_type);
+
+    var page_range = [0, 1, 2, 1];
+    window.FoxitPdf.importFromFDF(fdf_doc_path, data_type, page_range);
+```    
+
+  - __`fdf_doc_path`__: A valid fdf file path, from which form fields and annotations will be imported.
+  - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
+	1. `0x0001` : Form fields are imported from or exported to FDF/XFDF document. 
+	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet) are imported from or exported to FDF/XFDF document. 
+	3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
+  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. `it should contains at least 2 numbers, and the count of elements should be a multiples of 2.`  Default value: an empty range by default and not set any value.
+  It only support annotations.
+
+#### window.FoxitPdf.exportToFDF (Android)
+
+> exportToFDF = function(export_path, data_type, fdf_doc_type, page_range = [])
+
+```js
+
+    var fdf_doc_type = 0;
+    var export_path = '/mnt/sdcard/FoxitSDK/annot_export.fdf';
+    var data_type = 0x0002;
+    window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type);
+
+    var page_range = [0, 1, 2, 1];
+    window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type, page_range);
+```  
+  
+  - __`export_path`__: A valid path to which form fields and annotations will be exported.
+  - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
+	1. `0x0001` : Form fields are imported from or exported to FDF/XFDF document. 
+	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet) are imported from or exported to FDF/XFDF document. 
+	3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
+  - __`fdf_doc_type`__: FDF document type. `0 means FDF, and 1 means XFDF`.
+  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. `it should contains at least 2 numbers, and the count of elements should be a multiples of 2.`  Default value: an empty range by default and not set any value.
+  It only support annotations.
 
 ### Example( android)
 ```js
-// First Step: Initialization
-var success = function(data){
-  console.log(data);
-}
-var error = function(data){
-  console.log(data);
-}
-var initOptions = {
-  'foxit_sn': xxx, // rdk_sn
-  'foxit_key': xxx, // rdk_key
-};
-window.FoxitPdf.initialize(initOptions,success,error);
 
-// Second Step: Open document
-var successcallback = function(data){
-  console.log(data);
-}
-var errorcallback = function(data){
-  console.log(data);
-}
-var pdfviewOptions = {
-  'filePath': xxx, // Document path you wish to open. e.g. /mnt/sdcard/getting_started_ios.pdf
-  'filePathSaveTo': xxx // Document path that prevents overwriting on the preview file  _(if set)_. e.g. '/mnt/sdcard/getting_started_ios2.pdf'
-};
-window.FoxitPdf.openDocument(pdfviewOptions,successcallback,errorcallback);
+	// First Step: Initialization
+    var sn = 'foxit_sn'; // rdk_sn
+    var key = 'foxit_key'; // rdk_key
+	window.FoxitPdf.initialize(sn, key);
+	  
+	// Second Step: Open document
+    var path = 'Your file path'; // Document path you wish to open. e.g. /mnt/sdcard/getting_started_android.pdf
+    var password = 'password';
+	window.FoxitPdf.openDocument(path, passowrd);
+
+	// Third step: set save path (can be set before open document)
+	var savePath = 'xxx'; //Document path that prevents overwriting on the preview file  _(if set)_. e.g. /mnt/sdcard/getting_started_android_save.pdf
+	window.FoxitPdf.setSavePath(savePath);
 ```
 
 
@@ -320,16 +369,20 @@ A PDF file needs to be placed in the project beforehand. The location is in the 
 
 ```javascript
 
-var pdfviewOptions = {
-  'filePath':cordova.file.applicationDirectory + 'getting_started_ios.pdf',
-  'filePathSaveTo': cordova.file.documentsDirectory + 'getting_started_ios_2.pdf',
-};
-window.FoxitPdf.preview(pdfviewOptions,
-  function(succ){
-    console.log('succ',succ);
-  },function(err){
-    console.log('err',err);
-  });
+var filePathSaveTo = cordova.file.documentsDirectory + 'getting_started_ios_2.pdf'
+window.FoxitPdf.setSavePath(filePathSaveTo);
+
+var filePath cordova.file.applicationDirectory + 'getting_started_ios.pdf';
+window.FoxitPdf.openDocument(filePath,'');
+
+window.FoxitPdf.addEventListener('onDocOpened',function(data){
+                                     console.log('onDocOpened callback ',data);
+                                     console.log('onDocOpened callback info',data.info);
+                                     if (data.error == 0){
+                                        var data_type = 0x0002;
+                                        window.FoxitPdf.importFromFDF(cordova.file.documentsDirectory + 'Annot_all.fdf',data_type, [[0, 1]]);
+                                     }
+                                     });
 
 ```
 
@@ -347,6 +400,7 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 
 ## Versions
+>[v6.3.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.3.0)
 
 >[v6.2.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2.1)
 
