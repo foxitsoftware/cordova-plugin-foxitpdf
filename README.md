@@ -125,7 +125,7 @@ Now that the preparatory work has been completed，you can use this code everywh
 ```js
     var fdf_doc_path = 'Your file path';// FDF file path 
     var data_type = 0x0002;
-    var page_range = [[0,1],[2,3]]
+    var page_range = [[0,1],[2,3]]//[[start1, count1], [start2, count2]....]
     window.FoxitPdf.importFromFDF(fdf_doc_path, data_type, page_range);
 ```    
 
@@ -134,7 +134,7 @@ Now that the preparatory work has been completed，you can use this code everywh
 	1. `0x0001` : Form fields are imported from or exported to FDF/XFDF document. 
 	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet) are imported from or exported to FDF/XFDF document. 
 	3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
-  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. `it should contains at least 2 numbers, and the count of elements should be a multiples of 2.`  Default value: an empty range by default and not set any value.It only support annotations.
+  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.It only support annotations.
 
 ## window.FoxitPdf.exportToFDF (iOS)
 
@@ -144,7 +144,7 @@ Now that the preparatory work has been completed，you can use this code everywh
 
     var fdf_doc_type = 0;
     var export_path = '/Documents/annot_export.fdf';
-    var page_range = [[0,1],[2,3]]
+    var page_range = [[0,1],[2,3]]//[[start1, count1], [start2, count2]....]
     var data_type = 0x0002;
     window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type, page_range);
 ```  
@@ -155,7 +155,7 @@ Now that the preparatory work has been completed，you can use this code everywh
 	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet) are imported from or exported to FDF/XFDF document. 
 	3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
   - __`fdf_doc_type`__: FDF document type. `0 means FDF, and 1 means XFDF`.
-  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. `it should contains at least 2 numbers, and the count of elements should be a multiples of 2.`  Default value: an empty range by default and not set any value.It only support annotations.
+  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.It only support annotations.
 
 
 ## window.FoxitPdf.addEventListener
@@ -260,7 +260,7 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
     var data_type = 0x0002;
     window.FoxitPdf.importFromFDF(fdf_doc_path, data_type);
 
-    var page_range = [0, 1, 2, 1];
+    var page_range = [[0, 1], [2, 1]];//[[start1, count1], [start2, count2]....]
     window.FoxitPdf.importFromFDF(fdf_doc_path, data_type, page_range);
 ```    
 
@@ -269,7 +269,7 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
 	1. `0x0001` : Form fields are imported from or exported to FDF/XFDF document. 
 	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet) are imported from or exported to FDF/XFDF document. 
 	3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
-  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. `it should contains at least 2 numbers, and the count of elements should be a multiples of 2.`  Default value: an empty range by default and not set any value.
+  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.
   It only support annotations.
 
 #### window.FoxitPdf.exportToFDF (Android)
@@ -283,7 +283,7 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
     var data_type = 0x0002;
     window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type);
 
-    var page_range = [0, 1, 2, 1];
+    var page_range = [[0, 1], [2, 1]];//[[start1, count1], [start2, count2]....]
     window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type, page_range);
 ```  
   
@@ -293,7 +293,7 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
 	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet) are imported from or exported to FDF/XFDF document. 
 	3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
   - __`fdf_doc_type`__: FDF document type. `0 means FDF, and 1 means XFDF`.
-  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. `it should contains at least 2 numbers, and the count of elements should be a multiples of 2.`  Default value: an empty range by default and not set any value.
+  - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.
   It only support annotations.
 
 ### Example( android)

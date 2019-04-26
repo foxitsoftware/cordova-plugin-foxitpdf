@@ -100,14 +100,14 @@ public class FoxitPdf extends CordovaPlugin {
             JSONObject options = args.optJSONObject(0);
             JSONArray pageRangeArray = options.getJSONArray("pageRange");
             int len = pageRangeArray.length();
-            if (len != 0 && len % 2 != 0) {
-                callbackContext.error("Please input right page range.");
-                return false;
-            }
-
             com.foxit.sdk.common.Range range = new com.foxit.sdk.common.Range();
-            for (int i = 0; i < len; i += 2) {
-                range.addSegment(pageRangeArray.getInt(i), pageRangeArray.getInt(i) + pageRangeArray.getInt(i + 1) - 1, com.foxit.sdk.common.Range.e_All);
+            for (int i = 0; i < len; i ++) {
+                JSONArray array = pageRangeArray.getJSONArray(i);
+                if (array.length() != 2) {
+                    callbackContext.error("Please input right page range.");
+                    return false;
+                }
+                range.addSegment(array.getInt(0), array.getInt(0) + array.getInt(1) - 1, com.foxit.sdk.common.Range.e_All);
             }
 
             String fdfPath = options.getString("fdfPath");
@@ -117,14 +117,14 @@ public class FoxitPdf extends CordovaPlugin {
             JSONObject options = args.optJSONObject(0);
             JSONArray pageRangeArray = options.getJSONArray("pageRange");
             int len = pageRangeArray.length();
-            if (len != 0 && len % 2 != 0) {
-                callbackContext.error("Please input right page range.");
-                return false;
-            }
-
             com.foxit.sdk.common.Range range = new com.foxit.sdk.common.Range();
-            for (int i = 0; i < len; i += 2) {
-                range.addSegment(pageRangeArray.getInt(i), pageRangeArray.getInt(i) + pageRangeArray.getInt(i + 1) - 1, com.foxit.sdk.common.Range.e_All);
+            for (int i = 0; i < len; i ++) {
+                JSONArray array = pageRangeArray.getJSONArray(i);
+                if (array.length() != 2) {
+                    callbackContext.error("Please input right page range.");
+                    return false;
+                }
+                range.addSegment(array.getInt(0), array.getInt(0) + array.getInt(1) - 1, com.foxit.sdk.common.Range.e_All);
             }
 
             int fdfDocType = options.getInt("fdfDocType");
