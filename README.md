@@ -126,7 +126,7 @@ Now that the preparatory work has been completed，you can use this code everywh
     var fdf_doc_path = 'Your file path';// FDF file path 
     var data_type = 0x0002;
     var page_range = [[0,1],[2,3]]
-    window.FoxitPdf.importFromFDF(fdfPath, data_type);
+    window.FoxitPdf.importFromFDF(fdf_doc_path, data_type, page_range);
 ```    
 
   - __`fdf_doc_path`__: A valid fdf file path, from which form fields and annotations will be imported.
@@ -143,10 +143,10 @@ Now that the preparatory work has been completed，you can use this code everywh
 ```js
 
     var fdf_doc_type = 0;
-    var exportPath = '/Documents/annot_export.fdf';
+    var export_path = '/Documents/annot_export.fdf';
     var page_range = [[0,1],[2,3]]
     var data_type = 0x0002;
-    window.FoxitPdf.exportToFDF(fdfPath, data_type, fdf_doc_type, page_range);
+    window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type, page_range);
 ```  
   
   - __`export_path`__: A valid path to which form fields and annotations will be exported.
