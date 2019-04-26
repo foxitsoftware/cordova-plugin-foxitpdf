@@ -260,7 +260,7 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
     var data_type = 0x0002;
     window.FoxitPdf.importFromFDF(fdf_doc_path, data_type);
 
-    var page_range = [0, 1, 2, 1];
+    var page_range = [0, 1, 2, 1];//[start1, count1, start2, count2....]
     window.FoxitPdf.importFromFDF(fdf_doc_path, data_type, page_range);
 ```    
 
@@ -283,7 +283,7 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
     var data_type = 0x0002;
     window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type);
 
-    var page_range = [0, 1, 2, 1];
+    var page_range = [0, 1, 2, 1];//[start1, count1, start2, count2....]
     window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type, page_range);
 ```  
   
