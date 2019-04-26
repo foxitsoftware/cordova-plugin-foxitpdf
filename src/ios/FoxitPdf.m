@@ -12,6 +12,7 @@
 @property (nonatomic, strong) UIExtensionsManager *extensionsMgr;
 @property (nonatomic, strong) FSPDFViewCtrl *pdfViewControl;
 @property (nonatomic, strong) UIViewController *pdfViewController;
+@property (nonatomic, strong) FSPDFDoc *currentDoc;
 
 @property (nonatomic, strong) CDVInvokedUrlCommand *pluginCommand;
 
@@ -38,7 +39,7 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
-
+    
     NSDictionary *options = [command argumentAtIndex:0];
     if ([options isKindOfClass:[NSNull class]]) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
@@ -57,6 +58,7 @@ static NSString *initializeKey;
             block();
             return;
         }else{
+            self.currentDoc = nil;
             initializeSN = sn;
             initializeKey = key;
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialize succeeded"];
@@ -91,11 +93,11 @@ static NSString *initializeKey;
     }
     [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-
+    
 }
 
 - (void)importFromFDF:(CDVInvokedUrlCommand*)command{
-
+    
     NSDictionary* options = [command argumentAtIndex:0];
     
     if ([options isKindOfClass:[NSNull class]]) {
@@ -108,7 +110,7 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
-
+    
     NSString *fdfPath = [options objectForKey:@"fdfPath"];
     fdfPath = [self correctFilePath:fdfPath];
     if (!fdfPath) {
@@ -117,7 +119,7 @@ static NSString *initializeKey;
         return;
     }
     
-    if ([self.extensionsMgr.pdfViewCtrl.currentDoc isEmpty] || !self.extensionsMgr.pdfViewCtrl.currentDoc) {
+    if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
         block();
         return;
@@ -132,7 +134,7 @@ static NSString *initializeKey;
         block();
         return;
     }
-    FSPDFDoc *doc = self.extensionsMgr.pdfViewCtrl.currentDoc;
+    FSPDFDoc *doc = self.currentDoc;
     FSRange *range = [[FSRange alloc] init];
     
     for (int i = 0; i < pageRange.count; i++) {
@@ -151,9 +153,11 @@ static NSString *initializeKey;
             block();
             [self.extensionsMgr.pdfViewCtrl refresh];
             self.extensionsMgr.isDocModified = YES;
-         }
+        }
+        self.currentDoc = nil;
     } @catch (NSException *exception) {
         NSLog(@"Import the FDF failed");
+        self.currentDoc = nil;
     }
 }
 
@@ -180,7 +184,7 @@ static NSString *initializeKey;
         return;
     }
     
-    if ([self.extensionsMgr.pdfViewCtrl.currentDoc isEmpty] || !self.extensionsMgr.pdfViewCtrl.currentDoc) {
+    if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
         block();
         return;
@@ -196,7 +200,7 @@ static NSString *initializeKey;
         block();
         return;
     }
-    FSPDFDoc *doc = self.extensionsMgr.pdfViewCtrl.currentDoc;
+    FSPDFDoc *doc = self.currentDoc;
     FSRange *range = [[FSRange alloc] init];
     
     for (int i = 0; i < pageRange.count; i++) {
@@ -216,12 +220,15 @@ static NSString *initializeKey;
             [self.extensionsMgr.pdfViewCtrl refresh:self.extensionsMgr.pdfViewCtrl.getCurrentPage];
             if ([fdoc saveAs:exportPath]) {
                 NSLog(@"Successfully save the fdf doc");
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Successfully save the fdf doc"];
             }
         }else{
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Export the FDF failed"];
             block();
         }
+        self.currentDoc = nil;
     } @catch (NSException *exception) {
+        self.currentDoc = nil;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Export the FDF failed"];
         block();
     }
@@ -239,7 +246,7 @@ static NSString *initializeKey;
     
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
     if (FSErrSuccess != initializeCode) {
-         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
         block();
         return;
     }
@@ -329,6 +336,7 @@ static NSString *initializeKey;
                               
                               [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
                           }else{
+                              self.currentDoc = self.pdfViewControl.currentDoc;
                               pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                                            messageAsDictionary:@{@"FSErrorCode":@(FSErrSuccess), @"info":@"Open the document successfully"}];
                               block();
@@ -386,6 +394,7 @@ static NSString *initializeKey;
 
 - (void)onDocOpened:(FSPDFDoc *)document error:(int)error {
     // Called when a document is opened.
+    self.currentDoc = document;
     
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                                   messageAsDictionary:@{@"type":@"onDocOpened", @"info":@"info", @"error":@(error)}];
@@ -399,6 +408,7 @@ static NSString *initializeKey;
 }
 
 - (void)onDocWillSave:(FSPDFDoc *)document {
+    self.currentDoc = document;
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                                   messageAsDictionary:@{@"type":@"onDocWillSave", @"info":@"info"}];
     [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
@@ -407,6 +417,7 @@ static NSString *initializeKey;
 }
 
 - (void)onDocSaved:(FSPDFDoc *)document error:(int)error{
+    self.currentDoc = document;
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                                   messageAsDictionary:@{@"type":@"onDocSaved", @"info":@"info", @"error":@(error)}];
     [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
@@ -495,5 +506,3 @@ static NSString *initializeKey;
     return nil;
 }
 @end
-
-
