@@ -209,7 +209,7 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
     var sn = 'foxit_sn';
     var key = 'foxit_key';
 
-    window.FoxitPdf.initialize(initOptions,successcallback,errorcallback);
+    window.FoxitPdf.initialize(sn, key);
 ```    
 
   - __foxit_sn__: the `rdk_sn`
@@ -258,7 +258,10 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
 
     var fdf_doc_path = 'Your file path';// FDF file path 
     var data_type = 0x0002;
-    window.FoxitPdf.importFromFDF(fdfPath, data_type);
+    window.FoxitPdf.importFromFDF(fdf_doc_path, data_type);
+
+    var page_range = [0, 1, 2, 1];
+    window.FoxitPdf.importFromFDF(fdf_doc_path, data_type, page_range);
 ```    
 
   - __`fdf_doc_path`__: A valid fdf file path, from which form fields and annotations will be imported.
@@ -276,9 +279,12 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
 ```js
 
     var fdf_doc_type = 0;
-    var exportPath = '/mnt/sdcard/FoxitSDK/annot_export.fdf';
+    var export_path = '/mnt/sdcard/FoxitSDK/annot_export.fdf';
     var data_type = 0x0002;
-    window.FoxitPdf.exportToFDF(fdfPath, data_type, fdf_doc_type);
+    window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type);
+
+    var page_range = [0, 1, 2, 1];
+    window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type, page_range);
 ```  
   
   - __`export_path`__: A valid path to which form fields and annotations will be exported.
