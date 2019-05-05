@@ -52,7 +52,7 @@ cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by yo
     Please note the current key expiration date is ## 4-15 2019.
 
 ## Major update
-    Now our plugin is using Foxit PDF SDK version 6.3 for Android ,Foxit PDF SDK version 6.3 for iOS .
+    Now our plugin is using Foxit PDF SDK version 6.4.0 for Android ,Foxit PDF SDK version 6.3 for iOS .
 
 ## Usage Instructions for iOS
 Thanks to the new Foxit PDF SDK for iOS 6.3 API, the iOS version of the cordova plug-in only needs a few simple steps to deploy (It involves much lighter operations when compared to our previous version 6.1)
@@ -190,7 +190,7 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
 &nbsp;&nbsp;
 
 ## Usage Instructions for Android
-1:Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 6.3)
+1:Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 6.4.0)
 
 2:Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component android folder.
 
@@ -400,6 +400,8 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 
 ## Versions
+>[v6.4.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.4.0)
+
 >[v6.3.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.3.0)
 
 >[v6.2.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2.1)
