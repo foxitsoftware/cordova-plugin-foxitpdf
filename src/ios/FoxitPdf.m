@@ -303,12 +303,14 @@ static NSString *initializeKey;
         block();
         return;
     }
-    NSNumber* options = [command argumentAtIndex:0];
+    NSDictionary* options = [command argumentAtIndex:0];
     
     if ([options isKindOfClass:[NSNull class]]) {
         options = nil;
     }
-    self.isEnableAnnotations = options?[options boolValue]:YES;
+    id obj = [options objectForKey:@"enable"];
+    BOOL val = obj?[obj boolValue]:YES;
+    self.isEnableAnnotations = options?val:YES;
    
 }
 
