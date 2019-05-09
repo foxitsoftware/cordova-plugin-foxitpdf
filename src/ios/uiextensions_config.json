@@ -35,7 +35,8 @@
         "navigation": true,
         "form": true,
         "selection": true,
-        "encryption": true
+        "encryption": true,
+        "multipleSelection": true
     },
     "permissions": {
         "runJavaScript" : true,
