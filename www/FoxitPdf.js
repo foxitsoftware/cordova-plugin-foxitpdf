@@ -97,6 +97,14 @@ pdf.prototype.exportToFDF = function(export_path, data_type, fdf_doc_type, page_
     });
 };
 
+pdf.prototype.enableAnnotations = function(enable) {
+    return new Promise(function(resolve, reject){
+        exec(resolve, reject, "FoxitPdf", "enableAnnotations", [{
+            'enable': enable,
+        }])
+    });
+}
+
 var pdf = new pdf();
 module.exports = pdf;
 

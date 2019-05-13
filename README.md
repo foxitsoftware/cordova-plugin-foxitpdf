@@ -296,6 +296,18 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
   - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.
   It only support annotations.
 
+#### window.FoxitPdf.enableAnnotations (Android)
+
+> enableAnnotations = function(enable)
+
+```js
+
+    var enable = false;
+    window.FoxitPdf.enableAnnotations(enable);
+```    
+
+  - __enable__: A boolean value whether to enable or disable annotation modules, Should be called before open documet.
+
 ### Example( android)
 ```js
 
