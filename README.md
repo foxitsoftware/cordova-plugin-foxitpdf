@@ -172,6 +172,18 @@ Now that the preparatory work has been completed，you can use this code everywh
 
 - __callback__: This function is executed when the event fires. The function is passed an object as a parameter.
 
+#### window.FoxitPdf.enableAnnotations (iOS)
+
+> enableAnnotations = function(enable)
+
+```js
+
+    var enable = false;
+    window.FoxitPdf.enableAnnotations(enable);
+```    
+
+  - __enable__: A boolean value whether to enable or disable annotation modules.
+- __Note__: To make it work, this function should be called before opening a document.
 
 ## Example
 
@@ -306,7 +318,8 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
     window.FoxitPdf.enableAnnotations(enable);
 ```    
 
-  - __enable__: A boolean value whether to enable or disable annotation modules, Should be called before open documet.
+  - __enable__: A boolean value whether to enable or disable annotation modules.
+- __Note__: To make it work, this function should be called before opening a document.
 
 ### Example( android)
 ```js
