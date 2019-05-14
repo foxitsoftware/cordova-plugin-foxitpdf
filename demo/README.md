@@ -53,7 +53,7 @@ cordova plugin add cordova-plugin-file
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo3.jpg)
 
 
-### Chang filepath and sn/key in index.js
+### Change filepath and sn/key in index.js
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo4.png)
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo4.png)
 
@@ -97,7 +97,7 @@ Let's take the file in the root directory of the mobile phone as an example.
 View the file from on the phone:
 ![](/demo/readmeimg/android/cordovademo2.jpg)
 
-### Step4: Chang `filepath` and `sn/key` in index.js.
+### Step4: Change `filepath` and `sn/key` in index.js.
 
 ![](/demo/readmeimg/android/cordovademo3.jpg)
 
