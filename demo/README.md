@@ -99,6 +99,8 @@ View the file from on the phone:
 
 ### Step4: Change `filepath` and `sn/key` in index.js.
 
+__Note__: index.js contains the sample code of ios and android, but the code of anroid has been commented out, you need to release the relevant code of android, and comment out ios.
+
 ![](/demo/readmeimg/android/cordovademo3.jpg)
 
 ### Step5: Run the app
