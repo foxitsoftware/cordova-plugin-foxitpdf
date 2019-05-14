@@ -58,7 +58,6 @@ static NSString *initializeKey;
             block();
             return;
         }else{
-            self.currentDoc = nil;
             initializeSN = sn;
             initializeKey = key;
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialize succeeded"];
@@ -154,10 +153,8 @@ static NSString *initializeKey;
             [self.extensionsMgr.pdfViewCtrl refresh];
             self.extensionsMgr.isDocModified = YES;
         }
-        self.currentDoc = nil;
     } @catch (NSException *exception) {
         NSLog(@"Import the FDF failed");
-        self.currentDoc = nil;
     }
 }
 
@@ -226,9 +223,7 @@ static NSString *initializeKey;
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Export the FDF failed"];
             block();
         }
-        self.currentDoc = nil;
     } @catch (NSException *exception) {
-        self.currentDoc = nil;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Export the FDF failed"];
         block();
     }
@@ -405,6 +400,9 @@ static NSString *initializeKey;
 
 - (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
     // Called when a document is closed.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.8 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.currentDoc = nil;
+    });
 }
 
 - (void)onDocWillSave:(FSPDFDoc *)document {
