@@ -139,7 +139,7 @@ window.FoxitPdf.initialize(sn,key);
 > window.FoxitPdf.enableAnnotations(enable);
 
 - __enable__: A boolean value whether to enable or disable annotation modules.
-> __Note__: To make it work, this function should be called before opening a document.
+` Note: To make it work, this function should be called before opening a document.`
 
 
 ```js
@@ -158,7 +158,7 @@ window.FoxitPdf.enableAnnotations(enable);
 - __password__: The password used to load the PDF document content. It can be either user password or owner password.
 If the PDF document is not encrypted by password, just pass an empty string.
 
->__Note__: The document can only be opened if the initialization is successful.
+`Note: The document can only be opened if the initialization is successful.`
 
 ```javascript
 
@@ -208,7 +208,7 @@ window.FoxitPdf.importFromFDF(fdf_doc_path, data_type, page_range);
 
 ### window.FoxitPdf.exportToFDF
 
-> exportToFDF = function(export_path, data_type, fdf_doc_type, page_range = [])
+> window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type, page_range);
 
 - __`export_path`__: A valid path to which form fields and annotations will be exported.
 - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
@@ -231,7 +231,7 @@ window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type, page_range);
 
 ### window.FoxitPdf.addEventListener
 
-` window.FoxitPdf.addEventListener(eventname,callback);`
+> window.FoxitPdf.addEventListener(eventname,callback);
 
 - __eventname__: The name of the event to listen for _(String)_
 
@@ -369,3 +369,4 @@ http://www.foxitsdk.com/products/mobile-pdf-sdk/request-quote/?from=cordova-plug
 ## More Support
 
 http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf
+
