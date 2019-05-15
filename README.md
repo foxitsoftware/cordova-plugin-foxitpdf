@@ -55,7 +55,8 @@ cordova plugin add ~/xxx/cordova-plugin-foxitpdf (This address is replaced by yo
 The iOS version of the cordova plugin only needs a few simple steps to deploy
 
 
-1. Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder.
+1. Unzip Foxit PDF SDK for iOS and copy libs folder into the component’s ios folder.
+(`/xxx/platforms/ios/`)
 
 Please use foxitpdfsdk_(version_no)_ios.zip from https://developers.foxitsoftware.com/pdf-sdk/ios/
 
@@ -83,7 +84,8 @@ Now that the preparatory work has been completed，you can use this plugin every
 ## Integration for Android
 1. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 6.4.0)
 
-2. Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component android folder.
+2. Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component’s android folder.
+`/xxx/platforms/android/`
 
 
 - [JS API Reference](#js-api-reference)
@@ -121,10 +123,10 @@ window.FoxitPdf.openDocument(path, password);
 
 - __options__: Initialization options.
 
-- __foxit_sn__: the `rdk_sn`
-- __foxit_key__: the `rdk_key`
+- __foxit_sn__: the `foxit_sn` string
+- __foxit_key__: the `foxit_key` string
 
-`foxit_sn` and `foxit_key` is required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_ios.zip`.
+`foxit_sn` and `foxit_key` are required, otherwise the initialization will fail. `rdk_key` and `rdk_sn` can be found in the libs folder of `foxitpdfsdk_(version_no)_ios.zip`.
 
 ```javascript
 
@@ -194,8 +196,8 @@ window.FoxitPdf.setSavePath(savePath);
 - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
 1. `0x0001` : Form fields are imported from or exported to FDF/XFDF document.
 2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet, link) are imported from or exported to FDF/XFDF document.
-3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
-- __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.It only support annotations.
+3. `0x0004` : links are imported from or exported to XFDF document.**Not supported** right now
+- __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.It only support annotations.
 
 
 ```js
@@ -216,9 +218,9 @@ window.FoxitPdf.importFromFDF(fdf_doc_path, data_type, page_range);
 - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
 1. `0x0001` : Form fields are imported from or exported to FDF/XFDF document.
 2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet, link) are imported from or exported to FDF/XFDF document.
-3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
+3. `0x0004` : links are imported from or exported to XFDF document.**Not supported** right now
 - __`fdf_doc_type`__: FDF document type. `0 means FDF, and 1 means XFDF`.
-- __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.It only support annotations.
+- __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.It only support annotations.
 
 ```js
 
@@ -371,4 +373,3 @@ http://www.foxitsdk.com/products/mobile-pdf-sdk/request-quote/?from=cordova-plug
 ## More Support
 
 http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf
-
