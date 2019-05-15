@@ -368,8 +368,9 @@ If you have a better code implementation, please fork this project and launch yo
 ## Request a Quote
 If you encounter “Invalid license” tips, please go to the following URL for official trial license key:
 
-http://www.foxitsdk.com/products/mobile-pdf-sdk/request-quote/?from=cordova-plugin-foxitpdf
+https://developers.foxitsoftware.com/support
 
 ## More Support
 
 http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf
+
