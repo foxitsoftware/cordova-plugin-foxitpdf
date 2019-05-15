@@ -23,7 +23,7 @@ This plugin adds the ability to easily preview any PDF file in your Cordova appl
 - [Installation](#installation)
 - [Integration for iOS](#integration-for-ios)
 - [Integration for Android](#integration-for-android)
-- [How to use this plugin for cordova developer](#how-to-use)
+- [How to use this plugin for cordova developer](#how-to-use-this-plugin-for-cordova-developer)
 - [JS API Reference](#js-api-reference)
 - [Supported Platforms](#supported-platforms)
 - [Quick Example](#quick-example)
@@ -49,6 +49,7 @@ Large files in the plugin may cause your update to fail. If that is the case, pl
 cordova plugin add ~/xxx/cordova-plugin-foxitpdf (This address is replaced by your own)
 ```
 
+
 ## Integration for iOS
 The iOS version of the cordova plugin only needs a few simple steps to deploy
 
@@ -72,7 +73,11 @@ Or,you can use the pdf file under Document directory in sandbox
 
 Now that the preparatory work has been completed，you can use this plugin everywhere in your project.
 
+
+
 - [JS API Reference](#js-api-reference)
+
+
 
 ## Integration for Android
 1. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 6.4.0)
@@ -104,7 +109,10 @@ window.FoxitPdf.openDocument(path, password);
 
 ```
 
+
 ## JS API Reference
+
+
 
 ### window.FoxitPdf.initialize
 
@@ -125,6 +133,7 @@ window.FoxitPdf.initialize(sn,key);
 
 ```
 
+
 ### window.FoxitPdf.enableAnnotations
 
 > window.FoxitPdf.enableAnnotations(enable);
@@ -139,6 +148,7 @@ var enable = false;
 window.FoxitPdf.enableAnnotations(enable);
 
 ```
+
 
 ### window.FoxitPdf.openDocument
 
@@ -159,6 +169,7 @@ window.FoxitPdf.openDocument(path, password);
 
 ```
 
+
 ### window.FoxitPdf.setSavePath
 
 > window.FoxitPdf.setSavePath(savePath);
@@ -171,6 +182,7 @@ var savePath = 'Your file path';// Document path that prevents overwriting on th
 window.FoxitPdf.setSavePath(savePath);
 
 ```
+
 
 ### window.FoxitPdf.importFromFDF
 
@@ -216,11 +228,10 @@ window.FoxitPdf.exportToFDF(export_path, data_type, fdf_doc_type, page_range);
 
 ```
 
+
 ### window.FoxitPdf.addEventListener
 
-> Add a listener for an event
-
-window.FoxitPdf.addEventListener(eventname,callback);
+` window.FoxitPdf.addEventListener(eventname,callback);`
 
 - __eventname__: The name of the event to listen for _(String)_
 
@@ -229,6 +240,8 @@ window.FoxitPdf.addEventListener(eventname,callback);
 - __onDocOpened__: This event fires when the document is Opened.
 
 - __callback__: This function is executed when the event fires. The function is passed an object as a parameter.
+
+Add a listener for an event
 
 ```javascript
 
@@ -356,4 +369,3 @@ http://www.foxitsdk.com/products/mobile-pdf-sdk/request-quote/?from=cordova-plug
 ## More Support
 
 http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf
-
