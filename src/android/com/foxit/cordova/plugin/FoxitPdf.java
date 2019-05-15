@@ -36,6 +36,7 @@ public class FoxitPdf extends CordovaPlugin {
 
     private static CallbackContext callbackContext;
     private String mSavePath = null;
+    protected static boolean mEnableAnnotations = true;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -132,6 +133,11 @@ public class FoxitPdf extends CordovaPlugin {
             String exportPath = options.getString("exportPath");
 
             return exportToFDF(fdfDocType, type, range, exportPath, callbackContext);
+        } else if (action.equals("enableAnnotations")) {
+            JSONObject options = args.optJSONObject(0);
+            mEnableAnnotations = options.getBoolean("enable");
+            callbackContext.success();
+            return true;
         }
         return false;
     }

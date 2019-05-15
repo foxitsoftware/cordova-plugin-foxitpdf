@@ -172,6 +172,18 @@ Now that the preparatory work has been completed，you can use this code everywh
 
 - __callback__: This function is executed when the event fires. The function is passed an object as a parameter.
 
+#### window.FoxitPdf.enableAnnotations (iOS)
+
+> enableAnnotations = function(enable)
+
+```js
+
+    var enable = false;
+    window.FoxitPdf.enableAnnotations(enable);
+```    
+
+  - __enable__: A boolean value whether to enable or disable annotation modules.
+- __Note__: To make it work, this function should be called before opening a document.
 
 ## Example
 
@@ -295,6 +307,19 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
   - __`fdf_doc_type`__: FDF document type. `0 means FDF, and 1 means XFDF`.
   - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.
   It only support annotations.
+
+#### window.FoxitPdf.enableAnnotations (Android)
+
+> enableAnnotations = function(enable)
+
+```js
+
+    var enable = false;
+    window.FoxitPdf.enableAnnotations(enable);
+```    
+
+  - __enable__: A boolean value whether to enable or disable annotation modules.
+- __Note__: To make it work, this function should be called before opening a document.
 
 ### Example( android)
 ```js
