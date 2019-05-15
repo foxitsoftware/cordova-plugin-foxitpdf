@@ -38,8 +38,9 @@ cordova plugin add cordova-plugin-foxitpdf
 ```
 
 It is also possible to install via repo url directly ( unstable )
-
+```bash
 cordova plugin add https://github.com/foxitsoftware/cordova-plugin-foxitpdf.git
+```
 
 Large files in the plugin may cause your update to fail. If that is the case, please try again following the steps below:
 1. Clone this project
@@ -370,3 +371,4 @@ http://www.foxitsdk.com/products/mobile-pdf-sdk/request-quote/?from=cordova-plug
 ## More Support
 
 http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf
+
