@@ -139,6 +139,7 @@ window.FoxitPdf.initialize(sn,key);
 > window.FoxitPdf.enableAnnotations(enable);
 
 - __enable__: A boolean value whether to enable or disable annotation modules.
+
 ` Note: To make it work, this function should be called before opening a document.`
 
 
@@ -369,4 +370,3 @@ http://www.foxitsdk.com/products/mobile-pdf-sdk/request-quote/?from=cordova-plug
 ## More Support
 
 http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf
-
