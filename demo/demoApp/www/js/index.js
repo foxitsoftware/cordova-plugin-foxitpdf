@@ -69,8 +69,11 @@ window.preview = function(){
                                      });
 
     //Android
-//    var filePath = cordova.file.externalRootDirectory + 'FoxitSDK/Sample.pdf';// var filePath = "/storage/emulated/0/Sample.pdf";
-//    var password = '';
-//    window.FoxitPdf.openDocument(filePath, password);
+    //if you use the 'cordova-plugin-file' plugin, you can set the filePath like this: 
+    //var filePath = cordova.file.externalRootDirectory + 'FoxitSDK/Sample.pdf';
+    //otherwise:
+    var filePath = "/storage/emulated/0/Sample.pdf";
+    var password = '';
+    window.FoxitPdf.openDocument(filePath, password);
 
 };
