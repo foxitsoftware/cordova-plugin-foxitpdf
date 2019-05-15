@@ -80,10 +80,12 @@ Congratulations! You kan preview this pdf file now.
 cordova platform add android (to add test platform)
 
 cordova plugin add cordova-plugin-foxitpdf
-
-cordova plugin add cordova-plugin-file
 ```
 
+if you use Foxit PDF SDK version greater than or equal to 6.4, you can add this plugin:
+```bash
+cordova plugin add cordova-plugin-file
+```
 ### Step2: Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component android folder.  
 
 You can download foxitpdfsdk_(version_no)_android.zip from https://developers.foxitsoftware.com/pdf-sdk/android/ (Please use Foxit PDF SDK for Android 6.4)
