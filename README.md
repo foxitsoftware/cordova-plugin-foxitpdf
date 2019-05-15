@@ -52,13 +52,13 @@ cordova plugin add ~/abc/cordova-plugin-foxitpdf (This address is replaced by yo
     Please note the current key expiration date is ## 4-15 2019.
 
 ## Major update
-    Now our plugin is using Foxit PDF SDK version 6.3 for Android ,Foxit PDF SDK version 6.3 for iOS .
+    Now our plugin is using Foxit PDF SDK version 6.4.0 for Android ,Foxit PDF SDK version 6.4 for iOS .
 
 ## Usage Instructions for iOS
-Thanks to the new Foxit PDF SDK for iOS 6.3 API, the iOS version of the cordova plug-in only needs a few simple steps to deploy (It involves much lighter operations when compared to our previous version 6.1)
+Thanks to the new Foxit PDF SDK for iOS 6.4 API, the iOS version of the cordova plug-in only needs a few simple steps to deploy (It involves much lighter operations when compared to our previous version 6.1)
 
 
-1. Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (Please use Foxit PDF SDK for iOS 6.3 )
+1. Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (Please use Foxit PDF SDK for iOS 6.4 )
 2. Add dynamic framework
     "FoxitRDK.framework" and "uiextensionsDynamic.framework"
     to framework folder and also to Xcode’s Embedded Binaries  
@@ -132,7 +132,7 @@ Now that the preparatory work has been completed，you can use this code everywh
   - __`fdf_doc_path`__: A valid fdf file path, from which form fields and annotations will be imported.
   - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
 	1. `0x0001` : Form fields are imported from or exported to FDF/XFDF document. 
-	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet) are imported from or exported to FDF/XFDF document. 
+	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet, link) are imported from or exported to FDF/XFDF document. 
 	3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
   - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.It only support annotations.
 
@@ -152,7 +152,7 @@ Now that the preparatory work has been completed，you can use this code everywh
   - __`export_path`__: A valid path to which form fields and annotations will be exported.
   - __`data_type`__: Used to decide which kind of data will be imported. this can be one or a combination of as following values:
 	1. `0x0001` : Form fields are imported from or exported to FDF/XFDF document. 
-	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet) are imported from or exported to FDF/XFDF document. 
+	2. `0x0002` : Annotations (except Movie, Widget, Screen, PrinterMark and TrapNet, link) are imported from or exported to FDF/XFDF document. 
 	3. `0x0004` : links are imported from or exported to XFDF document.**NOT SUPPORT** right now
   - __`fdf_doc_type`__: FDF document type. `0 means FDF, and 1 means XFDF`.
   - __`page_range`__: A integer range array that specifies some pages. Data (in specified types) from FDF/XFDF document will be imported to these specified pages. range for importing. In this array, 2 numbers are a pair: the first integer is the starting page index, and the second integer is the page count. Default value: an empty range by default and not set any value.It only support annotations.
@@ -202,7 +202,7 @@ window.FoxitPdf.addEventListener('onDocOpened',function(data){
 &nbsp;&nbsp;
 
 ## Usage Instructions for Android
-1:Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 6.3)
+1:Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 6.4.0)
 
 2:Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component android folder.
 
@@ -425,6 +425,8 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 
 ## Versions
+>[v6.4.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.4.0)
+
 >[v6.3.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.3.0)
 
 >[v6.2.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.2.1)

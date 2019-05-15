@@ -36,7 +36,8 @@
         "navigation": true,
         "form": true,
         "selection": true,
-        "encryption": true
+        "encryption": true,
+        "multipleSelection": true
     },
     "permissions": {
          "runJavaScript": true,
@@ -55,7 +56,7 @@
       "highlightFormColor": "#200066cc", //Set the highlight color with alpha
       "highlightLink": true,
       "highlightLinkColor": "#16007fff", //Set the highlight color with alpha
-      "fullscreen": false, /// Enter the full screen immediately after opening. If the user clicks on the page, the toolbar will be displayed. After 5 seconds, if it is in full screen mode, the toolbar and other auxiliary toolbar buttons will be hidden automatically.
+      "fullscreen": true, /// Enter the full screen immediately after opening. If the user clicks on the page, the toolbar will be displayed. After 5 seconds, if it is in full screen mode, the toolbar and other auxiliary toolbar buttons will be hidden automatically.
       "annotations": {
                "continuouslyAdd": false,
                 "highlight": {

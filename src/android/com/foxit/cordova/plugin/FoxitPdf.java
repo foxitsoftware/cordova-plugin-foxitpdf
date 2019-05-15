@@ -1,9 +1,18 @@
 package com.foxit.cordova.plugin;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Rect;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 
 import com.foxit.sdk.PDFException;
@@ -12,6 +21,7 @@ import com.foxit.sdk.common.Constants;
 import com.foxit.sdk.common.Library;
 import com.foxit.sdk.fdf.FDFDoc;
 import com.foxit.uiextensions.UIExtensionsManager;
+import com.foxit.uiextensions.utils.AppUtil;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -45,10 +55,10 @@ public class FoxitPdf extends CordovaPlugin {
             String sn = options.getString("foxit_sn");
             String key = options.getString("foxit_key");
 
-            if (isLibraryInited == false){
+            if (isLibraryInited == false) {
                 errCode = Library.initialize(sn, key);
                 isLibraryInited = true;
-            } else if(!mLastSn.equals(sn) || !mLastKey.equals(key)){
+            } else if (!mLastSn.equals(sn) || !mLastKey.equals(key)) {
                 Library.release();
                 errCode = Library.initialize(sn, key);
             }
@@ -86,6 +96,11 @@ public class FoxitPdf extends CordovaPlugin {
 
             JSONObject options = args.optJSONObject(0);
             String filePath = options.getString("path");
+            if (TextUtils.isEmpty(filePath)) {
+                callbackContext.error("Please input the correct path.");
+                return false;
+            }
+            filePath = getAbsolutePath(this.cordova.getActivity().getApplicationContext(), Uri.parse(filePath));
             String pw = options.getString("password");
             byte[] password = null;
             if (!TextUtils.isEmpty(pw)) {
@@ -102,7 +117,7 @@ public class FoxitPdf extends CordovaPlugin {
             JSONArray pageRangeArray = options.getJSONArray("pageRange");
             int len = pageRangeArray.length();
             com.foxit.sdk.common.Range range = new com.foxit.sdk.common.Range();
-            for (int i = 0; i < len; i ++) {
+            for (int i = 0; i < len; i++) {
                 JSONArray array = pageRangeArray.getJSONArray(i);
                 if (array.length() != 2) {
                     callbackContext.error("Please input right page range.");
@@ -119,7 +134,7 @@ public class FoxitPdf extends CordovaPlugin {
             JSONArray pageRangeArray = options.getJSONArray("pageRange");
             int len = pageRangeArray.length();
             com.foxit.sdk.common.Range range = new com.foxit.sdk.common.Range();
-            for (int i = 0; i < len; i ++) {
+            for (int i = 0; i < len; i++) {
                 JSONArray array = pageRangeArray.getJSONArray(i);
                 if (array.length() != 2) {
                     callbackContext.error("Please input right page range.");
@@ -142,7 +157,7 @@ public class FoxitPdf extends CordovaPlugin {
         return false;
     }
 
-    private boolean openDoc(String inputPath, byte[]password, String outPath, CallbackContext callbackContext) {
+    private boolean openDoc(String inputPath, byte[] password, String outPath, CallbackContext callbackContext) {
         if (inputPath == null || inputPath.trim().length() < 1) {
             callbackContext.error("Please input validate path.");
             return false;
@@ -151,7 +166,7 @@ public class FoxitPdf extends CordovaPlugin {
 //        this.cordova.getActivity().runOnUiThread(new Runnable() {
 //            @Override
 //            public void run() {
-                openDocument(inputPath, password, outPath, callbackContext);
+        openDocument(inputPath, password, outPath, callbackContext);
 //            }
 //        });
         return true;
@@ -314,6 +329,80 @@ public class FoxitPdf extends CordovaPlugin {
         } catch (JSONException ex) {
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
+    }
+
+    private String getAbsolutePath(final Context context, final Uri uri) {
+        if (null == uri) return null;
+        final String scheme = uri.getScheme();
+        String path = null;
+        if (scheme == null)
+            path = uri.getPath();
+        else if (ContentResolver.SCHEME_FILE.equals(scheme)) {
+            path = uri.getPath();
+        } else if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
+            Cursor cursor = context.getContentResolver().query(uri,
+                    new String[]{MediaStore.Images.ImageColumns.DATA}, null, null, null);
+            if (null != cursor) {
+                if (cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+                    if (index > -1) {
+                        path = cursor.getString(index);
+                    }
+                }
+                cursor.close();
+            }
+        }
+
+        //if cannot get path data when sometime. We should get the path use other way.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && AppUtil.isBlank(path)) {
+            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                Uri contentUri = null;
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                }
+
+                final String selection = "_id=?";
+                final String[] selectionArgs = new String[]{
+                        split[1]
+                };
+
+                path = getAbsolutePath(this.cordova.getActivity(), contentUri, selection, selectionArgs);
+            } else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),
+                        Long.parseLong(DocumentsContract.getDocumentId(uri)));
+                path = getAbsolutePath(this.cordova.getActivity(), contentUri, null, null);
+            } else if ("com.android.externalstorage.documents".equals(uri.getAuthority())) {
+                String[] split = DocumentsContract.getDocumentId(uri).split(":");
+                if ("primary".equalsIgnoreCase(split[0])) {
+                    path = Environment.getExternalStorageDirectory() + "/" + split[1];
+                }
+            }
+        }
+        return path;
+    }
+
+    private String getAbsolutePath(Context context, Uri uri, String selection, String[] selectionArgs) {
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {column};
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(index);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
     }
 
 }
