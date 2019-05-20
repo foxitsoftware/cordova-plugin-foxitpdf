@@ -26,7 +26,7 @@ import java.io.InputStream;
 
 public class ReaderActivity extends FragmentActivity {
 
-    public static PDFViewCtrl pdfViewCtrl;
+    protected static PDFViewCtrl pdfViewCtrl;
     private UIExtensionsManager uiextensionsManager;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -45,6 +45,7 @@ public class ReaderActivity extends FragmentActivity {
             String configPath = "www/plugins/cordova-plugin-foxitpdf/uiextensions_config.json";
             InputStream stream = getApplicationContext().getResources().getAssets().open(configPath);
             config = new Config(stream);
+            config.modules.enableAnnotations(FoxitPdf.mEnableAnnotations);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -23,6 +23,7 @@
 
 @property (nonatomic, strong) NSString *filePathSaveTo;
 @property (nonatomic, copy) NSString *filePassword;
+@property (nonatomic, assign) BOOL isEnableAnnotations;
 
 - (void)Preview:(CDVInvokedUrlCommand *)command;
 @end
@@ -51,7 +52,7 @@ static NSString *initializeKey;
         block();
         return;
     }
-    
+    self.isEnableAnnotations = YES;
     NSString *sn = options[@"foxit_sn"];
     NSString *key = options[@"foxit_key"];
     
@@ -286,6 +287,33 @@ static NSString *initializeKey;
     }
 }
 
+- (void)enableAnnotations:(CDVInvokedUrlCommand*)command
+{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        block();
+        return;
+    }
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = nil;
+    }
+    id obj = [options objectForKey:@"enable"];
+    BOOL val = obj?[obj boolValue]:YES;
+    self.isEnableAnnotations = options?val:YES;
+   
+}
+
 # pragma mark -- Foxit preview
 -(void)FoxitPdfPreview:(NSString *)filePath {
     
@@ -294,7 +322,12 @@ static NSString *initializeKey;
     [self.pdfViewControl registerDocEventListener:self];
     
     NSString *configPath = [[NSBundle mainBundle] pathForResource:@"uiextensions_config" ofType:@"json"];
-    self.extensionsMgr = [[UIExtensionsManager alloc] initWithPDFViewControl:self.pdfViewControl configuration:[NSData dataWithContentsOfFile:configPath]];
+    UIExtensionsConfig* uiConfig = [[UIExtensionsConfig alloc] initWithJSONData:[NSData dataWithContentsOfFile:configPath]];
+    if(self.isEnableAnnotations == NO) {
+        uiConfig.loadAttachment = NO;
+        uiConfig.tools = [[NSMutableSet<NSString *> alloc] initWithObjects:Tool_Select,Tool_Signature, nil];
+    }
+    self.extensionsMgr = [[UIExtensionsManager alloc] initWithPDFViewControl:self.pdfViewControl configurationObject:uiConfig];
     self.pdfViewControl.extensionsManager = self.extensionsMgr;
     self.extensionsMgr.delegate = self;
     
