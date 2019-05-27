@@ -69,7 +69,6 @@ Congratulations! You kan preview this pdf file now.
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo5.jpg)
 
 ***
-***
 
 ## Android
 
