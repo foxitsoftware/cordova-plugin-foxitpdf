@@ -17,7 +17,7 @@
 #         under the License.
 -->
 
-# cordova-plugin-foxitpdf
+# cordova-plugin-foxitpdf [![npm version](https://img.shields.io/npm/v/cordova-plugin-foxitpdf.svg?style=flat)](https://www.npmjs.com/package/cordova-plugin-foxitpdf)
 This plugin adds the ability to easily preview any PDF file in your Cordova application
 
 - [Installation](#installation)
