@@ -5,12 +5,17 @@
 #import <FoxitRDK/FSPDFViewControl.h>
 #import <uiextensionsDynamic/uiextensionsDynamic.h>
 
+@interface PDFNavigationController : UINavigationController
+@property (nonatomic, weak) UIExtensionsManager *extensionsManager;
+@end
+
 @interface FoxitPdf : CDVPlugin <IDocEventListener,UIExtensionsManagerDelegate>{
     // Member variables go here.
 }
 @property (nonatomic, strong) NSArray *topToolbarVerticalConstraints;
 @property (nonatomic, strong) UIExtensionsManager *extensionsMgr;
 @property (nonatomic, strong) FSPDFViewCtrl *pdfViewControl;
+@property (nonatomic, strong) PDFNavigationController *pdfRootViewController;
 @property (nonatomic, strong) UIViewController *pdfViewController;
 @property (nonatomic, strong) FSPDFDoc *currentDoc;
 
@@ -334,6 +339,10 @@ static NSString *initializeKey;
     self.pdfViewController = [[UIViewController alloc] init];
     self.pdfViewController.view = self.pdfViewControl;
     
+    self.pdfRootViewController = [[PDFNavigationController alloc] initWithRootViewController:self.pdfViewController];
+    self.pdfRootViewController.navigationBarHidden = YES;
+    self.pdfRootViewController.extensionsManager = self.extensionsMgr;
+    
     if(self.filePathSaveTo && self.filePathSaveTo.length >0){
         self.extensionsMgr.preventOverrideFilePath = self.filePathSaveTo;
     }
@@ -370,7 +379,7 @@ static NSString *initializeKey;
                               block();
                               // Run later to avoid the "took a long time" log message.
                               dispatch_async(dispatch_get_main_queue(), ^{
-                                  [weakSelf.viewController presentViewController:weakSelf.pdfViewController animated:YES completion:nil];
+                                  [weakSelf.viewController presentViewController:weakSelf.pdfRootViewController animated:YES completion:nil];
                               });
                           }
                       }];
@@ -536,4 +545,19 @@ static NSString *initializeKey;
     }
     return nil;
 }
+@end
+
+@implementation PDFNavigationController
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+    return !self.extensionsManager.isScreenLocked;
+}
+
+- (BOOL)shouldAutorotate {
+    return !self.extensionsManager.isScreenLocked;
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskAll;
+}
+
 @end
