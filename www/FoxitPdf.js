@@ -1,6 +1,25 @@
 var exec = require('cordova/exec');
 var channel = require('cordova/channel');
 
+var fspdfdoc = function(filePath){
+    var dealdata = function(data){
+        console.log(data);
+    };
+    return new Promise(function(resolve, reject) {
+                       exec(dealdata, reject, "FoxitPdf", "initDocWithPath", [{
+                                                                              'path': path,
+                                                                              }]);
+                       });
+};
+module.exports = fspdfdoc;
+
+var fsform = function(){};
+fsform.prototype.initWithDocument = function(){
+    
+};
+
+module.exports = fsform;
+
 channels = {
     'onDocOpened': channel.create('onDocOpened'),
     'onDocWillSave': channel.create('onDocWillSave'),
@@ -107,4 +126,8 @@ pdf.prototype.enableAnnotations = function(enable) {
 
 var pdf = new pdf();
 module.exports = pdf;
+
+
+
+
 

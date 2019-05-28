@@ -311,7 +311,7 @@ static NSString *initializeKey;
     id obj = [options objectForKey:@"enable"];
     BOOL val = obj?[obj boolValue]:YES;
     self.isEnableAnnotations = options?val:YES;
-   
+    
 }
 
 # pragma mark -- Foxit preview
@@ -545,6 +545,41 @@ static NSString *initializeKey;
     }
     return nil;
 }
+
+- (void)initDocWithPath:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    NSString *docDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSLog(@"%@", docDir);
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    NSString *path = options[@"path"];
+    FSPDFDoc *doc = [[FSPDFDoc alloc] initWithPath:path];
+    NSLog(@"%x",doc);
+    NSLog(@"%@",doc);
+    
+    if (initializeCode != FSErrSuccess) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"init doc faild"];
+        block();
+        return;
+    }else{
+        NSMutableArray *result = @[].mutableCopy;
+        NSMutableDictionary *resDic = @{}.mutableCopy;
+        [resDic setObject:doc forKey:@"doc"];
+        [resDic setObject:[NSString stringWithFormat:@"%x",doc] forKey:@"docptr"];
+        [result addObject:resDic];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsMultipart:result];
+        block();
+    }
+}
+
 @end
 
 @implementation PDFNavigationController
@@ -561,3 +596,5 @@ static NSString *initializeKey;
 }
 
 @end
+
+
