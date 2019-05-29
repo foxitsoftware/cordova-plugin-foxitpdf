@@ -6,36 +6,36 @@
 #import <uiextensionsDynamic/uiextensionsDynamic.h>
 
 @interface PDFNavigationController : UINavigationController
-@property (nonatomic, weak) UIExtensionsManager *extensionsManager;
-@end
+    @property (nonatomic, weak) UIExtensionsManager *extensionsManager;
+    @end
 
 @interface FoxitPdf : CDVPlugin <IDocEventListener,UIExtensionsManagerDelegate>{
     // Member variables go here.
 }
-@property (nonatomic, strong) NSArray *topToolbarVerticalConstraints;
-@property (nonatomic, strong) UIExtensionsManager *extensionsMgr;
-@property (nonatomic, strong) FSPDFViewCtrl *pdfViewControl;
-@property (nonatomic, strong) PDFNavigationController *pdfRootViewController;
-@property (nonatomic, strong) UIViewController *pdfViewController;
-@property (nonatomic, strong) FSPDFDoc *currentDoc;
-
-@property (nonatomic, strong) CDVInvokedUrlCommand *pluginCommand;
-
-@property (nonatomic, strong) NSString *filePathSaveTo;
-@property (nonatomic, copy) NSString *filePassword;
-@property (nonatomic, assign) BOOL isEnableAnnotations;
-
+    @property (nonatomic, strong) NSArray *topToolbarVerticalConstraints;
+    @property (nonatomic, strong) UIExtensionsManager *extensionsMgr;
+    @property (nonatomic, strong) FSPDFViewCtrl *pdfViewControl;
+    @property (nonatomic, strong) PDFNavigationController *pdfRootViewController;
+    @property (nonatomic, strong) UIViewController *pdfViewController;
+    @property (nonatomic, strong) FSPDFDoc *currentDoc;
+    
+    @property (nonatomic, strong) CDVInvokedUrlCommand *pluginCommand;
+    
+    @property (nonatomic, strong) NSString *filePathSaveTo;
+    @property (nonatomic, copy) NSString *filePassword;
+    @property (nonatomic, assign) BOOL isEnableAnnotations;
+    
 - (void)Preview:(CDVInvokedUrlCommand *)command;
-@end
+    @end
 
 @implementation FoxitPdf
-{
-    NSString *tmpCommandCallbackID;
-}
-static FSFileListViewController *fileVC;
-static FSErrorCode initializeCode = FSErrUnknown;
-static NSString *initializeSN;
-static NSString *initializeKey;
+    {
+        NSString *tmpCommandCallbackID;
+    }
+    static FSFileListViewController *fileVC;
+    static FSErrorCode initializeCode = FSErrUnknown;
+    static NSString *initializeSN;
+    static NSString *initializeKey;
 - (void)initialize:(CDVInvokedUrlCommand*)command{
     // init foxit sdk
     
@@ -75,11 +75,11 @@ static NSString *initializeKey;
         block();
     }
 }
-
+    
 - (void)openDocument:(CDVInvokedUrlCommand*)command{
     [self Preview:command];
 }
-
+    
 - (void)setSavePath:(CDVInvokedUrlCommand*)command{
     NSDictionary* options = [command argumentAtIndex:0];
     
@@ -100,7 +100,7 @@ static NSString *initializeKey;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     
 }
-
+    
 - (void)importFromFDF:(CDVInvokedUrlCommand*)command{
     
     NSDictionary* options = [command argumentAtIndex:0];
@@ -163,7 +163,7 @@ static NSString *initializeKey;
         NSLog(@"Import the FDF failed");
     }
 }
-
+    
 - (void)exportToFDF:(CDVInvokedUrlCommand*)command{
     
     NSDictionary* options = [command argumentAtIndex:0];
@@ -234,86 +234,86 @@ static NSString *initializeKey;
         block();
     }
 }
-
+    
 - (void)Preview:(CDVInvokedUrlCommand*)command
-{
-    self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
-    if (FSErrSuccess != initializeCode) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-        block();
-        return;
+    {
+        self.pluginCommand = command;
+        __block CDVPluginResult *pluginResult = nil;
+        
+        void (^block)(void) = ^{
+            [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        };
+        
+        NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+        if (FSErrSuccess != initializeCode) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+            block();
+            return;
+        }
+        
+        NSString *docDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+        NSLog(@"%@", docDir);
+        
+        NSDictionary* options = [command argumentAtIndex:0];
+        
+        if ([options isKindOfClass:[NSNull class]]) {
+            options = [NSDictionary dictionary];
+        }
+        
+        NSString *password = [options objectForKey:@"password"];
+        password = [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        if (password.length >0 ) {
+            self.filePassword = password;
+        }
+        
+        // URL
+        //    NSString *filePath = [command.arguments objectAtIndex:0];
+        NSString *filePath = [options objectForKey:@"path"];
+        
+        // check file exist
+        filePath = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        NSURL *fileURL = [[NSURL alloc] initWithString:filePath];
+        [fileURL.path stringByRemovingPercentEncoding];
+        
+        BOOL isFileExist = [self isExistAtPath:fileURL.path];
+        
+        if (filePath != nil && filePath.length > 0 && isFileExist) {
+            // preview
+            [self FoxitPdfPreview:fileURL.path];
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"file not found"];
+            block();
+        }
     }
     
-    NSString *docDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    NSLog(@"%@", docDir);
-    
-    NSDictionary* options = [command argumentAtIndex:0];
-    
-    if ([options isKindOfClass:[NSNull class]]) {
-        options = [NSDictionary dictionary];
-    }
-    
-    NSString *password = [options objectForKey:@"password"];
-    password = [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    if (password.length >0 ) {
-        self.filePassword = password;
-    }
-    
-    // URL
-    //    NSString *filePath = [command.arguments objectAtIndex:0];
-    NSString *filePath = [options objectForKey:@"path"];
-    
-    // check file exist
-    filePath = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    NSURL *fileURL = [[NSURL alloc] initWithString:filePath];
-    [fileURL.path stringByRemovingPercentEncoding];
-    
-    BOOL isFileExist = [self isExistAtPath:fileURL.path];
-    
-    if (filePath != nil && filePath.length > 0 && isFileExist) {
-        // preview
-        [self FoxitPdfPreview:fileURL.path];
-    } else {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"file not found"];
-        block();
-    }
-}
-
 - (void)enableAnnotations:(CDVInvokedUrlCommand*)command
-{
-    self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
-    if (FSErrSuccess != initializeCode) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-        block();
-        return;
+    {
+        self.pluginCommand = command;
+        __block CDVPluginResult *pluginResult = nil;
+        
+        void (^block)(void) = ^{
+            [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        };
+        
+        NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+        if (FSErrSuccess != initializeCode) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+            block();
+            return;
+        }
+        NSDictionary* options = [command argumentAtIndex:0];
+        
+        if ([options isKindOfClass:[NSNull class]]) {
+            options = nil;
+        }
+        id obj = [options objectForKey:@"enable"];
+        BOOL val = obj?[obj boolValue]:YES;
+        self.isEnableAnnotations = options?val:YES;
+        
     }
-    NSDictionary* options = [command argumentAtIndex:0];
     
-    if ([options isKindOfClass:[NSNull class]]) {
-        options = nil;
-    }
-    id obj = [options objectForKey:@"enable"];
-    BOOL val = obj?[obj boolValue]:YES;
-    self.isEnableAnnotations = options?val:YES;
-    
-}
-
 # pragma mark -- Foxit preview
 -(void)FoxitPdfPreview:(NSString *)filePath {
     
@@ -397,7 +397,7 @@ static NSString *initializeKey;
                                                 name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
     
 }
-
+    
 - (FSClientInfo *)getClientInfo {
     FSClientInfo *client_info = [[FSClientInfo alloc] init];
     client_info.device_id = [[UIDevice currentDevice] identifierForVendor].UUIDString;
@@ -413,22 +413,22 @@ static NSString *initializeKey;
     
     return client_info;
 }
-
+    
 - (void)showAlertViewWithTitle:(NSString *)title message:(NSString *)message{
     dispatch_async(dispatch_get_main_queue(), ^{
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
         [alert show];
     });
 }
-
+    
 #pragma mark - rotate event
 - (void)handleStatusBarOrientationChange: (NSNotification *)notification{
     UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     [self.extensionsMgr didRotateFromInterfaceOrientation:interfaceOrientation];
 }
-
+    
 #pragma mark <IDocEventListener>
-
+    
 - (void)onDocOpened:(FSPDFDoc *)document error:(int)error {
     // Called when a document is opened.
     self.currentDoc = document;
@@ -439,14 +439,14 @@ static NSString *initializeKey;
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
 }
-
+    
 - (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
     // Called when a document is closed.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.8 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         self.currentDoc = nil;
     });
 }
-
+    
 - (void)onDocWillSave:(FSPDFDoc *)document {
     self.currentDoc = document;
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
@@ -455,7 +455,7 @@ static NSString *initializeKey;
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
 }
-
+    
 - (void)onDocSaved:(FSPDFDoc *)document error:(int)error{
     self.currentDoc = document;
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
@@ -464,14 +464,14 @@ static NSString *initializeKey;
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
 }
-
+    
 # pragma mark -- isExistAtPath
 - (BOOL)isExistAtPath:(NSString *)filePath{
     NSFileManager *fileManager = [NSFileManager defaultManager];
     BOOL isExist = [fileManager fileExistsAtPath:filePath];
     return isExist;
 }
-
+    
 #pragma mark <UIExtensionsManagerDelegate>
 - (void)uiextensionsManager:(UIExtensionsManager *)uiextensionsManager setTopToolBarHidden:(BOOL)hidden {
     UIToolbar *topToolbar = self.extensionsMgr.topToolbar;
@@ -505,7 +505,7 @@ static NSString *initializeKey;
                          [self.pdfViewControl layoutIfNeeded];
                      }];
 }
-
+    
 - (void)wrapTopToolbar {
     // let status bar be translucent. top toolbar is top layout guide (below status bar), so we need a wrapper to cover the status bar.
     UIToolbar *topToolbar = self.extensionsMgr.topToolbar;
@@ -532,7 +532,7 @@ static NSString *initializeKey;
                                              metrics:nil
                                                views:NSDictionaryOfVariableBindings(topToolbar)]];
 }
-
+    
 - (NSString *)correctFilePath:(NSString *)filePath{
     NSString *path = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     if (path.length >0 ) {
@@ -545,7 +545,7 @@ static NSString *initializeKey;
     }
     return nil;
 }
-
+    
 - (void)initDocWithPath:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
     __block CDVPluginResult *pluginResult = nil;
@@ -572,29 +572,29 @@ static NSString *initializeKey;
     }else{
         NSMutableArray *result = @[].mutableCopy;
         NSMutableDictionary *resDic = @{}.mutableCopy;
-        [resDic setObject:doc forKey:@"doc"];
-        [resDic setObject:[NSString stringWithFormat:@"%x",doc] forKey:@"docptr"];
+        //        [resDic setObject:doc forKey:@"doc"];
+        [resDic setObject:[NSString stringWithFormat:@"%p",doc] forKey:@"docptr"];
         [result addObject:resDic];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsMultipart:result];
         block();
     }
 }
-
-@end
+    
+    @end
 
 @implementation PDFNavigationController
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     return !self.extensionsManager.isScreenLocked;
 }
-
+    
 - (BOOL)shouldAutorotate {
     return !self.extensionsManager.isScreenLocked;
 }
-
+    
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskAll;
 }
-
-@end
+    
+    @end
 
 

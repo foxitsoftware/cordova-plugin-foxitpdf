@@ -69,8 +69,23 @@ window.preview = function(){
                                      });
     
     window.FoxitPdf.addEventListener('onDocOpened',function(data){
-                                     var fspdfdoc = new fspdfdoc(filePath);
-                                     console.log(fspdfdoc);
+                                     console.log(filePath);
+                                     var fspdfdoc2 = new FSPdfdoc();
+                                     console.log(fspdfdoc2);
+                                     
+                                     console.log(fspdfdoc2.initDocWithPath(filePath));
+                                     
+                                     fspdfdoc2.initDocWithPath(filePath)
+                                     .then(function(){
+                                               console.log(fspdfdoc2);
+                                           },function(){
+                                               console.log(fspdfdoc2);
+                                           }).catch(function(){
+                                                        onsole.log(fspdfdoc2);
+                                                    });
+                                     
+                                     
+                                     
                                      });
     
     
