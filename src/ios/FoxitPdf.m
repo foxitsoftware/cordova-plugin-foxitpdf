@@ -580,6 +580,38 @@
     }
 }
     
+- (void)getPageCount:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    NSString *docptr = options[@"docptr"];
+    
+    docptr = [docptr hasPrefix:@"0x"] ? docptr : [@"0x" stringByAppendingString:docptr];
+    uintptr_t hex = strtoull(docptr.UTF8String, NULL, 0);
+    id gotcha = (__bridge id)(void *)hex;
+    NSLog(@"%@",gotcha);
+    
+    //    if (initializeCode != FSErrSuccess) {
+    //        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"init doc faild"];
+    //        block();
+    //        return;
+    //    }else{
+    //        NSMutableArray *result = @[].mutableCopy;
+    //        NSMutableDictionary *resDic = @{}.mutableCopy;
+    //        //        [resDic setObject:doc forKey:@"doc"];
+    //        [resDic setObject:[NSString stringWithFormat:@"%p",doc] forKey:@"docptr"];
+    //        [result addObject:resDic];
+    //        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsMultipart:result];
+    //        block();
+    //    }
+}
     @end
 
 @implementation PDFNavigationController

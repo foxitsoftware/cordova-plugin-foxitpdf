@@ -73,16 +73,15 @@ window.preview = function(){
                                      var fspdfdoc2 = new FSPdfdoc();
                                      console.log(fspdfdoc2);
                                      
-                                     console.log(fspdfdoc2.initDocWithPath(filePath));
-                                     
                                      fspdfdoc2.initDocWithPath(filePath)
-                                     .then(function(){
+                                     .then(function(data){
+                                           console.log(data);
                                                console.log(fspdfdoc2);
+                                           fspdfdoc2.getPageCount().then(function(data){
+                                                                         console.log('pageCount',data);
+                                                                         });
                                            },function(){
-                                               console.log(fspdfdoc2);
-                                           }).catch(function(){
-                                                        onsole.log(fspdfdoc2);
-                                                    });
+                                           });
                                      
                                      
                                      
