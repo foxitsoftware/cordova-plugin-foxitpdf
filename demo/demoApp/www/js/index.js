@@ -54,7 +54,7 @@ window.preview = function(){
 
 
     //iOS
-    var filePath = cordova.file.documentsDirectory + 'getting_started_ios.pdf';
+    var filePath = cordova.file.documentsDirectory + '7FormField.pdf';
     window.FoxitPdf.openDocument(filePath, null);
 
     window.FoxitPdf.addEventListener('onDocWillSave',function(data){
@@ -79,6 +79,10 @@ window.preview = function(){
                                                console.log(fspdfdoc2);
                                            fspdfdoc2.getPageCount().then(function(data){
                                                                          console.log('pageCount',data);
+                                                                         
+                                                                         var formfield = data['allformfields'][1];
+                                                                         formfield.value = 'xxxx';
+                                                                         
                                                                          });
                                            },function(){
                                            });
