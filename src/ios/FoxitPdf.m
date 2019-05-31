@@ -6,36 +6,38 @@
 #import <uiextensionsDynamic/uiextensionsDynamic.h>
 
 @interface PDFNavigationController : UINavigationController
-    @property (nonatomic, weak) UIExtensionsManager *extensionsManager;
-    @end
+@property (nonatomic, weak) UIExtensionsManager *extensionsManager;
+@end
 
 @interface FoxitPdf : CDVPlugin <IDocEventListener,UIExtensionsManagerDelegate>{
     // Member variables go here.
 }
-    @property (nonatomic, strong) NSArray *topToolbarVerticalConstraints;
-    @property (nonatomic, strong) UIExtensionsManager *extensionsMgr;
-    @property (nonatomic, strong) FSPDFViewCtrl *pdfViewControl;
-    @property (nonatomic, strong) PDFNavigationController *pdfRootViewController;
-    @property (nonatomic, strong) UIViewController *pdfViewController;
-    @property (nonatomic, strong) FSPDFDoc *currentDoc;
-    
-    @property (nonatomic, strong) CDVInvokedUrlCommand *pluginCommand;
-    
-    @property (nonatomic, strong) NSString *filePathSaveTo;
-    @property (nonatomic, copy) NSString *filePassword;
-    @property (nonatomic, assign) BOOL isEnableAnnotations;
-    
+@property (nonatomic, strong) NSArray *topToolbarVerticalConstraints;
+@property (nonatomic, strong) UIExtensionsManager *extensionsMgr;
+@property (nonatomic, strong) FSPDFViewCtrl *pdfViewControl;
+@property (nonatomic, strong) PDFNavigationController *pdfRootViewController;
+@property (nonatomic, strong) UIViewController *pdfViewController;
+@property (nonatomic, strong) FSPDFDoc *currentDoc;
+
+@property (nonatomic, strong) CDVInvokedUrlCommand *pluginCommand;
+
+@property (nonatomic, strong) NSString *filePathSaveTo;
+@property (nonatomic, copy) NSString *filePassword;
+@property (nonatomic, assign) BOOL isEnableAnnotations;
+
+@property (nonatomic, strong) FSPDFDoc *tempDoc;
+
 - (void)Preview:(CDVInvokedUrlCommand *)command;
-    @end
+@end
 
 @implementation FoxitPdf
-    {
-        NSString *tmpCommandCallbackID;
-    }
-    static FSFileListViewController *fileVC;
-    static FSErrorCode initializeCode = FSErrUnknown;
-    static NSString *initializeSN;
-    static NSString *initializeKey;
+{
+    NSString *tmpCommandCallbackID;
+}
+static FSFileListViewController *fileVC;
+static FSErrorCode initializeCode = FSErrUnknown;
+static NSString *initializeSN;
+static NSString *initializeKey;
 - (void)initialize:(CDVInvokedUrlCommand*)command{
     // init foxit sdk
     
@@ -75,11 +77,11 @@
         block();
     }
 }
-    
+
 - (void)openDocument:(CDVInvokedUrlCommand*)command{
     [self Preview:command];
 }
-    
+
 - (void)setSavePath:(CDVInvokedUrlCommand*)command{
     NSDictionary* options = [command argumentAtIndex:0];
     
@@ -100,7 +102,7 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     
 }
-    
+
 - (void)importFromFDF:(CDVInvokedUrlCommand*)command{
     
     NSDictionary* options = [command argumentAtIndex:0];
@@ -163,7 +165,7 @@
         NSLog(@"Import the FDF failed");
     }
 }
-    
+
 - (void)exportToFDF:(CDVInvokedUrlCommand*)command{
     
     NSDictionary* options = [command argumentAtIndex:0];
@@ -234,86 +236,86 @@
         block();
     }
 }
-    
+
 - (void)Preview:(CDVInvokedUrlCommand*)command
-    {
-        self.pluginCommand = command;
-        __block CDVPluginResult *pluginResult = nil;
-        
-        void (^block)(void) = ^{
-            [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        };
-        
-        NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
-        if (FSErrSuccess != initializeCode) {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-            block();
-            return;
-        }
-        
-        NSString *docDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSLog(@"%@", docDir);
-        
-        NSDictionary* options = [command argumentAtIndex:0];
-        
-        if ([options isKindOfClass:[NSNull class]]) {
-            options = [NSDictionary dictionary];
-        }
-        
-        NSString *password = [options objectForKey:@"password"];
-        password = [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-        if (password.length >0 ) {
-            self.filePassword = password;
-        }
-        
-        // URL
-        //    NSString *filePath = [command.arguments objectAtIndex:0];
-        NSString *filePath = [options objectForKey:@"path"];
-        
-        // check file exist
-        filePath = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-        NSURL *fileURL = [[NSURL alloc] initWithString:filePath];
-        [fileURL.path stringByRemovingPercentEncoding];
-        
-        BOOL isFileExist = [self isExistAtPath:fileURL.path];
-        
-        if (filePath != nil && filePath.length > 0 && isFileExist) {
-            // preview
-            [self FoxitPdfPreview:fileURL.path];
-        } else {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"file not found"];
-            block();
-        }
+{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        block();
+        return;
     }
     
+    NSString *docDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSLog(@"%@", docDir);
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = [NSDictionary dictionary];
+    }
+    
+    NSString *password = [options objectForKey:@"password"];
+    password = [password stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    if (password.length >0 ) {
+        self.filePassword = password;
+    }
+    
+    // URL
+    //    NSString *filePath = [command.arguments objectAtIndex:0];
+    NSString *filePath = [options objectForKey:@"path"];
+    
+    // check file exist
+    filePath = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSURL *fileURL = [[NSURL alloc] initWithString:filePath];
+    [fileURL.path stringByRemovingPercentEncoding];
+    
+    BOOL isFileExist = [self isExistAtPath:fileURL.path];
+    
+    if (filePath != nil && filePath.length > 0 && isFileExist) {
+        // preview
+        [self FoxitPdfPreview:fileURL.path];
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"file not found"];
+        block();
+    }
+}
+
 - (void)enableAnnotations:(CDVInvokedUrlCommand*)command
-    {
-        self.pluginCommand = command;
-        __block CDVPluginResult *pluginResult = nil;
-        
-        void (^block)(void) = ^{
-            [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        };
-        
-        NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
-        if (FSErrSuccess != initializeCode) {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-            block();
-            return;
-        }
-        NSDictionary* options = [command argumentAtIndex:0];
-        
-        if ([options isKindOfClass:[NSNull class]]) {
-            options = nil;
-        }
-        id obj = [options objectForKey:@"enable"];
-        BOOL val = obj?[obj boolValue]:YES;
-        self.isEnableAnnotations = options?val:YES;
-        
-    }
+{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
     
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        block();
+        return;
+    }
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = nil;
+    }
+    id obj = [options objectForKey:@"enable"];
+    BOOL val = obj?[obj boolValue]:YES;
+    self.isEnableAnnotations = options?val:YES;
+    
+}
+
 # pragma mark -- Foxit preview
 -(void)FoxitPdfPreview:(NSString *)filePath {
     
@@ -397,7 +399,7 @@
                                                 name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
     
 }
-    
+
 - (FSClientInfo *)getClientInfo {
     FSClientInfo *client_info = [[FSClientInfo alloc] init];
     client_info.device_id = [[UIDevice currentDevice] identifierForVendor].UUIDString;
@@ -413,22 +415,22 @@
     
     return client_info;
 }
-    
+
 - (void)showAlertViewWithTitle:(NSString *)title message:(NSString *)message{
     dispatch_async(dispatch_get_main_queue(), ^{
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
         [alert show];
     });
 }
-    
+
 #pragma mark - rotate event
 - (void)handleStatusBarOrientationChange: (NSNotification *)notification{
     UIInterfaceOrientation interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
     [self.extensionsMgr didRotateFromInterfaceOrientation:interfaceOrientation];
 }
-    
+
 #pragma mark <IDocEventListener>
-    
+
 - (void)onDocOpened:(FSPDFDoc *)document error:(int)error {
     // Called when a document is opened.
     self.currentDoc = document;
@@ -439,14 +441,14 @@
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
 }
-    
+
 - (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
     // Called when a document is closed.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.8 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         self.currentDoc = nil;
     });
 }
-    
+
 - (void)onDocWillSave:(FSPDFDoc *)document {
     self.currentDoc = document;
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
@@ -455,7 +457,7 @@
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
 }
-    
+
 - (void)onDocSaved:(FSPDFDoc *)document error:(int)error{
     self.currentDoc = document;
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
@@ -464,14 +466,14 @@
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
 }
-    
+
 # pragma mark -- isExistAtPath
 - (BOOL)isExistAtPath:(NSString *)filePath{
     NSFileManager *fileManager = [NSFileManager defaultManager];
     BOOL isExist = [fileManager fileExistsAtPath:filePath];
     return isExist;
 }
-    
+
 #pragma mark <UIExtensionsManagerDelegate>
 - (void)uiextensionsManager:(UIExtensionsManager *)uiextensionsManager setTopToolBarHidden:(BOOL)hidden {
     UIToolbar *topToolbar = self.extensionsMgr.topToolbar;
@@ -505,7 +507,7 @@
                          [self.pdfViewControl layoutIfNeeded];
                      }];
 }
-    
+
 - (void)wrapTopToolbar {
     // let status bar be translucent. top toolbar is top layout guide (below status bar), so we need a wrapper to cover the status bar.
     UIToolbar *topToolbar = self.extensionsMgr.topToolbar;
@@ -532,7 +534,7 @@
                                              metrics:nil
                                                views:NSDictionaryOfVariableBindings(topToolbar)]];
 }
-    
+
 - (NSString *)correctFilePath:(NSString *)filePath{
     NSString *path = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     if (path.length >0 ) {
@@ -545,7 +547,7 @@
     }
     return nil;
 }
-    
+
 - (void)initDocWithPath:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
     __block CDVPluginResult *pluginResult = nil;
@@ -560,11 +562,16 @@
     
     NSDictionary* options = [command argumentAtIndex:0];
     
-    NSString *path = options[@"path"];
-    FSPDFDoc *doc = [[FSPDFDoc alloc] initWithPath:path];
-    NSLog(@"%x",doc);
-    NSLog(@"%@",doc);
+    NSString *filePath = options[@"path"];
     
+    // check file exist
+    filePath = [filePath stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSURL *fileURL = [[NSURL alloc] initWithString:filePath];
+    [fileURL.path stringByRemovingPercentEncoding];
+    
+    _tempDoc = [[FSPDFDoc alloc] initWithPath:fileURL.path];
+    FSErrorCode ret = [_tempDoc load:nil];
+    NSLog(@"%@",_tempDoc);
     if (initializeCode != FSErrSuccess) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"init doc faild"];
         block();
@@ -573,13 +580,13 @@
         NSMutableArray *result = @[].mutableCopy;
         NSMutableDictionary *resDic = @{}.mutableCopy;
         //        [resDic setObject:doc forKey:@"doc"];
-        [resDic setObject:[NSString stringWithFormat:@"%p",doc] forKey:@"docptr"];
+        [resDic setObject:[NSString stringWithFormat:@"%p",_tempDoc] forKey:@"docptr"];
         [result addObject:resDic];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsMultipart:result];
         block();
     }
 }
-    
+
 - (void)getPageCount:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
     __block CDVPluginResult *pluginResult = nil;
@@ -593,40 +600,99 @@
     
     NSString *docptr = options[@"docptr"];
     
-    docptr = [docptr hasPrefix:@"0x"] ? docptr : [@"0x" stringByAppendingString:docptr];
-    uintptr_t hex = strtoull(docptr.UTF8String, NULL, 0);
-    id gotcha = (__bridge id)(void *)hex;
-    NSLog(@"%@",gotcha);
+    FSPDFDoc *retrievedObject;
+    sscanf([docptr cStringUsingEncoding:NSUTF8StringEncoding], "%p", &retrievedObject);
+    NSLog(@"%@",retrievedObject);
     
-    //    if (initializeCode != FSErrSuccess) {
-    //        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"init doc faild"];
-    //        block();
-    //        return;
-    //    }else{
-    //        NSMutableArray *result = @[].mutableCopy;
-    //        NSMutableDictionary *resDic = @{}.mutableCopy;
-    //        //        [resDic setObject:doc forKey:@"doc"];
-    //        [resDic setObject:[NSString stringWithFormat:@"%p",doc] forKey:@"docptr"];
-    //        [result addObject:resDic];
-    //        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsMultipart:result];
-    //        block();
-    //    }
+    int pageCount = [retrievedObject getPageCount];
+    
+    FSForm* pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+    int fieldCount = [pForm getFieldCount:@""];
+    NSMutableArray *tempArray = @[].mutableCopy;
+    for (int i = 0; i < fieldCount; i++)
+    {
+        FSField* pFormField = [pForm getField:i filter:@""];
+        
+        NSString* name = [pFormField getName];
+        FSFieldType fieldType = [pFormField getType];
+        NSString* defValue = [pFormField getDefaultValue];
+        NSString* value = [pFormField getValue];
+        FSFieldFlags fieldFlag = [pFormField getFlags];
+        
+        NSMutableDictionary *tempField = @{}.mutableCopy;
+        [tempField setObject:@(i) forKey:@"fieldIndex"];
+        [tempField setObject:name forKey:@"name"];
+        [tempField setObject:@(fieldType) forKey:@"fieldType"];
+        [tempField setObject:defValue forKey:@"defValue"];
+        [tempField setObject:value forKey:@"value"];
+        [tempField setObject:@(fieldFlag) forKey:@"fieldFlag"];
+        [tempField setObject:@(pFormField.alignment) forKey:@"alignment"];
+        [tempField setObject:@(pFormField.alignment) forKey:@"alternateName"];
+        
+        NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
+        FSDefaultAppearance *fsdefaultappearance = pFormField.defaultAppearance;
+        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
+        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"text_size"];
+        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"text_color"];
+        [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
+        
+        [tempField setObject:defaultAppearance forKey:@"defaultAppearance"];
+        [tempField setObject:pFormField.mappingName forKey:@"mappingName"];
+        [tempField setObject:@(pFormField.maxLength) forKey:@"maxLength"];
+        [tempField setObject:@(pFormField.topVisibleIndex) forKey:@"topVisibleIndex"];
+        
+        if (pFormField.options) {
+            NSMutableArray *tempArray2 = @[].mutableCopy;
+            for (int i = 0; i < [pFormField.options getSize]; i++)
+            {
+                FSChoiceOption *choiceoption = [pFormField.options getAt:i];
+                NSMutableDictionary *tempChoiceoption = @{}.mutableCopy;
+                [tempChoiceoption setObject:choiceoption.option_value forKey:@"option_value"];
+                [tempChoiceoption setObject:choiceoption.option_label forKey:@"option_label"];
+                [tempChoiceoption setObject:@(choiceoption.selected) forKey:@"selected"];
+                [tempChoiceoption setObject:@(choiceoption.default_selected) forKey:@"default_selected"];
+                
+                [tempArray2 addObject:tempChoiceoption];
+            }
+            
+            [tempField setObject:tempArray2 forKey:@"Choice"];
+        }
+        
+        [tempArray addObject:tempField];
+    }
+    
+    NSLog(@"%@",tempArray);
+    
+    if (initializeCode != FSErrSuccess) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"getPageCount faild"];
+        block();
+        return;
+    }else{
+        NSMutableArray *result = @[].mutableCopy;
+        NSMutableDictionary *resDic = @{}.mutableCopy;
+        //        [resDic setObject:doc forKey:@"doc"];
+        [resDic setObject:@(pageCount) forKey:@"pageCount"];
+        [resDic setObject:tempArray forKey:@"allformField"];
+        [result addObject:resDic];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsMultipart:result];
+        block();
+    }
 }
-    @end
+@end
 
 @implementation PDFNavigationController
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     return !self.extensionsManager.isScreenLocked;
 }
-    
+
 - (BOOL)shouldAutorotate {
     return !self.extensionsManager.isScreenLocked;
 }
-    
+
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskAll;
 }
-    
-    @end
+
+@end
 
 
