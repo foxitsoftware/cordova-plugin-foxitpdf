@@ -94,16 +94,16 @@ You can download foxitpdfsdk_(version_no)_android.zip from https://developers.fo
 
 Let's take the file in the root directory of the mobile phone as an example.
 
-![](/demo/readmeimg/android/cordovademo1.jpg)
+![](/readmeimg/android/cordovademo1.jpg)
 
 View the file from on the phone:
-![](/demo/readmeimg/android/cordovademo2.jpg)
+![](/readmeimg/android/cordovademo2.jpg)
 
 ### Step4: Change `filepath` and `sn/key` in index.js.
 
 __Note__: index.js contains the sample code of ios and android, but the code of anroid has been commented out, you need to release the relevant code of android, and comment out ios.
 
-![](/demo/readmeimg/android/cordovademo3.jpg)
+![](/readmeimg/android/cordovademo3.jpg)
 
 ### Step5: Run the app
 
@@ -116,5 +116,5 @@ cordova run android
 #### Run by Android Studio
 
 Congratulations! You kan preview this pdf file now.
-![](/demo/readmeimg/android/cordovademo4.jpg)
-![](/demo/readmeimg/android/cordovademo5.jpg)
+![](/readmeimg/android/cordovademo4.jpg)
+![](/readmeimg/android/cordovademo5.jpg)
