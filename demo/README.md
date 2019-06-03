@@ -116,5 +116,5 @@ cordova run android
 #### Run by Android Studio
 
 Congratulations! You kan preview this pdf file now.
-![](/readmeimg/android/cordovademo4.jpg)
+![](./readmeimg/android/cordovademo4.jpg)
 ![](/readmeimg/android/cordovademo5.jpg)
