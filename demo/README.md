@@ -44,18 +44,14 @@ cordova plugin add cordova-plugin-file
 2. Target -> General -> Linked Frameworks and Libraries -> + -> WebKit.framework
 
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo1.png)
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo1.png)
 
 ### Put pdf file to document folder
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo2.png)
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo2.png)
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo3.jpg)
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo3.jpg)
 
 
 ### Change filepath and sn/key in index.js
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo4.png)
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo4.png)
 
 
 ### Execute command
@@ -66,9 +62,7 @@ cordova prepare
 ### Xcode run  , click cordova app ’s  preview button .
 Congratulations! You kan preview this pdf file now.
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo5.jpg)
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo5.jpg)
 
-***
 ***
 
 ## Android
