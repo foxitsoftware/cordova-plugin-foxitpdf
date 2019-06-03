@@ -44,18 +44,14 @@ cordova plugin add cordova-plugin-file
 2. Target -> General -> Linked Frameworks and Libraries -> + -> WebKit.framework
 
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo1.png)
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo1.png)
 
 ### Put pdf file to document folder
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo2.png)
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo2.png)
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo3.jpg)
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo3.jpg)
 
 
 ### Change filepath and sn/key in index.js
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo4.png)
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo4.png)
 
 
 ### Execute command
@@ -66,7 +62,6 @@ cordova prepare
 ### Xcode run  , click cordova app ’s  preview button .
 Congratulations! You kan preview this pdf file now.
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo5.jpg)
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/feature/adddemo/demo/readmeimg/cordovademo5.jpg)
 
 ***
 
@@ -93,16 +88,16 @@ You can download foxitpdfsdk_(version_no)_android.zip from https://developers.fo
 
 Let's take the file in the root directory of the mobile phone as an example.
 
-![](/demo/readmeimg/android/cordovademo1.jpg)
+![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/android/cordovademo1.png)
 
 View the file from on the phone:
-![](/demo/readmeimg/android/cordovademo2.jpg)
+![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/android/cordovademo2.png)
 
 ### Step4: Change `filepath` and `sn/key` in index.js.
 
 __Note__: index.js contains the sample code of ios and android, but the code of anroid has been commented out, you need to release the relevant code of android, and comment out ios.
 
-![](/demo/readmeimg/android/cordovademo3.jpg)
+![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/android/cordovademo3.png)
 
 ### Step5: Run the app
 
@@ -115,5 +110,5 @@ cordova run android
 #### Run by Android Studio
 
 Congratulations! You kan preview this pdf file now.
-![](/demo/readmeimg/android/cordovademo4.jpg)
-![](/demo/readmeimg/android/cordovademo5.jpg)
+![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/android/cordovademo4.png)
+![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/android/cordovademo5.png)
