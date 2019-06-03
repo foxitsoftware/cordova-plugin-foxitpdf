@@ -4,50 +4,50 @@ var FSForm = function(){
 //返回值 :
 //返回一个对象数组，对象里面包括了key/value的信息，如defValue, flag.
 //[{
-// Choice =         (
+// Choice :         (
 //                   {
-//                   "default_selected" = 1;
-//                   "option_label" = 1;
-//                   "option_value" = 1;
-//                   selected = 1;
+//                   "default_selected" : 1;
+//                   "option_label" : "1";
+//                   "option_value" : "1";
+//                   selected : 1;
 //                   },
 //                   {
-//                   "default_selected" = 0;
-//                   "option_label" = 2;
-//                   "option_value" = 2;
-//                   selected = 0;
+//                   "default_selected" : 0;
+//                   "option_label" : "2";
+//                   "option_value" : "2";
+//                   selected : 0;
 //                   },
 //                   {
-//                   "default_selected" = 0;
-//                   "option_label" = 3;
-//                   "option_value" = 3;
-//                   selected = 0;
+//                   "default_selected" : 0;
+//                   "option_label" : "3";
+//                   "option_value" : "3";
+//                   selected : 0;
 //                   },
 //                   {
-//                   "default_selected" = 0;
-//                   "option_label" = 4;
-//                   "option_value" = 4;
-//                   selected = 0;
+//                   "default_selected" : 0;
+//                   "option_label" : "4";
+//                   "option_value" : "4";
+//                   selected : 0;
 //                   }
 //                   );
-// alignment = 0;
-// alternateName = 0;
-// defValue = 1;
-// defaultAppearance =         {
-// flags = 3;
-// font = Helvetica;
-// "text_color" = 3;
-// "text_size" = 3;
+// alignment : 0;
+// alternateName : "0";
+// defValue : "1";
+// defaultAppearance :         {
+// flags : 3;
+// font : "Helvetica";
+// "text_color" : 3;
+// "text_size" : 3;
 // };
-// fieldFlag = 7;
-// fieldIndex = 3;
-// fieldType = 4;
-// mappingName = "map_combobox";
-// maxLength = 0;
-// name = "Combo Box1";
-// topVisibleIndex = 0;
-// value = 1;
- },{},{},...]
+// fieldFlag : 7;
+// fieldIndex : 3;
+// fieldType : 4;
+// mappingName : "map_combobox";
+// maxLength : 0;
+// name : "Combo Box1";
+// topVisibleIndex : 0;
+// value : "1";
+// },{},{},...]
 FSForm.prototype.getAllFormFields =  function() {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "getAllFormFields", [{}]);
@@ -58,49 +58,48 @@ FSForm.prototype.getAllFormFields =  function() {
 // filter       string type. filter value
 // return field object 返回一个字典对象，里面包括了相关的信息
 //{
-//    Choice =         (
+//    Choice :         (
 //                      {
-//                      "default_selected" = 1;
-//                      "option_label" = 1;
-//                      "option_value" = 1;
-//                      selected = 1;
+//                      "default_selected" : 1;
+//                      "option_label" : "1";
+//                      "option_value" : "1";
+//                      selected : 1;
 //                      },
 //                      {
-//                      "default_selected" = 0;
-//                      "option_label" = 2;
-//                      "option_value" = 2;
-//                      selected = 0;
+//                      "default_selected" : 0;
+//                      "option_label" : "2";
+//                      "option_value" : "2";
+//                      selected : 0;
 //                      },
 //                      {
-//                      "default_selected" = 0;
-//                      "option_label" = 3;
-//                      "option_value" = 3;
-//                      selected = 0;
+//                      "default_selected" : 0;
+//                      "option_label" : "3";
+//                      "option_value" : "3";
+//                      selected : 0;
 //                      },
 //                      {
-//                      "default_selected" = 0;
-//                      "option_label" = 4;
-//                      "option_value" = 4;
-//                      selected = 0;
+//                      "default_selected" : 0;
+//                      "option_label" : "4";
+//                      "option_value" : "4";
+//                      selected : 0;
 //                      }
 //                      );
-//    alignment = 0;
-//    alternateName = 0;
-//    defValue = 1;
-//    defaultAppearance =         {
-//        flags = 3;
-//        font = Helvetica;
-//        "text_color" = 3;
-//        "text_size" = 3;
+//    alignment : 0;
+//    alternateName : "0";
+//    defValue : "1";
+//    defaultAppearance :         {
+//        flags : 3;
+//        font : "Helvetica";
+//        "text_color" : 3;
+//        "text_size" : 3;
 //    };
-//    fieldFlag = 7;
-//    fieldIndex = 3;
-//    fieldType = 4;
-//    mappingName = "map_combobox";
-//    maxLength = 0;
-//    name = "Combo Box1";
-//    topVisibleIndex = 0;
-//    value = 1;
+//    fieldFlag : 7;
+//    fieldType : 4;
+//    mappingName : "map_combobox";
+//    maxLength : 0;
+//    name : "Combo Box1";
+//    topVisibleIndex : 0;
+//    value : "1";
 //}
 FSForm.prototype.getField =  function(field_index,filter) {
     return new Promise(function(resolve, reject) {
@@ -215,7 +214,6 @@ FSForm.prototype.getControlCount =  function(page_index) {
 // control_index  int type. index of a control
 // retrun control object
 //{
-//    control_index : 1,
 //    exportValue : "",
 //    isChecked : true,
 //    isDefaultChecked : true,
@@ -260,7 +258,6 @@ FSForm.prototype.addControl =  function(page_index,field_name,field_type,rect) {
 // control_index  int type. index of a control
 // control        object type.
 //{
-//    control_index : 1,
 //    exportValue : "",
 //    isChecked : true,
 //    isDefaultChecked : true,
