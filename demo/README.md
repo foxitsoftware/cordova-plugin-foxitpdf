@@ -90,7 +90,7 @@ Let's take the file in the root directory of the mobile phone as an example.
 
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/android/cordovademo1.png)
 
-View the file from on the phone:
+Preview the file list on the phone:
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/android/cordovademo2.png)
 
 ### Step4: Change `filepath` and `sn/key` in index.js.
