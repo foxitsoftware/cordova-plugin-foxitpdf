@@ -6,107 +6,51 @@ var FSForm = function(){
 //[{
 // Choice :         (
 //                   {
-//                   "default_selected" : 1;
-//                   "option_label" : "1";
-//                   "option_value" : "1";
-//                   selected : 1;
+//                   "default_selected" : 1,
+//                   "option_label" : "1",
+//                   "option_value" : "1",
+//                   selected : 1,
 //                   },
 //                   {
-//                   "default_selected" : 0;
-//                   "option_label" : "2";
-//                   "option_value" : "2";
-//                   selected : 0;
+//                   "default_selected" : 0,
+//                   "option_label" : "2",
+//                   "option_value" : "2",
+//                   selected : 0,
 //                   },
 //                   {
-//                   "default_selected" : 0;
-//                   "option_label" : "3";
-//                   "option_value" : "3";
-//                   selected : 0;
+//                   "default_selected" : 0,
+//                   "option_label" : "3",
+//                   "option_value" : "3",
+//                   selected : 0,
 //                   },
 //                   {
-//                   "default_selected" : 0;
-//                   "option_label" : "4";
-//                   "option_value" : "4";
-//                   selected : 0;
+//                   "default_selected" : 0,
+//                   "option_label" : "4",
+//                   "option_value" : "4",
+//                   selected : 0,
 //                   }
-//                   );
-// alignment : 0;
-// alternateName : "0";
-// defValue : "1";
+//                   ),
+// alignment : 0,
+// alternateName : "0",
+// defValue : "1",
 // defaultAppearance :         {
-// flags : 3;
-// font : "Helvetica";
-// "text_color" : 3;
-// "text_size" : 3;
-// };
-// fieldFlag : 7;
-// fieldIndex : 3;
-// fieldType : 4;
-// mappingName : "map_combobox";
-// maxLength : 0;
-// name : "Combo Box1";
-// topVisibleIndex : 0;
-// value : "1";
+// flags : 3,
+// font : "Helvetica",
+// "text_color" : 3,
+// "text_size" : 3,
+// },
+// fieldFlag : 7,
+// fieldIndex : 3,
+// fieldType : 4,
+// mappingName : "map_combobox",
+// maxLength : 0,
+// name : "Combo Box1",
+// topVisibleIndex : 0,
+// value : "1",
 // },{},{},...]
 FSForm.prototype.getAllFormFields =  function() {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "getAllFormFields", [{}]);
-                       });
-};
-
-// field_index  int type. field index
-// filter       string type. filter value
-// return field object 返回一个字典对象，里面包括了相关的信息
-//{
-//    Choice :         (
-//                      {
-//                      "default_selected" : 1;
-//                      "option_label" : "1";
-//                      "option_value" : "1";
-//                      selected : 1;
-//                      },
-//                      {
-//                      "default_selected" : 0;
-//                      "option_label" : "2";
-//                      "option_value" : "2";
-//                      selected : 0;
-//                      },
-//                      {
-//                      "default_selected" : 0;
-//                      "option_label" : "3";
-//                      "option_value" : "3";
-//                      selected : 0;
-//                      },
-//                      {
-//                      "default_selected" : 0;
-//                      "option_label" : "4";
-//                      "option_value" : "4";
-//                      selected : 0;
-//                      }
-//                      );
-//    alignment : 0;
-//    alternateName : "0";
-//    defValue : "1";
-//    defaultAppearance :         {
-//        flags : 3;
-//        font : "Helvetica";
-//        "text_color" : 3;
-//        "text_size" : 3;
-//    };
-//    fieldFlag : 7;
-//    fieldType : 4;
-//    mappingName : "map_combobox";
-//    maxLength : 0;
-//    name : "Combo Box1";
-//    topVisibleIndex : 0;
-//    value : "1";
-//}
-FSForm.prototype.getField =  function(field_index,filter) {
-    return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormGetField", [{
-                                                                          'field_index': field_index,
-                                                                          'filter': filter,
-                                                                          }]);
                        });
 };
 
@@ -121,9 +65,9 @@ FSForm.prototype.getField =  function(field_index,filter) {
 //        text_color:text_color
 //    }
 //}
-FSForm.prototype.getFormInfo =  function() {
+FSForm.prototype.getForm =  function() {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "getFormInfo", [{}]);
+                       exec(resolve, reject, "FoxitPdf", "getForm", [{}]);
                        });
 };
 
@@ -139,9 +83,9 @@ FSForm.prototype.getFormInfo =  function() {
 //        text_color:text_color
 //    }
 //}
-FSForm.prototype.updateFormInfo =  function(forminfo) {
+FSForm.prototype.updateForm =  function(forminfo) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "updateFormInfo", [{'forminfo':forminfo}]);
+                       exec(resolve, reject, "FoxitPdf", "updateForm", [{'forminfo':forminfo}]);
                        });
 };
 
@@ -151,9 +95,9 @@ FSForm.prototype.updateFormInfo =  function(forminfo) {
 FSForm.prototype.validateFieldName =  function(FSFieldType,field_name) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "FormValidateFieldName", [{
-                                                                               'FSFieldType': FSFieldType,
-                                                                               'field_name': field_name,
-                                                                               }]);
+                                                                                   'FSFieldType': FSFieldType,
+                                                                                   'field_name': field_name,
+                                                                                   }]);
                        });
 };
 
@@ -163,9 +107,9 @@ FSForm.prototype.validateFieldName =  function(FSFieldType,field_name) {
 FSForm.prototype.renameField =  function(field_index,new_field_name) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "FormRenameField", [{
-                                                                               'field_index': field_index,
-                                                                               'new_field_name': new_field_name,
-                                                                               }]);
+                                                                             'field_index': field_index,
+                                                                             'new_field_name': new_field_name,
+                                                                             }]);
                        });
 };
 
@@ -204,32 +148,22 @@ FSForm.prototype.importFromXML =  function(file_path) {
 
 // page_index  int type. index of a page
 // retrun control count of a page
-FSForm.prototype.getControlCount =  function(page_index) {
+FSForm.prototype.getPageControls =  function(page_index) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "FormGetControlCount", [{'page_index': page_index,}]);
                        });
 };
 
+
 // page_index  int type. index of a page
 // control_index  int type. index of a control
-// retrun control object
-//{
-//    exportValue : "",
-//    isChecked : true,
-//    isDefaultChecked : true,
-//}
-FSForm.prototype.getControl =  function(page_index,control_index) {
-    return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormGetControl", [{'page_index': page_index,
-                                                                               'control_index': control_index,}]);
-                       });
-};
-
-// control_index  int type. index of a control
 // return  none
-FSForm.prototype.removeControl =  function(control_index) {
+FSForm.prototype.removeControl =  function(page_index,control_index) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormRemoveControl", [{'control_index': control_index,}]);
+                       exec(resolve, reject, "FoxitPdf", "FormRemoveControl", [{
+                                                                               'page_index': page_index,
+                                                                               'control_index': control_index,
+                                                                               }]);
                        });
 };
 
@@ -247,14 +181,15 @@ FSForm.prototype.removeControl =  function(control_index) {
 FSForm.prototype.addControl =  function(page_index,field_name,field_type,rect) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "FormAddControl", [{
-                                                                               'page_index': page_index,
-                                                                               'field_name': field_name,
-                                                                               'field_type': field_type,
-                                                                               'rect': rect,
-                                                                               }]);
+                                                                            'page_index': page_index,
+                                                                            'field_name': field_name,
+                                                                            'field_type': field_type,
+                                                                            'rect': rect,
+                                                                            }]);
                        });
 };
 
+// page_index  int type. index of a page
 // control_index  int type. index of a control
 // control        object type.
 //{
@@ -263,12 +198,68 @@ FSForm.prototype.addControl =  function(page_index,field_name,field_type,rect) {
 //    isDefaultChecked : true,
 //}
 // return none
-FSForm.prototype.updateControl =  function(control_index, control) {
+FSForm.prototype.updateControl =  function(page_index,control_index, control) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "FormUpdateControl", [{
-                                                                            'control_index': control_index,
-                                                                            'control':control
-                                                                            }]);
+                                                                               'page_index': page_index,
+                                                                               'control_index': control_index,
+                                                                               'control':control
+                                                                               }]);
+                       });
+};
+
+// page_index  int type. index of a page
+// control_index  int type. index of a control
+// retrun field object
+//{
+//    Choice :         (
+//                      {
+//                      "default_selected" : 1,
+//                      "option_label" : "1",
+//                      "option_value" : "1",
+//                      selected : 1,
+//                      },
+//                      {
+//                      "default_selected" : 0,
+//                      "option_label" : "2",
+//                      "option_value" : "2",
+//                      selected : 0,
+//                      },
+//                      {
+//                      "default_selected" : 0,
+//                      "option_label" : "3",
+//                      "option_value" : "3",
+//                      selected : 0,
+//                      },
+//                      {
+//                      "default_selected" : 0,
+//                      "option_label" : "4",
+//                      "option_value" : "4",
+//                      selected : 0,
+//                      }
+//                      ),
+//    alignment : 0,
+//    alternateName : "0",
+//    defValue : "1",
+//    defaultAppearance :         {
+//        flags : 3,
+//        font : "Helvetica",
+//        "text_color" : 3,
+//        "text_size" : 3,
+//    },
+//    fieldFlag : 7,
+//    fieldType : 4,
+//    fieldIndex : 1,
+//    mappingName : "map_combobox",
+//    maxLength : 0,
+//    name : "Combo Box1",
+//    topVisibleIndex : 0,
+//    value : "1",
+//}
+FSForm.prototype.getFieldByControl =  function(page_index,control_index) {
+    return new Promise(function(resolve, reject) {
+                       exec(resolve, reject, "FoxitPdf", "getFieldByControl", [{'page_index': page_index,
+                                                                               'control_index': control_index,}]);
                        });
 };
 
@@ -280,6 +271,51 @@ var FSField = function(){
 
 // field_index int type. index of field
 // fsfield  object type. new field value
+//{
+//    Choice :         (
+//                      {
+//                      "default_selected" : 1,
+//                      "option_label" : "1",
+//                      "option_value" : "1",
+//                      selected : 1,
+//                      },
+//                      {
+//                      "default_selected" : 0,
+//                      "option_label" : "2",
+//                      "option_value" : "2",
+//                      selected : 0,
+//                      },
+//                      {
+//                      "default_selected" : 0,
+//                      "option_label" : "3",
+//                      "option_value" : "3",
+//                      selected : 0,
+//                      },
+//                      {
+//                      "default_selected" : 0,
+//                      "option_label" : "4",
+//                      "option_value" : "4",
+//                      selected : 0,
+//                      }
+//                      ),
+//    alignment : 0,
+//    alternateName : "0",
+//    defValue : "1",
+//    defaultAppearance :         {
+//        flags : 3,
+//        font : "Helvetica",
+//        "text_color" : 3,
+//        "text_size" : 3,
+//    },
+//    fieldFlag : 7,
+//    fieldType : 4,
+//    mappingName : "map_combobox",
+//    maxLength : 0,
+//    name : "Combo Box1",
+//    topVisibleIndex : 0,
+//    value : "1",
+//}
+//
 // return none
 FSField.prototype.updateField =  function(field_index,fsfield) {
     return new Promise(function(resolve, reject) {
@@ -292,10 +328,22 @@ FSField.prototype.updateField =  function(field_index,fsfield) {
 };
 
 // reset field
-FSField.prototype.reset =  function() {
+// field_index int type. index of field
+// return  none
+FSField.prototype.reset =  function(field_index) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FSFieldReset", [{}]);
+                       exec(resolve, reject, "FoxitPdf", "FSFieldReset", [{'field_index':field_index,}]);
                        });
 };
+
+// field_index int type. index of field
+// retrun control count
+FSField.prototype.getFieldControls =  function(field_index) {
+    return new Promise(function(resolve, reject) {
+                       exec(resolve, reject, "FoxitPdf", "getFieldControls ", [{'field_index':field_index,}]);
+                       });
+};
+
+
 
 module.exports = FSField;
