@@ -94,7 +94,7 @@ FSForm.prototype.updateForm =  function(forminfo) {
 // <b>true</b> means success, while <b>false</b> means failure.
 FSForm.prototype.validateFieldName =  function(FSFieldType,field_name) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormValidateFieldName", [{
+                       exec(resolve, reject, "FoxitPdf", "formValidateFieldName", [{
                                                                                    'FSFieldType': FSFieldType,
                                                                                    'field_name': field_name,
                                                                                    }]);
@@ -106,7 +106,7 @@ FSForm.prototype.validateFieldName =  function(FSFieldType,field_name) {
 // <b>true</b> means success, while <b>false</b> means failure.
 FSForm.prototype.renameField =  function(field_index,new_field_name) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormRenameField", [{
+                       exec(resolve, reject, "FoxitPdf", "formRenameField", [{
                                                                              'field_index': field_index,
                                                                              'new_field_name': new_field_name,
                                                                              }]);
@@ -117,7 +117,7 @@ FSForm.prototype.renameField =  function(field_index,new_field_name) {
 // return none
 FSForm.prototype.removeField =  function(field_index) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormRemoveField", [{
+                       exec(resolve, reject, "FoxitPdf", "formRemoveField", [{
                                                                              'field_index': field_index,
                                                                              }]);
                        });
@@ -126,7 +126,7 @@ FSForm.prototype.removeField =  function(field_index) {
 // reset form
 FSForm.prototype.reset =  function() {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormReset", [{}]);
+                       exec(resolve, reject, "FoxitPdf", "formReset", [{}]);
                        });
 };
 
@@ -134,7 +134,7 @@ FSForm.prototype.reset =  function() {
 // <b>true</b> means success, while <b>false</b> means failure.
 FSForm.prototype.exportToXML =  function(file_path) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormExportToXML", [{'file_path': file_path,}]);
+                       exec(resolve, reject, "FoxitPdf", "formExportToXML", [{'file_path': file_path,}]);
                        });
 };
 
@@ -142,7 +142,7 @@ FSForm.prototype.exportToXML =  function(file_path) {
 // <b>true</b> means success, while <b>false</b> means failure.
 FSForm.prototype.importFromXML =  function(file_path) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormImportFromXML", [{'file_path': file_path,}]);
+                       exec(resolve, reject, "FoxitPdf", "formImportFromXML", [{'file_path': file_path,}]);
                        });
 };
 
@@ -150,7 +150,7 @@ FSForm.prototype.importFromXML =  function(file_path) {
 // retrun control count of a page
 FSForm.prototype.getPageControls =  function(page_index) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormGetControlCount", [{'page_index': page_index,}]);
+                       exec(resolve, reject, "FoxitPdf", "formGetControlCount", [{'page_index': page_index,}]);
                        });
 };
 
@@ -160,7 +160,7 @@ FSForm.prototype.getPageControls =  function(page_index) {
 // return  none
 FSForm.prototype.removeControl =  function(page_index,control_index) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormRemoveControl", [{
+                       exec(resolve, reject, "FoxitPdf", "formRemoveControl", [{
                                                                                'page_index': page_index,
                                                                                'control_index': control_index,
                                                                                }]);
@@ -180,7 +180,7 @@ FSForm.prototype.removeControl =  function(page_index,control_index) {
 //}
 FSForm.prototype.addControl =  function(page_index,field_name,field_type,rect) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormAddControl", [{
+                       exec(resolve, reject, "FoxitPdf", "formAddControl", [{
                                                                             'page_index': page_index,
                                                                             'field_name': field_name,
                                                                             'field_type': field_type,
@@ -200,7 +200,7 @@ FSForm.prototype.addControl =  function(page_index,field_name,field_type,rect) {
 // return none
 FSForm.prototype.updateControl =  function(page_index,control_index, control) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FormUpdateControl", [{
+                       exec(resolve, reject, "FoxitPdf", "formUpdateControl", [{
                                                                                'page_index': page_index,
                                                                                'control_index': control_index,
                                                                                'control':control
@@ -319,7 +319,7 @@ var FSField = function(){
 // return none
 FSField.prototype.updateField =  function(field_index,fsfield) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FSFieldUpdateField", [{
+                       exec(resolve, reject, "FoxitPdf", "fSFieldUpdateField", [{
                                                                                 'field_index':field_index,
                                                                                 'fsfield' : fsfield
                                                                                 
@@ -332,7 +332,7 @@ FSField.prototype.updateField =  function(field_index,fsfield) {
 // return  none
 FSField.prototype.reset =  function(field_index) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "FSFieldReset", [{'field_index':field_index,}]);
+                       exec(resolve, reject, "FoxitPdf", "fSFieldReset", [{'field_index':field_index,}]);
                        });
 };
 
