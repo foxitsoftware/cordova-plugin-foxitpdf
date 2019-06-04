@@ -95,7 +95,7 @@ FSForm.prototype.updateForm =  function(forminfo) {
 FSForm.prototype.validateFieldName =  function(FSFieldType,field_name) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "formValidateFieldName", [{
-                                                                                   'FSFieldType': FSFieldType,
+                                                                                   'fSFieldType': FSFieldType,
                                                                                    'field_name': field_name,
                                                                                    }]);
                        });
@@ -147,10 +147,16 @@ FSForm.prototype.importFromXML =  function(file_path) {
 };
 
 // page_index  int type. index of a page
-// retrun control count of a page
+// retrun array
+//[{
+// control_index : 1,
+// exportValue : "",
+// isChecked : true,
+// isDefaultChecked : true,
+// },{},{}...]
 FSForm.prototype.getPageControls =  function(page_index) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "formGetControlCount", [{'page_index': page_index,}]);
+                       exec(resolve, reject, "FoxitPdf", "formGetPageControls", [{'page_index': page_index,}]);
                        });
 };
 
@@ -337,7 +343,13 @@ FSField.prototype.reset =  function(field_index) {
 };
 
 // field_index int type. index of field
-// retrun control count
+// retrun array
+//[{
+// control_index : 1,
+// exportValue : "",
+// isChecked : true,
+// isDefaultChecked : true,
+// },{},{}...]
 FSField.prototype.getFieldControls =  function(field_index) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "getFieldControls ", [{'field_index':field_index,}]);
