@@ -4,30 +4,30 @@ var FSForm = function(){
 //返回值 :
 //返回一个对象数组，对象里面包括了key/value的信息，如defValue, flag.
 //[{
-// Choice :         (
+// choiceOptions :         (
 //                   {
-//                   "default_selected" : 1,
-//                   "option_label" : "1",
-//                   "option_value" : "1",
-//                   selected : 1,
+//                   "defaultSelected" : true,
+//                   "optionLabel" : "1",
+//                   "optionValue" : "1",
+//                   selected : true,
 //                   },
 //                   {
-//                   "default_selected" : 0,
-//                   "option_label" : "2",
-//                   "option_value" : "2",
-//                   selected : 0,
+//                   "defaultSelected" : false,
+//                   "optionLabel" : "2",
+//                   "optionValue" : "2",
+//                   selected : false,
 //                   },
 //                   {
-//                   "default_selected" : 0,
-//                   "option_label" : "3",
-//                   "option_value" : "3",
-//                   selected : 0,
+//                   "defaultSelected" : false,
+//                   "optionLabel" : "3",
+//                   "optionValue" : "3",
+//                   selected : false,
 //                   },
 //                   {
-//                   "default_selected" : 0,
-//                   "option_label" : "4",
-//                   "option_value" : "4",
-//                   selected : 0,
+//                   "defaultSelected" :false,
+//                   "optionLabel" : "4",
+//                   "optionValue" : "4",
+//                   selected : false,
 //                   }
 //                   ),
 // alignment : 0,
@@ -36,8 +36,8 @@ var FSForm = function(){
 // defaultAppearance :         {
 // flags : 3,
 // font : "Helvetica",
-// "text_color" : 3,
-// "text_size" : 3,
+// "textColor" : 3,
+// "textSize" : 3,
 // },
 // fieldFlag : 7,
 // fieldIndex : 3,
@@ -57,12 +57,12 @@ FSForm.prototype.getAllFormFields =  function() {
 // return form info dictionary
 //{
 //    alignment : "0", // 0 :left , 1 : center , 2 : right
-//    NeedConstructAppearances : false,
+//    needConstructAppearances : false,
 //    defaultAppearance :  {
 //        flags: flags,
 //        font:font,
-//        text_size:text_size,
-//        text_color:text_color
+//        textSize:10,
+//        textColor:0X00000
 //    }
 //}
 FSForm.prototype.getForm =  function() {
@@ -75,12 +75,12 @@ FSForm.prototype.getForm =  function() {
 //参数：
 //{
 //    alignment : "0", // 0 :left , 1 : center , 2 : right
-//    NeedConstructAppearances : false,
+//    needConstructAppearances : false,
 //    defaultAppearance :  {
 //        flags: flags,
 //        font:font,
-//        text_size:text_size,
-//        text_color:text_color
+//        textSize:10,
+//        textColor:0X0000
 //    }
 //}
 FSForm.prototype.updateForm =  function(forminfo) {
@@ -89,36 +89,36 @@ FSForm.prototype.updateForm =  function(forminfo) {
                        });
 };
 
-// FSFieldType  int type. to set field type
-// field_name  string type. to set field name
+// fieldType  int type. to set field type
+// fieldName  string type. to set field name
 // <b>true</b> means success, while <b>false</b> means failure.
-FSForm.prototype.validateFieldName =  function(FSFieldType,field_name) {
+FSForm.prototype.validateFieldName =  function(fieldType,fieldName) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "formValidateFieldName", [{
-                                                                                   'fSFieldType': FSFieldType,
-                                                                                   'field_name': field_name,
+                                                                                   'fieldType': fieldType,
+                                                                                   'fieldName': fieldName,
                                                                                    }]);
                        });
 };
 
-// field_index  int type. field index
-// new_field_name  string type. field name
+// fieldIndex  int type. field index
+// newFieldName  string type. field name
 // <b>true</b> means success, while <b>false</b> means failure.
-FSForm.prototype.renameField =  function(field_index,new_field_name) {
+FSForm.prototype.renameField =  function(fieldIndex,newFieldName) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "formRenameField", [{
-                                                                             'field_index': field_index,
-                                                                             'new_field_name': new_field_name,
+                                                                             'fieldIndex': fieldIndex,
+                                                                             'newFieldName': newFieldName,
                                                                              }]);
                        });
 };
 
-// field_index  int type. field index
+// fieldIndex  int type. field index
 // return none
-FSForm.prototype.removeField =  function(field_index) {
+FSForm.prototype.removeField =  function(fieldIndex) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "formRemoveField", [{
-                                                                             'field_index': field_index,
+                                                                             'fieldIndex': fieldIndex,
                                                                              }]);
                        });
 };
@@ -130,73 +130,73 @@ FSForm.prototype.reset =  function() {
                        });
 };
 
-// file_path       string type. export file path
+// filePath       string type. export file path
 // <b>true</b> means success, while <b>false</b> means failure.
-FSForm.prototype.exportToXML =  function(file_path) {
+FSForm.prototype.exportToXML =  function(filePath) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "formExportToXML", [{'file_path': file_path,}]);
+                       exec(resolve, reject, "FoxitPdf", "formExportToXML", [{'filePath': filePath,}]);
                        });
 };
 
-// file_path       string type. import file path
+// filePath       string type. import file path
 // <b>true</b> means success, while <b>false</b> means failure.
-FSForm.prototype.importFromXML =  function(file_path) {
+FSForm.prototype.importFromXML =  function(filePath) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "formImportFromXML", [{'file_path': file_path,}]);
+                       exec(resolve, reject, "FoxitPdf", "formImportFromXML", [{'filePath': filePath,}]);
                        });
 };
 
-// page_index  int type. index of a page
+// pageIndex  int type. index of a page
 // retrun array
 //[{
-// control_index : 1,
+// controlIndex : 1,
 // exportValue : "",
 // isChecked : true,
 // isDefaultChecked : true,
 // },{},{}...]
-FSForm.prototype.getPageControls =  function(page_index) {
+FSForm.prototype.getPageControls =  function(pageIndex) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "formGetPageControls", [{'page_index': page_index,}]);
+                       exec(resolve, reject, "FoxitPdf", "formGetPageControls", [{'pageIndex': pageIndex,}]);
                        });
 };
 
 
-// page_index  int type. index of a page
-// control_index  int type. index of a control
+// pageIndex  int type. index of a page
+// controlIndex  int type. index of a control
 // return  none
-FSForm.prototype.removeControl =  function(page_index,control_index) {
+FSForm.prototype.removeControl =  function(pageIndex,controlIndex) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "formRemoveControl", [{
-                                                                               'page_index': page_index,
-                                                                               'control_index': control_index,
+                                                                               'pageIndex': pageIndex,
+                                                                               'controlIndex': controlIndex,
                                                                                }]);
                        });
 };
 
-// page_index  int type. index of a page
-// field_name  string type. the name of control
-// field_type    int type, the type of control
-// rect    object type, tye rect of control . {0,0,100,100}
+// pageIndex  int type. index of a page
+// fieldName  string type. the name of control
+// fieldType    int type, the type of control
+// rect    object type, tye rect of control . {left: 100,top: 100,right: 100,bottom: 100}
 // retrun control object
 //{
-//    control_index : 1,
+//    controlIndex : 1,
 //    exportValue : "",
 //    isChecked : true,
 //    isDefaultChecked : true,
 //}
-FSForm.prototype.addControl =  function(page_index,field_name,field_type,rect) {
+FSForm.prototype.addControl =  function(pageIndex,fieldName,fieldType,rect) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "formAddControl", [{
-                                                                            'page_index': page_index,
-                                                                            'field_name': field_name,
-                                                                            'field_type': field_type,
+                                                                            'pageIndex': pageIndex,
+                                                                            'fieldName': fieldName,
+                                                                            'fieldType': fieldType,
                                                                             'rect': rect,
                                                                             }]);
                        });
 };
 
-// page_index  int type. index of a page
-// control_index  int type. index of a control
+// pageIndex  int type. index of a page
+// controlIndex  int type. index of a control
 // control        object type.
 //{
 //    exportValue : "",
@@ -204,68 +204,68 @@ FSForm.prototype.addControl =  function(page_index,field_name,field_type,rect) {
 //    isDefaultChecked : true,
 //}
 // return none
-FSForm.prototype.updateControl =  function(page_index,control_index, control) {
+FSForm.prototype.updateControl =  function(pageIndex,controlIndex, control) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "formUpdateControl", [{
-                                                                               'page_index': page_index,
-                                                                               'control_index': control_index,
+                                                                               'pageIndex': pageIndex,
+                                                                               'controlIndex': controlIndex,
                                                                                'control':control
                                                                                }]);
                        });
 };
 
-// page_index  int type. index of a page
-// control_index  int type. index of a control
+// pageIndex  int type. index of a page
+// controlIndex  int type. index of a control
 // retrun field object
 //{
-//    Choice :         (
-//                      {
-//                      "default_selected" : 1,
-//                      "option_label" : "1",
-//                      "option_value" : "1",
-//                      selected : 1,
-//                      },
-//                      {
-//                      "default_selected" : 0,
-//                      "option_label" : "2",
-//                      "option_value" : "2",
-//                      selected : 0,
-//                      },
-//                      {
-//                      "default_selected" : 0,
-//                      "option_label" : "3",
-//                      "option_value" : "3",
-//                      selected : 0,
-//                      },
-//                      {
-//                      "default_selected" : 0,
-//                      "option_label" : "4",
-//                      "option_value" : "4",
-//                      selected : 0,
-//                      }
-//                      ),
-//    alignment : 0,
-//    alternateName : "0",
-//    defValue : "1",
-//    defaultAppearance :         {
-//        flags : 3,
-//        font : "Helvetica",
-//        "text_color" : 3,
-//        "text_size" : 3,
-//    },
-//    fieldFlag : 7,
-//    fieldType : 4,
-//    fieldIndex : 1,
-//    mappingName : "map_combobox",
-//    maxLength : 0,
-//    name : "Combo Box1",
-//    topVisibleIndex : 0,
-//    value : "1",
-//}
-FSForm.prototype.getFieldByControl =  function(page_index,control_index) {
+// choiceOptions :         (
+//                   {
+//                   "defaultSelected" : true,
+//                   "optionLabel" : "1",
+//                   "optionValue" : "1",
+//                   selected : true,
+//                   },
+//                   {
+//                   "defaultSelected" : false,
+//                   "optionLabel" : "2",
+//                   "optionValue" : "2",
+//                   selected : false,
+//                   },
+//                   {
+//                   "defaultSelected" : false,
+//                   "optionLabel" : "3",
+//                   "optionValue" : "3",
+//                   selected : false,
+//                   },
+//                   {
+//                   "defaultSelected" :false,
+//                   "optionLabel" : "4",
+//                   "optionValue" : "4",
+//                   selected : false,
+//                   }
+//                   ),
+// alignment : 0,
+// alternateName : "0",
+// defValue : "1",
+// defaultAppearance :         {
+// flags : 3,
+// font : "Helvetica",
+// "textColor" : 3,
+// "textSize" : 3,
+// },
+// fieldFlag : 7,
+// fieldIndex : 3,
+// fieldType : 4,
+// mappingName : "map_combobox",
+// maxLength : 0,
+// name : "Combo Box1",
+// topVisibleIndex : 0,
+// value : "1",
+// }
+FSForm.prototype.getFieldByControl =  function(pageIndex,controlIndex) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "getFieldByControl", [{'page_index': page_index,
-                                                                               'control_index': control_index,}]);
+                       exec(resolve, reject, "FoxitPdf", "getFieldByControl", [{'pageIndex': pageIndex,
+                                                                               'controlIndex': controlIndex,}]);
                        });
 };
 
@@ -275,58 +275,59 @@ module.exports = FSForm;
 var FSField = function(){
 };
 
-// field_index int type. index of field
+// fieldIndex int type. index of field
 // fsfield  object type. new field value
 //{
-//    Choice :         (
-//                      {
-//                      "default_selected" : 1,
-//                      "option_label" : "1",
-//                      "option_value" : "1",
-//                      selected : 1,
-//                      },
-//                      {
-//                      "default_selected" : 0,
-//                      "option_label" : "2",
-//                      "option_value" : "2",
-//                      selected : 0,
-//                      },
-//                      {
-//                      "default_selected" : 0,
-//                      "option_label" : "3",
-//                      "option_value" : "3",
-//                      selected : 0,
-//                      },
-//                      {
-//                      "default_selected" : 0,
-//                      "option_label" : "4",
-//                      "option_value" : "4",
-//                      selected : 0,
-//                      }
-//                      ),
-//    alignment : 0,
-//    alternateName : "0",
-//    defValue : "1",
-//    defaultAppearance :         {
-//        flags : 3,
-//        font : "Helvetica",
-//        "text_color" : 3,
-//        "text_size" : 3,
-//    },
-//    fieldFlag : 7,
-//    fieldType : 4,
-//    mappingName : "map_combobox",
-//    maxLength : 0,
-//    name : "Combo Box1",
-//    topVisibleIndex : 0,
-//    value : "1",
-//}
-//
+// choiceOptions :         (
+//                   {
+//                   "defaultSelected" : true,
+//                   "optionLabel" : "1",
+//                   "optionValue" : "1",
+//                   selected : true,
+//                   },
+//                   {
+//                   "defaultSelected" : false,
+//                   "optionLabel" : "2",
+//                   "optionValue" : "2",
+//                   selected : false,
+//                   },
+//                   {
+//                   "defaultSelected" : false,
+//                   "optionLabel" : "3",
+//                   "optionValue" : "3",
+//                   selected : false,
+//                   },
+//                   {
+//                   "defaultSelected" :false,
+//                   "optionLabel" : "4",
+//                   "optionValue" : "4",
+//                   selected : false,
+//                   }
+//                   ),
+// alignment : 0,
+// alternateName : "0",
+// defValue : "1",
+// defaultAppearance :         {
+// flags : 3,
+// font : "Helvetica",
+// "textColor" : 3,
+// "textSize" : 3,
+// },
+// fieldFlag : 7,
+// fieldIndex : 3,
+// fieldType : 4,
+// mappingName : "map_combobox",
+// maxLength : 0,
+// name : "Combo Box1",
+// topVisibleIndex : 0,
+// value : "1",
+// }
+
 // return none
-FSField.prototype.updateField =  function(field_index,fsfield) {
+FSField.prototype.updateField =  function(fieldIndex,fsfield) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "fSFieldUpdateField", [{
-                                                                                'field_index':field_index,
+                                                                                'fieldIndex':fieldIndex,
                                                                                 'fsfield' : fsfield
                                                                                 
                                                                                 }]);
@@ -334,25 +335,25 @@ FSField.prototype.updateField =  function(field_index,fsfield) {
 };
 
 // reset field
-// field_index int type. index of field
+// fieldIndex int type. index of field
 // return  none
-FSField.prototype.reset =  function(field_index) {
+FSField.prototype.reset =  function(fieldIndex) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "fSFieldReset", [{'field_index':field_index,}]);
+                       exec(resolve, reject, "FoxitPdf", "fSFieldReset", [{'fieldIndex':fieldIndex,}]);
                        });
 };
 
-// field_index int type. index of field
+// fieldIndex int type. index of field
 // retrun array
 //[{
-// control_index : 1,
+// controIndex : 1,
 // exportValue : "",
 // isChecked : true,
 // isDefaultChecked : true,
 // },{},{}...]
-FSField.prototype.getFieldControls =  function(field_index) {
+FSField.prototype.getFieldControls =  function(fieldIndex) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "getFieldControls ", [{'field_index':field_index,}]);
+                       exec(resolve, reject, "FoxitPdf", "getFieldControls ", [{'fieldIndex':fieldIndex,}]);
                        });
 };
 
