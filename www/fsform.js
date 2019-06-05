@@ -324,11 +324,11 @@ var FSField = function(){
 // }
 
 // return none
-FSField.prototype.updateField =  function(fieldIndex,fsfield) {
+FSField.prototype.updateField =  function(fieldIndex,field) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "fSFieldUpdateField", [{
                                                                                 'fieldIndex':fieldIndex,
-                                                                                'fsfield' : fsfield
+                                                                                'field' : field
                                                                                 
                                                                                 }]);
                        });

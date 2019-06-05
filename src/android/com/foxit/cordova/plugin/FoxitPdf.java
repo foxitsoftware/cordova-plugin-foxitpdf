@@ -172,42 +172,42 @@ public class FoxitPdf extends CordovaPlugin {
             return getAllFormFields(callbackContext);
         } else if (action.equals("formValidateFieldName")) {
             JSONObject obj = args.getJSONObject(0);
-            int fieldType = obj.getInt("fSFieldType");
-            String fieldName = obj.getString("field_name");
+            int fieldType = obj.getInt("fieldType");
+            String fieldName = obj.getString("fieldName");
             return validateFieldName(fieldType, fieldName, callbackContext);
         } else if (action.equals("formRenameField")) {
             JSONObject obj = args.getJSONObject(0);
-            int fieldIndex = obj.getInt("field_index");
-            String fieldName = obj.getString("new_field_name");
+            int fieldIndex = obj.getInt("fieldIndex");
+            String fieldName = obj.getString("newFieldName");
             return renameField(fieldIndex, fieldName, callbackContext);
         } else if (action.equals("formRemoveField")) {
             JSONObject obj = args.getJSONObject(0);
-            int fieldIndex = obj.getInt("field_index");
+            int fieldIndex = obj.getInt("fieldIndex");
             return removeField(fieldIndex, callbackContext);
         } else if (action.equals("formReset")) {
             return resetForm(callbackContext);
         } else if (action.equals("formExportToXML")) {
             JSONObject obj = args.getJSONObject(0);
-            String filePath = obj.getString("file_path");
+            String filePath = obj.getString("filePath");
             return exportToXML(filePath, callbackContext);
         } else if (action.equals("formImportFromXML")) {
             JSONObject obj = args.getJSONObject(0);
-            String filePath = obj.getString("file_path");
+            String filePath = obj.getString("filePath");
             return importFromXML(filePath, callbackContext);
         } else if (action.equals("formGetPageControls")) {
             JSONObject obj = args.getJSONObject(0);
-            int pageIndex = obj.getInt("page_index");
+            int pageIndex = obj.getInt("pageIndex");
             return getPageControls(pageIndex, callbackContext);
         } else if (action.equals("formRemoveControl")) {
             JSONObject obj = args.getJSONObject(0);
-            int pageIndex = obj.getInt("page_index");
-            int controlIndex = obj.getInt("control_index");
+            int pageIndex = obj.getInt("pageIndex");
+            int controlIndex = obj.getInt("controlIndex");
             return removeControl(pageIndex, controlIndex, callbackContext);
         } else if (action.equals("formAddControl")) {
             JSONObject obj = args.getJSONObject(0);
-            int pageIndex = obj.getInt("page_index");
-            String fieldName = obj.getString("field_name");
-            int fieldType = obj.getInt("field_type");
+            int pageIndex = obj.getInt("pageIndex");
+            String fieldName = obj.getString("fieldName");
+            int fieldType = obj.getInt("fieldType");
             JSONObject json_rect = obj.getJSONObject("rect");
             float left = BigDecimal.valueOf(obj.getDouble("left")).floatValue();
             float top = BigDecimal.valueOf(obj.getDouble("top")).floatValue();
@@ -217,27 +217,27 @@ public class FoxitPdf extends CordovaPlugin {
             return addControl(pageIndex, fieldName, fieldType, rectF, callbackContext);
         } else if (action.equals("formUpdateControl")) {
             JSONObject obj = args.getJSONObject(0);
-            int pageIndex = obj.getInt("page_index");
-            int controlIndex = obj.getInt("control_index");
+            int pageIndex = obj.getInt("pageIndex");
+            int controlIndex = obj.getInt("controlIndex");
             JSONObject controlInfo = obj.getJSONObject("control");
             return updateControl(pageIndex, controlIndex, controlInfo, callbackContext);
         } else if (action.equals("getFieldByControl")) {
             JSONObject obj = args.getJSONObject(0);
-            int pageIndex = obj.getInt("page_index");
-            int controlIndex = obj.getInt("control_index");
+            int pageIndex = obj.getInt("pageIndex");
+            int controlIndex = obj.getInt("controlIndex");
             return getFieldByControl(pageIndex, controlIndex, callbackContext);
         } else if (action.equals("fSFieldUpdateField")) {
             JSONObject obj = args.getJSONObject(0);
-            int fieldIndex = obj.getInt("field_index");
-            JSONObject fieldInfo = obj.getJSONObject("fsfield");
+            int fieldIndex = obj.getInt("fieldIndex");
+            JSONObject fieldInfo = obj.getJSONObject("field");
             return updateField(fieldIndex, fieldInfo, callbackContext);
         } else if (action.equals("fSFieldReset")) {
             JSONObject obj = args.getJSONObject(0);
-            int fieldIndex = obj.getInt("field_index");
+            int fieldIndex = obj.getInt("fieldIndex");
             return resetField(fieldIndex, callbackContext);
         } else if (action.equals("getFieldControls")) {
             JSONObject obj = args.getJSONObject(0);
-            int fieldIndex = obj.getInt("field_index");
+            int fieldIndex = obj.getInt("fieldIndex");
             return getFieldControls(fieldIndex, callbackContext);
         }
         return false;
