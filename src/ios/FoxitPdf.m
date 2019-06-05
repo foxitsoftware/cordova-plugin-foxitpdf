@@ -583,8 +583,8 @@ static NSString *initializeKey;
         NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
         FSDefaultAppearance *fsdefaultappearance = pFormField.defaultAppearance;
         [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
-        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"text_size"];
-        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"text_color"];
+        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"textSize"];
+        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"textColor"];
         [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
         
         [tempField setObject:defaultAppearance forKey:@"defaultAppearance"];
@@ -598,15 +598,15 @@ static NSString *initializeKey;
             {
                 FSChoiceOption *choiceoption = [pFormField.options getAt:i];
                 NSMutableDictionary *tempChoiceoption = @{}.mutableCopy;
-                [tempChoiceoption setObject:choiceoption.option_value forKey:@"option_value"];
-                [tempChoiceoption setObject:choiceoption.option_label forKey:@"option_label"];
+                [tempChoiceoption setObject:choiceoption.option_value forKey:@"optionValue"];
+                [tempChoiceoption setObject:choiceoption.option_label forKey:@"optionLabel"];
                 [tempChoiceoption setObject:@(choiceoption.selected) forKey:@"selected"];
-                [tempChoiceoption setObject:@(choiceoption.default_selected) forKey:@"default_selected"];
+                [tempChoiceoption setObject:@(choiceoption.default_selected) forKey:@"defaultSelected"];
                 
                 [tempArray2 addObject:tempChoiceoption];
             }
             
-            [tempField setObject:tempArray2 forKey:@"Choice"];
+            [tempField setObject:tempArray2 forKey:@"choiceOptions"];
         }
         
         [tempArray addObject:tempField];
@@ -619,7 +619,7 @@ static NSString *initializeKey;
         block();
         return;
     }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsMultipart:tempArray];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArray];
         block();
     }
 }
@@ -642,8 +642,8 @@ static NSString *initializeKey;
     NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
     FSDefaultAppearance *fsdefaultappearance = pForm.defaultAppearance;
     [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
-    [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"text_size"];
-    [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"text_color"];
+    [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"textSize"];
+    [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"textColor"];
     [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
     [tempFormInfo setObject:defaultAppearance forKey:@"defaultAppearance"];
     
@@ -685,8 +685,8 @@ static NSString *initializeKey;
     NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
     FSDefaultAppearance *fsdefaultappearance = pForm.defaultAppearance;
     [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
-    [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"text_size"];
-    [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"text_color"];
+    [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"textSize"];
+    [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"textColor"];
     [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
     
     if (![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
@@ -750,8 +750,8 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int fieldIndex = (int)options[@"field_index"];
-    NSString *newFieldName = options[@"new_field_name"];
+    int fieldIndex = (int)options[@"fieldIndex"];
+    NSString *newFieldName = options[@"newFieldName"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     int fieldCount = [pForm getFieldCount:@""];
@@ -786,7 +786,7 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int fieldIndex = (int)options[@"field_index"];
+    int fieldIndex = (int)options[@"fieldIndex"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     int fieldCount = [pForm getFieldCount:@""];
@@ -845,7 +845,7 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    NSString *filePath = options[@"file_path"];
+    NSString *filePath = options[@"filePath"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     BOOL isExport = [pForm exportToXML:filePath];
@@ -872,7 +872,7 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    NSString *filePath = options[@"file_path"];
+    NSString *filePath = options[@"filePath"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     BOOL isImport = [pForm importFromXML:filePath];
@@ -899,7 +899,7 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int pageIndex = (int)options[@"page_index"];
+    int pageIndex = (int)options[@"pageIndex"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     FSPDFPage *page = [self.currentDoc getPage:pageIndex];
@@ -910,7 +910,7 @@ static NSString *initializeKey;
         FSControl *pControl = [pForm getControl:page index:i];
         
         NSMutableDictionary *tempDic = @{}.mutableCopy;
-        [tempDic setObject:@([pControl getIndex]) forKey:@"control_index"];
+        [tempDic setObject:@([pControl getIndex]) forKey:@"controlIndex"];
         [tempDic setObject:pControl.exportValue forKey:@"exportValue"];
         [tempDic setObject:@([pControl isChecked]) forKey:@"isChecked"];
         [tempDic setObject:@([pControl isDefaultChecked]) forKey:@"isDefaultChecked"];
@@ -942,8 +942,8 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int pageIndex = (int)options[@"page_index"];
-    int controlIndex = (int)options[@"control_index"];
+    int pageIndex = (int)options[@"pageIndex"];
+    int controlIndex = (int)options[@"controlIndex"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     FSPDFPage *page = [self.currentDoc getPage:pageIndex];
@@ -973,9 +973,9 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int pageIndex = (int)options[@"page_index"];
-    NSString *fieldName = options[@"field_name"];
-    int fieldType = (int)options[@"field_type"];
+    int pageIndex = (int)options[@"pageIndex"];
+    NSString *fieldName = options[@"fieldName"];
+    int fieldType = (int)options[@"fieldType"];
     NSDictionary *rect = options[@"rect"];
     
     FSRectF *fsrect = [[FSRectF alloc] initWithLeft1:[rect[@"left"] floatValue] bottom1:[rect[@"bottom"] floatValue] right1:[rect[@"right"] floatValue] top1:[rect[@"top"] floatValue]];
@@ -985,7 +985,7 @@ static NSString *initializeKey;
     FSControl *pControl = [pForm addControl:page field_name:fieldName field_type:fieldType rect:fsrect];
     
     NSMutableDictionary *tempDic = @{}.mutableCopy;
-    [tempDic setObject:@([pControl getIndex]) forKey:@"control_index"];
+    [tempDic setObject:@([pControl getIndex]) forKey:@"controlIndex"];
     [tempDic setObject:pControl.exportValue forKey:@"exportValue"];
     [tempDic setObject:@([pControl isChecked]) forKey:@"isChecked"];
     [tempDic setObject:@([pControl isDefaultChecked]) forKey:@"isDefaultChecked"];
@@ -1012,8 +1012,8 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int pageIndex = (int)options[@"page_index"];
-    int controlIndex = (int)options[@"control_index"];
+    int pageIndex = (int)options[@"pageIndex"];
+    int controlIndex = (int)options[@"controlIndex"];
     NSDictionary *control = options[@"control"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
@@ -1054,8 +1054,8 @@ static NSString *initializeKey;
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
-    int pageIndex = (int)options[@"page_index"];
-    int controlIndex = (int)options[@"control_index"];
+    int pageIndex = (int)options[@"pageIndex"];
+    int controlIndex = (int)options[@"controlIndex"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     FSPDFPage *page = [self.currentDoc getPage:pageIndex];
@@ -1092,8 +1092,8 @@ static NSString *initializeKey;
     NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
     FSDefaultAppearance *fsdefaultappearance = pFormField.defaultAppearance;
     [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
-    [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"text_size"];
-    [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"text_color"];
+    [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"textSize"];
+    [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"textColor"];
     [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
     
     [tempField setObject:defaultAppearance forKey:@"defaultAppearance"];
@@ -1107,10 +1107,10 @@ static NSString *initializeKey;
         {
             FSChoiceOption *choiceoption = [pFormField.options getAt:i];
             NSMutableDictionary *tempChoiceoption = @{}.mutableCopy;
-            [tempChoiceoption setObject:choiceoption.option_value forKey:@"option_value"];
-            [tempChoiceoption setObject:choiceoption.option_label forKey:@"option_label"];
+            [tempChoiceoption setObject:choiceoption.option_value forKey:@"optionValue"];
+            [tempChoiceoption setObject:choiceoption.option_label forKey:@"optionLabel"];
             [tempChoiceoption setObject:@(choiceoption.selected) forKey:@"selected"];
-            [tempChoiceoption setObject:@(choiceoption.default_selected) forKey:@"default_selected"];
+            [tempChoiceoption setObject:@(choiceoption.default_selected) forKey:@"defaultSelected"];
             
             [tempArray2 addObject:tempChoiceoption];
         }
@@ -1140,8 +1140,8 @@ static NSString *initializeKey;
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
-    int fieldIndex = (int)options[@"field_index"];
-    NSDictionary *fsfield = options[@"fsfield"];
+    int fieldIndex = (int)options[@"fieldIndex"];
+    NSDictionary *fsfield = options[@"field"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     FSField *field = [pForm getField:fieldIndex filter:@""];
@@ -1162,8 +1162,8 @@ static NSString *initializeKey;
     NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
     FSDefaultAppearance *fsdefaultappearance = field.defaultAppearance;
     [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
-    [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"text_size"];
-    [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"text_color"];
+    [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"textSize"];
+    [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"textColor"];
     [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
     
     if (![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
@@ -1178,12 +1178,12 @@ static NSString *initializeKey;
     }
     
     //choice
-    NSArray *choiceArr = [[NSArray alloc] initWithArray:fsfield[@"choice"]];
+    NSArray *choiceArr = [[NSArray alloc] initWithArray:fsfield[@"choiceOptions"]];
     if (choiceArr.count > 0 ) {
         FSChoiceOptionArray *choiceOptionArr = [[FSChoiceOptionArray alloc] init];
         for (int i = 0 ; i < choiceArr.count; i++) {
             NSDictionary *choice = [[NSDictionary alloc] initWithDictionary: [choiceArr objectAtIndex:i]];
-            FSChoiceOption *choiceOption = [[FSChoiceOption alloc] initWithOption_value:choice[@"option_value"] option_label:choice[@"option_label"] selected:choice[@"selected"] default_selected:choice[@"default_selected"]];
+            FSChoiceOption *choiceOption = [[FSChoiceOption alloc] initWithOption_value:choice[@"optionValue"] option_label:choice[@"optionLabel"] selected:choice[@"selected"] default_selected:choice[@"defaultSelected"]];
             [choiceOptionArr add:choiceOption];
         }
         field.options = choiceOptionArr;
@@ -1210,7 +1210,7 @@ static NSString *initializeKey;
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
-    int fieldIndex = (int)options[@"field_index"];
+    int fieldIndex = (int)options[@"fieldIndex"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     int fieldCount = [pForm getFieldCount:@""];
@@ -1243,7 +1243,7 @@ static NSString *initializeKey;
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
-    int fieldIndex = (int)options[@"field_index"];
+    int fieldIndex = (int)options[@"fieldIndex"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     int fieldCount = [pForm getFieldCount:@""];
@@ -1257,7 +1257,7 @@ static NSString *initializeKey;
                 FSControl *pControl = [pFormField getControl:i];
                 
                 NSMutableDictionary *tempDic = @{}.mutableCopy;
-                [tempDic setObject:@([pControl getIndex]) forKey:@"control_index"];
+                [tempDic setObject:@([pControl getIndex]) forKey:@"controlIndex"];
                 [tempDic setObject:pControl.exportValue forKey:@"exportValue"];
                 [tempDic setObject:@([pControl isChecked]) forKey:@"isChecked"];
                 [tempDic setObject:@([pControl isDefaultChecked]) forKey:@"isDefaultChecked"];
@@ -1295,3 +1295,4 @@ static NSString *initializeKey;
 }
 
 @end
+
