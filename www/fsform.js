@@ -4,7 +4,7 @@ var FSForm = function(){
 //返回值 :
 //返回一个对象数组，对象里面包括了key/value的信息，如defValue, flag.
 //[{
-// Choice :         (
+// choiceOptions :         (
 //                   {
 //                   "default_selected" : 1,
 //                   "option_label" : "1",
@@ -57,7 +57,7 @@ FSForm.prototype.getAllFormFields =  function() {
 // return form info dictionary
 //{
 //    alignment : "0", // 0 :left , 1 : center , 2 : right
-//    NeedConstructAppearances : false,
+//    needConstructAppearances : false,
 //    defaultAppearance :  {
 //        flags: flags,
 //        font:font,
@@ -75,7 +75,7 @@ FSForm.prototype.getForm =  function() {
 //参数：
 //{
 //    alignment : "0", // 0 :left , 1 : center , 2 : right
-//    NeedConstructAppearances : false,
+//    needConstructAppearances : false,
 //    defaultAppearance :  {
 //        flags: flags,
 //        font:font,
