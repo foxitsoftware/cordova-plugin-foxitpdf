@@ -724,8 +724,8 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int fSFieldType = (int)options[@"fSFieldType"];
-    NSString *fieldName = options[@"field_name"];
+    int fSFieldType = (int)options[@"fieldType"];
+    NSString *fieldName = options[@"fieldName"];
     
     BOOL isCanbeUsed = [pForm validateFieldName:fSFieldType field_name:fieldName];
     if (initializeCode != FSErrSuccess) {
@@ -846,6 +846,8 @@ static NSString *initializeKey;
     NSLog(@"%@",options);
     
     NSString *filePath = options[@"filePath"];
+    //    NSString *fdfPath = [options objectForKey:@"fdfPath"];
+    filePath = [self correctFilePath:filePath];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     BOOL isExport = [pForm exportToXML:filePath];
