@@ -9,9 +9,6 @@
     <js-module name="FoxitPdf" src="www/FoxitPdf.js">
         <clobbers target="window.FoxitPdf"/>
     </js-module>
-    <js-module src="www/fspdfdoc.js" name="FSPdfdoc">
-        <clobbers target="FSPdfdoc" />
-    </js-module>
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
             <feature name="FoxitPdf">
