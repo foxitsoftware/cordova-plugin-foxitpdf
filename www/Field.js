@@ -1,10 +1,10 @@
 var exec = require('cordova/exec');
 
-var FSField = function(){
+var Field = function(){
 };
 
 // fieldIndex int type. index of field
-// fsfield  object type. new field value
+// Field  object type. new field value
 //{
 // choiceOptions :         (
 //                   {
@@ -52,11 +52,11 @@ var FSField = function(){
 // }
 
 // return none
-FSField.prototype.updateField =  function(fieldIndex,fsfield) {
+Field.prototype.updateField =  function(fieldIndex,field) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "fSFieldUpdateField", [{
+                       exec(resolve, reject, "FoxitPdf", "FieldUpdateField", [{
                                                                                 'fieldIndex':fieldIndex,
-                                                                                'fsfield' : fsfield
+                                                                                'field' : field
                                                                                 
                                                                                 }]);
                        });
@@ -65,9 +65,9 @@ FSField.prototype.updateField =  function(fieldIndex,fsfield) {
 // reset field
 // fieldIndex int type. index of field
 // return  none
-FSField.prototype.reset =  function(fieldIndex) {
+Field.prototype.reset =  function(fieldIndex) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "fSFieldReset", [{'fieldIndex':fieldIndex,}]);
+                       exec(resolve, reject, "FoxitPdf", "FieldReset", [{'fieldIndex':fieldIndex,}]);
                        });
 };
 
@@ -79,12 +79,12 @@ FSField.prototype.reset =  function(fieldIndex) {
 // isChecked : true,
 // isDefaultChecked : true,
 // },{},{}...]
-FSField.prototype.getFieldControls =  function(fieldIndex) {
+Field.prototype.getFieldControls =  function(fieldIndex) {
     return new Promise(function(resolve, reject) {
                        exec(resolve, reject, "FoxitPdf", "getFieldControls ", [{'fieldIndex':fieldIndex,}]);
                        });
 };
 
 
-
-module.exports = FSField;
+var field = new Field();
+module.exports = field;

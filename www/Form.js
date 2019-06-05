@@ -271,4 +271,5 @@ Form.prototype.getFieldByControl =  function(pageIndex,controlIndex) {
                        });
 };
 
-module.exports = Form;
+var form = new Form();
+module.exports = form;
