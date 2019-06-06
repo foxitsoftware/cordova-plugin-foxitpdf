@@ -901,7 +901,7 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int pageIndex = (int)options[@"pageIndex"];
+    int pageIndex = [options[@"pageIndex"] intValue];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     FSPDFPage *page = [self.currentDoc getPage:pageIndex];
@@ -927,7 +927,7 @@ static NSString *initializeKey;
         block();
         return;
     }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsMultipart:tempArr];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArr];
         block();
     }
 }
@@ -944,8 +944,8 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int pageIndex = (int)options[@"pageIndex"];
-    int controlIndex = (int)options[@"controlIndex"];
+    int pageIndex = [options[@"pageIndex"] intValue];
+    int controlIndex = [options[@"controlIndex"] intValue];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     FSPDFPage *page = [self.currentDoc getPage:pageIndex];
@@ -975,9 +975,9 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int pageIndex = (int)options[@"pageIndex"];
+    int pageIndex = [options[@"pageIndex"] intValue];
     NSString *fieldName = options[@"fieldName"];
-    int fieldType = (int)options[@"fieldType"];
+    int fieldType = [options[@"fieldType"] intValue];
     NSDictionary *rect = options[@"rect"];
     
     FSRectF *fsrect = [[FSRectF alloc] initWithLeft1:[rect[@"left"] floatValue] bottom1:[rect[@"bottom"] floatValue] right1:[rect[@"right"] floatValue] top1:[rect[@"top"] floatValue]];
@@ -1014,8 +1014,8 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int pageIndex = (int)options[@"pageIndex"];
-    int controlIndex = (int)options[@"controlIndex"];
+    int pageIndex = [options[@"pageIndex"] intValue];
+    int controlIndex = [options[@"controlIndex"] intValue];
     NSDictionary *control = options[@"control"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
@@ -1056,8 +1056,8 @@ static NSString *initializeKey;
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
-    int pageIndex = (int)options[@"pageIndex"];
-    int controlIndex = (int)options[@"controlIndex"];
+    int pageIndex = [options[@"pageIndex"] intValue];
+    int controlIndex = [options[@"controlIndex"] intValue];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     FSPDFPage *page = [self.currentDoc getPage:pageIndex];
@@ -1117,10 +1117,10 @@ static NSString *initializeKey;
             [tempArray2 addObject:tempChoiceoption];
         }
         
-        [tempField setObject:tempArray2 forKey:@"Choice"];
+        [tempField setObject:tempArray2 forKey:@"choiceOptions"];
     }
     
-    if (initializeCode == nil ) {
+    if (initializeCode != FSErrSuccess ) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"get form feilds faild"];
         block();
         return;
@@ -1142,7 +1142,7 @@ static NSString *initializeKey;
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
-    int fieldIndex = (int)options[@"fieldIndex"];
+    int fieldIndex = [options[@"fieldIndex"] intValue];
     NSDictionary *fsfield = options[@"field"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
@@ -1191,7 +1191,7 @@ static NSString *initializeKey;
         field.options = choiceOptionArr;
     }
     
-    if (initializeCode == nil ) {
+    if (initializeCode != FSErrSuccess ) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"get form feilds faild"];
         block();
         return;
@@ -1212,7 +1212,7 @@ static NSString *initializeKey;
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
-    int fieldIndex = (int)options[@"fieldIndex"];
+    int fieldIndex = [options[@"fieldIndex"] intValue];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     int fieldCount = [pForm getFieldCount:@""];
@@ -1224,7 +1224,7 @@ static NSString *initializeKey;
         }
     }
     
-    if (initializeCode == nil ) {
+    if (initializeCode != FSErrSuccess ) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"get form feilds faild"];
         block();
         return;
@@ -1245,7 +1245,7 @@ static NSString *initializeKey;
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
-    int fieldIndex = (int)options[@"fieldIndex"];
+    int fieldIndex = [options[@"fieldIndex"] intValue];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     int fieldCount = [pForm getFieldCount:@""];
@@ -1254,7 +1254,6 @@ static NSString *initializeKey;
         if (i == fieldIndex) {
             FSField* pFormField = [pForm getField:i filter:@""];
             int fieldControlCount = [pFormField getControlCount];
-            NSMutableArray *tempArr = @[].mutableCopy;
             for (int i = 0 ; i < fieldControlCount; i++) {
                 FSControl *pControl = [pFormField getControl:i];
                 
@@ -1276,7 +1275,7 @@ static NSString *initializeKey;
         block();
         return;
     }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsMultipart:tempArr];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArr];
         block();
     }
 }
