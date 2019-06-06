@@ -549,9 +549,41 @@ static NSString *initializeKey;
 }
 
 # pragma mark form
+-(BOOL)checkIfCanUsePDFForm:(CDVPluginResult *)pluginResult command:(CDVInvokedUrlCommand *)command{
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        block();
+        return NO;
+    }
+    
+    if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
+        block();
+        return NO;
+    }
+    
+    if (![self.currentDoc hasForm]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"The current document does not have interactive form."];
+        block();
+        return NO;
+    }
+    
+    return YES;
+}
+
 - (void)getAllFormFields:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
     __block CDVPluginResult *pluginResult = nil;
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     void (^block)(void) = ^{
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
@@ -614,14 +646,8 @@ static NSString *initializeKey;
     
     NSLog(@"%@",tempArray);
     
-    if (tempArray == nil ) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"get form feilds faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArray];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArray];
+    block();
 }
 
 - (void)getForm:(CDVInvokedUrlCommand*)command{
@@ -632,6 +658,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     
@@ -649,14 +679,8 @@ static NSString *initializeKey;
     
     NSLog(@"%@",tempFormInfo);
     
-    if (tempFormInfo == nil) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"get form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempFormInfo];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempFormInfo];
+    block();
 }
 
 - (void)updateForm:(CDVInvokedUrlCommand*)command{
@@ -667,6 +691,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     
@@ -700,14 +728,8 @@ static NSString *initializeKey;
         pForm.defaultAppearance = newfsdefaultappearance;
     }
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update form info success"];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update form info success"];
+    block();
 }
 
 - (void)formValidateFieldName:(CDVInvokedUrlCommand*)command{
@@ -719,6 +741,10 @@ static NSString *initializeKey;
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
     
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     
     NSDictionary* options = [command argumentAtIndex:0];
@@ -728,14 +754,9 @@ static NSString *initializeKey;
     NSString *fieldName = options[@"fieldName"];
     
     BOOL isCanbeUsed = [pForm validateFieldName:fSFieldType field_name:fieldName];
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isCanbeUsed];
-        block();
-    }
+    
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isCanbeUsed];
+    block();
 }
 
 - (void)formRenameField:(CDVInvokedUrlCommand*)command{
@@ -746,6 +767,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
@@ -764,14 +789,8 @@ static NSString *initializeKey;
         }
     }
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isRenameSuccessed];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isRenameSuccessed];
+    block();
 }
 
 - (void)formRemoveField:(CDVInvokedUrlCommand*)command{
@@ -782,6 +801,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
@@ -798,14 +821,8 @@ static NSString *initializeKey;
         }
     }
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"remove field success"];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"remove field success"];
+    block();
 }
 
 - (void)formReset:(CDVInvokedUrlCommand*)command{
@@ -817,20 +834,18 @@ static NSString *initializeKey;
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
     
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     BOOL isReset = [pForm reset];
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
+    block();
 }
 
 - (void)formExportToXML:(CDVInvokedUrlCommand*)command{
@@ -842,6 +857,10 @@ static NSString *initializeKey;
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
     
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
@@ -852,14 +871,8 @@ static NSString *initializeKey;
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     BOOL isExport = [pForm exportToXML:filePath];
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isExport];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isExport];
+    block();
 }
 
 - (void)formImportFromXML:(CDVInvokedUrlCommand*)command{
@@ -871,6 +884,10 @@ static NSString *initializeKey;
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
     
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
@@ -879,14 +896,8 @@ static NSString *initializeKey;
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     BOOL isImport = [pForm importFromXML:filePath];
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isImport];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isImport];
+    block();
 }
 
 - (void)formGetPageControls:(CDVInvokedUrlCommand*)command{
@@ -897,6 +908,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
@@ -922,14 +937,8 @@ static NSString *initializeKey;
     
     NSLog(@"%@",tempArr);
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArr];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArr];
+    block();
 }
 
 - (void)formRemoveControl:(CDVInvokedUrlCommand*)command{
@@ -940,6 +949,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
@@ -953,14 +966,8 @@ static NSString *initializeKey;
     FSControl *pControl = [pForm getControl:page index:controlIndex];
     [pForm removeControl:pControl];
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"remove control success"];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"remove control success"];
+    block();
 }
 
 - (void)formAddControl:(CDVInvokedUrlCommand*)command{
@@ -971,6 +978,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
@@ -992,14 +1003,8 @@ static NSString *initializeKey;
     [tempDic setObject:@([pControl isChecked]) forKey:@"isChecked"];
     [tempDic setObject:@([pControl isDefaultChecked]) forKey:@"isDefaultChecked"];
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempDic];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempDic];
+    block();
 }
 
 - (void)formUpdateControl:(CDVInvokedUrlCommand*)command{
@@ -1010,6 +1015,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
@@ -1035,14 +1044,8 @@ static NSString *initializeKey;
         [pControl setDefaultChecked:(BOOL)control[@"isDefaultChecked"]];
     }
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update control info success"];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update control info success"];
+    block();
 }
 
 - (void)getFieldByControl:(CDVInvokedUrlCommand*)command{
@@ -1053,6 +1056,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
@@ -1120,14 +1127,8 @@ static NSString *initializeKey;
         [tempField setObject:tempArray2 forKey:@"choiceOptions"];
     }
     
-    if (initializeCode != FSErrSuccess ) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"get form feilds faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempField];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempField];
+    block();
 }
 
 
@@ -1139,6 +1140,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
@@ -1191,14 +1196,8 @@ static NSString *initializeKey;
         field.options = choiceOptionArr;
     }
     
-    if (initializeCode != FSErrSuccess ) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"get form feilds faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:nil];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:nil];
+    block();
 }
 
 - (void)fSFieldReset:(CDVInvokedUrlCommand*)command{
@@ -1209,6 +1208,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
@@ -1224,14 +1227,8 @@ static NSString *initializeKey;
         }
     }
     
-    if (initializeCode != FSErrSuccess ) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"get form feilds faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
+    block();
 }
 
 - (void)getFieldControls:(CDVInvokedUrlCommand*)command{
@@ -1242,6 +1239,10 @@ static NSString *initializeKey;
         [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
     
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
@@ -1270,14 +1271,8 @@ static NSString *initializeKey;
     
     NSLog(@"%@",tempArr);
     
-    if (initializeCode != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"update form info faild"];
-        block();
-        return;
-    }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArr];
-        block();
-    }
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArr];
+    block();
 }
 
 @end
@@ -1296,4 +1291,3 @@ static NSString *initializeKey;
 }
 
 @end
-
