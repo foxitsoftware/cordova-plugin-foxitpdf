@@ -101,7 +101,7 @@ pdf.prototype.enableAnnotations = function(enable) {
     return new Promise(function(resolve, reject){
         exec(resolve, reject, "FoxitPdf", "enableAnnotations", [{
             'enable': enable,
-        }])
+        }]);
     });
 }
 

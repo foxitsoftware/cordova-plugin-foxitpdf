@@ -226,12 +226,12 @@ public class FoxitPdf extends CordovaPlugin {
             int pageIndex = obj.getInt("pageIndex");
             int controlIndex = obj.getInt("controlIndex");
             return getFieldByControl(pageIndex, controlIndex, callbackContext);
-        } else if (action.equals("fSFieldUpdateField")) {
+        } else if (action.equals("FieldUpdateField")) {
             JSONObject obj = args.getJSONObject(0);
             int fieldIndex = obj.getInt("fieldIndex");
             JSONObject fieldInfo = obj.getJSONObject("field");
             return updateField(fieldIndex, fieldInfo, callbackContext);
-        } else if (action.equals("fSFieldReset")) {
+        } else if (action.equals("FieldReset")) {
             JSONObject obj = args.getJSONObject(0);
             int fieldIndex = obj.getInt("fieldIndex");
             return resetField(fieldIndex, callbackContext);
