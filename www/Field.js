@@ -74,7 +74,7 @@ Field.prototype.reset =  function(fieldIndex) {
 // fieldIndex int type. index of field
 // retrun array
 //[{
-// controIndex : 1,
+// controIndex : 1,  //The index of current form control among all the controls of related form field.
 // exportValue : "",
 // isChecked : true,
 // isDefaultChecked : true,

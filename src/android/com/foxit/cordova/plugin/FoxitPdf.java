@@ -209,10 +209,10 @@ public class FoxitPdf extends CordovaPlugin {
             String fieldName = obj.getString("fieldName");
             int fieldType = obj.getInt("fieldType");
             JSONObject json_rect = obj.getJSONObject("rect");
-            float left = BigDecimal.valueOf(obj.getDouble("left")).floatValue();
-            float top = BigDecimal.valueOf(obj.getDouble("top")).floatValue();
-            float right = BigDecimal.valueOf(obj.getDouble("right")).floatValue();
-            float bottom = BigDecimal.valueOf(obj.getDouble("bottom")).floatValue();
+            float left = BigDecimal.valueOf(json_rect.getDouble("left")).floatValue();
+            float top = BigDecimal.valueOf(json_rect.getDouble("top")).floatValue();
+            float right = BigDecimal.valueOf(json_rect.getDouble("right")).floatValue();
+            float bottom = BigDecimal.valueOf(json_rect.getDouble("bottom")).floatValue();
             com.foxit.sdk.common.fxcrt.RectF rectF = new com.foxit.sdk.common.fxcrt.RectF(left, top, right, bottom);
             return addControl(pageIndex, fieldName, fieldType, rectF, callbackContext);
         } else if (action.equals("formUpdateControl")) {
@@ -881,7 +881,7 @@ public class FoxitPdf extends CordovaPlugin {
 
             Control control = form.addControl(page, fieldName, fieldType, rectF);
             JSONObject obj = new JSONObject();
-            obj.put("controlIndex", control.getIndex());
+            obj.put("controlIndex", form.getControlCount(page) - 1);
             obj.put("exportValue", control.getExportValue());
             obj.put("isChecked", control.isChecked());
             obj.put("isDefaultChecked", control.isDefaultChecked());

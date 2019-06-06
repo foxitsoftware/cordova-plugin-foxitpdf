@@ -151,7 +151,7 @@ Form.prototype.importFromXML =  function(filePath) {
 // pageIndex  int type. index of a page
 // retrun array
 //[{
-// controlIndex : 1,
+// controlIndex : 1, //The index of current form control among all the controls of the specified page.
 // exportValue : "",
 // isChecked : true,
 // isDefaultChecked : true,
@@ -164,7 +164,7 @@ Form.prototype.getPageControls =  function(pageIndex) {
 
 
 // pageIndex  int type. index of a page
-// controlIndex  int type. index of a control
+// controlIndex  int type. The index of current form control among all the controls of the specified page.
 // return  none
 Form.prototype.removeControl =  function(pageIndex,controlIndex) {
     return new Promise(function(resolve, reject) {
@@ -178,10 +178,10 @@ Form.prototype.removeControl =  function(pageIndex,controlIndex) {
 // pageIndex  int type. index of a page
 // fieldName  string type. the name of control
 // fieldType    int type, the type of control
-// rect    object type, tye rect of control . {left: 100,top: 100,right: 100,bottom: 100}
+// rect    object type, tye rect of control . {left: 100,top: 200,right: 200,bottom: 100}
 // retrun control object
 //{
-//    controlIndex : 1,
+//    controlIndex : 1, //The index of current form control among all the controls of the specified page.
 //    exportValue : "",
 //    isChecked : true,
 //    isDefaultChecked : true,
@@ -198,7 +198,7 @@ Form.prototype.addControl =  function(pageIndex,fieldName,fieldType,rect) {
 };
 
 // pageIndex  int type. index of a page
-// controlIndex  int type. index of a control
+// controlIndex  int type. The index of current form control among all the controls of the specified page.
 // control        object type.
 //{
 //    exportValue : "",
@@ -217,7 +217,7 @@ Form.prototype.updateControl =  function(pageIndex,controlIndex, control) {
 };
 
 // pageIndex  int type. index of a page
-// controlIndex  int type. index of a control
+// controlIndex  int type. The index of current form control among all the controls of the specified page.
 // retrun field object
 //{
 // choiceOptions :         (
