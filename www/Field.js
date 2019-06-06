@@ -81,7 +81,7 @@ Field.prototype.reset =  function(fieldIndex) {
 // },{},{}...]
 Field.prototype.getFieldControls =  function(fieldIndex) {
     return new Promise(function(resolve, reject) {
-                       exec(resolve, reject, "FoxitPdf", "getFieldControls ", [{'fieldIndex':fieldIndex,}]);
+                       exec(resolve, reject, "FoxitPdf", "getFieldControls", [{'fieldIndex':fieldIndex,}]);
                        });
 };
 
