@@ -1,3 +1,11 @@
+/**
+ * Copyright (C) 2003-2019, Foxit Software Inc..
+ * All Rights Reserved.
+ *
+ * http://www.foxitsoftware.com
+ *
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc. .
+ */
 /********* FoxitPdf.m Cordova Plugin Implementation *******/
 
 #import <Cordova/CDV.h>
@@ -596,50 +604,9 @@ static NSString *initializeKey;
     for (int i = 0; i < fieldCount; i++) {
         FSField* pFormField = [pForm getField:i filter:@""];
         
-        NSString* name = [pFormField getName];
-        FSFieldType fieldType = [pFormField getType];
-        NSString* defValue = [pFormField getDefaultValue];
-        NSString* value = [pFormField getValue];
-        FSFieldFlags fieldFlag = [pFormField getFlags];
-        
         NSMutableDictionary *tempField = @{}.mutableCopy;
+        tempField = [self getDictionaryOfField:pFormField form:nil];
         [tempField setObject:@(i) forKey:@"fieldIndex"];
-        [tempField setObject:name forKey:@"name"];
-        [tempField setObject:@(fieldType) forKey:@"fieldType"];
-        [tempField setObject:defValue forKey:@"defValue"];
-        [tempField setObject:value forKey:@"value"];
-        [tempField setObject:@(fieldFlag) forKey:@"fieldFlag"];
-        [tempField setObject:@(pFormField.alignment) forKey:@"alignment"];
-        [tempField setObject:@(pFormField.alignment) forKey:@"alternateName"];
-        
-        NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
-        FSDefaultAppearance *fsdefaultappearance = pFormField.defaultAppearance;
-        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
-        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"textSize"];
-        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"textColor"];
-        [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
-        
-        [tempField setObject:defaultAppearance forKey:@"defaultAppearance"];
-        [tempField setObject:pFormField.mappingName forKey:@"mappingName"];
-        [tempField setObject:@(pFormField.maxLength) forKey:@"maxLength"];
-        [tempField setObject:@(pFormField.topVisibleIndex) forKey:@"topVisibleIndex"];
-        
-        if (pFormField.options) {
-            NSMutableArray *tempArray2 = @[].mutableCopy;
-            for (int i = 0; i < [pFormField.options getSize]; i++)
-            {
-                FSChoiceOption *choiceoption = [pFormField.options getAt:i];
-                NSMutableDictionary *tempChoiceoption = @{}.mutableCopy;
-                [tempChoiceoption setObject:choiceoption.option_value forKey:@"optionValue"];
-                [tempChoiceoption setObject:choiceoption.option_label forKey:@"optionLabel"];
-                [tempChoiceoption setObject:@(choiceoption.selected) forKey:@"selected"];
-                [tempChoiceoption setObject:@(choiceoption.default_selected) forKey:@"defaultSelected"];
-                
-                [tempArray2 addObject:tempChoiceoption];
-            }
-            
-            [tempField setObject:tempArray2 forKey:@"choiceOptions"];
-        }
         
         [tempArray addObject:tempField];
     }
@@ -865,7 +832,6 @@ static NSString *initializeKey;
     NSLog(@"%@",options);
     
     NSString *filePath = options[@"filePath"];
-    //    NSString *fdfPath = [options objectForKey:@"fdfPath"];
     filePath = [self correctFilePath:filePath];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
@@ -892,6 +858,7 @@ static NSString *initializeKey;
     NSLog(@"%@",options);
     
     NSString *filePath = options[@"filePath"];
+    filePath = [self correctFilePath:filePath];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     BOOL isImport = [pForm importFromXML:filePath];
@@ -991,7 +958,8 @@ static NSString *initializeKey;
     int fieldType = [options[@"fieldType"] intValue];
     NSDictionary *rect = options[@"rect"];
     
-    FSRectF *fsrect = [[FSRectF alloc] initWithLeft1:[rect[@"left"] floatValue] bottom1:[rect[@"bottom"] floatValue] right1:[rect[@"right"] floatValue] top1:[rect[@"top"] floatValue]];
+    FSRectF *fsrect = [[FSRectF alloc] initWithLeft1:[[rect objectForKey:@"left"] floatValue] bottom1:[[rect objectForKey:@"bottom"] floatValue] right1:[[rect objectForKey:@"right"] floatValue] top1:[[rect objectForKey:@"top"] floatValue] ];
+    
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     FSPDFPage *page = [self.currentDoc getPage:pageIndex];
     
@@ -1048,6 +1016,67 @@ static NSString *initializeKey;
     block();
 }
 
+- (NSMutableDictionary *)getDictionaryOfField:(FSField *)pFormField form:(FSForm *)pForm {
+    NSMutableDictionary *tempField = @{}.mutableCopy;
+    
+    if (pForm != nil) {
+        int fieldIndex = -1;
+        int fieldCount = [pForm getFieldCount:@""];
+        for (int i = 0; i < fieldCount; i++) {
+            FSField *tempField = [pForm getField:i filter:@""];
+            if (tempField.getType == pFormField.getType && [tempField.getName isEqualToString:pFormField.getName] ) {
+                fieldIndex = i;
+            }
+        }
+        [tempField setObject:@(fieldIndex) forKey:@"fieldIndex"];
+    }
+    
+    NSString* name = [pFormField getName];
+    FSFieldType fieldType = [pFormField getType];
+    NSString* defValue = [pFormField getDefaultValue];
+    NSString* value = [pFormField getValue];
+    FSFieldFlags fieldFlag = [pFormField getFlags];
+    
+    [tempField setObject:name forKey:@"name"];
+    [tempField setObject:@(fieldType) forKey:@"fieldType"];
+    [tempField setObject:defValue forKey:@"defValue"];
+    [tempField setObject:value forKey:@"value"];
+    [tempField setObject:@(fieldFlag) forKey:@"fieldFlag"];
+    [tempField setObject:@(pFormField.alignment) forKey:@"alignment"];
+    [tempField setObject:pFormField.alternateName forKey:@"alternateName"];
+    
+    NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
+    FSDefaultAppearance *fsdefaultappearance = pFormField.defaultAppearance;
+    [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
+    [defaultAppearance setObject:@([fsdefaultappearance getText_size]) forKey:@"textSize"];
+    [defaultAppearance setObject:@([fsdefaultappearance getText_color]) forKey:@"textColor"];
+    [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
+    
+    [tempField setObject:defaultAppearance forKey:@"defaultAppearance"];
+    [tempField setObject:pFormField.mappingName forKey:@"mappingName"];
+    [tempField setObject:@(pFormField.maxLength) forKey:@"maxLength"];
+    [tempField setObject:@(pFormField.topVisibleIndex) forKey:@"topVisibleIndex"];
+    
+    if (pFormField.options) {
+        NSMutableArray *tempArray2 = @[].mutableCopy;
+        for (int i = 0; i < [pFormField.options getSize]; i++)
+        {
+            FSChoiceOption *choiceoption = [pFormField.options getAt:i];
+            NSMutableDictionary *tempChoiceoption = @{}.mutableCopy;
+            [tempChoiceoption setObject:choiceoption.option_value forKey:@"optionValue"];
+            [tempChoiceoption setObject:choiceoption.option_label forKey:@"optionLabel"];
+            [tempChoiceoption setObject:@(choiceoption.selected) forKey:@"selected"];
+            [tempChoiceoption setObject:@(choiceoption.default_selected) forKey:@"defaultSelected"];
+            
+            [tempArray2 addObject:tempChoiceoption];
+        }
+        
+        [tempField setObject:tempArray2 forKey:@"choiceOptions"];
+    }
+    
+    return tempField;
+}
+
 - (void)getFieldByControl:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
     __block CDVPluginResult *pluginResult = nil;
@@ -1073,66 +1102,15 @@ static NSString *initializeKey;
     
     FSField *pFormField = [pControl getField];
     
-    int fieldIndex = -1;
-    int fieldCount = [pForm getFieldCount:@""];
-    for (int i = 0; i < fieldCount; i++) {
-        FSField *tempField = [pForm getField:i filter:@""];
-        if (tempField.getType == pFormField.getType && [tempField.getName isEqualToString:pFormField.getName] ) {
-            fieldIndex = i;
-        }
-    }
-    
-    NSString* name = [pFormField getName];
-    FSFieldType fieldType = [pFormField getType];
-    NSString* defValue = [pFormField getDefaultValue];
-    NSString* value = [pFormField getValue];
-    FSFieldFlags fieldFlag = [pFormField getFlags];
-    
     NSMutableDictionary *tempField = @{}.mutableCopy;
-    [tempField setObject:@(fieldIndex) forKey:@"fieldIndex"];
-    [tempField setObject:name forKey:@"name"];
-    [tempField setObject:@(fieldType) forKey:@"fieldType"];
-    [tempField setObject:defValue forKey:@"defValue"];
-    [tempField setObject:value forKey:@"value"];
-    [tempField setObject:@(fieldFlag) forKey:@"fieldFlag"];
-    [tempField setObject:@(pFormField.alignment) forKey:@"alignment"];
-    [tempField setObject:@(pFormField.alignment) forKey:@"alternateName"];
-    
-    NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
-    FSDefaultAppearance *fsdefaultappearance = pFormField.defaultAppearance;
-    [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
-    [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"textSize"];
-    [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"textColor"];
-    [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
-    
-    [tempField setObject:defaultAppearance forKey:@"defaultAppearance"];
-    [tempField setObject:pFormField.mappingName forKey:@"mappingName"];
-    [tempField setObject:@(pFormField.maxLength) forKey:@"maxLength"];
-    [tempField setObject:@(pFormField.topVisibleIndex) forKey:@"topVisibleIndex"];
-    
-    if (pFormField.options) {
-        NSMutableArray *tempArray2 = @[].mutableCopy;
-        for (int i = 0; i < [pFormField.options getSize]; i++)
-        {
-            FSChoiceOption *choiceoption = [pFormField.options getAt:i];
-            NSMutableDictionary *tempChoiceoption = @{}.mutableCopy;
-            [tempChoiceoption setObject:choiceoption.option_value forKey:@"optionValue"];
-            [tempChoiceoption setObject:choiceoption.option_label forKey:@"optionLabel"];
-            [tempChoiceoption setObject:@(choiceoption.selected) forKey:@"selected"];
-            [tempChoiceoption setObject:@(choiceoption.default_selected) forKey:@"defaultSelected"];
-            
-            [tempArray2 addObject:tempChoiceoption];
-        }
-        
-        [tempField setObject:tempArray2 forKey:@"choiceOptions"];
-    }
+    tempField = [self getDictionaryOfField:pFormField form:pForm];
     
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempField];
     block();
 }
 
 
-- (void)fSFieldUpdateField:(CDVInvokedUrlCommand*)command{
+- (void)FieldUpdateField:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
     __block CDVPluginResult *pluginResult = nil;
     
@@ -1154,24 +1132,20 @@ static NSString *initializeKey;
     FSField *field = [pForm getField:fieldIndex filter:@""];
     
     field.value = fsfield[@"value"];
-    field.topVisibleIndex = fsfield[@"topVisibleIndex"];
+    field.topVisibleIndex = [fsfield[@"topVisibleIndex"] intValue];
     [pForm renameField:field new_field_name:fsfield[@"name"]];
     
-    field.maxLength = fsfield[@"maxLength"];
+    field.maxLength = [fsfield[@"maxLength"] intValue];
     field.mappingName = fsfield[@"mappingName"];
     //    field.fieldType = fsfield[@"fieldType"];
-    field.flags = fsfield[@"fieldFlag"];
+    field.flags = [fsfield[@"fieldFlag"] intValue];
     field.defaultValue = fsfield[@"defValue"];
     field.alternateName = fsfield[@"alternateName"];
-    field.alignment = fsfield[@"alignment"];
+    field.alignment = [fsfield[@"alignment"] intValue];
     
     //appearance
-    NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
+    NSMutableDictionary *defaultAppearance = fsfield[@"defaultAppearance"];
     FSDefaultAppearance *fsdefaultappearance = field.defaultAppearance;
-    [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
-    [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"textSize"];
-    [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"textColor"];
-    [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
     
     if (![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
         FSFont *newFont = nil;
@@ -1180,7 +1154,7 @@ static NSString *initializeKey;
         }else{
             newFont = fsdefaultappearance.font;
         }
-        FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:fsdefaultappearance.flags font:newFont text_size:fsdefaultappearance.text_size text_color:fsdefaultappearance.text_color];
+        FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:[defaultAppearance[@"flags"] intValue] font:newFont text_size:[defaultAppearance[@"text_size"] floatValue] text_color:[defaultAppearance[@"text_color"] intValue]];
         field.defaultAppearance = newfsdefaultappearance;
     }
     
@@ -1196,11 +1170,14 @@ static NSString *initializeKey;
         field.options = choiceOptionArr;
     }
     
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:nil];
+    NSMutableDictionary *tempField = @{}.mutableCopy;
+    tempField = [self getDictionaryOfField:field form:pForm];
+    
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempField];
     block();
 }
 
-- (void)fSFieldReset:(CDVInvokedUrlCommand*)command{
+- (void)FieldReset:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
     __block CDVPluginResult *pluginResult = nil;
     
@@ -1291,3 +1268,4 @@ static NSString *initializeKey;
 }
 
 @end
+
