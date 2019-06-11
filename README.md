@@ -259,6 +259,30 @@ console.log('onDocOpened callback ',data);
 
 ```
 
+### Form.getAllFormFields
+
+> Form.getAllFormFields();
+
+- __alignment__:  Alignment is a property for variable text and it is only useful for text field and list box,which may contain variable text as their content.
+- __alternateName__: An alternate field name to be used in place of the actual field name wherever the field must be identified in the user interface (such as in error or status messages referring to the field).
+- __defValue__: The default value of form field.
+- __value__: The value of form field.
+- __fieldFlag__: Field flags specifies various characteristics of a form field.
+- __fieldIndex__: The index of form field in the document.
+- __fieldType__: The Form field type.
+- __mappingName__: The mapping name is to be used when exporting interactive form field data from the document.
+- __maxLength__: The maximum length of the field's text, in characters.
+- __name__: Get field name.
+- __topVisibleIndex__: Get top index of option for scrollable list boxes.
+- __choiceOptions__: Get options of list box or combo box. Return an array of dictionaries, which key/value pairs for the dictionary are:
+-- __defaultSelected__:Used to indicate whether the option would be selected by default or not.
+-- __optionLabel__ : The displayed string value for the option.
+-- __optionValue__ : The option string value. 
+-- __selected__ : Used to indicate whether the option is selected or not.
+
+An array will be returned , which contains all the form fields in the document, each field is represented by a dictionary, the above are the key/value pairs for the dictionary.
+
+
 
 &nbsp;&nbsp;
 
