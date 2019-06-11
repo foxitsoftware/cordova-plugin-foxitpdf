@@ -274,13 +274,14 @@ console.log('onDocOpened callback ',data);
 - __maxLength__: The maximum length of the field's text, in characters.
 - __name__: Get field name.
 - __topVisibleIndex__: Get top index of option for scrollable list boxes.
-- __choiceOptions__: Get options of list box or combo box. Return an array of dictionaries, which key/value pairs for the dictionary are:
--- __defaultSelected__:Used to indicate whether the option would be selected by default or not.
--- __optionLabel__ : The displayed string value for the option.
--- __optionValue__ : The option string value. 
--- __selected__ : Used to indicate whether the option is selected or not.
+- __choiceOptions__: Get the options array of list box or combo box. Return an array of dictionaries, which key/value pairs for the dictionary are:
+	- __defaultSelected__:Used to indicate whether the option would be selected by default or not.
+	- __optionLabel__ : The displayed string value for the option.
+	- __optionValue__ : The option string value. 
+	- __selected__ : Used to indicate whether the option is selected or not.
 
-An array will be returned , which contains all the form fields in the document, each field is represented by a dictionary, the above are the key/value pairs for the dictionary.
+An array of dictionaries will be returned, which contains all the form fields in the document, each field is represented as a dictionary, the above are the key/value pairs for the dictionary. Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html  for more detail information about parameters such as fieldType, fieldFlag.... (Use keyword "Field" to search)
+
 
 
 
