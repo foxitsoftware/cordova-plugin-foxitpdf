@@ -283,6 +283,23 @@ console.log('onDocOpened callback ',data);
 An array of dictionaries will be returned, which contains all the form fields in the document, each field is represented as a dictionary, the above are the key/value pairs for the dictionary. Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html  for more detail information about parameters such as fieldType, fieldFlag.... (Use keyword "Field" to search)
 
 
+### Form.getForm
+
+> Form.getForm();
+
+- __alignment__:  Get the alignment value which is used as document-wide default value. Left alignment:0, Center alignment:1, Right alignment:2
+- __needConstructAppearances__: Check whether to construct appearance when loading form controls.
+
+An dictionary will be returned, which contains the form related info. The above are the key/value pairs for the dictionary.
+
+### Form.updateForm
+
+> Form.updateForm(formInfo);
+
+The parameter for this API is a dictionary, and following are the key/value pairs for the dictionary.
+
+- __alignment__:  Get the alignment value which is used as document-wide default value. Left alignment:0, Center alignment:1, Right alignment:2
+- __needConstructAppearances__: Check whether to construct appearance when loading form controls.
 
 
 &nbsp;&nbsp;
