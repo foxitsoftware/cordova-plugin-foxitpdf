@@ -112,6 +112,12 @@ window.FoxitPdf.openDocument(path, password);
 
 ```
 
+## How to change the UI of PDF viewer control?
+
+For Foxit PDF SDK for iOS. The UI is handled within the "FoxitRDK.framework" and "uiextensionsDynamic.framework." The files that comes with the evaluation package, however, they also comes with the source, which you can compile and replace accordingly. The UI source can be located at "libs\uiextensions_src" You can find the uiextensions.xcodeproj in the same directory. Just open this project with xcode, modified it to your needs, build, and replace them accordingly in step 2 of the instruction at https://github.com/foxitsoftware/cordova-plugin-foxitpdf#integration-for-ios.
+
+For Android, the UI is located at the binary at libs\FoxitRDKUIExtensions.aar. You can find the source for this binary in the package at foxitpdfsdk_XXX_android.zip at libs\uiextensions_src. You can open this project with Android Studio, modified it, and replaced the FoxitRDKUIExtensions.aar file accordingly. Step 2 of https://github.com/foxitsoftware/cordova-plugin-foxitpdf#integration-for-android is where the instructions on the github page indicates that it is being used.
+
 
 ## JS API Reference
 
