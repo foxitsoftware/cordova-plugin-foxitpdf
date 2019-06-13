@@ -998,12 +998,12 @@ static NSString *initializeKey;
         pControl.exportValue = control[@"exportValue"];
     }
     
-    if (pControl.isChecked != (BOOL)control[@"isChecked"]) {
-        [pControl setChecked:(BOOL)control[@"isChecked"]];
+    if (pControl.isChecked != [control[@"isChecked"] boolValue]) {
+        [pControl setChecked:[control[@"isChecked"] boolValue]];
     }
     
-    if (pControl.isDefaultChecked != (BOOL)control[@"isDefaultChecked"]) {
-        [pControl setDefaultChecked:(BOOL)control[@"isDefaultChecked"]];
+    if (pControl.isDefaultChecked != [control[@"isDefaultChecked"] boolValue]) {
+        [pControl setDefaultChecked:[control[@"isDefaultChecked"] boolValue]];
     }
     
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update control info success"];
