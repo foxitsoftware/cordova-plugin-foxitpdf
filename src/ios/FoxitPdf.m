@@ -805,7 +805,7 @@ static NSString *initializeKey;
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     BOOL isReset = [pForm reset];
-    
+    self.extensionsMgr.isDocModified = YES;
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
     block();
 }
