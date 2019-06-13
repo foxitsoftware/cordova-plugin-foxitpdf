@@ -737,7 +737,7 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int fieldIndex = (int)options[@"fieldIndex"];
+    int fieldIndex = [options[@"fieldIndex"] intValue];
     NSString *newFieldName = options[@"newFieldName"];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
@@ -771,7 +771,7 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int fieldIndex = (int)options[@"fieldIndex"];
+    int fieldIndex = [options[@"fieldIndex"] intValue];
     
     FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
     int fieldCount = [pForm getFieldCount:@""];
