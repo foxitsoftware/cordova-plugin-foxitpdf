@@ -641,7 +641,6 @@ static NSString *initializeKey;
     [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
     [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"textSize"];
     [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"textColor"];
-    [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
     [tempFormInfo setObject:defaultAppearance forKey:@"defaultAppearance"];
     
     NSLog(@"%@",tempFormInfo);
@@ -1045,7 +1044,6 @@ static NSString *initializeKey;
     [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
     [defaultAppearance setObject:@([fsdefaultappearance getText_size]) forKey:@"textSize"];
     [defaultAppearance setObject:@([fsdefaultappearance getText_color]) forKey:@"textColor"];
-    [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
     
     [tempField setObject:defaultAppearance forKey:@"defaultAppearance"];
     [tempField setObject:pFormField.mappingName forKey:@"mappingName"];
@@ -1143,13 +1141,8 @@ static NSString *initializeKey;
     FSDefaultAppearance *fsdefaultappearance = field.defaultAppearance;
     
     if (![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
-        FSFont *newFont = nil;
-        if ([[fsdefaultappearance.font getName] isEqualToString:defaultAppearance[@"font"] ]) {
-            newFont = [[FSFont alloc] initWithName:defaultAppearance[@"font"] styles:0 charset:FSFontCharsetDefault weight:0];
-        }else{
-            newFont = fsdefaultappearance.font;
-        }
-        FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:[defaultAppearance[@"flags"] intValue] font:newFont text_size:[defaultAppearance[@"text_size"] floatValue] text_color:[defaultAppearance[@"text_color"] intValue]];
+        
+        FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:[defaultAppearance[@"flags"] intValue] font:fsdefaultappearance.font text_size:[defaultAppearance[@"text_size"] floatValue] text_color:[defaultAppearance[@"text_color"] intValue]];
         field.defaultAppearance = newfsdefaultappearance;
     }
     
