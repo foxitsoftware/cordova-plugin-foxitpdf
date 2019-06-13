@@ -712,7 +712,7 @@ static NSString *initializeKey;
     NSDictionary* options = [command argumentAtIndex:0];
     NSLog(@"%@",options);
     
-    int fSFieldType = (int)options[@"fieldType"];
+    int fSFieldType = [options[@"fieldType"] intValue];
     NSString *fieldName = options[@"fieldName"];
     
     BOOL isCanbeUsed = [pForm validateFieldName:fSFieldType field_name:fieldName];
