@@ -22,6 +22,7 @@ import com.foxit.sdk.common.Library;
 import com.foxit.sdk.fdf.FDFDoc;
 import com.foxit.sdk.pdf.PDFDoc;
 import com.foxit.sdk.pdf.PDFPage;
+import com.foxit.sdk.pdf.annots.DefaultAppearance;
 import com.foxit.sdk.pdf.interform.ChoiceOption;
 import com.foxit.sdk.pdf.interform.ChoiceOptionArray;
 import com.foxit.sdk.pdf.interform.Control;
@@ -510,6 +511,12 @@ public class FoxitPdf extends CordovaPlugin {
             JSONObject obj = new JSONObject();
             obj.put("alignment", alignment);
             obj.put("needConstructAppearances", needConstructAppearances);
+            DefaultAppearance da = form.getDefaultAppearance();
+            JSONObject defaultApObj = new JSONObject();
+            defaultApObj.put("flags", da.getFlags());
+            defaultApObj.put("textColor", da.getText_color());
+            defaultApObj.put("textSize", da.getText_size());
+            obj.put("defaultAppearance", defaultApObj);
 
             PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
             result.setKeepCallback(true);
@@ -545,6 +552,25 @@ public class FoxitPdf extends CordovaPlugin {
             if (formInfo.has("needConstructAppearances")) {
                 boolean needConstructAppearances = formInfo.getBoolean("needConstructAppearances");
                 form.setConstructAppearances(needConstructAppearances);
+            }
+
+            if (formInfo.has("defaultAppearance")) {
+                JSONObject daObj = formInfo.getJSONObject("defaultAppearance");
+                DefaultAppearance da = form.getDefaultAppearance();
+                if (daObj.has("flags")) {
+                    da.setFlags(daObj.getInt("flags"));
+                }
+
+                if (daObj.has("textSize")) {
+                    float textSize = BigDecimal.valueOf(daObj.getDouble("textSize")).floatValue();
+                    da.setText_size(textSize);
+                }
+
+                if (daObj.has("textColor")) {
+                    da.setText_color(daObj.getInt("textColor"));
+                }
+
+                form.setDefaultAppearance(da);
             }
             callbackContext.success("Succeed to update form information.");
             return true;
@@ -590,6 +616,12 @@ public class FoxitPdf extends CordovaPlugin {
                 obj.put("mappingName", field.getMappingName());
                 obj.put("maxLength", field.getMaxLength());
                 obj.put("topVisibleIndex", field.getTopVisibleIndex());
+                DefaultAppearance da = field.getDefaultAppearance();
+                JSONObject defaultApObj = new JSONObject();
+                defaultApObj.put("flags", da.getFlags());
+                defaultApObj.put("textColor", da.getText_color());
+                defaultApObj.put("textSize", da.getText_size());
+                obj.put("defaultAppearance", defaultApObj);
 
                 if (type == Field.e_TypeComboBox || type == Field.e_TypeListBox) {
                     ChoiceOptionArray options = field.getOptions();
@@ -979,6 +1011,12 @@ public class FoxitPdf extends CordovaPlugin {
             obj.put("mappingName", field.getMappingName());
             obj.put("maxLength", field.getMaxLength());
             obj.put("topVisibleIndex", field.getTopVisibleIndex());
+            DefaultAppearance da = field.getDefaultAppearance();
+            JSONObject defaultApObj = new JSONObject();
+            defaultApObj.put("flags", da.getFlags());
+            defaultApObj.put("textColor", da.getText_color());
+            defaultApObj.put("textSize", da.getText_size());
+            obj.put("defaultAppearance", defaultApObj);
 
             if (type == Field.e_TypeComboBox || type == Field.e_TypeListBox) {
                 ChoiceOptionArray options = field.getOptions();
@@ -1055,6 +1093,24 @@ public class FoxitPdf extends CordovaPlugin {
 
             if (fieldInfo.has("topVisibleIndex")) {
                 field.setTopVisibleIndex(fieldInfo.getInt("topVisibleIndex"));
+            }
+
+            if (fieldInfo.has("defaultAppearance")) {
+                JSONObject daObj = fieldInfo.getJSONObject("defaultAppearance");
+                DefaultAppearance da = field.getDefaultAppearance();
+                if (daObj.has("flags")) {
+                    da.setFlags(daObj.getInt("flags"));
+                }
+
+                if (daObj.has("textSize")) {
+                    float textSize = BigDecimal.valueOf(daObj.getDouble("textSize")).floatValue();
+                    da.setText_size(textSize);
+                }
+
+                if (daObj.has("textColor")) {
+                    da.setText_color(daObj.getInt("textColor"));
+                }
+                field.setDefaultAppearance(da);
             }
 
             if (fieldInfo.has("choiceOptions")) {
