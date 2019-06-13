@@ -669,29 +669,24 @@ static NSString *initializeKey;
     NSLog(@"%@",options);
     NSDictionary *formInfo = options[@"forminfo"];
     
-    if (pForm.alignment != (int)formInfo[@"alignment"]) {
-        pForm.alignment = (int)formInfo[@"alignment"];
+    if (pForm.alignment != [formInfo[@"alignment"] intValue]) {
+        pForm.alignment = [formInfo[@"alignment"] intValue];
     }
     
-    if (pForm.needConstructAppearances != (BOOL)formInfo[@"needConstructAppearances"]) {
-        [pForm setConstructAppearances:(BOOL)formInfo[@"needConstructAppearances"]];
+    if (pForm.needConstructAppearances != [formInfo[@"needConstructAppearances"] boolValue]) {
+        [pForm setConstructAppearances:[formInfo[@"needConstructAppearances"] boolValue]];
     }
+    
+    FSDefaultAppearance *fsdefaultappearance = pForm.defaultAppearance;
     
     NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
-    FSDefaultAppearance *fsdefaultappearance = pForm.defaultAppearance;
     [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
     [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"textSize"];
     [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"textColor"];
-    [defaultAppearance setObject:[fsdefaultappearance.font getName] forKey:@"font"];
     
     if (![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
-        FSFont *newFont = nil;
-        if ([[fsdefaultappearance.font getName] isEqualToString:defaultAppearance[@"font"] ]) {
-            newFont = [[FSFont alloc] initWithName:defaultAppearance[@"font"] styles:0 charset:FSFontCharsetDefault weight:0];
-        }else{
-            newFont = fsdefaultappearance.font;
-        }
-        FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:fsdefaultappearance.flags font:newFont text_size:fsdefaultappearance.text_size text_color:fsdefaultappearance.text_color];
+        NSDictionary *setFormAP = options[@"defaultAppearance"];
+        FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:[setFormAP[@"flag"] intValue] font:fsdefaultappearance.font text_size:[setFormAP[@"textSize"] floatValue] text_color:[setFormAP[@"textColor"] intValue]];
         pForm.defaultAppearance = newfsdefaultappearance;
     }
     
