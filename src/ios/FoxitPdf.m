@@ -668,11 +668,11 @@ static NSString *initializeKey;
     NSLog(@"%@",options);
     NSDictionary *formInfo = options[@"forminfo"];
     
-    if (pForm.alignment != [formInfo[@"alignment"] intValue]) {
+    if ([formInfo objectForKey:@"alignment"] && pForm.alignment != [formInfo[@"alignment"] intValue]) {
         pForm.alignment = [formInfo[@"alignment"] intValue];
     }
     
-    if (pForm.needConstructAppearances != [formInfo[@"needConstructAppearances"] boolValue]) {
+    if ([formInfo objectForKey:@"needConstructAppearances"] && pForm.needConstructAppearances != [formInfo[@"needConstructAppearances"] boolValue]) {
         [pForm setConstructAppearances:[formInfo[@"needConstructAppearances"] boolValue]];
     }
     
@@ -683,8 +683,9 @@ static NSString *initializeKey;
     [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"textSize"];
     [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"textColor"];
     
-    if (![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
-        NSDictionary *setFormAP = options[@"defaultAppearance"];
+    if ([formInfo objectForKey:@"defaultAppearance"] && ![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
+        NSDictionary *setFormAP = formInfo[@"defaultAppearance"];
+        
         FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:[setFormAP[@"flag"] intValue] font:fsdefaultappearance.font text_size:[setFormAP[@"textSize"] floatValue] text_color:[setFormAP[@"textColor"] intValue]];
         pForm.defaultAppearance = newfsdefaultappearance;
     }
@@ -994,15 +995,15 @@ static NSString *initializeKey;
     
     FSControl *pControl = [pForm getControl:page index:controlIndex];
     
-    if (![pControl.exportValue isEqualToString:control[@"exportValue"]]) {
+    if ([control objectForKey:@"exportValue"] && ![pControl.exportValue isEqualToString:control[@"exportValue"]]) {
         pControl.exportValue = control[@"exportValue"];
     }
     
-    if (pControl.isChecked != [control[@"isChecked"] boolValue]) {
+    if ([control objectForKey:@"isChecked"] && pControl.isChecked != [control[@"isChecked"] boolValue]) {
         [pControl setChecked:[control[@"isChecked"] boolValue]];
     }
     
-    if (pControl.isDefaultChecked != [control[@"isDefaultChecked"] boolValue]) {
+    if ([control objectForKey:@"isDefaultChecked"] && pControl.isDefaultChecked != [control[@"isDefaultChecked"] boolValue]) {
         [pControl setDefaultChecked:[control[@"isDefaultChecked"] boolValue]];
     }
     
@@ -1140,22 +1141,24 @@ static NSString *initializeKey;
     NSMutableDictionary *defaultAppearance = fsfield[@"defaultAppearance"];
     FSDefaultAppearance *fsdefaultappearance = field.defaultAppearance;
     
-    if (![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
+    if ([options objectForKey:@"defaultAppearance"] && ![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
         
         FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:[defaultAppearance[@"flags"] intValue] font:fsdefaultappearance.font text_size:[defaultAppearance[@"text_size"] floatValue] text_color:[defaultAppearance[@"text_color"] intValue]];
         field.defaultAppearance = newfsdefaultappearance;
     }
     
     //choice
-    NSArray *choiceArr = [[NSArray alloc] initWithArray:fsfield[@"choiceOptions"]];
-    if (choiceArr.count > 0 ) {
-        FSChoiceOptionArray *choiceOptionArr = [[FSChoiceOptionArray alloc] init];
-        for (int i = 0 ; i < choiceArr.count; i++) {
-            NSDictionary *choice = [[NSDictionary alloc] initWithDictionary: [choiceArr objectAtIndex:i]];
-            FSChoiceOption *choiceOption = [[FSChoiceOption alloc] initWithOption_value:choice[@"optionValue"] option_label:choice[@"optionLabel"] selected:choice[@"selected"] default_selected:choice[@"defaultSelected"]];
-            [choiceOptionArr add:choiceOption];
+    if ([fsfield objectForKey:@"choiceOptions"]) {
+        NSArray *choiceArr = [[NSArray alloc] initWithArray:fsfield[@"choiceOptions"]];
+        if (choiceArr.count > 0 ) {
+            FSChoiceOptionArray *choiceOptionArr = [[FSChoiceOptionArray alloc] init];
+            for (int i = 0 ; i < choiceArr.count; i++) {
+                NSDictionary *choice = [[NSDictionary alloc] initWithDictionary: [choiceArr objectAtIndex:i]];
+                FSChoiceOption *choiceOption = [[FSChoiceOption alloc] initWithOption_value:choice[@"optionValue"] option_label:choice[@"optionLabel"] selected:choice[@"selected"] default_selected:choice[@"defaultSelected"]];
+                [choiceOptionArr add:choiceOption];
+            }
+            field.options = choiceOptionArr;
         }
-        field.options = choiceOptionArr;
     }
     
     NSMutableDictionary *tempField = @{}.mutableCopy;
