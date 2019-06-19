@@ -544,14 +544,17 @@ public class FoxitPdf extends CordovaPlugin {
             }
             Form form = new Form(pdfDoc);
 
+            boolean isModified = false;
             if (formInfo.has("alignment")) {
                 int alignment = formInfo.getInt("alignment");
                 form.setAlignment(alignment);
+                isModified = true;
             }
 
             if (formInfo.has("needConstructAppearances")) {
                 boolean needConstructAppearances = formInfo.getBoolean("needConstructAppearances");
                 form.setConstructAppearances(needConstructAppearances);
+                isModified = true;
             }
 
             if (formInfo.has("defaultAppearance")) {
@@ -559,19 +562,24 @@ public class FoxitPdf extends CordovaPlugin {
                 DefaultAppearance da = form.getDefaultAppearance();
                 if (daObj.has("flags")) {
                     da.setFlags(daObj.getInt("flags"));
+                    isModified = true;
                 }
 
                 if (daObj.has("textSize")) {
                     float textSize = BigDecimal.valueOf(daObj.getDouble("textSize")).floatValue();
                     da.setText_size(textSize);
+                    isModified = true;
                 }
 
                 if (daObj.has("textColor")) {
                     da.setText_color(daObj.getInt("textColor"));
+                    isModified = true;
                 }
 
                 form.setDefaultAppearance(da);
             }
+
+            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
             callbackContext.success("Succeed to update form information.");
             return true;
         } catch (PDFException e) {
@@ -698,6 +706,7 @@ public class FoxitPdf extends CordovaPlugin {
             Form form = new Form(pdfDoc);
             Field field = form.getField(fieldIndex, null);
             boolean ret = form.renameField(field, fieldName);
+            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to rename field.");
             } else {
@@ -725,6 +734,7 @@ public class FoxitPdf extends CordovaPlugin {
             Form form = new Form(pdfDoc);
             Field field = form.getField(fieldIndex, null);
             form.removeField(field);
+            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
             callbackContext.success("Succeed to remove field.");
             return true;
         } catch (PDFException e) {
@@ -747,6 +757,7 @@ public class FoxitPdf extends CordovaPlugin {
             }
             Form form = new Form(pdfDoc);
             boolean ret = form.reset();
+            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to reset form.");
             } else {
@@ -809,6 +820,7 @@ public class FoxitPdf extends CordovaPlugin {
             }
             Form form = new Form(pdfDoc);
             boolean ret = form.importFromXML(filePath);
+            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to import form from xml.");
             } else {
@@ -885,6 +897,7 @@ public class FoxitPdf extends CordovaPlugin {
             }
 
             form.removeControl(form.getControl(page, controlIndex));
+            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
             callbackContext.success("Succeed to remove the specified control.");
             return true;
         } catch (PDFException e) {
@@ -918,6 +931,7 @@ public class FoxitPdf extends CordovaPlugin {
             obj.put("isChecked", control.isChecked());
             obj.put("isDefaultChecked", control.isDefaultChecked());
 
+            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
             PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
             result.setKeepCallback(true);
             callbackContext.sendPluginResult(result);
@@ -948,19 +962,24 @@ public class FoxitPdf extends CordovaPlugin {
                 page.startParse(PDFPage.e_ParsePageNormal, null, false);
             }
 
+            boolean isModified = false;
             Control control = form.getControl(page, controlIndex);
             if (controlInfo.has("exportValue")) {
                 control.setExportValue(controlInfo.getString("exportValue"));
+                isModified = true;
             }
 
             if (controlInfo.has("isChecked")) {
                 control.setChecked(controlInfo.getBoolean("isChecked"));
+                isModified = true;
             }
 
             if (controlInfo.has("isDefaultChecked")) {
                 control.setDefaultChecked(controlInfo.getBoolean("isDefaultChecked"));
+                isModified = true;
             }
 
+            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
             callbackContext.success("Succeed to update the specified control information.");
             return true;
         } catch (PDFException e) {
@@ -1063,36 +1082,45 @@ public class FoxitPdf extends CordovaPlugin {
             Form form = new Form(pdfDoc);
             Field field = form.getField(fieldIndex, null);
 
+            boolean isModified = false;
             if (fieldInfo.has("fieldFlag")) {
                 field.setFlags(fieldInfo.getInt("fieldFlag"));
+                isModified = true;
             }
 
             if (fieldInfo.has("defValue")) {
                 field.setDefaultValue(fieldInfo.getString("defValue"));
+                isModified = true;
             }
 
             if (fieldInfo.has("value")) {
                 field.setValue(fieldInfo.getString("value"));
+                isModified = true;
             }
 
             if (fieldInfo.has("alignment")) {
                 field.setAlignment(fieldInfo.getInt("alignment"));
+                isModified = true;
             }
 
             if (fieldInfo.has("alternateName")) {
                 field.setAlternateName(fieldInfo.getString("alternateName"));
+                isModified = true;
             }
 
             if (fieldInfo.has("mappingName")) {
                 field.setMappingName(fieldInfo.getString("mappingName"));
+                isModified = true;
             }
 
             if (fieldInfo.has("maxLength")) {
                 field.setMaxLength(fieldInfo.getInt("maxLength"));
+                isModified = true;
             }
 
             if (fieldInfo.has("topVisibleIndex")) {
                 field.setTopVisibleIndex(fieldInfo.getInt("topVisibleIndex"));
+                isModified = true;
             }
 
             if (fieldInfo.has("defaultAppearance")) {
@@ -1100,15 +1128,18 @@ public class FoxitPdf extends CordovaPlugin {
                 DefaultAppearance da = field.getDefaultAppearance();
                 if (daObj.has("flags")) {
                     da.setFlags(daObj.getInt("flags"));
+                    isModified = true;
                 }
 
                 if (daObj.has("textSize")) {
                     float textSize = BigDecimal.valueOf(daObj.getDouble("textSize")).floatValue();
                     da.setText_size(textSize);
+                    isModified = true;
                 }
 
                 if (daObj.has("textColor")) {
                     da.setText_color(daObj.getInt("textColor"));
+                    isModified = true;
                 }
                 field.setDefaultAppearance(da);
             }
@@ -1141,10 +1172,12 @@ public class FoxitPdf extends CordovaPlugin {
                             optionArray.add(option);
                         }
                         field.setOptions(optionArray);
+                        isModified = true;
                     }
                 }
             }
 
+            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
             callbackContext.success("Succeed to update the specified field information.");
             return true;
         } catch (PDFException e) {
@@ -1170,6 +1203,7 @@ public class FoxitPdf extends CordovaPlugin {
             Form form = new Form(pdfDoc);
             Field field = form.getField(fieldIndex, null);
             boolean ret = field.reset();
+            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to reset the specified form field.");
             } else {
