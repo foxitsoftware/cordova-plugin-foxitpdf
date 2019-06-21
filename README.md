@@ -263,6 +263,8 @@ console.log('onDocOpened callback ',data);
 
 > Form.getAllFormFields();
 
+Return: An array of dictionaries will be returned, which contains all the form fields in the document, each field is represented as a dictionary, the following are the key/value pairs for the dictionary. Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html  for more detail information about parameters such as fieldType, fieldFlag.... (Use keyword "Field" to search)
+
 - __alignment__:  Alignment is a property for variable text and it is only useful for text field and list box,which may contain variable text as their content.
 - __alternateName__: An alternate field name to be used in place of the actual field name wherever the field must be identified in the user interface (such as in error or status messages referring to the field).
 - __defValue__: The default value of form field.
@@ -279,27 +281,157 @@ console.log('onDocOpened callback ',data);
 	- __optionLabel__ : The displayed string value for the option.
 	- __optionValue__ : The option string value. 
 	- __selected__ : Used to indicate whether the option is selected or not.
-
-An array of dictionaries will be returned, which contains all the form fields in the document, each field is represented as a dictionary, the above are the key/value pairs for the dictionary. Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html  for more detail information about parameters such as fieldType, fieldFlag.... (Use keyword "Field" to search)
-
+- __defaultAppearance__: An dictionary will be returned, The following are the key/value pairs for the dictionary.
+	- __flags__:Flags to indicate which properties of default appearance are meaningful.Please refer to values starting from @link DefaultAppearance::e_FlagFont @endlink and this can be one or a combination of these values.
+	- __textColor__:Text color for default appearance. Format: 0xRRGGBB.
+	- __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
 
 ### Form.getForm
 
 > Form.getForm();
 
+Return: An dictionary will be returned, which contains the form related info. The following are the key/value pairs for the dictionary.
+
 - __alignment__:  Get the alignment value which is used as document-wide default value. Left alignment:0, Center alignment:1, Right alignment:2
 - __needConstructAppearances__: Check whether to construct appearance when loading form controls.
 
-An dictionary will be returned, which contains the form related info. The above are the key/value pairs for the dictionary.
+
 
 ### Form.updateForm
 
 > Form.updateForm(formInfo);
 
-The parameter for this API is a dictionary, and following are the key/value pairs for the dictionary.
+Parameters:The parameter for this API is a dictionary, and following are the key/value pairs for the dictionary.
 
 - __alignment__:  Get the alignment value which is used as document-wide default value. Left alignment:0, Center alignment:1, Right alignment:2
 - __needConstructAppearances__: Check whether to construct appearance when loading form controls.
+
+### Form.validateFieldName
+
+> Form.validateFieldName(fieldType,fieldName);
+
+Parameters:
+
+- __fieldType__: Field type, for which the input field name will be validated.
+- __fieldName__: A string value. It should not be an empty string.<br>
+
+Return:  <b>true</b> means the input field name is valid for the specified field type, <b>false</b> means not.
+
+### Form.renameField
+
+> Form.renameField(fieldIndex,newFieldName);
+
+Parameters:
+
+- __fieldIndex__: A valid form field object.
+- __newFieldName__: A new field name. It should not be an empty string.
+
+Return: <b>true</b> means success, while <b>false</b> means failure.
+
+### Form.removeField
+
+> Form.removeField(fieldIndex);
+
+Parameters:
+
+- __fieldIndex__: A valid form field object.
+
+### Form.reset
+
+> Form.reset();
+
+Reset data of all fields (except signature fields) to their default value.
+
+Return <b>true</b> means success, while <b>false</b> means failure.
+
+### Form.exportToXML
+
+> Form.exportToXML(filePath);
+Export the form data to an XML file.
+Parameters:
+-__filePath__: The xml file path.
+
+Return <b>true</b> means success, while <b>false</b> means failure.
+
+### Form.importFromXML
+
+> Form.importFromXML(filePath);
+Import the form data from an XML file.
+Parameters:
+-__filePath__: The xml file path.
+
+Return <b>true</b> means success, while <b>false</b> means failure.
+
+
+### Form.getPageControls
+
+> Form.getPageControls(pageIndex);
+
+Parameters:
+
+- __pageIndex__: The page index, which start from 0 for the first page.
+
+Return: An array of dictionaries will be returned, each dictionary contains the form related info. The following are the key/value pairs for the dictionary.
+
+- __controlIndex__: The index of current form control among all the controls of the specified page.
+- __exportValue__: export mapping name when related form field is check box or radio button.
+- __isChecked__: Check if the current form control is checked when related form field is check box or radio button.
+- __isDefaultChecked__: Check if the current form control is checked by default when related form field is check box or radio button.
+
+### Form.removeControl
+
+> Form.removeControl(pageIndex, controlIndex);
+
+Parameters:
+
+- __pageIndex__: The page index, which start from 0 for the first page.
+- __controlIndex__: The index of current form control among all the controls of the specified page.
+
+### Form.addControl
+
+> Form.addControl(pageIndex,fieldName,fieldType,rect);
+
+Parameters:
+
+- __pageIndex__: The page index, which start from 0 for the first page.
+- __fieldName__: The name of the form field.
+- __fieldType__: The type of the form field.
+- __rect__: Rectangle of the new form control which specifies the position in PDF page.It should be in [PDF coordinate system]
+
+Return: An dictionary will be returned, which contains the form related info. The following are the key/value pairs for the dictionary.
+
+- __controlIndex__: The index of current form control among all the controls of the specified page.
+- __exportValue__: export mapping name when related form field is check box or radio button.
+- __isChecked__: Check if the current form control is checked when related form field is check box or radio button.
+- __isDefaultChecked__: Check if the current form control is checked by default when related form field is check box or radio button.
+
+### Form.updateControl
+
+> Form.updateControl(pageIndex,controlIndex, control);
+
+Parameters:
+
+- __pageIndex__: The page index, which start from 0 for the first page.
+- __controlIndex__: The index of current form control among all the controls of the specified page.
+- __control__: An dictionary contains the control info. The following are the key/value pairs for the dictionary.
+	-__exportValue__: export mapping name when related form field is check box or radio button.
+	-__isChecked__: Check if the current form control is checked when related form field is check box or radio button.
+	-__isDefaultChecked__: Check if the current form control is checked by default when related form field is check box or radio button.
+
+
+### Form.getFieldByControl
+
+> Form.getFieldByControl(pageIndex,controlIndex);
+
+Parameters:
+- __pageIndex__: The page index, which start from 0 for the first page.
+- __controlIndex__: The index of current form control among all the controls of the specified page.
+
+Return: Please refer to the return info of [Form.getAllFormFields](##Form.getAllFormFields)
+
+
+
+
 
 
 &nbsp;&nbsp;
