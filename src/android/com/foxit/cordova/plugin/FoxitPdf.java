@@ -1154,19 +1154,19 @@ public class FoxitPdf extends CordovaPlugin {
                             ChoiceOption option = new ChoiceOption();
                             JSONObject jsonOption = jsonArray.getJSONObject(i);
                             if (jsonOption.has("optionValue")) {
-                                option.setOption_value(fieldInfo.getString("optionValue"));
+                                option.setOption_value(jsonOption.getString("optionValue"));
                             }
 
                             if (jsonOption.has("optionLabel")) {
-                                option.setOption_label(fieldInfo.getString("optionLabel"));
+                                option.setOption_label(jsonOption.getString("optionLabel"));
                             }
 
                             if (jsonOption.has("selected")) {
-                                option.setSelected(fieldInfo.getBoolean("selected"));
+                                option.setSelected(jsonOption.getBoolean("selected"));
                             }
 
                             if (jsonOption.has("defaultSelected")) {
-                                option.setDefault_selected(fieldInfo.getBoolean("defaultSelected"));
+                                option.setDefault_selected(jsonOption.getBoolean("defaultSelected"));
                             }
 
                             optionArray.add(option);
