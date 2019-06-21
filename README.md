@@ -347,8 +347,9 @@ Return <b>true</b> means success, while <b>false</b> means failure.
 
 > Form.exportToXML(filePath);
 Export the form data to an XML file.
+
 Parameters:
--__filePath__: The xml file path.
+- __filePath__: The xml file path.
 
 Return <b>true</b> means success, while <b>false</b> means failure.
 
@@ -356,8 +357,9 @@ Return <b>true</b> means success, while <b>false</b> means failure.
 
 > Form.importFromXML(filePath);
 Import the form data from an XML file.
+
 Parameters:
--__filePath__: The xml file path.
+- __filePath__: The xml file path.
 
 Return <b>true</b> means success, while <b>false</b> means failure.
 
