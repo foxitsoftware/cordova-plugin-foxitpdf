@@ -427,11 +427,33 @@ Parameters:
 - __pageIndex__: The page index, which start from 0 for the first page.
 - __controlIndex__: The index of current form control among all the controls of the specified page.
 
-Return: Please refer to the return info of [Form.getAllFormFields](##Form.getAllFormFields)
+Return: Please refer to the return info of [Form.getAllFormFields](###Form.getAllFormFields)
+
+### Field.updateField
+
+> Field.updateField(fieldIndex,field);
+
+Parameters:
+- __fieldIndex__: The index of the form field.
+- __field__: Please refer to the return info of [Form.getAllFormFields](#Form.getAllFormFields)
 
 
+### Field.reset
+
+> Field.reset(fieldIndex);
+
+Parameters:
+- __fieldIndex__: The index of the form field.
 
 
+### Field.getFieldControls
+
+> Field.getFieldControls(fieldIndex);
+
+Parameters:
+- __fieldIndex__: The index of the form field.
+
+Return:Please refer to the return info of [Form.getPageControls](#Form.getPageControls)
 
 
 &nbsp;&nbsp;
