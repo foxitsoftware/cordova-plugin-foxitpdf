@@ -330,7 +330,7 @@ Return:  <b>true</b> means the input field name is valid for the specified field
 
 Parameters:
 
-- __fieldIndex__: A valid form field object.
+- __fieldIndex__: The index of form field in the document.
 - __newFieldName__: A new field name. It should not be an empty string.
 
 Return: <b>true</b> means success, while <b>false</b> means failure.
@@ -341,7 +341,7 @@ Return: <b>true</b> means success, while <b>false</b> means failure.
 
 Parameters:
 
-- __fieldIndex__: A valid form field object.
+- __fieldIndex__: The index of form field in the document.
 
 ### Form.reset
 
@@ -443,7 +443,7 @@ Return: Please refer to the return info of [Form.getAllFormFields](#form.getallf
 > Field.updateField(fieldIndex,field);
 
 Parameters:
-- __fieldIndex__: The index of the form field.
+- __fieldIndex__: The index of form field in the document.
 - __field__: Please refer to the return info of [Form.getAllFormFields](#form.getallformfields)
 
 
@@ -452,7 +452,7 @@ Parameters:
 > Field.reset(fieldIndex);
 
 Parameters:
-- __fieldIndex__: The index of the form field.
+- __fieldIndex__: The index of form field in the document.
 
 
 ### Field.getFieldControls
@@ -460,7 +460,7 @@ Parameters:
 > Field.getFieldControls(fieldIndex);
 
 Parameters:
-- __fieldIndex__: The index of the form field.
+- __fieldIndex__: The index of form field in the document.
 
 Return:Please refer to the return info of [Form.getPageControls](#form.getpagecontrols)
 
