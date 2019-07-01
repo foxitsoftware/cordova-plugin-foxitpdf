@@ -293,6 +293,10 @@ Return: An dictionary will be returned, which contains the form related info. Th
 
 - __alignment__:  Get the alignment value which is used as document-wide default value. Left alignment:0, Center alignment:1, Right alignment:2
 - __needConstructAppearances__: Check whether to construct appearance when loading form controls.
+- __defaultAppearance__: Return an dictionary, which key/value pairs for the dictionary are the following: (Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html for more details.)
+	- __flags__: Flags to indicate which properties of default appearance are meaningful.
+	- __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
+	- __textColor__: Text color for default appearance. Format: 0xRRGGBB.
 
 
 
@@ -304,6 +308,10 @@ Parameters:The parameter for this API is a dictionary, and following are the key
 
 - __alignment__:  Get the alignment value which is used as document-wide default value. Left alignment:0, Center alignment:1, Right alignment:2
 - __needConstructAppearances__: Check whether to construct appearance when loading form controls.
+- __defaultAppearance__: Return an dictionary, which key/value pairs for the dictionary are the following: (Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html for more details.)
+	- __flags__: Flags to indicate which properties of default appearance are meaningful.
+	- __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
+	- __textColor__: Text color for default appearance. Format: 0xRRGGBB.
 
 ### Form.validateFieldName
 
