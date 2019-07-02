@@ -270,7 +270,7 @@ Return: An array of dictionaries will be returned, which contains all the form f
 - __value__: The value of form field.
 - __fieldFlag__: Field flags specifies various characteristics of a form field.
 - __fieldIndex__: The index of form field in the document.
-- __fieldType__: The Form field type.
+- __fieldType__: The Form field type, 0 for Unknown,  1 for PushButton, 2 for CheckBox, 3 for RadioButton, 4 for ComboBox,  5 for ListBox, 6 for TextField, 7 for Signature...
 - __mappingName__: The mapping name is to be used when exporting interactive form field data from the document.
 - __maxLength__: The maximum length of the field's text, in characters.
 - __name__: Get field name.
@@ -306,7 +306,7 @@ Return: An dictionary will be returned, which contains the form related info. Th
 
 Parameters:The parameter for this API is a dictionary, and following are the key/value pairs for the dictionary.
 
-- __alignment__:  Get the alignment value which is used as document-wide default value. Left alignment:0, Center alignment:1, Right alignment:2
+- __alignment__:  Get the alignment value which is used as document-wide default value, it's only valid for text field and list box. Left alignment:0, Center alignment:1, Right alignment:2
 - __needConstructAppearances__: Check whether to construct appearance when loading form controls.
 - __defaultAppearance__: Return an dictionary, which key/value pairs for the dictionary are the following: (Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html for more details.)
 	- __flags__: Flags to indicate which properties of default appearance are meaningful.
@@ -319,7 +319,7 @@ Parameters:The parameter for this API is a dictionary, and following are the key
 
 Parameters:
 
-- __fieldType__: Field type, for which the input field name will be validated.
+- __fieldType__: Field type, for which the input field name will be validated. 0 for Unknown,  1 for PushButton, 2 for CheckBox, 3 for RadioButton, 4 for ComboBox,  5 for ListBox, 6 for TextField, 7 for Signature...
 - __fieldName__: A string value. It should not be an empty string.<br>
 
 Return:  <b>true</b> means the input field name is valid for the specified field type, <b>false</b> means not.
@@ -404,7 +404,7 @@ Parameters:
 
 - __pageIndex__: The page index, which start from 0 for the first page.
 - __fieldName__: The name of the form field.
-- __fieldType__: The type of the form field.
+- __fieldType__: The type of the form field. 0 for Unknown,  1 for PushButton, 2 for CheckBox, 3 for RadioButton, 4 for ComboBox,  5 for ListBox, 6 for TextField, 7 for Signature...
 - __rect__: Rectangle of the new form control which specifies the position in PDF page.It should be in [PDF coordinate system]
 
 Return: An dictionary will be returned, which contains the form related info. The following are the key/value pairs for the dictionary.
@@ -417,6 +417,8 @@ Return: An dictionary will be returned, which contains the form related info. Th
 ### Form.updateControl
 
 > Form.updateControl(pageIndex,controlIndex, control);
+
+This API is only valid for field type of checkbox and radiobutton.
 
 Parameters:
 
