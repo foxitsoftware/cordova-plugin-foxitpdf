@@ -425,9 +425,9 @@ Parameters:
 - __pageIndex__: The page index, which start from 0 for the first page.
 - __controlIndex__: The index of current form control among all the controls of the specified page.
 - __control__: An dictionary contains the control info. The following are the key/value pairs for the dictionary.
-	-__exportValue__: export mapping name when related form field is check box or radio button.
-	-__isChecked__: Check if the current form control is checked when related form field is check box or radio button.
-	-__isDefaultChecked__: Check if the current form control is checked by default when related form field is check box or radio button.
+	- __exportValue__: export mapping name when related form field is check box or radio button.
+	- __isChecked__: Check if the current form control is checked when related form field is check box or radio button.
+	- __isDefaultChecked__: Check if the current form control is checked by default when related form field is check box or radio button.
 
 
 ### Form.getFieldByControl
