@@ -464,7 +464,12 @@ Parameters:
 Parameters:
 - __fieldIndex__: The index of form field in the document.
 
-Return:Please refer to the return info of [Form.getPageControls](#form.getpagecontrols)
+Return: An array of dictionaries will be returned, each dictionary contains the form related info. The following are the key/value pairs for the dictionary.
+
+- __controlIndex__: The index of current form control among all the controls of the specified field.
+- __exportValue__: export mapping name when related form field is check box or radio button.
+- __isChecked__: Check if the current form control is checked when related form field is check box or radio button.
+- __isDefaultChecked__: Check if the current form control is checked by default when related form field is check box or radio button.
 
 
 &nbsp;&nbsp;
