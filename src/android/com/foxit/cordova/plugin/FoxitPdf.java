@@ -307,11 +307,10 @@ public class FoxitPdf extends CordovaPlugin {
 
                 if (success) {
                     ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
-                    int[] pages = ReaderActivity.pdfViewCtrl.getVisiblePages();
-                    for (int i = 0; i < pages.length; i++) {
-                        Rect rect = new Rect(0, 0, ReaderActivity.pdfViewCtrl.getPageViewWidth(i), ReaderActivity.pdfViewCtrl.getPageViewHeight(i));
-                        ReaderActivity.pdfViewCtrl.refresh(i, rect);
-                    }
+                    int pageIndex = ReaderActivity.pdfViewCtrl.getCurrentPage();
+                    Rect rect = new Rect(0, 0, ReaderActivity.pdfViewCtrl.getPageViewWidth(pageIndex), ReaderActivity.pdfViewCtrl.getPageViewHeight(pageIndex));
+                    ReaderActivity.pdfViewCtrl.refresh(pageIndex, rect);
+                    
                     callbackContext.success();
                     return true;
                 }
