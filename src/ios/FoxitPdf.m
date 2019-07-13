@@ -889,7 +889,7 @@ static NSString *initializeKey;
         FSControl *pControl = [pForm getControl:page index:i];
         
         NSMutableDictionary *tempDic = @{}.mutableCopy;
-        [tempDic setObject:@([pControl getIndex]) forKey:@"controlIndex"];
+        [tempDic setObject:@(i) forKey:@"controlIndex"];
         [tempDic setObject:pControl.exportValue forKey:@"exportValue"];
         [tempDic setObject:@([pControl isChecked]) forKey:@"isChecked"];
         [tempDic setObject:@([pControl isDefaultChecked]) forKey:@"isDefaultChecked"];
