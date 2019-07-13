@@ -37,7 +37,6 @@ var Form = function(){
 // defValue : "1",
 // defaultAppearance :         {
 // flags : 3,
-// font : "Helvetica",
 // "textColor" : 3,
 // "textSize" : 3,
 // },
@@ -62,7 +61,6 @@ Form.prototype.getAllFormFields =  function() {
 //    needConstructAppearances : false,
 //    defaultAppearance :  {
 //        flags: flags,
-//        font:font,
 //        textSize:10,
 //        textColor:0X00000
 //    }
@@ -80,7 +78,6 @@ Form.prototype.getForm =  function() {
 //    needConstructAppearances : false,
 //    defaultAppearance :  {
 //        flags: flags,
-//        font:font,
 //        textSize:10,
 //        textColor:0X0000
 //    }
@@ -251,7 +248,6 @@ Form.prototype.updateControl =  function(pageIndex,controlIndex, control) {
 // defValue : "1",
 // defaultAppearance :         {
 // flags : 3,
-// font : "Helvetica",
 // "textColor" : 3,
 // "textSize" : 3,
 // },

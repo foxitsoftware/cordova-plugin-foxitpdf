@@ -696,19 +696,26 @@ static NSString *initializeKey;
             isModified = YES;
         }
         
-        FSDefaultAppearance *fsdefaultappearance = pForm.defaultAppearance;
-        
-        NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
-        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
-        [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"textSize"];
-        [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"textColor"];
-        
-        if ([formInfo objectForKey:@"defaultAppearance"] && ![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
-            NSDictionary *setFormAP = formInfo[@"defaultAppearance"];
+        if ([formInfo objectForKey:@"defaultAppearance"]) {
+            NSDictionary *dfapDict = [formInfo objectForKey:@"defaultAppearance"];
+            FSDefaultAppearance *fsdefaultappearance = pForm.defaultAppearance;
             
-            FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:[setFormAP[@"flag"] intValue] font:fsdefaultappearance.font text_size:[setFormAP[@"textSize"] floatValue] text_color:[setFormAP[@"textColor"] intValue]];
-            pForm.defaultAppearance = newfsdefaultappearance;
-            isModified = YES;
+            if ([dfapDict objectForKey:@"flags"] ) {
+                [fsdefaultappearance setFlags:[[dfapDict objectForKey:@"flags"] intValue]];
+                isModified = true;
+            }
+            
+            if ([dfapDict objectForKey:@"textSize"] ) {
+                [fsdefaultappearance setText_size:[[dfapDict objectForKey:@"textSize"] floatValue]];
+                isModified = true;
+            }
+            
+            if ([dfapDict objectForKey:@"textColor"] ) {
+                [fsdefaultappearance setText_color: [[dfapDict objectForKey:@"textColor"] intValue]];
+                isModified = true;
+            }
+            
+            pForm.defaultAppearance = fsdefaultappearance;
         }
         
         self.extensionsMgr.isDocModified = isModified;
@@ -1290,14 +1297,26 @@ static NSString *initializeKey;
         //    field.fieldType = fsfield[@"fieldType"];
         
         //appearance
-        NSMutableDictionary *defaultAppearance = fsfield[@"defaultAppearance"];
-        FSDefaultAppearance *fsdefaultappearance = field.defaultAppearance;
-        
-        if ([options objectForKey:@"defaultAppearance"] && ![defaultAppearance isEqual:options[@"defaultAppearance"]]) {
+        if ([fsfield objectForKey:@"defaultAppearance"]) {
+            NSDictionary *dfapDict = [fsfield objectForKey:@"defaultAppearance"];
+            FSDefaultAppearance *fsdefaultappearance = field.defaultAppearance;
             
-            FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:[defaultAppearance[@"flags"] intValue] font:fsdefaultappearance.font text_size:[defaultAppearance[@"text_size"] floatValue] text_color:[defaultAppearance[@"text_color"] intValue]];
-            field.defaultAppearance = newfsdefaultappearance;
-            isModified = YES;
+            if ([dfapDict objectForKey:@"flags"] ) {
+                [fsdefaultappearance setFlags:[[dfapDict objectForKey:@"flags"] intValue]];
+                isModified = true;
+            }
+            
+            if ([dfapDict objectForKey:@"textSize"] ) {
+                [fsdefaultappearance setText_size:[[dfapDict objectForKey:@"textSize"] floatValue]];
+                isModified = true;
+            }
+            
+            if ([dfapDict objectForKey:@"textColor"] ) {
+                [fsdefaultappearance setText_color:[[dfapDict objectForKey:@"textColor"] intValue] ];
+                isModified = true;
+            }
+            
+            field.defaultAppearance = fsdefaultappearance;
         }
         
         //choice
