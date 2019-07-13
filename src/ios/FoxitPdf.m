@@ -683,12 +683,16 @@ static NSString *initializeKey;
         NSLog(@"%@",options);
         NSDictionary *formInfo = options[@"forminfo"];
         
+        BOOL isModified = NO;
+        
         if ([formInfo objectForKey:@"alignment"] && pForm.alignment != [formInfo[@"alignment"] intValue]) {
             pForm.alignment = [formInfo[@"alignment"] intValue];
+            isModified = YES;
         }
         
         if ([formInfo objectForKey:@"needConstructAppearances"] && pForm.needConstructAppearances != [formInfo[@"needConstructAppearances"] boolValue]) {
             [pForm setConstructAppearances:[formInfo[@"needConstructAppearances"] boolValue]];
+            isModified = YES;
         }
         
         FSDefaultAppearance *fsdefaultappearance = pForm.defaultAppearance;
@@ -703,7 +707,10 @@ static NSString *initializeKey;
             
             FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:[setFormAP[@"flag"] intValue] font:fsdefaultappearance.font text_size:[setFormAP[@"textSize"] floatValue] text_color:[setFormAP[@"textColor"] intValue]];
             pForm.defaultAppearance = newfsdefaultappearance;
+            isModified = YES;
         }
+        
+        self.extensionsMgr.isDocModified = isModified;
         
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update form info success"];
         block();
@@ -778,6 +785,7 @@ static NSString *initializeKey;
             if (i == fieldIndex) {
                 FSField* pFormField = [pForm getField:i filter:@""];
                 isRenameSuccessed = [pForm renameField:pFormField new_field_name:newFieldName];
+                self.extensionsMgr.isDocModified = isRenameSuccessed;
             }
         }
         
@@ -820,6 +828,8 @@ static NSString *initializeKey;
             }
         }
         
+        self.extensionsMgr.isDocModified = YES;
+        
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"remove field success"];
         block();
     } @catch (NSException *exception) {
@@ -848,7 +858,7 @@ static NSString *initializeKey;
     @try {
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
         BOOL isReset = [pForm reset];
-        self.extensionsMgr.isDocModified = YES;
+        self.extensionsMgr.isDocModified = isReset;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
         block();
     } @catch (NSException *exception) {
@@ -880,7 +890,7 @@ static NSString *initializeKey;
     @try {
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
         BOOL isExport = [pForm exportToXML:filePath];
-        
+        //        self.extensionsMgr.isDocModified = isExport;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isExport];
         block();
     } @catch (NSException *exception) {
@@ -912,7 +922,7 @@ static NSString *initializeKey;
         
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
         BOOL isImport = [pForm importFromXML:filePath];
-        
+        self.extensionsMgr.isDocModified = isImport;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isImport];
         block();
     } @catch (NSException *exception) {
@@ -997,6 +1007,8 @@ static NSString *initializeKey;
         FSControl *pControl = [pForm getControl:page index:controlIndex];
         [pForm removeControl:pControl];
         
+        self.extensionsMgr.isDocModified = YES;
+        
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"remove control success"];
         block();
     } @catch (NSException *exception) {
@@ -1042,6 +1054,8 @@ static NSString *initializeKey;
         [tempDic setObject:@([pControl isChecked]) forKey:@"isChecked"];
         [tempDic setObject:@([pControl isDefaultChecked]) forKey:@"isDefaultChecked"];
         
+        self.extensionsMgr.isDocModified = YES;
+        
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempDic];
         block();
         
@@ -1080,17 +1094,24 @@ static NSString *initializeKey;
         
         FSControl *pControl = [pForm getControl:page index:controlIndex];
         
+        BOOL isModified = NO;
+        
         if ([control objectForKey:@"exportValue"] && ![pControl.exportValue isEqualToString:control[@"exportValue"]]) {
             pControl.exportValue = control[@"exportValue"];
+            isModified = YES;
         }
         
         if ([control objectForKey:@"isChecked"] && pControl.isChecked != [control[@"isChecked"] boolValue]) {
             [pControl setChecked:[control[@"isChecked"] boolValue]];
+            isModified = YES;
         }
         
         if ([control objectForKey:@"isDefaultChecked"] && pControl.isDefaultChecked != [control[@"isDefaultChecked"] boolValue]) {
             [pControl setDefaultChecked:[control[@"isDefaultChecked"] boolValue]];
+            isModified = YES;
         }
+        
+        self.extensionsMgr.isDocModified = isModified;
         
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update control info success"];
         block();
@@ -1225,17 +1246,53 @@ static NSString *initializeKey;
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
         FSField *field = [pForm getField:fieldIndex filter:@""];
         
-        field.value = fsfield[@"value"];
-        field.topVisibleIndex = [fsfield[@"topVisibleIndex"] intValue];
-        [pForm renameField:field new_field_name:fsfield[@"name"]];
+        BOOL isModified = NO;
+        if ([fsfield objectForKey:@"value"]) {
+            field.value = [fsfield objectForKey:@"value"];
+            isModified = YES;
+        }
         
-        field.maxLength = [fsfield[@"maxLength"] intValue];
-        field.mappingName = fsfield[@"mappingName"];
+        if ([fsfield objectForKey:@"topVisibleIndex"]) {
+            field.topVisibleIndex = [[fsfield objectForKey:@"topVisibleIndex"] intValue];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"name"]) {
+            [pForm renameField:field new_field_name:[fsfield objectForKey:@"name"]];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"maxLength"]) {
+            field.maxLength = [[fsfield objectForKey:@"maxLength"] intValue];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"mappingName"]) {
+            field.mappingName = [fsfield objectForKey:@"mappingName"];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"value"]) {
+            field.flags = [[fsfield objectForKey:@"flags"] intValue];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"defValue"]) {
+            field.defaultValue = [fsfield objectForKey:@"defValue"];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"alternateName"]) {
+            field.alternateName = [fsfield objectForKey:@"alternateName"];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"alignment"]) {
+            field.alignment = [[fsfield objectForKey:@"alignment"] intValue];
+            isModified = YES;
+        }
+        
         //    field.fieldType = fsfield[@"fieldType"];
-        field.flags = [fsfield[@"fieldFlag"] intValue];
-        field.defaultValue = fsfield[@"defValue"];
-        field.alternateName = fsfield[@"alternateName"];
-        field.alignment = [fsfield[@"alignment"] intValue];
         
         //appearance
         NSMutableDictionary *defaultAppearance = fsfield[@"defaultAppearance"];
@@ -1245,6 +1302,7 @@ static NSString *initializeKey;
             
             FSDefaultAppearance *newfsdefaultappearance = [[FSDefaultAppearance alloc] initWithFlags:[defaultAppearance[@"flags"] intValue] font:fsdefaultappearance.font text_size:[defaultAppearance[@"text_size"] floatValue] text_color:[defaultAppearance[@"text_color"] intValue]];
             field.defaultAppearance = newfsdefaultappearance;
+            isModified = YES;
         }
         
         //choice
@@ -1258,11 +1316,15 @@ static NSString *initializeKey;
                     [choiceOptionArr add:choiceOption];
                 }
                 field.options = choiceOptionArr;
+                
+                isModified = YES;
             }
         }
         
         NSMutableDictionary *tempField = @{}.mutableCopy;
         tempField = [self getDictionaryOfField:field form:pForm];
+        
+        self.extensionsMgr.isDocModified = isModified;
         
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempField];
         block();
@@ -1304,7 +1366,7 @@ static NSString *initializeKey;
                 isReset = [pFormField reset];
             }
         }
-        
+        self.extensionsMgr.isDocModified = isReset;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
         block();
         
