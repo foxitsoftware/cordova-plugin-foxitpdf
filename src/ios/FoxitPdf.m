@@ -558,26 +558,27 @@ static NSString *initializeKey;
 
 # pragma mark form
 -(BOOL)checkIfCanUsePDFForm:(CDVPluginResult *)pluginResult command:(CDVInvokedUrlCommand *)command{
+    __block CDVPluginResult *cPluginResult = pluginResult;
     void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        [cPluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:cPluginResult callbackId:command.callbackId];
     };
     
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
     if (FSErrSuccess != initializeCode) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        cPluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
         block();
         return NO;
     }
     
     if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
+        cPluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
         block();
         return NO;
     }
     
     if (![self.currentDoc hasForm]) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"The current document does not have interactive form."];
+        cPluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"The current document does not have interactive form."];
         block();
         return NO;
     }
@@ -819,14 +820,8 @@ static NSString *initializeKey;
     
     @try {
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
-        int fieldCount = [pForm getFieldCount:@""];
-        
-        for (int i = 0; i < fieldCount; i++) {
-            if (i == fieldIndex) {
-                FSField* pFormField = [pForm getField:i filter:@""];
-                [pForm removeField:pFormField];
-            }
-        }
+        FSField* pFormField = [pForm getField:fieldIndex filter:@""];
+        [pForm removeField:pFormField];
         
         self.extensionsMgr.isDocModified = YES;
         
