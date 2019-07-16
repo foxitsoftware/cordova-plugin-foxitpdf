@@ -1030,8 +1030,17 @@ static NSString *initializeKey;
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     };
     
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
-        return ;
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        block();
+        return NO;
+    }
+    
+    if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
+        block();
+        return NO;
     }
     
     NSDictionary* options = [command argumentAtIndex:0];
