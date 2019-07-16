@@ -914,10 +914,10 @@ public class FoxitPdf extends CordovaPlugin {
 
         PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
         try {
-            if (!pdfDoc.hasForm()) {
-                callbackContext.error("The current document does not have interactive form.");
-                return false;
-            }
+            // if (!pdfDoc.hasForm()) {
+            //     callbackContext.error("The current document does not have interactive form.");
+            //     return false;
+            // }
             Form form = new Form(pdfDoc);
             PDFPage page = pdfDoc.getPage(pageIndex);
             if (!page.isParsed()) {
