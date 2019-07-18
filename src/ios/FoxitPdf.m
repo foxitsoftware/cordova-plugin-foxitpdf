@@ -1034,13 +1034,13 @@ static NSString *initializeKey;
     if (FSErrSuccess != initializeCode) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
         block();
-        return NO;
+        return;
     }
     
     if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
         block();
-        return NO;
+        return;
     }
     
     NSDictionary* options = [command argumentAtIndex:0];
