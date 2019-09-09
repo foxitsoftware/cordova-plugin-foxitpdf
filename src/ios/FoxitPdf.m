@@ -385,7 +385,6 @@ static NSString *initializeKey;
                       }];
     //    self.pdfViewController.modalPresentationStyle = UIModalPresentationFullScreen;
     
-    [self wrapTopToolbar];
     self.topToolbarVerticalConstraints = @[];
     
     self.extensionsMgr.goBack = ^() {
@@ -504,33 +503,6 @@ static NSString *initializeKey;
                      animations:^{
                          [self.pdfViewControl layoutIfNeeded];
                      }];
-}
-
-- (void)wrapTopToolbar {
-    // let status bar be translucent. top toolbar is top layout guide (below status bar), so we need a wrapper to cover the status bar.
-    UIToolbar *topToolbar = self.extensionsMgr.topToolbar;
-    [topToolbar setTranslatesAutoresizingMaskIntoConstraints:NO];
-    
-    UIView *topToolbarWrapper = [[UIToolbar alloc] init];
-    [topToolbarWrapper setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [self.pdfViewControl insertSubview:topToolbarWrapper belowSubview:topToolbar];
-    [topToolbarWrapper addSubview:topToolbar];
-    
-    [self.pdfViewControl addConstraints:
-     [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[topToolbarWrapper]-0-|"
-                                             options:0
-                                             metrics:nil
-                                               views:NSDictionaryOfVariableBindings(topToolbarWrapper)]];
-    [topToolbarWrapper addConstraints:
-     [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[topToolbar]-0-|"
-                                             options:0
-                                             metrics:nil
-                                               views:NSDictionaryOfVariableBindings(topToolbar)]];
-    [topToolbarWrapper addConstraints:
-     [NSLayoutConstraint constraintsWithVisualFormat:@"V:[topToolbar]-0-|"
-                                             options:0
-                                             metrics:nil
-                                               views:NSDictionaryOfVariableBindings(topToolbar)]];
 }
 
 - (NSString *)correctFilePath:(NSString *)filePath{
