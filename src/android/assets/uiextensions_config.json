@@ -27,7 +27,8 @@
             "distance": true,
             "image": true,
             "audio": true,
-            "video": true
+            "video": true,
+            "redaction":true
         },
         "thumbnail": true,
         "attachment": true,
@@ -45,8 +46,10 @@
          "disableLink": false
     },
     "uiSettings": {
-      "displayMode": "Single", //("Single"/"Continous"/"Facing"/"CoverLeft"/"CoverMiddle"/"CoverRight"/"Reflow"
-                                  // Note: /"CoverLeft"/"CoverMiddle"/"CoverRight" currently only support CoverRight)
+      "pageMode": "Single", //("Single"/"Facing"/"CoverLeft"/"CoverMiddle"/"CoverRight"/"Reflow"
+                            // Note: /"CoverLeft"/"CoverMiddle"/"CoverRight" currently only support CoverRight)
+      "continuous": false,  // True means continuous pages, false means discontinuous pages. Invalid for "Reflow" mode
+      "reflowBackgroundColor": "#FFFFFF", // option
       "zoomMode": "FitWidth", //("FitWidth"/"FitPage")
       "colorMode": "Normal", //("Normal"/"Night"/"Map")
       "mapForegroundColor": "#5d5b71", //Effective only when colorMode is "Map" and "Night" mode is not.
@@ -56,7 +59,7 @@
       "highlightFormColor": "#200066cc", //Set the highlight color with alpha
       "highlightLink": true,
       "highlightLinkColor": "#16007fff", //Set the highlight color with alpha
-      "fullscreen": true, /// Enter the full screen immediately after opening. If the user clicks on the page, the toolbar will be displayed. After 5 seconds, if it is in full screen mode, the toolbar and other auxiliary toolbar buttons will be hidden automatically.
+      "fullscreen": true, // Enter the full screen immediately after opening. If the user clicks on the page, the toolbar will be displayed. After 5 seconds, if it is in full screen mode, the toolbar and other auxiliary toolbar buttons will be hidden automatically.
       "annotations": {
                "continuouslyAdd": false,
                 "highlight": {
@@ -143,10 +146,16 @@
                    "scaleToUnit": "inch",//Unit: pt/inch/ft/yd/p/mm/cm/m
                    "scaleFromValue": 1,
                    "scaleToValue": 1
+                },
+                "redaction": {
+                   "fillColor": "#000000",
+                   "textColor": "#ff0000",
+                   "textFace": "Courier", // textFace:"Courier"/"Helvetica"/"Times"
+                   "textSize": 12
                 }
         },
         "signature": {
-            "color": "#000000", "thickness": 4
+            "color": "#000000", "thickness": 8
         }
     }
 }
