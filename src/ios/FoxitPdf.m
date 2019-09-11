@@ -1,3 +1,11 @@
+/**
+ * Copyright (C) 2003-2019, Foxit Software Inc..
+ * All Rights Reserved.
+ *
+ * http://www.foxitsoftware.com
+ *
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc. .
+ */
 /********* FoxitPdf.m Cordova Plugin Implementation *******/
 
 #import <Cordova/CDV.h>
@@ -24,6 +32,8 @@
 @property (nonatomic, strong) NSString *filePathSaveTo;
 @property (nonatomic, copy) NSString *filePassword;
 @property (nonatomic, assign) BOOL isEnableAnnotations;
+
+@property (nonatomic, strong) FSPDFDoc *tempDoc;
 
 - (void)Preview:(CDVInvokedUrlCommand *)command;
 @end
@@ -311,7 +321,7 @@ static NSString *initializeKey;
     id obj = [options objectForKey:@"enable"];
     BOOL val = obj?[obj boolValue]:YES;
     self.isEnableAnnotations = options?val:YES;
-   
+    
 }
 
 # pragma mark -- Foxit preview
@@ -517,6 +527,904 @@ static NSString *initializeKey;
     }
     return nil;
 }
+
+# pragma mark form
+-(BOOL)checkIfCanUsePDFForm:(CDVPluginResult *)pluginResult command:(CDVInvokedUrlCommand *)command{
+    __block CDVPluginResult *cPluginResult = pluginResult;
+    void (^block)(void) = ^{
+        [cPluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:cPluginResult callbackId:command.callbackId];
+    };
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        cPluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        block();
+        return NO;
+    }
+    
+    if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
+        cPluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
+        block();
+        return NO;
+    }
+    
+    if (![self.currentDoc hasForm]) {
+        cPluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"The current document does not have interactive form."];
+        block();
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (void)getAllFormFields:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    @try {
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        int fieldCount = [pForm getFieldCount:@""];
+        NSMutableArray *tempArray = @[].mutableCopy;
+        for (int i = 0; i < fieldCount; i++) {
+            FSField* pFormField = [pForm getField:i filter:@""];
+            
+            NSMutableDictionary *tempField = @{}.mutableCopy;
+            tempField = [self getDictionaryOfField:pFormField form:nil];
+            [tempField setObject:@(i) forKey:@"fieldIndex"];
+            
+            [tempArray addObject:tempField];
+        }
+        
+        NSLog(@"%@",tempArray);
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArray];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+}
+
+- (void)getForm:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    @try {
+        
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        
+        NSMutableDictionary *tempFormInfo = @{}.mutableCopy;
+        [tempFormInfo setObject:@(pForm.alignment) forKey:@"alignment"];
+        [tempFormInfo setObject:@(pForm.needConstructAppearances) forKey:@"needConstructAppearances"];
+        
+        NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
+        FSDefaultAppearance *fsdefaultappearance = pForm.defaultAppearance;
+        [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
+        [defaultAppearance setObject:@(fsdefaultappearance.text_size) forKey:@"textSize"];
+        [defaultAppearance setObject:@(fsdefaultappearance.text_color) forKey:@"textColor"];
+        [tempFormInfo setObject:defaultAppearance forKey:@"defaultAppearance"];
+        
+        NSLog(@"%@",tempFormInfo);
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempFormInfo];
+        block();
+        
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+}
+
+- (void)updateForm:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    @try {
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        
+        NSDictionary* options = [command argumentAtIndex:0];
+        NSLog(@"%@",options);
+        NSDictionary *formInfo = options[@"forminfo"];
+        
+        BOOL isModified = NO;
+        
+        if ([formInfo objectForKey:@"alignment"] && pForm.alignment != [formInfo[@"alignment"] intValue]) {
+            pForm.alignment = [formInfo[@"alignment"] intValue];
+            isModified = YES;
+        }
+        
+        if ([formInfo objectForKey:@"needConstructAppearances"] && pForm.needConstructAppearances != [formInfo[@"needConstructAppearances"] boolValue]) {
+            [pForm setConstructAppearances:[formInfo[@"needConstructAppearances"] boolValue]];
+            isModified = YES;
+        }
+        
+        if ([formInfo objectForKey:@"defaultAppearance"]) {
+            NSDictionary *dfapDict = [formInfo objectForKey:@"defaultAppearance"];
+            FSDefaultAppearance *fsdefaultappearance = pForm.defaultAppearance;
+            
+            if ([dfapDict objectForKey:@"flags"] ) {
+                [fsdefaultappearance setFlags:[[dfapDict objectForKey:@"flags"] intValue]];
+                isModified = true;
+            }
+            
+            if ([dfapDict objectForKey:@"textSize"] ) {
+                [fsdefaultappearance setText_size:[[dfapDict objectForKey:@"textSize"] floatValue]];
+                isModified = true;
+            }
+            
+            if ([dfapDict objectForKey:@"textColor"] ) {
+                [fsdefaultappearance setText_color: [[dfapDict objectForKey:@"textColor"] intValue]];
+                isModified = true;
+            }
+            
+            pForm.defaultAppearance = fsdefaultappearance;
+        }
+        
+        self.extensionsMgr.isDocModified = isModified;
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update form info success"];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+}
+
+- (void)formValidateFieldName:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    @try {
+        
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        
+        NSDictionary* options = [command argumentAtIndex:0];
+        NSLog(@"%@",options);
+        
+        int fSFieldType = [options[@"fieldType"] intValue];
+        NSString *fieldName = options[@"fieldName"];
+        
+        BOOL isCanbeUsed = [pForm validateFieldName:fSFieldType field_name:fieldName];
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isCanbeUsed];
+        block();
+        
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
+- (void)formRenameField:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    
+    int fieldIndex = [options[@"fieldIndex"] intValue];
+    NSString *newFieldName = options[@"newFieldName"];
+    
+    @try {
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        int fieldCount = [pForm getFieldCount:@""];
+        
+        BOOL isRenameSuccessed = NO;
+        for (int i = 0; i < fieldCount; i++) {
+            if (i == fieldIndex) {
+                FSField* pFormField = [pForm getField:i filter:@""];
+                isRenameSuccessed = [pForm renameField:pFormField new_field_name:newFieldName];
+                self.extensionsMgr.isDocModified = isRenameSuccessed;
+            }
+        }
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isRenameSuccessed];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
+- (void)formRemoveField:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    
+    int fieldIndex = [options[@"fieldIndex"] intValue];
+    
+    @try {
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        FSField* pFormField = [pForm getField:fieldIndex filter:@""];
+        [pForm removeField:pFormField];
+        
+        self.extensionsMgr.isDocModified = YES;
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"remove field success"];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
+- (void)formReset:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    @try {
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        BOOL isReset = [pForm reset];
+        self.extensionsMgr.isDocModified = isReset;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
+- (void)formExportToXML:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    
+    NSString *filePath = options[@"filePath"];
+    filePath = [self correctFilePath:filePath];
+    @try {
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        BOOL isExport = [pForm exportToXML:filePath];
+        //        self.extensionsMgr.isDocModified = isExport;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isExport];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+}
+
+- (void)formImportFromXML:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    
+    NSString *filePath = options[@"filePath"];
+    filePath = [self correctFilePath:filePath];
+    @try {
+        
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        BOOL isImport = [pForm importFromXML:filePath];
+        self.extensionsMgr.isDocModified = isImport;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isImport];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
+- (void)formGetPageControls:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    
+    int pageIndex = [options[@"pageIndex"] intValue];
+    
+    @try {
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        FSPDFPage *page = [self.currentDoc getPage:pageIndex];
+        int pageControlCount = [pForm getControlCount:page];
+        
+        NSMutableArray *tempArr = @[].mutableCopy;
+        for (int i = 0 ; i < pageControlCount; i++) {
+            FSControl *pControl = [pForm getControl:page index:i];
+            
+            NSMutableDictionary *tempDic = @{}.mutableCopy;
+            [tempDic setObject:@(i) forKey:@"controlIndex"];
+            [tempDic setObject:pControl.exportValue forKey:@"exportValue"];
+            [tempDic setObject:@([pControl isChecked]) forKey:@"isChecked"];
+            [tempDic setObject:@([pControl isDefaultChecked]) forKey:@"isDefaultChecked"];
+            
+            [tempArr addObject:tempDic];
+        }
+        
+        NSLog(@"%@",tempArr);
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArr];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+}
+
+- (void)formRemoveControl:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    
+    int pageIndex = [options[@"pageIndex"] intValue];
+    int controlIndex = [options[@"controlIndex"] intValue];
+    
+    @try {
+        
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        FSPDFPage *page = [self.currentDoc getPage:pageIndex];
+        
+        FSControl *pControl = [pForm getControl:page index:controlIndex];
+        [pForm removeControl:pControl];
+        
+        self.extensionsMgr.isDocModified = YES;
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"remove control success"];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
+- (void)formAddControl:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        block();
+        return;
+    }
+    
+    if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
+        block();
+        return;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    
+    int pageIndex = [options[@"pageIndex"] intValue];
+    NSString *fieldName = options[@"fieldName"];
+    int fieldType = [options[@"fieldType"] intValue];
+    NSDictionary *rect = options[@"rect"];
+    
+    @try {
+        FSRectF *fsrect = [[FSRectF alloc] initWithLeft1:[[rect objectForKey:@"left"] floatValue] bottom1:[[rect objectForKey:@"bottom"] floatValue] right1:[[rect objectForKey:@"right"] floatValue] top1:[[rect objectForKey:@"top"] floatValue] ];
+        
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        FSPDFPage *page = [self.currentDoc getPage:pageIndex];
+        
+        FSControl *pControl = [pForm addControl:page field_name:fieldName field_type:fieldType rect:fsrect];
+        
+        NSMutableDictionary *tempDic = @{}.mutableCopy;
+        [tempDic setObject:@([pForm getControlCount:page] -1) forKey:@"controlIndex"];
+        [tempDic setObject:pControl.exportValue forKey:@"exportValue"];
+        [tempDic setObject:@([pControl isChecked]) forKey:@"isChecked"];
+        [tempDic setObject:@([pControl isDefaultChecked]) forKey:@"isDefaultChecked"];
+        
+        self.extensionsMgr.isDocModified = YES;
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempDic];
+        block();
+        
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
+- (void)formUpdateControl:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    
+    int pageIndex = [options[@"pageIndex"] intValue];
+    int controlIndex = [options[@"controlIndex"] intValue];
+    NSDictionary *control = options[@"control"];
+    
+    @try {
+        
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        FSPDFPage *page = [self.currentDoc getPage:pageIndex];
+        
+        FSControl *pControl = [pForm getControl:page index:controlIndex];
+        
+        BOOL isModified = NO;
+        
+        if ([control objectForKey:@"exportValue"] && ![pControl.exportValue isEqualToString:control[@"exportValue"]]) {
+            pControl.exportValue = control[@"exportValue"];
+            isModified = YES;
+        }
+        
+        if ([control objectForKey:@"isChecked"] && pControl.isChecked != [control[@"isChecked"] boolValue]) {
+            [pControl setChecked:[control[@"isChecked"] boolValue]];
+            isModified = YES;
+        }
+        
+        if ([control objectForKey:@"isDefaultChecked"] && pControl.isDefaultChecked != [control[@"isDefaultChecked"] boolValue]) {
+            [pControl setDefaultChecked:[control[@"isDefaultChecked"] boolValue]];
+            isModified = YES;
+        }
+        
+        self.extensionsMgr.isDocModified = isModified;
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update control info success"];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
+- (NSMutableDictionary *)getDictionaryOfField:(FSField *)pFormField form:(FSForm *)pForm {
+    NSMutableDictionary *tempField = @{}.mutableCopy;
+    
+    if (pForm != nil) {
+        int fieldIndex = -1;
+        int fieldCount = [pForm getFieldCount:@""];
+        for (int i = 0; i < fieldCount; i++) {
+            FSField *tempField = [pForm getField:i filter:@""];
+            if (tempField.getType == pFormField.getType && [tempField.getName isEqualToString:pFormField.getName] ) {
+                fieldIndex = i;
+            }
+        }
+        [tempField setObject:@(fieldIndex) forKey:@"fieldIndex"];
+    }
+    
+    NSString* name = [pFormField getName];
+    FSFieldType fieldType = [pFormField getType];
+    NSString* defValue = [pFormField getDefaultValue];
+    NSString* value = [pFormField getValue];
+    FSFieldFlags fieldFlag = [pFormField getFlags];
+    
+    [tempField setObject:name forKey:@"name"];
+    [tempField setObject:@(fieldType) forKey:@"fieldType"];
+    [tempField setObject:defValue forKey:@"defValue"];
+    [tempField setObject:value forKey:@"value"];
+    [tempField setObject:@(fieldFlag) forKey:@"fieldFlag"];
+    [tempField setObject:@(pFormField.alignment) forKey:@"alignment"];
+    [tempField setObject:pFormField.alternateName forKey:@"alternateName"];
+    
+    NSMutableDictionary *defaultAppearance = @{}.mutableCopy;
+    FSDefaultAppearance *fsdefaultappearance = pFormField.defaultAppearance;
+    [defaultAppearance setObject:@(fsdefaultappearance.flags) forKey:@"flags"];
+    [defaultAppearance setObject:@([fsdefaultappearance getText_size]) forKey:@"textSize"];
+    [defaultAppearance setObject:@([fsdefaultappearance getText_color]) forKey:@"textColor"];
+    
+    [tempField setObject:defaultAppearance forKey:@"defaultAppearance"];
+    [tempField setObject:pFormField.mappingName forKey:@"mappingName"];
+    [tempField setObject:@(pFormField.maxLength) forKey:@"maxLength"];
+    [tempField setObject:@(pFormField.topVisibleIndex) forKey:@"topVisibleIndex"];
+    
+    if (pFormField.options) {
+        NSMutableArray *tempArray2 = @[].mutableCopy;
+        for (int i = 0; i < [pFormField.options getSize]; i++)
+        {
+            FSChoiceOption *choiceoption = [pFormField.options getAt:i];
+            NSMutableDictionary *tempChoiceoption = @{}.mutableCopy;
+            [tempChoiceoption setObject:choiceoption.option_value forKey:@"optionValue"];
+            [tempChoiceoption setObject:choiceoption.option_label forKey:@"optionLabel"];
+            [tempChoiceoption setObject:@(choiceoption.selected) forKey:@"selected"];
+            [tempChoiceoption setObject:@(choiceoption.default_selected) forKey:@"defaultSelected"];
+            
+            [tempArray2 addObject:tempChoiceoption];
+        }
+        
+        [tempField setObject:tempArray2 forKey:@"choiceOptions"];
+    }
+    
+    return tempField;
+}
+
+- (void)getFieldByControl:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    int pageIndex = [options[@"pageIndex"] intValue];
+    int controlIndex = [options[@"controlIndex"] intValue];
+    
+    @try {
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        FSPDFPage *page = [self.currentDoc getPage:pageIndex];
+        
+        FSControl *pControl = [pForm getControl:page index:controlIndex];
+        
+        FSField *pFormField = [pControl getField];
+        
+        NSMutableDictionary *tempField = @{}.mutableCopy;
+        tempField = [self getDictionaryOfField:pFormField form:pForm];
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempField];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
+
+- (void)FieldUpdateField:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    int fieldIndex = [options[@"fieldIndex"] intValue];
+    NSDictionary *fsfield = options[@"field"];
+    
+    @try {
+        
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        FSField *field = [pForm getField:fieldIndex filter:@""];
+        
+        BOOL isModified = NO;
+        if ([fsfield objectForKey:@"value"]) {
+            field.value = [fsfield objectForKey:@"value"];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"topVisibleIndex"]) {
+            field.topVisibleIndex = [[fsfield objectForKey:@"topVisibleIndex"] intValue];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"name"]) {
+            [pForm renameField:field new_field_name:[fsfield objectForKey:@"name"]];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"maxLength"]) {
+            field.maxLength = [[fsfield objectForKey:@"maxLength"] intValue];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"mappingName"]) {
+            field.mappingName = [fsfield objectForKey:@"mappingName"];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"value"]) {
+            field.flags = [[fsfield objectForKey:@"flags"] intValue];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"defValue"]) {
+            field.defaultValue = [fsfield objectForKey:@"defValue"];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"alternateName"]) {
+            field.alternateName = [fsfield objectForKey:@"alternateName"];
+            isModified = YES;
+        }
+        
+        if ([fsfield objectForKey:@"alignment"]) {
+            field.alignment = [[fsfield objectForKey:@"alignment"] intValue];
+            isModified = YES;
+        }
+        
+        //    field.fieldType = fsfield[@"fieldType"];
+        
+        //appearance
+        if ([fsfield objectForKey:@"defaultAppearance"]) {
+            NSDictionary *dfapDict = [fsfield objectForKey:@"defaultAppearance"];
+            FSDefaultAppearance *fsdefaultappearance = field.defaultAppearance;
+            
+            if ([dfapDict objectForKey:@"flags"] ) {
+                [fsdefaultappearance setFlags:[[dfapDict objectForKey:@"flags"] intValue]];
+                isModified = true;
+            }
+            
+            if ([dfapDict objectForKey:@"textSize"] ) {
+                [fsdefaultappearance setText_size:[[dfapDict objectForKey:@"textSize"] floatValue]];
+                isModified = true;
+            }
+            
+            if ([dfapDict objectForKey:@"textColor"] ) {
+                [fsdefaultappearance setText_color:[[dfapDict objectForKey:@"textColor"] intValue] ];
+                isModified = true;
+            }
+            
+            field.defaultAppearance = fsdefaultappearance;
+        }
+        
+        //choice
+        if ([fsfield objectForKey:@"choiceOptions"]) {
+            NSArray *choiceArr = [[NSArray alloc] initWithArray:fsfield[@"choiceOptions"]];
+            if (choiceArr.count > 0 ) {
+                FSChoiceOptionArray *choiceOptionArr = [[FSChoiceOptionArray alloc] init];
+                for (int i = 0 ; i < choiceArr.count; i++) {
+                    NSDictionary *choice = [[NSDictionary alloc] initWithDictionary: [choiceArr objectAtIndex:i]];
+                    FSChoiceOption *choiceOption = [[FSChoiceOption alloc] initWithOption_value:choice[@"optionValue"] option_label:choice[@"optionLabel"] selected:choice[@"selected"] default_selected:choice[@"defaultSelected"]];
+                    [choiceOptionArr add:choiceOption];
+                }
+                field.options = choiceOptionArr;
+                
+                isModified = YES;
+            }
+        }
+        
+        NSMutableDictionary *tempField = @{}.mutableCopy;
+        tempField = [self getDictionaryOfField:field form:pForm];
+        
+        self.extensionsMgr.isDocModified = isModified;
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempField];
+        block();
+        
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+    
+}
+
+- (void)FieldReset:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    int fieldIndex = [options[@"fieldIndex"] intValue];
+    
+    @try {
+        
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        int fieldCount = [pForm getFieldCount:@""];
+        BOOL isReset = NO;
+        for (int i = 0; i < fieldCount; i++) {
+            if (i == fieldIndex) {
+                FSField* pFormField = [pForm getField:i filter:@""];
+                isReset = [pFormField reset];
+            }
+        }
+        self.extensionsMgr.isDocModified = isReset;
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
+        block();
+        
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
+- (void)getFieldControls:(CDVInvokedUrlCommand*)command{
+    self.pluginCommand = command;
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+        return ;
+    }
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    NSLog(@"%@",options);
+    int fieldIndex = [options[@"fieldIndex"] intValue];
+    
+    @try {
+        
+        FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
+        int fieldCount = [pForm getFieldCount:@""];
+        NSMutableArray *tempArr = @[].mutableCopy;
+        for (int i = 0; i < fieldCount; i++) {
+            if (i == fieldIndex) {
+                FSField* pFormField = [pForm getField:i filter:@""];
+                int fieldControlCount = [pFormField getControlCount];
+                for (int i = 0 ; i < fieldControlCount; i++) {
+                    FSControl *pControl = [pFormField getControl:i];
+                    
+                    NSMutableDictionary *tempDic = @{}.mutableCopy;
+                    [tempDic setObject:@([pControl getIndex]) forKey:@"controlIndex"];
+                    [tempDic setObject:pControl.exportValue forKey:@"exportValue"];
+                    [tempDic setObject:@([pControl isChecked]) forKey:@"isChecked"];
+                    [tempDic setObject:@([pControl isDefaultChecked]) forKey:@"isDefaultChecked"];
+                    
+                    [tempArr addObject:tempDic];
+                }
+            }
+        }
+        
+        NSLog(@"%@",tempArr);
+        
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArr];
+        block();
+    } @catch (NSException *exception) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
+        block();
+        return;
+    }
+    
+}
+
 @end
 
 @implementation PDFNavigationController
@@ -533,3 +1441,4 @@ static NSString *initializeKey;
 }
 
 @end
+

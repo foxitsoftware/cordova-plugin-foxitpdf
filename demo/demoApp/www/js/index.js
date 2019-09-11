@@ -54,7 +54,7 @@ window.preview = function(){
 
 
     //iOS
-    var filePath = cordova.file.documentsDirectory + 'getting_started_ios.pdf';
+    var filePath = cordova.file.documentsDirectory + '7FormField.pdf';
     window.FoxitPdf.openDocument(filePath, null);
 
     window.FoxitPdf.addEventListener('onDocWillSave',function(data){
@@ -67,7 +67,12 @@ window.preview = function(){
                                      window.FoxitPdf.exportToFDF(cordova.file.documentsDirectory +'2.xfdf',0x0002,1,[[0,1]]);
                                      console.log('555555555555555555');
                                      });
-
+    
+    window.FoxitPdf.addEventListener('onDocOpened',function(data){
+        
+    });
+    
+    
     //Android
     //if you use the 'cordova-plugin-file' plugin, you can set the filePath like this: 
     //var filePath = cordova.file.externalRootDirectory + 'FoxitSDK/Sample.pdf';
