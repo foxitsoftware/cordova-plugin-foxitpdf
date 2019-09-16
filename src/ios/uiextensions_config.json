@@ -26,7 +26,8 @@
             "distance": true,
             "image": true,
             "audio": true,
-            "video": true
+            "video": true,
+            "redact": true
         },
         "thumbnail": true,
         "attachment": true,
@@ -44,11 +45,13 @@
         "disableLink" : false
     },
     "uiSettings": {
-        "displayMode" : "Single",
+        "pageMode":"Single",
+        "continuous":false,
         "colorMode" : "Normal",
         "zoomMode" : "FitWidth",
         "mapForegroundColor" : "#5d5b71",
         "mapBackgroundColor" : "#00001b",
+        "reflowBackgroundColor":"#ffffff",
         "disableFormNavigationBar" : false,
         "highlightForm" : true,
         "highlightLink" : true,
@@ -163,6 +166,12 @@
                 "scaleToUnit" : "inch",
                 "scaleFromValue" : 1,
                 "scaleToValue" : 1
+            },
+            "redaction": {
+                "fillColor" : "#000000",
+                "textColor": "#ff0000",
+                "textFace" : "Courier",
+                "textSize" : 12
             }
         },
         "signature": {
