@@ -82,7 +82,7 @@ cordova plugin add cordova-plugin-file
 ```
 ### Step2: Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component android folder.  
 
-You can download foxitpdfsdk_(version_no)_android.zip from https://developers.foxitsoftware.com/pdf-sdk/android/ (The latest version is 7.0.0)
+You can download foxitpdfsdk_(version_no)_android.zip from https://developers.foxitsoftware.com/pdf-sdk/android/ (The latest version is 7.1.0)
 
 ### Step3: Put the pdf file on your phone.
 

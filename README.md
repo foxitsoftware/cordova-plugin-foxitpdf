@@ -81,7 +81,7 @@ Now that the preparatory work has been completed，you can use this plugin every
 
 
 ## Integration for Android
-1. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 7.0.0)
+1. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 7.1.0)
 
 2. Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component’s android folder.
 `/xxx/platforms/android/`
@@ -564,6 +564,8 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 
 ## Versions
+>[v7.1.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.1.0)
+
 >[v7.0.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.0.0)
 
 >[v6.4.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.4.0)

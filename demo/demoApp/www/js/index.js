@@ -74,8 +74,8 @@ window.preview = function(){
     
     
     //Android
-    //if you use the 'cordova-plugin-file' plugin, you can set the filePath like this: 
-    //var filePath = cordova.file.externalRootDirectory + 'FoxitSDK/Sample.pdf';
+    //if you use the 'cordova-plugin-file' plugin, you can set the filePath like this (Note: Please make sure the file is exists): 
+    //var filePath = cordova.file.externalRootDirectory + 'Sample.pdf';
     //otherwise:
     //var filePath = "/storage/emulated/0/Sample.pdf";
     //var password = '';
