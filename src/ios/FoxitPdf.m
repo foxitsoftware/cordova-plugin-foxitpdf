@@ -42,7 +42,6 @@
 {
     NSString *tmpCommandCallbackID;
 }
-static FSFileListViewController *fileVC;
 static FSErrorCode initializeCode = FSErrUnknown;
 static NSString *initializeSN;
 static NSString *initializeKey;
@@ -79,7 +78,6 @@ static NSString *initializeKey;
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialize succeeded"];
             block();
         }
-        if (!fileVC) fileVC = [[FSFileListViewController alloc] init];
     }else{
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialized"];
         block();
@@ -350,6 +348,7 @@ static NSString *initializeKey;
     self.pdfViewController.view = self.pdfViewControl;
     
     self.pdfRootViewController = [[PDFNavigationController alloc] initWithRootViewController:self.pdfViewController];
+    self.pdfRootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
     self.pdfRootViewController.navigationBarHidden = YES;
     self.pdfRootViewController.extensionsManager = self.extensionsMgr;
     

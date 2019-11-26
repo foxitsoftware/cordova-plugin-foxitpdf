@@ -27,7 +27,7 @@
             "image": true,
             "audio": true,
             "video": true,
-            "redact": true
+            "redaction": true
         },
         "thumbnail": true,
         "attachment": true,
