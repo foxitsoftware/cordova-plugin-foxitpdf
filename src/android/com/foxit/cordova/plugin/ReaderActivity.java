@@ -127,6 +127,7 @@ public class ReaderActivity extends FragmentActivity {
         if (uiextensionsManager != null)
             uiextensionsManager.onDestroy(this);
         AccountModule.getInstance().onDestroy(this);
+        pdfViewCtrl.unregisterDocEventListener(docListener);
         super.onDestroy();
     }
 
@@ -176,7 +177,7 @@ public class ReaderActivity extends FragmentActivity {
 
         @Override
         public void onDocSaved(PDFDoc pdfDoc, int i) {
-            setResult();
+            FoxitPdf.onDocSave("onDocSaved");
         }
 
     };
@@ -188,5 +189,4 @@ public class ReaderActivity extends FragmentActivity {
         pdfViewCtrl.unregisterDocEventListener(docListener);
         finish();
     }
-
 }

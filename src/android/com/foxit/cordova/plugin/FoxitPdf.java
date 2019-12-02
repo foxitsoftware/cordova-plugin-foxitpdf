@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.foxit.sdk.PDFException;
 import com.foxit.sdk.PDFViewCtrl;
@@ -359,26 +360,8 @@ public class FoxitPdf extends CordovaPlugin {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        //todo
         if (resultCode == Activity.RESULT_OK && requestCode == result_flag) {
-            String returnedData = intent.getStringExtra("key");
-
-            try {
-                JSONObject obj = new JSONObject();
-                obj.put("type", RDK_DOCSAVED_EVENT);
-                obj.put("info", returnedData);
-
-                if (callbackContext != null) {
-                    PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
-                    result.setKeepCallback(true);
-                    callbackContext.sendPluginResult(result);
-//                    if (!true) {
-//                        callbackContext = null;
-//                    }
-                }
-            } catch (JSONException ex) {
-//                Log.e("JSONException", "URI passed in has caused a JSON error.");
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
-            }
         }
     }
 
@@ -408,6 +391,22 @@ public class FoxitPdf extends CordovaPlugin {
             if (callbackContext != null) {
                 JSONObject obj = new JSONObject();
                 obj.put("type", RDK_DOCWILLSAVE_EVENT);
+                PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            }
+        } catch (JSONException ex) {
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+        }
+    }
+
+    public static void onDocSave(String data){
+        try {
+            JSONObject obj = new JSONObject();
+            obj.put("type", RDK_DOCSAVED_EVENT);
+            obj.put("info", data);
+
+            if (callbackContext != null) {
                 PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
                 result.setKeepCallback(true);
                 callbackContext.sendPluginResult(result);
