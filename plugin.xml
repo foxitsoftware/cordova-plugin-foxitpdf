@@ -16,6 +16,9 @@
     <js-module name="Field" src="www/Field.js">
         <clobbers target="Field"/>
     </js-module>
+    <js-module name="ScanPdf" src="www/ScanPdf.js">
+        <clobbers target="ScanPdf"/>
+    </js-module>
 
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
@@ -75,13 +78,20 @@
                     <data android:mimeType="application/pdf"></data>
                 </intent-filter>
             </activity>
+            <activity
+                android:name="com.foxit.cordova.plugin.ScannerListActivity"
+                android:configChanges="keyboardHidden|orientation|screenSize"
+                android:windowSoftInputMode="adjustPan" >
+            </activity>
         </config-file>
         <config-file parent="/*" target="AndroidManifest.xml"/>
 
         <source-file src="src/android/com/foxit/cordova/plugin/FoxitPdf.java" target-dir="src/com/foxit/cordova/plugin"/>
         <source-file src="src/android/com/foxit/cordova/plugin/ReaderActivity.java" target-dir="src/com/foxit/cordova/plugin"/>
-
+        <source-file src="src/android/com/foxit/cordova/plugin/ScannerListActivity.java" target-dir="src/com/foxit/cordova/plugin"/>
+        <source-file src="src/android/res/fx_scanner_list_activity.xml" target-dir="src/main/res/layout" />
         <resource-file src="src/android/assets/uiextensions_config.json" target="assets/www/plugins/cordova-plugin-foxitpdf/uiextensions_config.json" />
+      
 
         <framework src="src/android/gradle/FoxitRDKUIExtensions.gradle" custom="true" type="gradleReference" />
     </platform>

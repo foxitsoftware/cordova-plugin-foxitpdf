@@ -6,10 +6,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 
@@ -17,12 +13,16 @@ import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.pdf.PDFDoc;
 import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.config.Config;
-import com.foxit.uiextensions.modules.connectpdf.account.AccountModule;
 import com.foxit.uiextensions.utils.AppTheme;
 import com.foxit.uiextensions.utils.UIToast;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
 public class ReaderActivity extends FragmentActivity {
 
@@ -56,7 +56,6 @@ public class ReaderActivity extends FragmentActivity {
         pdfViewCtrl.setAttachedActivity(this);
         pdfViewCtrl.registerDocEventListener(docListener);
         uiextensionsManager.onCreate(this, pdfViewCtrl, null);
-        AccountModule.getInstance().onCreate(this, savedInstanceState);
 
         String filePathSaveTo = getIntent().getExtras().getString("filePathSaveTo");
         if (!TextUtils.isEmpty(filePathSaveTo)) {
@@ -126,7 +125,6 @@ public class ReaderActivity extends FragmentActivity {
     protected void onDestroy() {
         if (uiextensionsManager != null)
             uiextensionsManager.onDestroy(this);
-        AccountModule.getInstance().onDestroy(this);
         pdfViewCtrl.unregisterDocEventListener(docListener);
         super.onDestroy();
     }

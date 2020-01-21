@@ -14,7 +14,6 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.foxit.sdk.PDFException;
 import com.foxit.sdk.PDFViewCtrl;
@@ -30,6 +29,7 @@ import com.foxit.sdk.pdf.interform.Control;
 import com.foxit.sdk.pdf.interform.Field;
 import com.foxit.sdk.pdf.interform.Form;
 import com.foxit.uiextensions.UIExtensionsManager;
+import com.foxit.uiextensions.modules.scan.PDFScanManager;
 import com.foxit.uiextensions.utils.AppUtil;
 
 import org.apache.cordova.CallbackContext;
@@ -48,7 +48,8 @@ public class FoxitPdf extends CordovaPlugin {
     private static final String RDK_DOCSAVED_EVENT = "onDocSaved";
     private static final String RDK_DOCWILLSAVE_EVENT = "onDocWillSave";
     private static final String RDK_DOCOPENED_EVENT = "onDocOpened";
-    private static final int result_flag = 1000;
+    private static final int READER_REQUEST_CODE =100;
+    private static final int SCANNER_REQUEST_CODE = 101;
 
     private static int errCode = Constants.e_ErrInvalidLicense;
     private static String mLastSn;
@@ -58,6 +59,7 @@ public class FoxitPdf extends CordovaPlugin {
     private static CallbackContext callbackContext;
     private String mSavePath = null;
     protected static boolean mEnableAnnotations = true;
+
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -241,6 +243,25 @@ public class FoxitPdf extends CordovaPlugin {
             JSONObject obj = args.getJSONObject(0);
             int fieldIndex = obj.getInt("fieldIndex");
             return getFieldControls(fieldIndex, callbackContext);
+        } else if (action.equals("initializeScanner")) {
+            if (!PDFScanManager.isInitializeScanner()) {
+                JSONObject options = args.optJSONObject(0);
+                long serial1 = options.getLong("serial1");
+                long serial2 = options.getLong("serial2");
+                PDFScanManager.initializeScanner(this.cordova.getActivity().getApplication(),serial1,serial2);
+            }
+        } else if (action.equals("initializeCompression")) {
+            if (!PDFScanManager.isInitializeCompression()) {
+                JSONObject options = args.optJSONObject(0);
+                long serial1 = options.getLong("serial1");
+                long serial2 = options.getLong("serial2");
+                PDFScanManager.initializeCompression(this.cordova.getActivity().getApplication(),serial1,serial2);
+            }
+        } else if (action.equals("createScannerFragment")) {
+            if (PDFScanManager.isInitializeScanner()&&PDFScanManager.isInitializeCompression()) {
+                Intent intent = new Intent(this.cordova.getActivity(), ScannerListActivity.class);
+                this.cordova.startActivityForResult(this, intent, SCANNER_REQUEST_CODE);
+            }
         }
         return false;
     }
@@ -267,7 +288,7 @@ public class FoxitPdf extends CordovaPlugin {
         bundle.putByteArray("password", password);
         bundle.putString("filePathSaveTo", TextUtils.isEmpty(outPath) ? "" : outPath);
         intent.putExtras(bundle);
-        this.cordova.startActivityForResult(this, intent, result_flag);
+        this.cordova.startActivityForResult(this, intent, READER_REQUEST_CODE);
 //        this.cordova.setActivityResultCallback(this);
 
         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, "Succeed open this file");
@@ -311,7 +332,7 @@ public class FoxitPdf extends CordovaPlugin {
                     int pageIndex = ReaderActivity.pdfViewCtrl.getCurrentPage();
                     Rect rect = new Rect(0, 0, ReaderActivity.pdfViewCtrl.getPageViewWidth(pageIndex), ReaderActivity.pdfViewCtrl.getPageViewHeight(pageIndex));
                     ReaderActivity.pdfViewCtrl.refresh(pageIndex, rect);
-                    
+
                     callbackContext.success();
                     return true;
                 }
@@ -361,7 +382,11 @@ public class FoxitPdf extends CordovaPlugin {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         //todo
-        if (resultCode == Activity.RESULT_OK && requestCode == result_flag) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == SCANNER_REQUEST_CODE){
+
+            }else if(requestCode == READER_REQUEST_CODE){
+            }
         }
     }
 
@@ -400,7 +425,7 @@ public class FoxitPdf extends CordovaPlugin {
         }
     }
 
-    public static void onDocSave(String data){
+    public static void onDocSave(String data) {
         try {
             JSONObject obj = new JSONObject();
             obj.put("type", RDK_DOCSAVED_EVENT);
@@ -577,7 +602,7 @@ public class FoxitPdf extends CordovaPlugin {
                 form.setDefaultAppearance(da);
             }
 
-            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
             callbackContext.success("Succeed to update form information.");
             return true;
         } catch (PDFException e) {
@@ -607,7 +632,7 @@ public class FoxitPdf extends CordovaPlugin {
                 return false;
             }
             JSONArray infos = new JSONArray();
-            for (int i = 0; i < fieldCount; i ++) {
+            for (int i = 0; i < fieldCount; i++) {
                 Field field = form.getField(i, null);
                 int type = field.getType();
                 JSONObject obj = new JSONObject();
@@ -704,7 +729,7 @@ public class FoxitPdf extends CordovaPlugin {
             Form form = new Form(pdfDoc);
             Field field = form.getField(fieldIndex, null);
             boolean ret = form.renameField(field, fieldName);
-            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to rename field.");
             } else {
@@ -732,7 +757,7 @@ public class FoxitPdf extends CordovaPlugin {
             Form form = new Form(pdfDoc);
             Field field = form.getField(fieldIndex, null);
             form.removeField(field);
-            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
             callbackContext.success("Succeed to remove field.");
             return true;
         } catch (PDFException e) {
@@ -755,7 +780,7 @@ public class FoxitPdf extends CordovaPlugin {
             }
             Form form = new Form(pdfDoc);
             boolean ret = form.reset();
-            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to reset form.");
             } else {
@@ -818,7 +843,7 @@ public class FoxitPdf extends CordovaPlugin {
             }
             Form form = new Form(pdfDoc);
             boolean ret = form.importFromXML(filePath);
-            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to import form from xml.");
             } else {
@@ -854,7 +879,7 @@ public class FoxitPdf extends CordovaPlugin {
                 return false;
             }
             JSONArray infos = new JSONArray();
-            for (int i = 0; i < controlCount; i ++) {
+            for (int i = 0; i < controlCount; i++) {
                 Control control = form.getControl(page, i);
                 JSONObject obj = new JSONObject();
                 obj.put("controlIndex", i);
@@ -895,7 +920,7 @@ public class FoxitPdf extends CordovaPlugin {
             }
 
             form.removeControl(form.getControl(page, controlIndex));
-            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
             callbackContext.success("Succeed to remove the specified control.");
             return true;
         } catch (PDFException e) {
@@ -929,7 +954,7 @@ public class FoxitPdf extends CordovaPlugin {
             obj.put("isChecked", control.isChecked());
             obj.put("isDefaultChecked", control.isDefaultChecked());
 
-            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
             PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
             result.setKeepCallback(true);
             callbackContext.sendPluginResult(result);
@@ -977,7 +1002,7 @@ public class FoxitPdf extends CordovaPlugin {
                 isModified = true;
             }
 
-            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
             callbackContext.success("Succeed to update the specified control information.");
             return true;
         } catch (PDFException e) {
@@ -1175,7 +1200,7 @@ public class FoxitPdf extends CordovaPlugin {
                 }
             }
 
-            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
             callbackContext.success("Succeed to update the specified field information.");
             return true;
         } catch (PDFException e) {
@@ -1201,7 +1226,7 @@ public class FoxitPdf extends CordovaPlugin {
             Form form = new Form(pdfDoc);
             Field field = form.getField(fieldIndex, null);
             boolean ret = field.reset();
-            ((UIExtensionsManager)ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
+            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to reset the specified form field.");
             } else {
@@ -1234,7 +1259,7 @@ public class FoxitPdf extends CordovaPlugin {
                 return false;
             }
             JSONArray infos = new JSONArray();
-            for (int i = 0; i < controlCount; i ++) {
+            for (int i = 0; i < controlCount; i++) {
                 Control control = field.getControl(i);
                 JSONObject obj = new JSONObject();
                 obj.put("controlIndex", i);
