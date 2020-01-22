@@ -29,6 +29,7 @@ import com.foxit.sdk.pdf.interform.Control;
 import com.foxit.sdk.pdf.interform.Field;
 import com.foxit.sdk.pdf.interform.Form;
 import com.foxit.uiextensions.UIExtensionsManager;
+import com.foxit.uiextensions.modules.scan.IPDFScanManagerListener;
 import com.foxit.uiextensions.modules.scan.PDFScanManager;
 import com.foxit.uiextensions.utils.AppUtil;
 
@@ -45,10 +46,11 @@ import java.math.BigDecimal;
  * This class echoes a string called from JavaScript.
  */
 public class FoxitPdf extends CordovaPlugin {
+    private static final String SCANNER_DOCADDED_EVENT = "onDocumentAdded";
     private static final String RDK_DOCSAVED_EVENT = "onDocSaved";
     private static final String RDK_DOCWILLSAVE_EVENT = "onDocWillSave";
     private static final String RDK_DOCOPENED_EVENT = "onDocOpened";
-    private static final int READER_REQUEST_CODE =100;
+    private static final int READER_REQUEST_CODE = 100;
     private static final int SCANNER_REQUEST_CODE = 101;
 
     private static int errCode = Constants.e_ErrInvalidLicense;
@@ -90,7 +92,7 @@ public class FoxitPdf extends CordovaPlugin {
                     return false;
             }
         } else if (action.equals("Preview")) {
-            this.callbackContext = callbackContext;
+            FoxitPdf.callbackContext = callbackContext;
             if (errCode != Constants.e_ErrSuccess) {
                 callbackContext.error("Please initialize Foxit library Firstly.");
                 return false;
@@ -101,7 +103,7 @@ public class FoxitPdf extends CordovaPlugin {
             String fileSavePath = options.getString("filePathSaveTo");
             return openDoc(filePath, null, fileSavePath, callbackContext);
         } else if (action.equals("openDocument")) {
-            this.callbackContext = callbackContext;
+            FoxitPdf.callbackContext = callbackContext;
             if (errCode != Constants.e_ErrSuccess) {
                 callbackContext.error("Please initialize Foxit library Firstly.");
                 return false;
@@ -248,17 +250,18 @@ public class FoxitPdf extends CordovaPlugin {
                 JSONObject options = args.optJSONObject(0);
                 long serial1 = options.getLong("serial1");
                 long serial2 = options.getLong("serial2");
-                PDFScanManager.initializeScanner(this.cordova.getActivity().getApplication(),serial1,serial2);
+                PDFScanManager.initializeScanner(this.cordova.getActivity().getApplication(), serial1, serial2);
             }
         } else if (action.equals("initializeCompression")) {
             if (!PDFScanManager.isInitializeCompression()) {
                 JSONObject options = args.optJSONObject(0);
                 long serial1 = options.getLong("serial1");
                 long serial2 = options.getLong("serial2");
-                PDFScanManager.initializeCompression(this.cordova.getActivity().getApplication(),serial1,serial2);
+                PDFScanManager.initializeCompression(this.cordova.getActivity().getApplication(), serial1, serial2);
             }
         } else if (action.equals("createScannerFragment")) {
-            if (PDFScanManager.isInitializeScanner()&&PDFScanManager.isInitializeCompression()) {
+            if (PDFScanManager.isInitializeScanner() && PDFScanManager.isInitializeCompression()) {
+                FoxitPdf.callbackContext = callbackContext;
                 Intent intent = new Intent(this.cordova.getActivity(), ScannerListActivity.class);
                 this.cordova.startActivityForResult(this, intent, SCANNER_REQUEST_CODE);
             }
@@ -383,19 +386,19 @@ public class FoxitPdf extends CordovaPlugin {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         //todo
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == SCANNER_REQUEST_CODE){
+            if (requestCode == SCANNER_REQUEST_CODE) {
 
-            }else if(requestCode == READER_REQUEST_CODE){
+            } else if (requestCode == READER_REQUEST_CODE) {
             }
         }
     }
 
-    public static void onDocOpened(int errCode) {
+    static void onDocOpened(int errCode) {
         if (callbackContext != null) {
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("type", RDK_DOCOPENED_EVENT);
-                obj.put("errorCode", errCode);
+                obj.put("error", errCode);
                 PluginResult.Status status;
                 if (errCode == 0) {
                     status = PluginResult.Status.OK;
@@ -411,7 +414,7 @@ public class FoxitPdf extends CordovaPlugin {
         }
     }
 
-    public static void onDocWillSave() {
+    static void onDocWillSave() {
         try {
             if (callbackContext != null) {
                 JSONObject obj = new JSONObject();
@@ -425,7 +428,29 @@ public class FoxitPdf extends CordovaPlugin {
         }
     }
 
-    public static void onDocSave(String data) {
+    static void onDocumentAdded(int errorCode, String path) {
+        if (callbackContext != null) {
+            try {
+                JSONObject obj = new JSONObject();
+                obj.put("type", SCANNER_DOCADDED_EVENT);
+                obj.put("info", path);
+                obj.put("error", errorCode);
+                PluginResult.Status status;
+                if (errorCode == IPDFScanManagerListener.e_ErrSuccess) {
+                    status = PluginResult.Status.OK;
+                } else {
+                    status = PluginResult.Status.ERROR;
+                }
+                PluginResult result = new PluginResult(status, obj);
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            } catch (JSONException e) {
+                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+            }
+        }
+    }
+
+    static void onDocSave(String data) {
         try {
             JSONObject obj = new JSONObject();
             obj.put("type", RDK_DOCSAVED_EVENT);

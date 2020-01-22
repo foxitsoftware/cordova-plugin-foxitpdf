@@ -2,7 +2,7 @@ var exec = require('cordova/exec');
 var channel = require('cordova/channel');
 
 channels = {
-    'onDocumentAdded': channel.create('onDocumentAdded'),
+    'onDocumentAdded': channel.create('onDocumentAdded')
 };
 
 var ScanPdf = function(){};
@@ -10,11 +10,8 @@ var successfunction = function(){};
 
 ScanPdf.prototype._eventHandler = function (event) {
     successfunction(event);
-
    if (event && (event.type in channels)) {
        channels[event.type].fire(event);
-//    } else {
-//      successfunction(event);
    }
 };
 
@@ -38,7 +35,8 @@ ScanPdf.prototype.initializeCompression = function(serial1, serial2) {
 
 ScanPdf.prototype.createScannerFragment = function() {
     return new Promise(function(resolve, reject) {
-      exec(resolve, reject, "FoxitPdf", "createScannerFragment",  [{}]);
+      successfunction = resolve;
+      exec(scan._eventHandler, reject, "FoxitPdf", "createScannerFragment",  [{}]);
     });
 };
 
