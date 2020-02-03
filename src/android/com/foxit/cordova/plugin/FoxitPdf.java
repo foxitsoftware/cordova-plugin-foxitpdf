@@ -252,6 +252,7 @@ public class FoxitPdf extends CordovaPlugin {
                 long serial2 = options.getLong("serial2");
                 PDFScanManager.initializeScanner(this.cordova.getActivity().getApplication(), serial1, serial2);
             }
+            return true;
         } else if (action.equals("initializeCompression")) {
             if (!PDFScanManager.isInitializeCompression()) {
                 JSONObject options = args.optJSONObject(0);
@@ -259,11 +260,13 @@ public class FoxitPdf extends CordovaPlugin {
                 long serial2 = options.getLong("serial2");
                 PDFScanManager.initializeCompression(this.cordova.getActivity().getApplication(), serial1, serial2);
             }
+            return true;
         } else if (action.equals("createScannerFragment")) {
             if (PDFScanManager.isInitializeScanner() && PDFScanManager.isInitializeCompression()) {
                 FoxitPdf.callbackContext = callbackContext;
                 Intent intent = new Intent(this.cordova.getActivity(), ScannerListActivity.class);
                 this.cordova.startActivityForResult(this, intent, SCANNER_REQUEST_CODE);
+                return true;
             }
         }
         return false;
@@ -394,7 +397,7 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     static void onDocOpened(int errCode) {
-        if (callbackContext != null) {
+        if (FoxitPdf.callbackContext != null) {
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("type", RDK_DOCOPENED_EVENT);
@@ -407,29 +410,29 @@ public class FoxitPdf extends CordovaPlugin {
                 }
                 PluginResult result = new PluginResult(status, obj);
                 result.setKeepCallback(true);
-                callbackContext.sendPluginResult(result);
+                FoxitPdf.callbackContext.sendPluginResult(result);
             } catch (JSONException e) {
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+                FoxitPdf.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
             }
         }
     }
 
     static void onDocWillSave() {
         try {
-            if (callbackContext != null) {
+            if (FoxitPdf.callbackContext != null) {
                 JSONObject obj = new JSONObject();
                 obj.put("type", RDK_DOCWILLSAVE_EVENT);
                 PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
                 result.setKeepCallback(true);
-                callbackContext.sendPluginResult(result);
+                FoxitPdf.callbackContext.sendPluginResult(result);
             }
         } catch (JSONException ex) {
-            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+            FoxitPdf.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
     }
 
     static void onDocumentAdded(int errorCode, String path) {
-        if (callbackContext != null) {
+        if (FoxitPdf.callbackContext != null) {
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("type", SCANNER_DOCADDED_EVENT);
@@ -443,9 +446,9 @@ public class FoxitPdf extends CordovaPlugin {
                 }
                 PluginResult result = new PluginResult(status, obj);
                 result.setKeepCallback(true);
-                callbackContext.sendPluginResult(result);
+                FoxitPdf.callbackContext.sendPluginResult(result);
             } catch (JSONException e) {
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+                FoxitPdf.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
             }
         }
     }
@@ -456,13 +459,13 @@ public class FoxitPdf extends CordovaPlugin {
             obj.put("type", RDK_DOCSAVED_EVENT);
             obj.put("info", data);
 
-            if (callbackContext != null) {
+            if (FoxitPdf.callbackContext != null) {
                 PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
                 result.setKeepCallback(true);
-                callbackContext.sendPluginResult(result);
+                FoxitPdf.callbackContext.sendPluginResult(result);
             }
         } catch (JSONException ex) {
-            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+            FoxitPdf.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
         }
     }
 

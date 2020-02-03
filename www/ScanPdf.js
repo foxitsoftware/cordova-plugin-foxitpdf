@@ -1,8 +1,8 @@
 var exec = require('cordova/exec');
 var channel = require('cordova/channel');
 
-channels = {
-    'onDocumentAdded': channel.create('onDocumentAdded')
+var channels = {
+    'onDocumentAdded': channel.create('onDocumentAdded'),
 };
 
 var ScanPdf = function(){};
@@ -56,3 +56,4 @@ ScanPdf.prototype.removeEventListener = function (eventname, f) {
 
 var scan = new ScanPdf();
 module.exports = scan;
+
