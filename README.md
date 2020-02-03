@@ -477,6 +477,57 @@ Return: An array of dictionaries will be returned, each dictionary contains the 
 - __isChecked__: Check if the current form control is checked when related form field is check box or radio button.
 - __isDefaultChecked__: Check if the current form control is checked by default when related form field is check box or radio button.
 
+### ScanPdf.initializeScanner
+
+> ScanPdf.initializeScanner(serial1,serial2);
+
+ Initialize the scan module with additional parameters.
+ This function must be called before any App Framework SDK object can be instantiated.
+ Successful initialization of the SDK requires a valid serial number.
+
+- __serial1__: First part of the serial number.
+- __serial2__: Second part of the serial number.
+
+### ScanPdf.initializeCompression
+
+> ScanPdf.initializeCompression(serial1,serial2);
+
+ Initialize the Mobile Compression SDK.
+
+- __serial1__: First part of the serial number.
+- __serial2__: Second part of the serial number.
+
+### ScanPdf.createScannerFragment
+
+> ScanPdf.createScannerFragment();
+
+Show scan file list
+
+`Note: The scan list can only be create if the initializeScanner & initializeCompression successful.`
+
+### ScanPdf.addEventListener
+
+> ScanPdf.addEventListener(eventname,callback);
+
+- __eventname__: The name of the event to listen for _(String)_
+
+- __onDocumentAdded__: This event fires when the scan doc added successed.
+
+- __callback__: This function is executed when the event fires. The function is passed an object as a parameter.
+
+Add a listener for an event
+
+```javascript
+
+ScanPdf.addEventListener('onDocumentAdded',function(data){
+console.log('onDocumentAdded callback ',data);
+   var errorCode = data.error;
+   if(errorCode == 0){
+      var filePath = data.info;
+      window.FoxitPdf.openDocument(filePath, null);
+   }
+});
+```
 
 &nbsp;&nbsp;
 
