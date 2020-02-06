@@ -4,7 +4,7 @@ package com.foxit.cordova.plugin;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import com.foxit.scanner.R;
+import com.foxit.uiextensions.controls.dialog.AppDialogManager;
 import com.foxit.uiextensions.modules.scan.IPDFScanManagerListener;
 import com.foxit.uiextensions.modules.scan.PDFScanManager;
 import com.foxit.uiextensions.utils.AppTheme;
@@ -16,14 +16,15 @@ import androidx.fragment.app.FragmentManager;
 
 public class ScannerListActivity extends FragmentActivity {
 
+    private static final String SANNER_LIST_TAG = "SANNER_LIST_TAG";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppTheme.setThemeFullScreen(this);
-        setContentView(R.layout.fx_scanner_list_activity);
 
         FragmentManager fm = getSupportFragmentManager();
-        Fragment fragment = fm.findFragmentById(com.foxit.uiextensions.R.id.fragmentContainer);
+        DialogFragment fragment = (DialogFragment) fm.findFragmentByTag(SANNER_LIST_TAG);
         if (fragment == null) {
             fragment = PDFScanManager.createScannerFragment(new DialogInterface.OnDismissListener() {
                 @Override
@@ -31,8 +32,8 @@ public class ScannerListActivity extends FragmentActivity {
                     ScannerListActivity.this.finish();
                 }
             });
-            fm.beginTransaction().add(com.foxit.uiextensions.R.id.fragmentContainer, fragment).commitAllowingStateLoss();
         }
+        AppDialogManager.getInstance().showAllowManager(fragment, fm, SANNER_LIST_TAG, null);
         PDFScanManager.registerManagerListener(scanManagerListener);
     }
 

@@ -89,7 +89,6 @@
         <source-file src="src/android/com/foxit/cordova/plugin/FoxitPdf.java" target-dir="src/com/foxit/cordova/plugin"/>
         <source-file src="src/android/com/foxit/cordova/plugin/ReaderActivity.java" target-dir="src/com/foxit/cordova/plugin"/>
         <source-file src="src/android/com/foxit/cordova/plugin/ScannerListActivity.java" target-dir="src/com/foxit/cordova/plugin"/>
-        <source-file src="src/android/res/fx_scanner_list_activity.xml" target-dir="src/main/res/layout" />
         <resource-file src="src/android/assets/uiextensions_config.json" target="assets/www/plugins/cordova-plugin-foxitpdf/uiextensions_config.json" />
       
 
