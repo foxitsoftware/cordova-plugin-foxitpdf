@@ -81,9 +81,15 @@ Now that the preparatory work has been completed，you can use this plugin every
 
 
 ## Integration for Android
-1. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 7.1.0)
+1.Support AndroidX, Add the following configuration to xxx/platforms/android/gradle.propertie：
+```xml
+android.useAndroidX=true
+android.enableJetifier=true
+```
 
-2. Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component’s android folder.
+2. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 7.1.0)
+
+3. Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component’s android folder.
 `/xxx/platforms/android/`
 
 
