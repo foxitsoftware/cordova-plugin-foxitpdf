@@ -87,7 +87,7 @@ Now that the preparatory work has been completed，you can use this plugin every
   android.enableJetifier=true
 ```
 
-2. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 7.1.0)
+2. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 7.2.0)
 
 3. Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component’s android folder.
 `/xxx/platforms/android/`
