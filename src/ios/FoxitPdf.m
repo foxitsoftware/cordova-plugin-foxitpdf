@@ -88,6 +88,71 @@ static NSString *initializeKey;
     [self Preview:command];
 }
 
+- (void)initializeScanner:(CDVInvokedUrlCommand*)command{
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = [NSDictionary dictionary];
+    }
+    unsigned long serial1 = [options[@"serial1"] unsignedLongValue];
+    unsigned long serial2 = [options[@"serial2"] unsignedLongValue];
+    [PDFScanManager initializeScanner:serial1 serial2:serial2];
+    CDVPluginResult *pluginResult = nil;
+    if ([PDFScanManager initializeScanner:serial1 serial2:serial2] != FSErrSuccess) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
+    }else{
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil];
+
+    }
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)initializeCompression:(CDVInvokedUrlCommand*)command{
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = [NSDictionary dictionary];
+    }
+    unsigned long serial1 = [options[@"serial1"] unsignedLongValue];
+    unsigned long serial2 = [options[@"serial2"] unsignedLongValue];
+    [PDFScanManager initializeScanner:serial1 serial2:serial2];
+    CDVPluginResult *pluginResult = nil;
+    if ([PDFScanManager initializeScanner:serial1 serial2:serial2] != FSErrSuccess) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
+    }else{
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil];
+
+    }
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)createScannerFragment:(CDVInvokedUrlCommand*)command{
+    UIViewController *VC = [PDFScanManager getPDFScanView];
+    if (VC) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.viewController presentViewController:VC animated:YES completion:nil];
+        });
+        [PDFScanManager setSaveAsCallBack:^(NSError * _Nullable error, NSString * _Nullable savePath) {
+            CDVPluginResult *pluginResult = nil;
+              if (savePath) {
+                  if (VC.presentingViewController) {
+                      [VC.presentingViewController dismissViewControllerAnimated:NO completion:nil];
+                  }
+                  [VC dismissViewControllerAnimated:NO completion:nil];
+                  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                               messageAsDictionary:@{@"type":@"onDocumentAdded", @"error":@(0), @"info":savePath}];
+              }else{
+                  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                               messageAsDictionary:@{@"type":@"onDocumentAdded", @"error":@(1), @"info":@""}];
+              }
+            [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+    }
+}
+
 - (void)setSavePath:(CDVInvokedUrlCommand*)command{
     NSDictionary* options = [command argumentAtIndex:0];
     
@@ -404,22 +469,6 @@ static NSString *initializeKey;
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleStatusBarOrientationChange:)
                                                 name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
     
-}
-
-- (FSClientInfo *)getClientInfo {
-    FSClientInfo *client_info = [[FSClientInfo alloc] init];
-    client_info.device_id = [[UIDevice currentDevice] identifierForVendor].UUIDString;
-    client_info.device_name = [UIDevice currentDevice].name;
-    client_info.device_model = [[UIDevice currentDevice] model];
-    client_info.mac_address = @"mac_address";
-    client_info.os = [NSString stringWithFormat:@"%@ %@",
-                      [[UIDevice currentDevice] systemName], [[UIDevice currentDevice] systemVersion]];
-    client_info.product_name = @"RDK";
-    client_info.product_vendor = @"Foxit";
-    client_info.product_version = @"5.2.0";
-    client_info.product_language = [[NSLocale preferredLanguages] objectAtIndex:0];
-    
-    return client_info;
 }
 
 - (void)showAlertViewWithTitle:(NSString *)title message:(NSString *)message{
