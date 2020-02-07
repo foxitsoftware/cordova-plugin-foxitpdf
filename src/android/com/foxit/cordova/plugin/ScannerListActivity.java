@@ -4,7 +4,6 @@ package com.foxit.cordova.plugin;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import com.foxit.uiextensions.controls.dialog.AppDialogManager;
 import com.foxit.uiextensions.modules.scan.IPDFScanManagerListener;
 import com.foxit.uiextensions.modules.scan.PDFScanManager;
 import com.foxit.uiextensions.utils.AppTheme;
@@ -13,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 public class ScannerListActivity extends FragmentActivity {
 
@@ -25,6 +25,7 @@ public class ScannerListActivity extends FragmentActivity {
 
         FragmentManager fm = getSupportFragmentManager();
         DialogFragment fragment = (DialogFragment) fm.findFragmentByTag(SANNER_LIST_TAG);
+        FragmentTransaction transaction = fm.beginTransaction();
         if (fragment == null) {
             fragment = PDFScanManager.createScannerFragment(new DialogInterface.OnDismissListener() {
                 @Override
@@ -32,8 +33,11 @@ public class ScannerListActivity extends FragmentActivity {
                     ScannerListActivity.this.finish();
                 }
             });
+        } else {
+            transaction.remove(fragment);
         }
-        AppDialogManager.getInstance().showAllowManager(fragment, fm, SANNER_LIST_TAG, null);
+        transaction.add(fragment, SANNER_LIST_TAG);
+        transaction.commitAllowingStateLoss();
         PDFScanManager.registerManagerListener(scanManagerListener);
     }
 
