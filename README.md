@@ -81,7 +81,7 @@ Now that the preparatory work has been completed，you can use this plugin every
 
 
 ## Integration for Android
-1. Support AndroidX, Add the following configuration to xxx/platforms/android/gradle.propertie：
+1. Migrating to AndroidX, Add the following configuration to xxx/platforms/android/gradle.propertie：
 ```xml
   android.useAndroidX=true
   android.enableJetifier=true
@@ -621,6 +621,8 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 
 ## Versions
+>[v7.2.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.2.0)
+
 >[v7.1.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.1.0)
 
 >[v7.0.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.0.0)
