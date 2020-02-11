@@ -131,6 +131,7 @@ static NSString *initializeKey;
 - (void)createScannerFragment:(CDVInvokedUrlCommand*)command{
     UIViewController *VC = [PDFScanManager getPDFScanView];
     if (VC) {
+        VC.modalPresentationStyle = UIModalPresentationFullScreen;
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.viewController presentViewController:VC animated:YES completion:nil];
         });
@@ -452,6 +453,7 @@ static NSString *initializeKey;
                                                            messageAsDictionary:@{@"FSErrorCode":@(FSErrSuccess), @"info":@"Open the document successfully"}];
                               block();
                               // Run later to avoid the "took a long time" log message.
+                              weakSelf.pdfRootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
                               dispatch_async(dispatch_get_main_queue(), ^{
                                   [weakSelf.viewController presentViewController:weakSelf.pdfRootViewController animated:YES completion:nil];
                               });
