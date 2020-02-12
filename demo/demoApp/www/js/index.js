@@ -81,20 +81,24 @@ window.preview = function(){
     //var password = '';
     //window.FoxitPdf.openDocument(filePath, password);
 
-    //Android - scan pdf
-    // var scanSerial1 = 0;
-    // var scanSerial2 = 0;
-    // ScanPdf.initializeScanner(scanSerial1, scanSerial2);
-    // var compSerial1 = 0;
-    // var compSerial2 = 0;
-    // ScanPdf.initializeCompression(compSerial1, compSerial2);
-    // ScanPdf.createScannerFragment();
-    // ScanPdf.addEventListener('onDocumentAdded',function(data){
-    //       var errorCode = data.error;
-    //       if(errorCode == 0){
-    //          var filePath = data.info;
-    //          window.FoxitPdf.openDocument(filePath, null);
-    //       }
-    // });
+};
+
+
+window.scan = function(){
+
+    var scanSerial1 = 0;
+    var scanSerial2 = 0;
+    ScanPdf.initializeScanner(scanSerial1, scanSerial2);
+    var compSerial1 = 0;
+    var compSerial2 = 0;
+    ScanPdf.initializeCompression(compSerial1, compSerial2);
+    ScanPdf.createScannerFragment();
+    ScanPdf.addEventListener('onDocumentAdded',function(data){
+          var errorCode = data.error;
+          if(errorCode == 0){
+             var filePath = data.info;
+             window.FoxitPdf.openDocument(filePath, null);
+          }
+    });
 
 };
