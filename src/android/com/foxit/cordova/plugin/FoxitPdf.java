@@ -277,7 +277,7 @@ public class FoxitPdf extends CordovaPlugin {
                 PDFScanManager.initializeCompression(this.cordova.getActivity().getApplication(), serial1, serial2);
             }
             return true;
-        } else if (action.equals("createScannerFragment")) {
+        } else if (action.equals("createScanner")) {
             if (PDFScanManager.isInitializeScanner() && PDFScanManager.isInitializeCompression()) {
                 mCallbackArrays.put(CALLBACK_FOR_SCANNER, callbackContext);
                 Intent intent = new Intent(this.cordova.getActivity(), ScannerListActivity.class);

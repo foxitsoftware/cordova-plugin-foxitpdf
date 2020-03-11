@@ -128,7 +128,7 @@ static NSString *initializeKey;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)createScannerFragment:(CDVInvokedUrlCommand*)command{
+- (void)createScanner:(CDVInvokedUrlCommand*)command{
     UIViewController *VC = [PDFScanManager getPDFScanView];
     if (VC) {
         VC.modalPresentationStyle = UIModalPresentationFullScreen;

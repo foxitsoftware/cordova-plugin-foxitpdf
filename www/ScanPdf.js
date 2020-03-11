@@ -33,10 +33,10 @@ ScanPdf.prototype.initializeCompression = function(serial1, serial2) {
     });
 };
 
-ScanPdf.prototype.createScannerFragment = function() {
+ScanPdf.prototype.createScanner = function() {
     return new Promise(function(resolve, reject) {
       successfunction = resolve;
-      exec(scan._eventHandler, reject, "FoxitPdf", "createScannerFragment",  [{}]);
+      exec(scan._eventHandler, reject, "FoxitPdf", "createScanner",  [{}]);
     });
 };
 

@@ -503,9 +503,9 @@ Return: An array of dictionaries will be returned, each dictionary contains the 
 - __serial1__: First part of the serial number.
 - __serial2__: Second part of the serial number.
 
-### ScanPdf.createScannerFragment
+### ScanPdf.createScanner
 
-> ScanPdf.createScannerFragment();
+> ScanPdf.createScanner();
 
 Show scan file list
 

@@ -92,7 +92,7 @@ window.scan = function(){
     var compSerial1 = 0;
     var compSerial2 = 0;
     ScanPdf.initializeCompression(compSerial1, compSerial2);
-    ScanPdf.createScannerFragment();
+    ScanPdf.createScanner();
     ScanPdf.addEventListener('onDocumentAdded',function(data){
           var errorCode = data.error;
           if(errorCode == 0){
