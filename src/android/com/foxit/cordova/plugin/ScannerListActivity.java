@@ -18,8 +18,8 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 
-import com.foxit.uiextensions.modules.scan.IPDFScanManagerListener;
-import com.foxit.uiextensions.modules.scan.PDFScanManager;
+import com.foxit.pdfscan.IPDFScanManagerListener;
+import com.foxit.pdfscan.PDFScanManager;
 import com.foxit.uiextensions.utils.AppTheme;
 import com.foxit.uiextensions.utils.UIToast;
 

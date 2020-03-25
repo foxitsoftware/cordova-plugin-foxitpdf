@@ -27,6 +27,8 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
+import com.foxit.pdfscan.IPDFScanManagerListener;
+import com.foxit.pdfscan.PDFScanManager;
 import com.foxit.sdk.PDFException;
 import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.common.Constants;
@@ -41,8 +43,6 @@ import com.foxit.sdk.pdf.interform.Control;
 import com.foxit.sdk.pdf.interform.Field;
 import com.foxit.sdk.pdf.interform.Form;
 import com.foxit.uiextensions.UIExtensionsManager;
-import com.foxit.uiextensions.modules.scan.IPDFScanManagerListener;
-import com.foxit.uiextensions.modules.scan.PDFScanManager;
 import com.foxit.uiextensions.utils.AppUtil;
 
 import org.apache.cordova.CallbackContext;
