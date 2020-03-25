@@ -35,7 +35,7 @@ cordova plugin add cordova-plugin-foxitpdf
 cordova plugin add cordova-plugin-file
 ```
 
-### Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (The latest version is 7.2.0 )
+### Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (The latest version is 7.2.1 )
 
 ### Open demoApp/platforms/ios/demoApp.xcworkspace
 
@@ -88,7 +88,7 @@ cordova plugin add cordova-plugin-file
 
 ### Step3: Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component android folder.  
 
-You can download foxitpdfsdk_(version_no)_android.zip from https://developers.foxitsoftware.com/pdf-sdk/android/ (The latest version is 7.2.0)
+You can download foxitpdfsdk_(version_no)_android.zip from https://developers.foxitsoftware.com/pdf-sdk/android/ (The latest version is 7.2.1)
 
 ### Step4: Put the pdf file on your phone.
 
