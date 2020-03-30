@@ -39,7 +39,7 @@ cordova plugin add cordova-plugin-file
 
 ### Open demoApp/platforms/ios/demoApp.xcworkspace
 
-1. Target -> General ->Embedded Binaries， Add dynamic framework "FoxitRDK.framework" and "uiextensionsDynamic.framework" to framework folder and also to Xcode’s Embedded Binaries
+1. Target -> General ->Embedded Binaries， Add dynamic framework "FoxitRDK.framework" 、 "uiextensionsDynamic.framework" and "FoxitPDFScan-UI.framework" to framework folder and also to Xcode’s Embedded Binaries
 
 2. Target -> General -> Linked Frameworks and Libraries -> + -> WebKit.framework
 

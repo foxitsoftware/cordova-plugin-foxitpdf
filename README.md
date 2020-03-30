@@ -61,7 +61,7 @@ The iOS version of the cordova plugin only needs a few simple steps to deploy
 Please use foxitpdfsdk_(version_no)_ios.zip from https://developers.foxitsoftware.com/pdf-sdk/ios/
 
 2. Target -> General -> Embedded Binaries
-Add dynamic framework "FoxitRDK.framework" and "uiextensionsDynamic.framework"
+Add dynamic framework "FoxitRDK.framework" 、"uiextensionsDynamic.framework" and "FoxitPDFScan-UI.framework"
 to Xcode’s Embedded Binaries
 
 3. Target -> General -> Linked Frameworks and Libraries ->  +  -> WebKit.framework

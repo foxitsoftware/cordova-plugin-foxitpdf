@@ -12,6 +12,7 @@
 
 #import <FoxitRDK/FSPDFViewControl.h>
 #import <uiextensionsDynamic/uiextensionsDynamic.h>
+#import <FoxitPDFScan-UI/PDFScanManager.h>
 
 @interface PDFNavigationController : UINavigationController
 @property (nonatomic, weak) UIExtensionsManager *extensionsManager;
