@@ -5,6 +5,7 @@ channels = {
     'onDocOpened': channel.create('onDocOpened'),
     'onDocWillSave': channel.create('onDocWillSave'),
     'onDocSaved': channel.create('onDocSaved'),
+    'onCanceled': channel.create('onCanceled'),
 };
 
 var pdf = function(){};
@@ -12,7 +13,7 @@ var successfunction = function(){};
 
 pdf.prototype._eventHandler = function (event) {
     successfunction(event);
-    
+
    if (event && (event.type in channels)) {
        channels[event.type].fire(event);
 //    } else {

@@ -47,6 +47,7 @@ public class FoxitPdf extends CordovaPlugin {
     private static final String RDK_DOCSAVED_EVENT = "onDocSaved";
     private static final String RDK_DOCWILLSAVE_EVENT = "onDocWillSave";
     private static final String RDK_DOCOPENED_EVENT = "onDocOpened";
+    private static final String RDK_CANCELED_EVENT = "onCanceled";
     private static final int result_flag = 1000;
 
     private static int errCode = Constants.e_ErrInvalidLicense;
@@ -310,7 +311,7 @@ public class FoxitPdf extends CordovaPlugin {
                     int pageIndex = ReaderActivity.pdfViewCtrl.getCurrentPage();
                     Rect rect = new Rect(0, 0, ReaderActivity.pdfViewCtrl.getPageViewWidth(pageIndex), ReaderActivity.pdfViewCtrl.getPageViewHeight(pageIndex));
                     ReaderActivity.pdfViewCtrl.refresh(pageIndex, rect);
-                    
+
                     callbackContext.success();
                     return true;
                 }
@@ -359,13 +360,14 @@ public class FoxitPdf extends CordovaPlugin {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        if (resultCode == Activity.RESULT_OK && requestCode == result_flag) {
-            String returnedData = intent.getStringExtra("key");
-
+        if ((resultCode == Activity.RESULT_OK || resultCode == Activity.RESULT_CANCELED) && requestCode == result_flag) {
             try {
                 JSONObject obj = new JSONObject();
-                obj.put("type", RDK_DOCSAVED_EVENT);
-                obj.put("info", returnedData);
+                obj.put("type", resultCode == Activity.RESULT_OK ? RDK_DOCSAVED_EVENT : RDK_CANCELED_EVENT);
+
+                if (resultCode == Activity.RESULT_OK) {
+                    obj.put("info", intent.getStringExtra("key"));
+                }
 
                 if (callbackContext != null) {
                     PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
