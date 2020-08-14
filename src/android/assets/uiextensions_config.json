@@ -135,7 +135,7 @@
                   "icon": "PushPin" //icon：Graph/PushPin/Paperclip/Tag
                 },
                 "image": {
-                   "rotation": 0, //rotation: 0/90/180/270.
+                  "rotation": 0, //rotation: 0/90/180/270.
                   "opacity": 1.0
                 },
                 "distance": {
@@ -153,9 +153,34 @@
                    "textFace": "Courier", // textFace:"Courier"/"Helvetica"/"Times"
                    "textSize": 12
                 }
+      },
+      "form": {
+        "textField": {
+          "textColor": "#000000",
+          "textFace": "Courier", // textFace:"Courier"/"Helvetica"/"Times"
+          "textSize": 0 // 0 means auto-adjust font size (textSize >= 0)
         },
-        "signature": {
-            "color": "#000000", "thickness": 8
+        "checkBox": {
+          "textColor": "#000000"
+        },
+        "radioButton": {
+          "textColor": "#000000"
+        },
+        "comboBox": {
+          "textColor": "#000000",
+          "textFace": "Courier", // textFace:"Courier"/"Helvetica"/"Times"
+          "textSize": 0, // 0 means auto-adjust font size (textSize >= 0)
+          "customText": false
+        },
+        "listBox": {
+          "textColor": "#000000",
+          "textFace": "Courier", // textFace:"Courier"/"Helvetica"/"Times"
+          "textSize": 0, // 0 means auto-adjust font size (textSize >= 0)
+          "multipleSelection": false
         }
+      },
+      "signature": {
+            "color": "#000000", "thickness": 8
+      }
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2019, Foxit Software Inc..
+ * Copyright (C) 2003-2020, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -12,6 +12,7 @@
 
 #import <FoxitRDK/FSPDFViewControl.h>
 #import <uiextensionsDynamic/uiextensionsDynamic.h>
+#import <FoxitPDFScanUI/PDFScanManager.h>
 
 @interface PDFNavigationController : UINavigationController
 @property (nonatomic, weak) UIExtensionsManager *extensionsManager;
@@ -42,7 +43,6 @@
 {
     NSString *tmpCommandCallbackID;
 }
-static FSFileListViewController *fileVC;
 static FSErrorCode initializeCode = FSErrUnknown;
 static NSString *initializeSN;
 static NSString *initializeKey;
@@ -79,7 +79,6 @@ static NSString *initializeKey;
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialize succeeded"];
             block();
         }
-        if (!fileVC) fileVC = [[FSFileListViewController alloc] init];
     }else{
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialized"];
         block();
@@ -88,6 +87,72 @@ static NSString *initializeKey;
 
 - (void)openDocument:(CDVInvokedUrlCommand*)command{
     [self Preview:command];
+}
+
+- (void)initializeScanner:(CDVInvokedUrlCommand*)command{
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = [NSDictionary dictionary];
+    }
+    unsigned long serial1 = [options[@"serial1"] unsignedLongValue];
+    unsigned long serial2 = [options[@"serial2"] unsignedLongValue];
+    [PDFScanManager initializeScanner:serial1 serial2:serial2];
+    CDVPluginResult *pluginResult = nil;
+    if ([PDFScanManager initializeScanner:serial1 serial2:serial2] != FSErrSuccess) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
+    }else{
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil];
+
+    }
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)initializeCompression:(CDVInvokedUrlCommand*)command{
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = [NSDictionary dictionary];
+    }
+    unsigned long serial1 = [options[@"serial1"] unsignedLongValue];
+    unsigned long serial2 = [options[@"serial2"] unsignedLongValue];
+    [PDFScanManager initializeScanner:serial1 serial2:serial2];
+    CDVPluginResult *pluginResult = nil;
+    if ([PDFScanManager initializeScanner:serial1 serial2:serial2] != FSErrSuccess) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
+    }else{
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil];
+
+    }
+    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)createScanner:(CDVInvokedUrlCommand*)command{
+    UIViewController *VC = [PDFScanManager getPDFScanView];
+    if (VC) {
+        VC.modalPresentationStyle = UIModalPresentationFullScreen;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.viewController presentViewController:VC animated:YES completion:nil];
+        });
+        [PDFScanManager setSaveAsCallBack:^(NSError * _Nullable error, NSString * _Nullable savePath) {
+            CDVPluginResult *pluginResult = nil;
+              if (savePath) {
+                  if (VC.presentingViewController) {
+                      [VC.presentingViewController dismissViewControllerAnimated:NO completion:nil];
+                  }
+                  [VC dismissViewControllerAnimated:NO completion:nil];
+                  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                               messageAsDictionary:@{@"type":@"onDocumentAdded", @"error":@(0), @"info":savePath}];
+              }else{
+                  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                               messageAsDictionary:@{@"type":@"onDocumentAdded", @"error":@(1), @"info":@""}];
+              }
+            [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+    }
 }
 
 - (void)setSavePath:(CDVInvokedUrlCommand*)command{
@@ -350,6 +415,7 @@ static NSString *initializeKey;
     self.pdfViewController.view = self.pdfViewControl;
     
     self.pdfRootViewController = [[PDFNavigationController alloc] initWithRootViewController:self.pdfViewController];
+    self.pdfRootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
     self.pdfRootViewController.navigationBarHidden = YES;
     self.pdfRootViewController.extensionsManager = self.extensionsMgr;
     
@@ -388,6 +454,7 @@ static NSString *initializeKey;
                                                            messageAsDictionary:@{@"FSErrorCode":@(FSErrSuccess), @"info":@"Open the document successfully"}];
                               block();
                               // Run later to avoid the "took a long time" log message.
+                              weakSelf.pdfRootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
                               dispatch_async(dispatch_get_main_queue(), ^{
                                   [weakSelf.viewController presentViewController:weakSelf.pdfRootViewController animated:YES completion:nil];
                               });
@@ -405,22 +472,6 @@ static NSString *initializeKey;
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(handleStatusBarOrientationChange:)
                                                 name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
     
-}
-
-- (FSClientInfo *)getClientInfo {
-    FSClientInfo *client_info = [[FSClientInfo alloc] init];
-    client_info.device_id = [[UIDevice currentDevice] identifierForVendor].UUIDString;
-    client_info.device_name = [UIDevice currentDevice].name;
-    client_info.device_model = [[UIDevice currentDevice] model];
-    client_info.mac_address = @"mac_address";
-    client_info.os = [NSString stringWithFormat:@"%@ %@",
-                      [[UIDevice currentDevice] systemName], [[UIDevice currentDevice] systemVersion]];
-    client_info.product_name = @"RDK";
-    client_info.product_vendor = @"Foxit";
-    client_info.product_version = @"5.2.0";
-    client_info.product_language = [[NSLocale preferredLanguages] objectAtIndex:0];
-    
-    return client_info;
 }
 
 - (void)showAlertViewWithTitle:(NSString *)title message:(NSString *)message{

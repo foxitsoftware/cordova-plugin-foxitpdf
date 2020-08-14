@@ -1,7 +1,7 @@
 var exec = require('cordova/exec');
 var channel = require('cordova/channel');
 
-channels = {
+var channels = {
     'onDocOpened': channel.create('onDocOpened'),
     'onDocWillSave': channel.create('onDocWillSave'),
     'onDocSaved': channel.create('onDocSaved'),
@@ -108,8 +108,4 @@ pdf.prototype.enableAnnotations = function(enable) {
 
 var pdf = new pdf();
 module.exports = pdf;
-
-
-
-
 

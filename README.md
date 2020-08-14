@@ -61,7 +61,7 @@ The iOS version of the cordova plugin only needs a few simple steps to deploy
 Please use foxitpdfsdk_(version_no)_ios.zip from https://developers.foxitsoftware.com/pdf-sdk/ios/
 
 2. Target -> General -> Embedded Binaries
-Add dynamic framework "FoxitRDK.framework" and "uiextensionsDynamic.framework"
+Add dynamic framework "FoxitRDK.framework" 、"uiextensionsDynamic.framework" and "FoxitPDFScanUI.framework"
 to Xcode’s Embedded Binaries
 
 3. Target -> General -> Linked Frameworks and Libraries ->  +  -> WebKit.framework
@@ -81,9 +81,15 @@ Now that the preparatory work has been completed，you can use this plugin every
 
 
 ## Integration for Android
-1. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use Foxit PDF SDK for Android 7.0.0)
+1. Migrating to AndroidX, Add the following configuration to xxx/platforms/android/gradle.propertie：
+```xml
+  android.useAndroidX=true
+  android.enableJetifier=true
+```
 
-2. Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component’s android folder.
+2. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use the latest version 7.3.0)
+
+3. Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component’s android folder.
 `/xxx/platforms/android/`
 
 
@@ -477,6 +483,57 @@ Return: An array of dictionaries will be returned, each dictionary contains the 
 - __isChecked__: Check if the current form control is checked when related form field is check box or radio button.
 - __isDefaultChecked__: Check if the current form control is checked by default when related form field is check box or radio button.
 
+### ScanPdf.initializeScanner
+
+> ScanPdf.initializeScanner(serial1,serial2);
+
+ Initialize the scan module with additional parameters.
+ This function must be called before any App Framework SDK object can be instantiated.
+ Successful initialization of the SDK requires a valid serial number.
+
+- __serial1__: First part of the serial number.
+- __serial2__: Second part of the serial number.
+
+### ScanPdf.initializeCompression
+
+> ScanPdf.initializeCompression(serial1,serial2);
+
+ Initialize the Mobile Compression SDK.
+
+- __serial1__: First part of the serial number.
+- __serial2__: Second part of the serial number.
+
+### ScanPdf.createScanner
+
+> ScanPdf.createScanner();
+
+Show scan file list
+
+`Note: The scan list can only be create if the initializeScanner & initializeCompression successful.`
+
+### ScanPdf.addEventListener
+
+> ScanPdf.addEventListener(eventname,callback);
+
+- __eventname__: The name of the event to listen for _(String)_
+
+- __onDocumentAdded__: This event fires when the scan doc added successed.
+
+- __callback__: This function is executed when the event fires. The function is passed an object as a parameter.
+
+Add a listener for an event
+
+```javascript
+
+ScanPdf.addEventListener('onDocumentAdded',function(data){
+console.log('onDocumentAdded callback ',data);
+   var errorCode = data.error;
+   if(errorCode == 0){
+      var filePath = data.info;
+      window.FoxitPdf.openDocument(filePath, null);
+   }
+});
+```
 
 &nbsp;&nbsp;
 
@@ -564,6 +621,14 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 
 ## Versions
+>[v7.3.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.3.0)
+
+>[v7.2.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.2.1)
+
+>[v7.2.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.2.0)
+
+>[v7.1.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.1.0)
+
 >[v7.0.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.0.0)
 
 >[v6.4.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V6.4.0)

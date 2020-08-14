@@ -1,3 +1,14 @@
+/**
+ * Copyright (C) 2003-2020, Foxit Software Inc..
+ * All Rights Reserved.
+ * <p>
+ * http://www.foxitsoftware.com
+ * <p>
+ * The following code is copyrighted and is the proprietary of Foxit Software Inc.. It is not allowed to
+ * distribute any parts of Foxit PDF SDK to third party or public without permission unless an agreement
+ * is signed between Foxit Software Inc. and customers to explicitly grant customers permissions.
+ * Review legal.txt for additional license and legal information.
+ */
 package com.foxit.cordova.plugin;
 
 import android.Manifest;
@@ -6,10 +17,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 
@@ -17,12 +24,16 @@ import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.pdf.PDFDoc;
 import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.config.Config;
-import com.foxit.uiextensions.modules.connectpdf.account.AccountModule;
 import com.foxit.uiextensions.utils.AppTheme;
 import com.foxit.uiextensions.utils.UIToast;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
 public class ReaderActivity extends FragmentActivity {
 
@@ -56,7 +67,6 @@ public class ReaderActivity extends FragmentActivity {
         pdfViewCtrl.setAttachedActivity(this);
         pdfViewCtrl.registerDocEventListener(docListener);
         uiextensionsManager.onCreate(this, pdfViewCtrl, null);
-        AccountModule.getInstance().onCreate(this, savedInstanceState);
 
         String filePathSaveTo = getIntent().getExtras().getString("filePathSaveTo");
         if (!TextUtils.isEmpty(filePathSaveTo)) {
@@ -126,7 +136,7 @@ public class ReaderActivity extends FragmentActivity {
     protected void onDestroy() {
         if (uiextensionsManager != null)
             uiextensionsManager.onDestroy(this);
-        AccountModule.getInstance().onDestroy(this);
+        pdfViewCtrl.unregisterDocEventListener(docListener);
         super.onDestroy();
     }
 
@@ -176,7 +186,7 @@ public class ReaderActivity extends FragmentActivity {
 
         @Override
         public void onDocSaved(PDFDoc pdfDoc, int i) {
-            setResult();
+            FoxitPdf.onDocSave("onDocSaved");
         }
 
     };
@@ -188,5 +198,4 @@ public class ReaderActivity extends FragmentActivity {
         pdfViewCtrl.unregisterDocEventListener(docListener);
         finish();
     }
-
 }

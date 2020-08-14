@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-foxitpdf" version="7.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0"
+<plugin id="cordova-plugin-foxitpdf" version="7.3.0" xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android">
     <name>cordova-plugin-foxitpdf</name>
     <description>cordova pdf preview plugin with Foxit Pdf sdk</description>
@@ -16,6 +16,9 @@
     <js-module name="Field" src="www/Field.js">
         <clobbers target="Field"/>
     </js-module>
+    <js-module name="ScanPdf" src="www/ScanPdf.js">
+        <clobbers target="ScanPdf"/>
+    </js-module>
 
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
@@ -27,6 +30,7 @@
         <resource-file src="src/ios/uiextensions_config.json"/>
         <preference name="CAMERA_USAGE_DESCRIPTION" default=" " />
         <config-file target="*-Info.plist" parent="NSCameraUsageDescription">
+            <string>This app needs read-access to photo library</string>
         </config-file>
         <preference name="PHOTOLIBRARY_USAGE_DESCRIPTION" default=" " />
         <config-file target="*-Info.plist" parent="NSPhotoLibraryUsageDescription">
@@ -75,13 +79,19 @@
                     <data android:mimeType="application/pdf"></data>
                 </intent-filter>
             </activity>
+            <activity
+                android:name="com.foxit.cordova.plugin.ScannerListActivity"
+                android:configChanges="keyboardHidden|orientation|screenSize"
+                android:windowSoftInputMode="adjustPan" >
+            </activity>
         </config-file>
         <config-file parent="/*" target="AndroidManifest.xml"/>
 
         <source-file src="src/android/com/foxit/cordova/plugin/FoxitPdf.java" target-dir="src/com/foxit/cordova/plugin"/>
         <source-file src="src/android/com/foxit/cordova/plugin/ReaderActivity.java" target-dir="src/com/foxit/cordova/plugin"/>
-
+        <source-file src="src/android/com/foxit/cordova/plugin/ScannerListActivity.java" target-dir="src/com/foxit/cordova/plugin"/>
         <resource-file src="src/android/assets/uiextensions_config.json" target="assets/www/plugins/cordova-plugin-foxitpdf/uiextensions_config.json" />
+      
 
         <framework src="src/android/gradle/FoxitRDKUIExtensions.gradle" custom="true" type="gradleReference" />
     </platform>
