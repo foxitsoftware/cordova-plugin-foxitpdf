@@ -62,6 +62,8 @@ public class FoxitPdf extends CordovaPlugin {
     private static final String RDK_DOCSAVED_EVENT = "onDocSaved";
     private static final String RDK_DOCWILLSAVE_EVENT = "onDocWillSave";
     private static final String RDK_DOCOPENED_EVENT = "onDocOpened";
+    static final String RDK_CANCELED_EVENT = "onCanceled";
+
     private static final int READER_REQUEST_CODE = 100;
     private static final int SCANNER_REQUEST_CODE = 101;
 
@@ -403,11 +405,28 @@ public class FoxitPdf extends CordovaPlugin {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        //todo
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == SCANNER_REQUEST_CODE) {
+        if ((resultCode == Activity.RESULT_OK || resultCode == Activity.RESULT_CANCELED)) {
 
-            } else if (requestCode == READER_REQUEST_CODE) {
+            CallbackContext callbackContext = null;
+            if (requestCode == SCANNER_REQUEST_CODE)
+                callbackContext = mCallbackArrays.get(CALLBACK_FOR_SCANNER);
+            else if (requestCode == READER_REQUEST_CODE)
+                callbackContext = mCallbackArrays.get(CALLBACK_FOR_OPENDOC);
+
+            if (callbackContext != null) {
+                try {
+                    JSONObject obj = new JSONObject();
+                    obj.put("type", resultCode == Activity.RESULT_OK ? intent.getStringExtra("type") : RDK_CANCELED_EVENT);
+                    if (resultCode == Activity.RESULT_OK) {
+                        obj.put("info", intent.getStringExtra("key"));
+                    }
+
+                    PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
+                    result.setKeepCallback(true);
+                    callbackContext.sendPluginResult(result);
+                } catch (JSONException ex) {
+                    callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.JSON_EXCEPTION));
+                }
             }
         }
     }
@@ -543,7 +562,8 @@ public class FoxitPdf extends CordovaPlugin {
         return path;
     }
 
-    private String getAbsolutePath(Context context, Uri uri, String selection, String[] selectionArgs) {
+    private String getAbsolutePath(Context context, Uri uri, String selection, String[]
+            selectionArgs) {
         Cursor cursor = null;
         final String column = "_data";
         final String[] projection = {column};
@@ -736,7 +756,8 @@ public class FoxitPdf extends CordovaPlugin {
         return false;
     }
 
-    private boolean validateFieldName(int fieldType, String fieldName, CallbackContext callbackContext) {
+    private boolean validateFieldName(int fieldType, String fieldName, CallbackContext
+            callbackContext) {
         if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
@@ -762,7 +783,8 @@ public class FoxitPdf extends CordovaPlugin {
         return false;
     }
 
-    private boolean renameField(int fieldIndex, String fieldName, CallbackContext callbackContext) {
+    private boolean renameField(int fieldIndex, String fieldName, CallbackContext
+            callbackContext) {
         if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
@@ -949,7 +971,8 @@ public class FoxitPdf extends CordovaPlugin {
         return false;
     }
 
-    private boolean removeControl(int pageIndex, int controlIndex, CallbackContext callbackContext) {
+    private boolean removeControl(int pageIndex, int controlIndex, CallbackContext
+            callbackContext) {
         if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
@@ -977,7 +1000,8 @@ public class FoxitPdf extends CordovaPlugin {
         return false;
     }
 
-    private boolean addControl(int pageIndex, String fieldName, int fieldType, com.foxit.sdk.common.fxcrt.RectF rectF, CallbackContext callbackContext) {
+    private boolean addControl(int pageIndex, String fieldName, int fieldType, com.
+            foxit.sdk.common.fxcrt.RectF rectF, CallbackContext callbackContext) {
         if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
@@ -1015,7 +1039,8 @@ public class FoxitPdf extends CordovaPlugin {
         return false;
     }
 
-    private boolean updateControl(int pageIndex, int controlIndex, JSONObject controlInfo, CallbackContext callbackContext) {
+    private boolean updateControl(int pageIndex, int controlIndex, JSONObject
+            controlInfo, CallbackContext callbackContext) {
         if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
@@ -1061,7 +1086,8 @@ public class FoxitPdf extends CordovaPlugin {
         return false;
     }
 
-    private boolean getFieldByControl(int pageIndex, int controlIndex, CallbackContext callbackContext) {
+    private boolean getFieldByControl(int pageIndex, int controlIndex, CallbackContext
+            callbackContext) {
         if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
@@ -1138,7 +1164,8 @@ public class FoxitPdf extends CordovaPlugin {
         return false;
     }
 
-    private boolean updateField(int fieldIndex, JSONObject fieldInfo, CallbackContext callbackContext) {
+    private boolean updateField(int fieldIndex, JSONObject fieldInfo, CallbackContext
+            callbackContext) {
         if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
