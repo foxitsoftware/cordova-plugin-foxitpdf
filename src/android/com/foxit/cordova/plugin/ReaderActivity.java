@@ -95,7 +95,7 @@ public class ReaderActivity extends FragmentActivity {
                 uiextensionsManager.openDocument(getIntent().getStringExtra("path"), getIntent().getByteArrayExtra("password"));
             } else {
                 UIToast.getInstance(getApplicationContext()).show("Permission Denied");
-                setResult();
+                setResult(FoxitPdf.RDK_CANCELED_EVENT);
             }
         }
     }
@@ -191,9 +191,10 @@ public class ReaderActivity extends FragmentActivity {
 
     };
 
-    private void setResult() {
+    private void setResult(String type) {
         Intent intent = new Intent();
         intent.putExtra("key", "info");
+        intent.putExtra("type", type);
         setResult(RESULT_OK, intent);
         pdfViewCtrl.unregisterDocEventListener(docListener);
         finish();
