@@ -5,6 +5,7 @@ var channels = {
     'onDocOpened': channel.create('onDocOpened'),
     'onDocWillSave': channel.create('onDocWillSave'),
     'onDocSaved': channel.create('onDocSaved'),
+    'onCanceled': channel.create('onCanceled'),
 };
 
 var pdf = function(){};
