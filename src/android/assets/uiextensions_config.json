@@ -33,6 +33,7 @@
         "thumbnail": true,
         "attachment": true,
         "signature": true,
+        "fillSign": true,
         "search": true,
         "navigation": true,
         "form": true,
