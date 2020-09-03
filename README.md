@@ -621,6 +621,8 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 
 ## Versions
+>[v7.4.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.4.0)
+
 >[v7.3.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.3.0)
 
 >[v7.2.1](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V7.2.1)
