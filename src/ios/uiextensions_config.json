@@ -32,6 +32,7 @@
         "thumbnail": true,
         "attachment": true,
         "signature": true,
+        "fillSign": false,
         "search": true,
         "navigation": true,
         "form": true,
