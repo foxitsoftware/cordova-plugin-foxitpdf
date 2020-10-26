@@ -53,6 +53,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class echoes a string called from JavaScript.
@@ -79,214 +81,245 @@ public class FoxitPdf extends CordovaPlugin {
     private static final int CALLBACK_FOR_OPENDOC = 1;
     private static final int CALLBACK_FOR_SCANNER = 2;
     private static SparseArray<CallbackContext> mCallbackArrays = new SparseArray<>();
-
+    static Map<Integer, Boolean> mBottomBarItemStatus = new HashMap<>();
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if (action.equals("initialize")) {
-            JSONObject options = args.optJSONObject(0);
-            String sn = options.getString("foxit_sn");
-            String key = options.getString("foxit_key");
+        switch (action) {
+            case "initialize": {
+                JSONObject options = args.optJSONObject(0);
+                String sn = options.getString("foxit_sn");
+                String key = options.getString("foxit_key");
 
-            if (isLibraryInited == false) {
-                errCode = Library.initialize(sn, key);
-                isLibraryInited = true;
-            } else if (!mLastSn.equals(sn) || !mLastKey.equals(key)) {
-                Library.release();
-                errCode = Library.initialize(sn, key);
+                if (!isLibraryInited) {
+                    errCode = Library.initialize(sn, key);
+                    isLibraryInited = true;
+                } else if (!mLastSn.equals(sn) || !mLastKey.equals(key)) {
+                    Library.release();
+                    errCode = Library.initialize(sn, key);
+                }
+
+                mLastSn = sn;
+                mLastKey = key;
+                switch (errCode) {
+                    case Constants.e_ErrSuccess:
+                        callbackContext.success();
+                        return true;
+                    case Constants.e_ErrInvalidLicense:
+                        callbackContext.error("The License is invalid!");
+                        return false;
+                    default:
+                        callbackContext.error("Failed to initialize Foxit library.");
+                        return false;
+                }
             }
+            case "Preview": {
+                mCallbackArrays.put(CALLBACK_FOR_PREVIEW, callbackContext);
+                if (errCode != Constants.e_ErrSuccess) {
+                    callbackContext.error("Please initialize Foxit library Firstly.");
+                    return false;
+                }
 
-            mLastSn = sn;
-            mLastKey = key;
-            switch (errCode) {
-                case Constants.e_ErrSuccess:
-                    callbackContext.success();
+                JSONObject options = args.optJSONObject(0);
+                String filePath = options.getString("filePath");
+                String fileSavePath = options.getString("filePathSaveTo");
+                return openDoc(filePath, null, fileSavePath, callbackContext);
+            }
+            case "openDocument": {
+                mCallbackArrays.put(CALLBACK_FOR_OPENDOC, callbackContext);
+                if (errCode != Constants.e_ErrSuccess) {
+                    callbackContext.error("Please initialize Foxit library Firstly.");
+                    return false;
+                }
+
+                JSONObject options = args.optJSONObject(0);
+                String filePath = options.getString("path");
+                if (TextUtils.isEmpty(filePath)) {
+                    callbackContext.error("Please input the correct path.");
+                    return false;
+                }
+                filePath = getAbsolutePath(this.cordova.getActivity().getApplicationContext(), Uri.parse(filePath));
+                String pw = options.getString("password");
+                byte[] password = null;
+                if (!TextUtils.isEmpty(pw)) {
+                    password = pw.getBytes();
+                }
+                return openDoc(filePath, password, mSavePath, callbackContext);
+            }
+            case "setSavePath": {
+                JSONObject options = args.optJSONObject(0);
+                String savePath = options.getString("savePath");
+                setSavePath(savePath, callbackContext);
+                return true;
+            }
+            case "importFromFDF": {
+                JSONObject options = args.optJSONObject(0);
+                JSONArray pageRangeArray = options.getJSONArray("pageRange");
+                int len = pageRangeArray.length();
+                com.foxit.sdk.common.Range range = new com.foxit.sdk.common.Range();
+                for (int i = 0; i < len; i++) {
+                    JSONArray array = pageRangeArray.getJSONArray(i);
+                    if (array.length() != 2) {
+                        callbackContext.error("Please input right page range.");
+                        return false;
+                    }
+                    range.addSegment(array.getInt(0), array.getInt(0) + array.getInt(1) - 1, com.foxit.sdk.common.Range.e_All);
+                }
+
+                String fdfPath = options.getString("fdfPath");
+                int type = options.getInt("dataType");
+                return importFromFDF(fdfPath, type, range, callbackContext);
+            }
+            case "exportToFDF": {
+                JSONObject options = args.optJSONObject(0);
+                JSONArray pageRangeArray = options.getJSONArray("pageRange");
+                int len = pageRangeArray.length();
+                com.foxit.sdk.common.Range range = new com.foxit.sdk.common.Range();
+                for (int i = 0; i < len; i++) {
+                    JSONArray array = pageRangeArray.getJSONArray(i);
+                    if (array.length() != 2) {
+                        callbackContext.error("Please input right page range.");
+                        return false;
+                    }
+                    range.addSegment(array.getInt(0), array.getInt(0) + array.getInt(1) - 1, com.foxit.sdk.common.Range.e_All);
+                }
+
+                int fdfDocType = options.getInt("fdfDocType");
+                int type = options.getInt("dataType");
+                String exportPath = options.getString("exportPath");
+
+                return exportToFDF(fdfDocType, type, range, exportPath, callbackContext);
+            }
+            case "enableAnnotations": {
+                JSONObject options = args.optJSONObject(0);
+                mEnableAnnotations = options.getBoolean("enable");
+                callbackContext.success();
+                return true;
+            }
+            case "getForm":
+                return getFormInfo(callbackContext);
+            case "updateForm":
+                JSONObject data = args.getJSONObject(0);
+                JSONObject formInfo = data.getJSONObject("forminfo");
+                return updateFormInfo(formInfo, callbackContext);
+            case "getAllFormFields":
+                return getAllFormFields(callbackContext);
+            case "formValidateFieldName": {
+                JSONObject obj = args.getJSONObject(0);
+                int fieldType = obj.getInt("fieldType");
+                String fieldName = obj.getString("fieldName");
+                return validateFieldName(fieldType, fieldName, callbackContext);
+            }
+            case "formRenameField": {
+                JSONObject obj = args.getJSONObject(0);
+                int fieldIndex = obj.getInt("fieldIndex");
+                String fieldName = obj.getString("newFieldName");
+                return renameField(fieldIndex, fieldName, callbackContext);
+            }
+            case "formRemoveField": {
+                JSONObject obj = args.getJSONObject(0);
+                int fieldIndex = obj.getInt("fieldIndex");
+                return removeField(fieldIndex, callbackContext);
+            }
+            case "formReset":
+                return resetForm(callbackContext);
+            case "formExportToXML": {
+                JSONObject obj = args.getJSONObject(0);
+                String filePath = obj.getString("filePath");
+                return exportToXML(filePath, callbackContext);
+            }
+            case "formImportFromXML": {
+                JSONObject obj = args.getJSONObject(0);
+                String filePath = obj.getString("filePath");
+                return importFromXML(filePath, callbackContext);
+            }
+            case "formGetPageControls": {
+                JSONObject obj = args.getJSONObject(0);
+                int pageIndex = obj.getInt("pageIndex");
+                return getPageControls(pageIndex, callbackContext);
+            }
+            case "formRemoveControl": {
+                JSONObject obj = args.getJSONObject(0);
+                int pageIndex = obj.getInt("pageIndex");
+                int controlIndex = obj.getInt("controlIndex");
+                return removeControl(pageIndex, controlIndex, callbackContext);
+            }
+            case "formAddControl": {
+                JSONObject obj = args.getJSONObject(0);
+                int pageIndex = obj.getInt("pageIndex");
+                String fieldName = obj.getString("fieldName");
+                int fieldType = obj.getInt("fieldType");
+                JSONObject json_rect = obj.getJSONObject("rect");
+                float left = BigDecimal.valueOf(json_rect.getDouble("left")).floatValue();
+                float top = BigDecimal.valueOf(json_rect.getDouble("top")).floatValue();
+                float right = BigDecimal.valueOf(json_rect.getDouble("right")).floatValue();
+                float bottom = BigDecimal.valueOf(json_rect.getDouble("bottom")).floatValue();
+                com.foxit.sdk.common.fxcrt.RectF rectF = new com.foxit.sdk.common.fxcrt.RectF(left, top, right, bottom);
+                return addControl(pageIndex, fieldName, fieldType, rectF, callbackContext);
+            }
+            case "formUpdateControl": {
+                JSONObject obj = args.getJSONObject(0);
+                int pageIndex = obj.getInt("pageIndex");
+                int controlIndex = obj.getInt("controlIndex");
+                JSONObject controlInfo = obj.getJSONObject("control");
+                return updateControl(pageIndex, controlIndex, controlInfo, callbackContext);
+            }
+            case "getFieldByControl": {
+                JSONObject obj = args.getJSONObject(0);
+                int pageIndex = obj.getInt("pageIndex");
+                int controlIndex = obj.getInt("controlIndex");
+                return getFieldByControl(pageIndex, controlIndex, callbackContext);
+            }
+            case "FieldUpdateField": {
+                JSONObject obj = args.getJSONObject(0);
+                int fieldIndex = obj.getInt("fieldIndex");
+                JSONObject fieldInfo = obj.getJSONObject("field");
+                return updateField(fieldIndex, fieldInfo, callbackContext);
+            }
+            case "FieldReset": {
+                JSONObject obj = args.getJSONObject(0);
+                int fieldIndex = obj.getInt("fieldIndex");
+                return resetField(fieldIndex, callbackContext);
+            }
+            case "getFieldControls": {
+                JSONObject obj = args.getJSONObject(0);
+                int fieldIndex = obj.getInt("fieldIndex");
+                return getFieldControls(fieldIndex, callbackContext);
+            }
+            case "initializeScanner":
+                if (!PDFScanManager.isInitializeScanner()) {
+                    JSONObject options = args.optJSONObject(0);
+                    long serial1 = options.getLong("serial1");
+                    long serial2 = options.getLong("serial2");
+                    PDFScanManager.initializeScanner(this.cordova.getActivity().getApplication(), serial1, serial2);
+                }
+                return true;
+            case "initializeCompression":
+                if (!PDFScanManager.isInitializeCompression()) {
+                    JSONObject options = args.optJSONObject(0);
+                    long serial1 = options.getLong("serial1");
+                    long serial2 = options.getLong("serial2");
+                    PDFScanManager.initializeCompression(this.cordova.getActivity().getApplication(), serial1, serial2);
+                }
+                return true;
+            case "createScanner":
+                if (PDFScanManager.isInitializeScanner() && PDFScanManager.isInitializeCompression()) {
+                    mCallbackArrays.put(CALLBACK_FOR_SCANNER, callbackContext);
+                    Intent intent = new Intent(this.cordova.getActivity(), ScannerListActivity.class);
+                    this.cordova.startActivityForResult(this, intent, SCANNER_REQUEST_CODE);
                     return true;
-                case Constants.e_ErrInvalidLicense:
-                    callbackContext.error("The License is invalid!");
-                    return false;
-                default:
-                    callbackContext.error("Failed to initialize Foxit library.");
-                    return false;
-            }
-        } else if (action.equals("Preview")) {
-            mCallbackArrays.put(CALLBACK_FOR_PREVIEW, callbackContext);
-            if (errCode != Constants.e_ErrSuccess) {
-                callbackContext.error("Please initialize Foxit library Firstly.");
-                return false;
-            }
-
-            JSONObject options = args.optJSONObject(0);
-            String filePath = options.getString("filePath");
-            String fileSavePath = options.getString("filePathSaveTo");
-            return openDoc(filePath, null, fileSavePath, callbackContext);
-        } else if (action.equals("openDocument")) {
-            mCallbackArrays.put(CALLBACK_FOR_OPENDOC, callbackContext);
-            if (errCode != Constants.e_ErrSuccess) {
-                callbackContext.error("Please initialize Foxit library Firstly.");
-                return false;
-            }
-
-            JSONObject options = args.optJSONObject(0);
-            String filePath = options.getString("path");
-            if (TextUtils.isEmpty(filePath)) {
-                callbackContext.error("Please input the correct path.");
-                return false;
-            }
-            filePath = getAbsolutePath(this.cordova.getActivity().getApplicationContext(), Uri.parse(filePath));
-            String pw = options.getString("password");
-            byte[] password = null;
-            if (!TextUtils.isEmpty(pw)) {
-                password = pw.getBytes();
-            }
-            return openDoc(filePath, password, mSavePath, callbackContext);
-        } else if (action.equals("setSavePath")) {
-            JSONObject options = args.optJSONObject(0);
-            String savePath = options.getString("savePath");
-            setSavePath(savePath, callbackContext);
-            return true;
-        } else if (action.equals("importFromFDF")) {
-            JSONObject options = args.optJSONObject(0);
-            JSONArray pageRangeArray = options.getJSONArray("pageRange");
-            int len = pageRangeArray.length();
-            com.foxit.sdk.common.Range range = new com.foxit.sdk.common.Range();
-            for (int i = 0; i < len; i++) {
-                JSONArray array = pageRangeArray.getJSONArray(i);
-                if (array.length() != 2) {
-                    callbackContext.error("Please input right page range.");
-                    return false;
                 }
-                range.addSegment(array.getInt(0), array.getInt(0) + array.getInt(1) - 1, com.foxit.sdk.common.Range.e_All);
-            }
-
-            String fdfPath = options.getString("fdfPath");
-            int type = options.getInt("dataType");
-            return importFromFDF(fdfPath, type, range, callbackContext);
-        } else if (action.equals("exportToFDF")) {
-            JSONObject options = args.optJSONObject(0);
-            JSONArray pageRangeArray = options.getJSONArray("pageRange");
-            int len = pageRangeArray.length();
-            com.foxit.sdk.common.Range range = new com.foxit.sdk.common.Range();
-            for (int i = 0; i < len; i++) {
-                JSONArray array = pageRangeArray.getJSONArray(i);
-                if (array.length() != 2) {
-                    callbackContext.error("Please input right page range.");
-                    return false;
-                }
-                range.addSegment(array.getInt(0), array.getInt(0) + array.getInt(1) - 1, com.foxit.sdk.common.Range.e_All);
-            }
-
-            int fdfDocType = options.getInt("fdfDocType");
-            int type = options.getInt("dataType");
-            String exportPath = options.getString("exportPath");
-
-            return exportToFDF(fdfDocType, type, range, exportPath, callbackContext);
-        } else if (action.equals("enableAnnotations")) {
-            JSONObject options = args.optJSONObject(0);
-            mEnableAnnotations = options.getBoolean("enable");
-            callbackContext.success();
-            return true;
-        } else if (action.equals("getForm")) {
-            return getFormInfo(callbackContext);
-        } else if (action.equals("updateForm")) {
-            JSONObject data = args.getJSONObject(0);
-            JSONObject formInfo = data.getJSONObject("forminfo");
-            return updateFormInfo(formInfo, callbackContext);
-        } else if (action.equals("getAllFormFields")) {
-            return getAllFormFields(callbackContext);
-        } else if (action.equals("formValidateFieldName")) {
-            JSONObject obj = args.getJSONObject(0);
-            int fieldType = obj.getInt("fieldType");
-            String fieldName = obj.getString("fieldName");
-            return validateFieldName(fieldType, fieldName, callbackContext);
-        } else if (action.equals("formRenameField")) {
-            JSONObject obj = args.getJSONObject(0);
-            int fieldIndex = obj.getInt("fieldIndex");
-            String fieldName = obj.getString("newFieldName");
-            return renameField(fieldIndex, fieldName, callbackContext);
-        } else if (action.equals("formRemoveField")) {
-            JSONObject obj = args.getJSONObject(0);
-            int fieldIndex = obj.getInt("fieldIndex");
-            return removeField(fieldIndex, callbackContext);
-        } else if (action.equals("formReset")) {
-            return resetForm(callbackContext);
-        } else if (action.equals("formExportToXML")) {
-            JSONObject obj = args.getJSONObject(0);
-            String filePath = obj.getString("filePath");
-            return exportToXML(filePath, callbackContext);
-        } else if (action.equals("formImportFromXML")) {
-            JSONObject obj = args.getJSONObject(0);
-            String filePath = obj.getString("filePath");
-            return importFromXML(filePath, callbackContext);
-        } else if (action.equals("formGetPageControls")) {
-            JSONObject obj = args.getJSONObject(0);
-            int pageIndex = obj.getInt("pageIndex");
-            return getPageControls(pageIndex, callbackContext);
-        } else if (action.equals("formRemoveControl")) {
-            JSONObject obj = args.getJSONObject(0);
-            int pageIndex = obj.getInt("pageIndex");
-            int controlIndex = obj.getInt("controlIndex");
-            return removeControl(pageIndex, controlIndex, callbackContext);
-        } else if (action.equals("formAddControl")) {
-            JSONObject obj = args.getJSONObject(0);
-            int pageIndex = obj.getInt("pageIndex");
-            String fieldName = obj.getString("fieldName");
-            int fieldType = obj.getInt("fieldType");
-            JSONObject json_rect = obj.getJSONObject("rect");
-            float left = BigDecimal.valueOf(json_rect.getDouble("left")).floatValue();
-            float top = BigDecimal.valueOf(json_rect.getDouble("top")).floatValue();
-            float right = BigDecimal.valueOf(json_rect.getDouble("right")).floatValue();
-            float bottom = BigDecimal.valueOf(json_rect.getDouble("bottom")).floatValue();
-            com.foxit.sdk.common.fxcrt.RectF rectF = new com.foxit.sdk.common.fxcrt.RectF(left, top, right, bottom);
-            return addControl(pageIndex, fieldName, fieldType, rectF, callbackContext);
-        } else if (action.equals("formUpdateControl")) {
-            JSONObject obj = args.getJSONObject(0);
-            int pageIndex = obj.getInt("pageIndex");
-            int controlIndex = obj.getInt("controlIndex");
-            JSONObject controlInfo = obj.getJSONObject("control");
-            return updateControl(pageIndex, controlIndex, controlInfo, callbackContext);
-        } else if (action.equals("getFieldByControl")) {
-            JSONObject obj = args.getJSONObject(0);
-            int pageIndex = obj.getInt("pageIndex");
-            int controlIndex = obj.getInt("controlIndex");
-            return getFieldByControl(pageIndex, controlIndex, callbackContext);
-        } else if (action.equals("FieldUpdateField")) {
-            JSONObject obj = args.getJSONObject(0);
-            int fieldIndex = obj.getInt("fieldIndex");
-            JSONObject fieldInfo = obj.getJSONObject("field");
-            return updateField(fieldIndex, fieldInfo, callbackContext);
-        } else if (action.equals("FieldReset")) {
-            JSONObject obj = args.getJSONObject(0);
-            int fieldIndex = obj.getInt("fieldIndex");
-            return resetField(fieldIndex, callbackContext);
-        } else if (action.equals("getFieldControls")) {
-            JSONObject obj = args.getJSONObject(0);
-            int fieldIndex = obj.getInt("fieldIndex");
-            return getFieldControls(fieldIndex, callbackContext);
-        } else if (action.equals("initializeScanner")) {
-            if (!PDFScanManager.isInitializeScanner()) {
+                break;
+            case "setBottomBarItemVisible": {
                 JSONObject options = args.optJSONObject(0);
-                long serial1 = options.getLong("serial1");
-                long serial2 = options.getLong("serial2");
-                PDFScanManager.initializeScanner(this.cordova.getActivity().getApplication(), serial1, serial2);
-            }
-            return true;
-        } else if (action.equals("initializeCompression")) {
-            if (!PDFScanManager.isInitializeCompression()) {
-                JSONObject options = args.optJSONObject(0);
-                long serial1 = options.getLong("serial1");
-                long serial2 = options.getLong("serial2");
-                PDFScanManager.initializeCompression(this.cordova.getActivity().getApplication(), serial1, serial2);
-            }
-            return true;
-        } else if (action.equals("createScanner")) {
-            if (PDFScanManager.isInitializeScanner() && PDFScanManager.isInitializeCompression()) {
-                mCallbackArrays.put(CALLBACK_FOR_SCANNER, callbackContext);
-                Intent intent = new Intent(this.cordova.getActivity(), ScannerListActivity.class);
-                this.cordova.startActivityForResult(this, intent, SCANNER_REQUEST_CODE);
+                int index = options.getInt("index");
+                boolean visible = options.getBoolean("visible");
+                mBottomBarItemStatus.put(index, visible);
+                callbackContext.success();
                 return true;
             }
         }
+
         return false;
     }
 
@@ -296,12 +329,8 @@ public class FoxitPdf extends CordovaPlugin {
             return false;
         }
 
-//        this.cordova.getActivity().runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
         openDocument(inputPath, password, outPath, callbackContext);
-//            }
-//        });
+
         return true;
     }
 
@@ -311,9 +340,9 @@ public class FoxitPdf extends CordovaPlugin {
         bundle.putString("path", inputPath);
         bundle.putByteArray("password", password);
         bundle.putString("filePathSaveTo", TextUtils.isEmpty(outPath) ? "" : outPath);
+
         intent.putExtras(bundle);
         this.cordova.startActivityForResult(this, intent, READER_REQUEST_CODE);
-//        this.cordova.setActivityResultCallback(this);
 
         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, "Succeed open this file");
         pluginResult.setKeepCallback(true);
@@ -1009,10 +1038,6 @@ public class FoxitPdf extends CordovaPlugin {
 
         PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
         try {
-            // if (!pdfDoc.hasForm()) {
-            //     callbackContext.error("The current document does not have interactive form.");
-            //     return false;
-            // }
             Form form = new Form(pdfDoc);
             PDFPage page = pdfDoc.getPage(pageIndex);
             if (!page.isParsed()) {

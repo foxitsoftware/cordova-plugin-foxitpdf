@@ -106,6 +106,15 @@ pdf.prototype.enableAnnotations = function(enable) {
     });
 }
 
+pdf.prototype.setBottomBarItemVisible = function(index, visible) {
+    return new Promise(function(resolve, reject){
+        exec(resolve, reject, "FoxitPdf", "setBottomBarItemVisible", [{
+            'index': index,
+            'visible': visible,
+        }]);
+    });
+}
+
 var pdf = new pdf();
 module.exports = pdf;
 

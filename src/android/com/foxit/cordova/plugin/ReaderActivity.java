@@ -19,16 +19,20 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.View;
 
 import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.pdf.PDFDoc;
 import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.config.Config;
+import com.foxit.uiextensions.controls.toolbar.BaseBar;
+import com.foxit.uiextensions.controls.toolbar.IBarsHandler;
 import com.foxit.uiextensions.utils.AppTheme;
 import com.foxit.uiextensions.utils.UIToast;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -67,6 +71,11 @@ public class ReaderActivity extends FragmentActivity {
         pdfViewCtrl.setAttachedActivity(this);
         pdfViewCtrl.registerDocEventListener(docListener);
         uiextensionsManager.onCreate(this, pdfViewCtrl, null);
+        for (Map.Entry<Integer, Boolean> entry : FoxitPdf.mBottomBarItemStatus.entrySet()) {
+            int index = entry.getKey();
+            int visible = entry.getValue() ? View.VISIBLE : View.GONE;
+            uiextensionsManager.getBarManager().setItemVisibility(IBarsHandler.BarName.BOTTOM_BAR, BaseBar.TB_Position.Position_CENTER, index, visible);
+        }
 
         String filePathSaveTo = getIntent().getExtras().getString("filePathSaveTo");
         if (!TextUtils.isEmpty(filePathSaveTo)) {
@@ -173,6 +182,8 @@ public class ReaderActivity extends FragmentActivity {
 
         @Override
         public void onDocWillClose(PDFDoc pdfDoc) {
+            FoxitPdf.mEnableAnnotations = true;
+            FoxitPdf.mBottomBarItemStatus.clear();
         }
 
         @Override
