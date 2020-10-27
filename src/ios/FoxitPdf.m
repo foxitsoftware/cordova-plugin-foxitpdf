@@ -35,6 +35,8 @@
 @property (nonatomic, assign) BOOL isEnableAnnotations;
 
 @property (nonatomic, strong) FSPDFDoc *tempDoc;
+@property (nonatomic, strong) NSMutableArray *bottomBarItemStatus;
+
 
 - (void)Preview:(CDVInvokedUrlCommand *)command;
 @end
@@ -76,6 +78,7 @@ static NSString *initializeKey;
         }else{
             initializeSN = sn;
             initializeKey = key;
+            self.bottomBarItemStatus = @[].mutableCopy;
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialize succeeded"];
             block();
         }
@@ -87,6 +90,56 @@ static NSString *initializeKey;
 
 - (void)openDocument:(CDVInvokedUrlCommand*)command{
     [self Preview:command];
+}
+
+- (void)setBottomBarItemVisible:(CDVInvokedUrlCommand*)command{
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        block();
+        return;
+    }
+    
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    int index = [options[@"index"] intValue];
+    id obj = [options objectForKey:@"visible"];
+    BOOL isHidden = obj ? !([obj boolValue]) : NO;
+    
+    NSUInteger itemTag = -1;
+    switch (index) {
+        case 0:
+            itemTag = FS_BOTTOMBAR_ITEM_PANEL_TAG; // list
+            break;
+        case 1:
+            itemTag = FS_BOTTOMBAR_ITEM_READMODE_TAG; // view
+            break;
+        case 2:
+            itemTag = FS_BOTTOMBAR_ITEM_ANNOT_TAG; // comment
+            break;
+        case 3:
+            itemTag = FS_BOTTOMBAR_ITEM_SIGNATURE_TAG; // signatuew
+            break;
+        case 4:
+            itemTag = FS_BOTTOMBAR_ITEM_FILLSIGN_TAG; // fill&sign
+            break;
+        default:
+            break;
+    }
+    
+    if (itemTag == -1) return;
+    
+    NSMutableDictionary *status = @{}.mutableCopy;
+    [status setObject:@(itemTag) forKey:@"itemTag"];
+    [status setObject:@(isHidden) forKey:@"hidden"];
+    [self.bottomBarItemStatus addObject:status];
 }
 
 - (void)initializeScanner:(CDVInvokedUrlCommand*)command{
@@ -418,6 +471,12 @@ static NSString *initializeKey;
     self.pdfRootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
     self.pdfRootViewController.navigationBarHidden = YES;
     self.pdfRootViewController.extensionsManager = self.extensionsMgr;
+    for (int i = 0; i < self.bottomBarItemStatus.count; i++) {
+        NSMutableDictionary* status = self.bottomBarItemStatus[i];
+        NSUInteger itemTag = [status[@"itemTag"] intValue];
+        BOOL isHidden = status[@"hidden"];
+        [self.extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
+    }
     
     if(self.filePathSaveTo && self.filePathSaveTo.length >0){
         self.extensionsMgr.preventOverrideFilePath = self.filePathSaveTo;
@@ -504,6 +563,7 @@ static NSString *initializeKey;
     // Called when a document is closed.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.8 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         self.currentDoc = nil;
+        [self.bottomBarItemStatus removeAllObjects];
     });
 }
 
