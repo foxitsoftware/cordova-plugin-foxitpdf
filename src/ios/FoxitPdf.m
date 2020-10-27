@@ -474,7 +474,8 @@ static NSString *initializeKey;
     for (int i = 0; i < self.bottomBarItemStatus.count; i++) {
         NSMutableDictionary* status = self.bottomBarItemStatus[i];
         NSUInteger itemTag = [status[@"itemTag"] intValue];
-        BOOL isHidden = status[@"hidden"];
+        id obj = [status objectForKey:@"hidden"];
+        BOOL isHidden = obj ? [obj boolValue] : NO;
         [self.extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
     }
     
