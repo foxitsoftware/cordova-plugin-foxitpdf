@@ -276,6 +276,8 @@ console.log('onDocOpened callback ',data);
 
 Set bottom toolbar item hide/show, and it only works for the default bottom toolbat item.  
 
+NOTE：It should be called before opening document.
+
 - __`index`__: the item index of the bottom toolbar. Valid range: from 0 to (<b>count</b> -1), now, there are 5 items in the bottom toolbar, 0 for List item,  1 for View item, 2 for Comment Item, 3 for Signature item, 4 for Fill item.
 - __`visible`__: <b>true<b> means to show the specified item, <b>false<b> means to hide the specified item.
 
