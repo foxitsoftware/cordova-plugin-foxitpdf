@@ -92,7 +92,7 @@ static NSString *initializeKey;
     [self Preview:command];
 }
 
-- (void)setBottomBarItemVisible:(CDVInvokedUrlCommand*)command{
+- (void)setBottomToolbarItemVisible:(CDVInvokedUrlCommand*)command{
     __block CDVPluginResult *pluginResult = nil;
     
     void (^block)(void) = ^{

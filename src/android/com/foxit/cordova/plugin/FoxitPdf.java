@@ -310,7 +310,7 @@ public class FoxitPdf extends CordovaPlugin {
                     return true;
                 }
                 break;
-            case "setBottomBarItemVisible": {
+            case "setBottomToolbarItemVisible": {
                 JSONObject options = args.optJSONObject(0);
                 int index = options.getInt("index");
                 boolean visible = options.getBoolean("visible");

@@ -106,9 +106,9 @@ pdf.prototype.enableAnnotations = function(enable) {
     });
 }
 
-pdf.prototype.setBottomBarItemVisible = function(index, visible) {
+pdf.prototype.setBottomToolbarItemVisible = function(index, visible) {
     return new Promise(function(resolve, reject){
-        exec(resolve, reject, "FoxitPdf", "setBottomBarItemVisible", [{
+        exec(resolve, reject, "FoxitPdf", "setBottomToolbarItemVisible", [{
             'index': index,
             'visible': visible,
         }]);
