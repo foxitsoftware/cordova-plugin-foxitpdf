@@ -60,7 +60,7 @@ cordova prepare
 ```
 
 ### Xcode run  , click cordova app ’s  preview button .
-Congratulations! You kan preview this pdf file now.
+Congratulations! You can preview this pdf file now.
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo5.jpg)
 
 ***
@@ -115,7 +115,7 @@ cordova run android
 
 #### Run by Android Studio
 
-Congratulations! You kan preview this pdf file now.
+Congratulations! You can preview this pdf file now.
 
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/android/cordovademo4.jpg)
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/android/cordovademo5.jpg)
