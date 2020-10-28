@@ -315,7 +315,9 @@ public class FoxitPdf extends CordovaPlugin {
                 JSONObject options = args.optJSONObject(0);
                 int index = options.getInt("index");
                 boolean visible = options.getBoolean("visible");
-                mBottomBarItemStatus.put(index, visible);
+                if (index >= 0 && index < 5) {
+                    mBottomBarItemStatus.put(index, visible);
+                }
                 callbackContext.success();
                 return true;
             }
@@ -323,7 +325,9 @@ public class FoxitPdf extends CordovaPlugin {
                 JSONObject options = args.optJSONObject(0);
                 int index = options.getInt("index");
                 boolean visible = options.getBoolean("visible");
-                mTopBarItemStatus.put(index, visible);
+                if (index >= 0 && index < 4) {
+                    mTopBarItemStatus.put(index, visible);
+                }
                 callbackContext.success();
                 return true;
             }
