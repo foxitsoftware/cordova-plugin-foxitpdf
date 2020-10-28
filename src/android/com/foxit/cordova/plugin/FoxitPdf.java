@@ -82,6 +82,7 @@ public class FoxitPdf extends CordovaPlugin {
     private static final int CALLBACK_FOR_SCANNER = 2;
     private static SparseArray<CallbackContext> mCallbackArrays = new SparseArray<>();
     static Map<Integer, Boolean> mBottomBarItemStatus = new HashMap<>();
+    static Map<Integer, Boolean> mTopBarItemStatus = new HashMap<>();
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -315,6 +316,14 @@ public class FoxitPdf extends CordovaPlugin {
                 int index = options.getInt("index");
                 boolean visible = options.getBoolean("visible");
                 mBottomBarItemStatus.put(index, visible);
+                callbackContext.success();
+                return true;
+            }
+            case "setTopToolbarItemVisible": {
+                JSONObject options = args.optJSONObject(0);
+                int index = options.getInt("index");
+                boolean visible = options.getBoolean("visible");
+                mTopBarItemStatus.put(index, visible);
                 callbackContext.success();
                 return true;
             }

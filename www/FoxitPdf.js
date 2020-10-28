@@ -115,6 +115,15 @@ pdf.prototype.setBottomToolbarItemVisible = function(index, visible) {
     });
 }
 
+pdf.prototype.setTopToolbarItemVisible = function(index, visible) {
+    return new Promise(function(resolve, reject){
+        exec(resolve, reject, "FoxitPdf", "setTopToolbarItemVisible", [{
+            'index': index,
+            'visible': visible,
+        }]);
+    });
+}
+
 var pdf = new pdf();
 module.exports = pdf;
 

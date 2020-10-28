@@ -77,6 +77,16 @@ public class ReaderActivity extends FragmentActivity {
             uiextensionsManager.getBarManager().setItemVisibility(IBarsHandler.BarName.BOTTOM_BAR, BaseBar.TB_Position.Position_CENTER, index, visible);
         }
 
+        for (Map.Entry<Integer, Boolean> entry : FoxitPdf.mTopBarItemStatus.entrySet()) {
+            int index = entry.getKey();
+            int visible = entry.getValue() ? View.VISIBLE : View.GONE;
+            if (index == 0) {
+                uiextensionsManager.getBarManager().setItemVisibility(IBarsHandler.BarName.TOP_BAR, BaseBar.TB_Position.Position_LT, index, visible);
+            } else {
+                uiextensionsManager.getBarManager().setItemVisibility(IBarsHandler.BarName.TOP_BAR, BaseBar.TB_Position.Position_RB, index - 1, visible);
+            }
+        }
+
         String filePathSaveTo = getIntent().getExtras().getString("filePathSaveTo");
         if (!TextUtils.isEmpty(filePathSaveTo)) {
             uiextensionsManager.setSavePath(filePathSaveTo);
@@ -184,6 +194,7 @@ public class ReaderActivity extends FragmentActivity {
         public void onDocWillClose(PDFDoc pdfDoc) {
             FoxitPdf.mEnableAnnotations = true;
             FoxitPdf.mBottomBarItemStatus.clear();
+            FoxitPdf.mTopBarItemStatus.clear();
         }
 
         @Override
