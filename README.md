@@ -278,7 +278,7 @@ Set top toolbar item hide/show, and it only works for the default top toolbat it
 
 NOTE：It should be called before opening document.
 
-- __`index`__: the item index of the top toolbar. Valid range: from 0 to (<b>count</b> -1), now, there are 4 items in the top toolbar, 0 for <b>Back</b> item,  1 for <b>Bookmark</b> item, 2 for <b>Search</b> Item, 3 for <b>More</> item.
+- __`index`__: the item index of the top toolbar. Valid range: from 0 to (<b>count</b> -1), now, there are 4 items in the top toolbar, 0 for <b>Back</b> item,  1 for <b>Bookmark</b> item, 2 for <b>Search</b> Item, 3 for <b>More</b> item.
 - __`visible`__: <b>true</b> means to show the specified item, <b>false</b> means to hide the specified item.
 
 
