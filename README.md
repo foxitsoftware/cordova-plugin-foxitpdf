@@ -270,6 +270,25 @@ console.log('onDocOpened callback ',data);
 
 ```
 
+### window.FoxitPdf.setTopToolbarItemVisible
+
+> window.FoxitPdf.setTopToolbarItemVisible(index, visible);
+
+Set top toolbar item hide/show, and it only works for the default top toolbat item.  
+
+NOTE：It should be called before opening document.
+
+- __`index`__: the item index of the top toolbar. Valid range: from 0 to (<b>count</b> -1), now, there are 4 items in the top toolbar, 0 for <b>Back</b> item,  1 for <b>Bookmark</b> item, 2 for <b>Search</b> Item, 3 for <b>More</> item.
+- __`visible`__: <b>true</b> means to show the specified item, <b>false</b> means to hide the specified item.
+
+
+```js
+
+window.FoxitPdf.setTopToolbarItemVisible(0, false);
+
+```
+
+
 ### window.FoxitPdf.setBottomToolbarItemVisible
 
 > window.FoxitPdf.setBottomToolbarItemVisible(index, visible);
@@ -278,8 +297,8 @@ Set bottom toolbar item hide/show, and it only works for the default bottom tool
 
 NOTE：It should be called before opening document.
 
-- __`index`__: the item index of the bottom toolbar. Valid range: from 0 to (<b>count</b> -1), now, there are 5 items in the bottom toolbar, 0 for List item,  1 for View item, 2 for Comment Item, 3 for Signature item, 4 for Fill item.
-- __`visible`__: <b>true<b> means to show the specified item, <b>false<b> means to hide the specified item.
+- __`index`__: the item index of the bottom toolbar. Valid range: from 0 to (<b>count</b> -1), now, there are 5 items in the bottom toolbar, 0 for <b>List</b> item,  1 for <b>View</b> item, 2 for <b>Comment</b> Item, 3 for <b>Signature</b> item, 4 for <b>Fill</b> item.
+- __`visible`__: <b>true</b> means to show the specified item, <b>false</b> means to hide the specified item.
 
 
 ```js
