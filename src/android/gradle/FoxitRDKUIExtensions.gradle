@@ -10,13 +10,13 @@ repositories {
 
 android {
     compileSdkVersion 29
-    buildToolsVersion '29.0.2'
+    buildToolsVersion '29.0.3'
 
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 11
-        versionName "7.4.0"
+        versionCode 12
+        versionName "7.5.0"
 
         multiDexEnabled true
     }
