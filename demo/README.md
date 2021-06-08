@@ -43,7 +43,7 @@ cordova plugin add cordova-plugin-file
 
 2. Target -> General -> Linked Frameworks and Libraries -> + -> WebKit.framework
 
-3. Target -> Build Settings -> Validate Workspace -> YES
+3. Target -> Build Settings -> Validate Workspace -> YES (Xcode 12+)
 
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo1.png)
 
