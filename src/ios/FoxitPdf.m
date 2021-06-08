@@ -14,7 +14,7 @@
 #import <uiextensionsDynamic/uiextensionsDynamic.h>
 #import <FoxitPDFScanUI/PDFScanManager.h>
 
-@interface PDFNavigationController : UINavigationController
+@interface PDFViewController : UIViewController
 @property (nonatomic, weak) UIExtensionsManager *extensionsManager;
 @end
 
@@ -24,8 +24,8 @@
 @property (nonatomic, strong) NSArray *topToolbarVerticalConstraints;
 @property (nonatomic, strong) UIExtensionsManager *extensionsMgr;
 @property (nonatomic, strong) FSPDFViewCtrl *pdfViewControl;
-@property (nonatomic, strong) PDFNavigationController *pdfRootViewController;
-@property (nonatomic, strong) UIViewController *pdfViewController;
+@property (nonatomic, strong) UINavigationController *pdfRootViewController;
+@property (nonatomic, strong) PDFViewController *pdfViewController;
 @property (nonatomic, strong) FSPDFDoc *currentDoc;
 
 @property (nonatomic, strong) CDVInvokedUrlCommand *pluginCommand;
@@ -596,13 +596,13 @@ static NSString *initializeKey;
         filePath = [[NSBundle mainBundle] pathForResource:@"getting_started_ios" ofType:@"pdf"];
     }
     
-    self.pdfViewController = [[UIViewController alloc] init];
+    self.pdfViewController = [[PDFViewController alloc] init];
+    self.pdfViewController.extensionsManager = self.extensionsMgr;
     self.pdfViewController.view = self.pdfViewControl;
     
-    self.pdfRootViewController = [[PDFNavigationController alloc] initWithRootViewController:self.pdfViewController];
+    self.pdfRootViewController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
     self.pdfRootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
     self.pdfRootViewController.navigationBarHidden = YES;
-    self.pdfRootViewController.extensionsManager = self.extensionsMgr;
     for (int i = 0; i < self.toolbarItemStatus.count; i++) {
         NSMutableDictionary* status = self.toolbarItemStatus[i];
         FS_TOOLBAR_ITEM_TAG itemTag = [status[@"itemTag"] intValue];
@@ -1689,7 +1689,8 @@ static NSString *initializeKey;
 
 @end
 
-@implementation PDFNavigationController
+@implementation PDFViewController
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     return !self.extensionsManager.isScreenLocked;
 }
@@ -1698,9 +1699,14 @@ static NSString *initializeKey;
     return !self.extensionsManager.isScreenLocked;
 }
 
+- (BOOL)prefersStatusBarHidden {
+    return self.extensionsManager.prefersStatusBarHidden;
+}
+
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskAll;
 }
 
 @end
+
 
