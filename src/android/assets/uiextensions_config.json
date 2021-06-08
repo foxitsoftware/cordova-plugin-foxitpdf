@@ -24,7 +24,7 @@
             "polygon": true,
             "cloud": true,
             "polyline": true,
-            "distance": true,
+            "measure": true,
             "image": true,
             "audio": true,
             "video": true,
@@ -62,15 +62,18 @@
       "highlightLinkColor": "#16007fff", //Set the highlight color with alpha
       "fullscreen": true, // Enter the full screen immediately after opening. If the user clicks on the page, the toolbar will be displayed. After 5 seconds, if it is in full screen mode, the toolbar and other auxiliary toolbar buttons will be hidden automatically.
       "annotations": {
-               "continuouslyAdd": false,
+               "continuouslyAdd": true,
                 "highlight": {
+                  "color": "#ffff00", "opacity": 1.0 //opacity: 0.0f - 1.0f, Use default configuration if out of range.
+                },
+                "areaHighlight": {
                   "color": "#ffff00", "opacity": 1.0 //opacity: 0.0f - 1.0f, Use default configuration if out of range.
                 },
                 "underline": {
                   "color": "#66cc33", "opacity": 1.0
                 },
                 "squiggly": {
-                  "color": "#ff6633", "opacity": 1.0
+                  "color": "#993399", "opacity": 1.0
                 },
                 "strikeout": {
                   "color": "#ff0000", "opacity": 1.0
@@ -126,12 +129,12 @@
                   "textSize": 18
                 },
                 "note": {
-                  "color": "#ff6633",
+                  "color": "#ff0000",
                   "opacity": 1.0,
                   "icon": "Comment" //icon：Comment/Key/Note/Help/NewParagraph/Paragraph/Insert
                 },
                 "attachment": {
-                  "color": "#ff6633",
+                  "color": "#ff0000",
                   "opacity": 1.0,
                   "icon": "PushPin" //icon：Graph/PushPin/Paperclip/Tag
                 },
@@ -139,7 +142,7 @@
                   "rotation": 0, //rotation: 0/90/180/270.
                   "opacity": 1.0
                 },
-                "distance": {
+                "measure": {
                    "color": "#ff0000",
                    "opacity": 1.0,
                    "thickness": 2,

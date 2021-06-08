@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2020, Foxit Software Inc..
+ * Copyright (C) 2003-2021, Foxit Software Inc..
  * All Rights Reserved.
  * <p>
  * http://www.foxitsoftware.com
@@ -13,13 +13,14 @@ package com.foxit.cordova.plugin;
 
 
 import android.Manifest;
-import android.content.DialogInterface;
+import android.app.Activity;
+import android.app.Application;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 
 import com.foxit.pdfscan.IPDFScanManagerListener;
 import com.foxit.pdfscan.PDFScanManager;
+import com.foxit.pdfscan.activity.ScannerCameraActivity;
 import com.foxit.uiextensions.utils.AppTheme;
 import com.foxit.uiextensions.utils.UIToast;
 
@@ -27,14 +28,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 public class ScannerListActivity extends FragmentActivity {
 
-    private static final String SANNER_LIST_TAG = "SANNER_LIST_TAG";
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static final String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -46,15 +43,12 @@ public class ScannerListActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         AppTheme.setThemeFullScreen(this);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            int permission = ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            if (permission != PackageManager.PERMISSION_GRANTED)
-                ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
-            else
-                showScannerList();
-        } else {
+        getApplication().registerActivityLifecycleCallbacks(mLifecycleCallbacks);
+        int permission = ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permission != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
+        else
             showScannerList();
-        }
     }
 
     @Override
@@ -83,22 +77,8 @@ public class ScannerListActivity extends FragmentActivity {
     }
 
     private void showScannerList() {
-        FragmentManager fm = getSupportFragmentManager();
-        DialogFragment fragment = (DialogFragment) fm.findFragmentByTag(SANNER_LIST_TAG);
-        FragmentTransaction transaction = fm.beginTransaction();
-        if (fragment == null) {
-            fragment = PDFScanManager.createScannerFragment(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    PDFScanManager.unregisterManagerListener(scanManagerListener);
-                    ScannerListActivity.this.finish();
-                }
-            });
-        } else {
-            transaction.remove(fragment);
-        }
-        transaction.add(fragment, SANNER_LIST_TAG);
-        transaction.commitAllowingStateLoss();
+        final PDFScanManager pdfScanManager = PDFScanManager.instance();
+        pdfScanManager.showUI(ScannerListActivity.this);
         PDFScanManager.registerManagerListener(scanManagerListener);
     }
 
@@ -106,6 +86,50 @@ public class ScannerListActivity extends FragmentActivity {
         @Override
         public void onDocumentAdded(int errorCode, String path) {
             FoxitPdf.onDocumentAdded(errorCode, path);
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        getApplication().unregisterActivityLifecycleCallbacks(mLifecycleCallbacks);
+    }
+
+    private final Application.ActivityLifecycleCallbacks mLifecycleCallbacks = new Application.ActivityLifecycleCallbacks() {
+        @Override
+        public void onActivityCreated(@NonNull Activity activity,  Bundle savedInstanceState) {
+        }
+
+        @Override
+        public void onActivityStarted(@NonNull Activity activity) {
+        }
+
+        @Override
+        public void onActivityResumed(@NonNull Activity activity) {
+        }
+
+        @Override
+        public void onActivityPaused(@NonNull Activity activity) {
+        }
+
+        @Override
+        public void onActivityStopped(@NonNull Activity activity) {
+        }
+
+        @Override
+        public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+        }
+
+        @Override
+        public void onActivityPreDestroyed(@NonNull Activity activity) {
+        }
+
+        @Override
+        public void onActivityDestroyed(@NonNull Activity activity) {
+            if (activity instanceof ScannerCameraActivity){
+                PDFScanManager.unregisterManagerListener(scanManagerListener);
+                ScannerListActivity.this.finish();
+            }
         }
     };
 
