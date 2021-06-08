@@ -23,7 +23,7 @@
             "polygon": true,
             "cloud": true,
             "polyline": true,
-            "distance": true,
+            "measure": true,
             "image": true,
             "audio": true,
             "video": true,
@@ -60,17 +60,21 @@
         "highlightFormColor":"#200066cc",
         "fullscreen" : true,
         "annotations": {
-            "continuouslyAdd" : false,
+            "continuouslyAdd" : true,
             "highlight": {
                 "color" : "#ffff00",
                 "opacity" : 1.0
+            },
+            "areaHighlight": {
+                "color": "#ffff00",
+                "opacity": 1.0
             },
             "underline": {
                 "color" : "#66cc33",
                 "opacity" : 1.0
             },
             "squiggly": {
-                "color" : "#ff6633",
+                "color" : "#993399",
                 "opacity" : 1.0
             },
             "strikeout": {
@@ -110,6 +114,11 @@
                 "opacity" : 1.0,
                 "thickness" : 2
             },
+            "highlighter": {
+                "color" : "#ffff00",
+                "opacity" : 0.5,
+                "thickness" : 12
+            },
             "polygon": {
                 "color" : "#ff0000",
                 "opacity" : 1.0,
@@ -146,12 +155,12 @@
                 "textSize" : 18.0
             },
             "note": {
-                "color" : "#ff6633",
+                "color" : "#ff0000",
                 "opacity" : 1.0,
                 "icon" : "Comment"
             },
             "attachment": {
-                "color" : "#ff6633",
+                "color" : "#ff0000",
                 "opacity" : 1.0,
                 "icon" : "Pushpin"
             },
@@ -159,7 +168,7 @@
                 "rotation" : 0,
                 "opacity" : 1.0
             },
-            "distance": {
+            "measure": {
                 "color" : "#ff0000",
                 "opacity" : 1.0,
                 "thickness" : 2,

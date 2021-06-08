@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2003-2020, Foxit Software Inc..
+ * Copyright (C) 2003-2021, Foxit Software Inc..
  * All Rights Reserved.
  *
  * http://www.foxitsoftware.com
@@ -37,7 +37,7 @@
 @property (nonatomic, strong) FSPDFDoc *tempDoc;
 @property (nonatomic, strong) NSMutableArray *bottomBarItemStatus;
 @property (nonatomic, strong) NSMutableArray *topBarItemStatus;
-
+@property (nonatomic, strong) NSMutableArray *toolbarItemStatus;
 
 - (void)Preview:(CDVInvokedUrlCommand *)command;
 @end
@@ -81,6 +81,7 @@ static NSString *initializeKey;
             initializeKey = key;
             self.bottomBarItemStatus = @[].mutableCopy;
             self.topBarItemStatus = @[].mutableCopy;
+            self.toolbarItemStatus = @[].mutableCopy;
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialize succeeded"];
             block();
         }
@@ -118,19 +119,16 @@ static NSString *initializeKey;
     NSUInteger itemTag = -1;
     switch (index) {
         case 0:
-            itemTag = FS_BOTTOMBAR_ITEM_PANEL_TAG; // list
+            itemTag = FS_TOOLBAR_ITEM_TAG_PANEL; // list
             break;
         case 1:
-            itemTag = FS_BOTTOMBAR_ITEM_READMODE_TAG; // view
+            itemTag = FS_TOOLBAR_ITEM_TAG_VIEW_SETTINGS; // view
             break;
         case 2:
-            itemTag = FS_BOTTOMBAR_ITEM_ANNOT_TAG; // comment
+            itemTag = FS_TOOLBAR_ITEM_TAG_THUMBNAIL; //thumbnail
             break;
         case 3:
-            itemTag = FS_BOTTOMBAR_ITEM_SIGNATURE_TAG; // signatue
-            break;
-        case 4:
-            itemTag = FS_BOTTOMBAR_ITEM_FILLSIGN_TAG; // fill&sign
+            itemTag = FS_TOOLBAR_ITEM_TAG_READING_BOOKMARK; // bookmark
             break;
         default:
             break;
@@ -168,16 +166,22 @@ static NSString *initializeKey;
     NSUInteger itemTag = -1;
     switch (index) {
         case 0:
-            itemTag = FS_TOPBAR_ITEM_BACK_TAG; // back
+            itemTag = FS_TOOLBAR_ITEM_TAG_BACK; // back
             break;
         case 1:
-            itemTag = FS_TOPBAR_ITEM_BOOKMARK_TAG; // bookmark
+            itemTag = FS_TOOLBAR_ITEM_TAG_PANEL; // panel
             break;
         case 2:
-            itemTag = FS_TOPBAR_ITEM_SEARCH_TAG; // search
+            itemTag = FS_TOOLBAR_ITEM_TAG_THUMBNAIL; //thumbnail
             break;
         case 3:
-            itemTag = FS_TOPBAR_ITEM_MORE_TAG; // more
+            itemTag = FS_TOOLBAR_ITEM_TAG_READING_BOOKMARK; // bookmark
+            break;
+        case 4:
+            itemTag = FS_TOOLBAR_ITEM_TAG_SEARCH; // search
+            break;
+        case 5:
+            itemTag = FS_TOOLBAR_ITEM_TAG_MORE; // more
             break;
         default:
             break;
@@ -190,6 +194,85 @@ static NSString *initializeKey;
     [status setObject:@(isHidden) forKey:@"hidden"];
     [self.topBarItemStatus addObject:status];
 }
+
+- (void)setToolbarItemVisible:(CDVInvokedUrlCommand*)command{
+    __block CDVPluginResult *pluginResult = nil;
+    
+    void (^block)(void) = ^{
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    };
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
+        block();
+        return;
+    }
+    
+    
+    NSDictionary* options = [command argumentAtIndex:0];
+    int index = [options[@"index"] intValue];
+    id obj = [options objectForKey:@"visible"];
+    BOOL isHidden = obj ? !([obj boolValue]) : NO;
+    
+    NSUInteger itemTag = -1;
+    switch (index) {
+        case 0:
+            itemTag = FS_TOOLBAR_ITEM_TAG_BACK; // back
+            break;
+        case 1:
+            itemTag = FS_TOOLBAR_ITEM_TAG_MORE; // more
+            break;
+        case 2:
+            itemTag = FS_TOOLBAR_ITEM_TAG_SEARCH; //search
+            break;
+        case 3:
+            itemTag = FS_TOOLBAR_ITEM_TAG_PANEL; // panel
+            break;
+        case 4:
+            itemTag = FS_TOOLBAR_ITEM_TAG_VIEW_SETTINGS; // view
+            break;
+        case 5:
+            itemTag = FS_TOOLBAR_ITEM_TAG_THUMBNAIL; // thumbnail
+            break;
+        case 6:
+            itemTag = FS_TOOLBAR_ITEM_TAG_READING_BOOKMARK; // bookmark
+            break;
+        case 7:
+            itemTag = FS_TOOLBAR_ITEM_TAG_HOME; // home
+            break;
+        case 8:
+            itemTag = FS_TOOLBAR_ITEM_TAG_EDIT; // edit
+            break;
+        case 9:
+            itemTag = FS_TOOLBAR_ITEM_TAG_COMMENT; // comment
+            break;
+        case 10:
+            itemTag = FS_TOOLBAR_ITEM_TAG_DRAWING; // drawing
+            break;
+        case 11:
+            itemTag = FS_TOOLBAR_ITEM_TAG_VIEW; // view
+            break;
+        case 12:
+            itemTag = FS_TOOLBAR_ITEM_TAG_FORM; // form
+            break;
+        case 13:
+            itemTag = FS_TOOLBAR_ITEM_TAG_SIGN; // sign
+            break;
+        default:
+            break;
+    }
+    
+    if (itemTag == -1) return;
+    
+    NSMutableDictionary *status = @{}.mutableCopy;
+    [status setObject:@(itemTag) forKey:@"itemTag"];
+    [status setObject:@(isHidden) forKey:@"hidden"];
+    [self.toolbarItemStatus addObject:status];
+}
+
+
 
 - (void)initializeScanner:(CDVInvokedUrlCommand*)command{
     NSDictionary* options = [command argumentAtIndex:0];
@@ -232,7 +315,7 @@ static NSString *initializeKey;
 }
 
 - (void)createScanner:(CDVInvokedUrlCommand*)command{
-    UIViewController *VC = [PDFScanManager getPDFScanView];
+    UIViewController *VC = [[PDFScanManager shareManager] getPDFScanView];
     if (VC) {
         VC.modalPresentationStyle = UIModalPresentationFullScreen;
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -520,9 +603,16 @@ static NSString *initializeKey;
     self.pdfRootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
     self.pdfRootViewController.navigationBarHidden = YES;
     self.pdfRootViewController.extensionsManager = self.extensionsMgr;
+    for (int i = 0; i < self.toolbarItemStatus.count; i++) {
+        NSMutableDictionary* status = self.toolbarItemStatus[i];
+        FS_TOOLBAR_ITEM_TAG itemTag = [status[@"itemTag"] intValue];
+        id obj = [status objectForKey:@"hidden"];
+        BOOL isHidden = obj ? [obj boolValue] : NO;
+        [self.extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
+    }
     for (int i = 0; i < self.bottomBarItemStatus.count; i++) {
         NSMutableDictionary* status = self.bottomBarItemStatus[i];
-        NSUInteger itemTag = [status[@"itemTag"] intValue];
+        FS_TOOLBAR_ITEM_TAG itemTag = [status[@"itemTag"] intValue];
         id obj = [status objectForKey:@"hidden"];
         BOOL isHidden = obj ? [obj boolValue] : NO;
         [self.extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
@@ -530,11 +620,12 @@ static NSString *initializeKey;
     
     for (int i = 0; i < self.topBarItemStatus.count; i++) {
         NSMutableDictionary* status = self.topBarItemStatus[i];
-        NSUInteger itemTag = [status[@"itemTag"] intValue];
+        FS_TOOLBAR_ITEM_TAG itemTag = [status[@"itemTag"] intValue];
         id obj = [status objectForKey:@"hidden"];
         BOOL isHidden = obj ? [obj boolValue] : NO;
         [self.extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
     }
+
     
     if(self.filePathSaveTo && self.filePathSaveTo.length >0){
         self.extensionsMgr.preventOverrideFilePath = self.filePathSaveTo;
@@ -623,6 +714,7 @@ static NSString *initializeKey;
         self.currentDoc = nil;
         [self.bottomBarItemStatus removeAllObjects];
         [self.topBarItemStatus removeAllObjects];
+        [self.toolbarItemStatus removeAllObjects];
     });
 }
 
