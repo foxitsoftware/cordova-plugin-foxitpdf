@@ -85,6 +85,10 @@
                 android:windowSoftInputMode="adjustPan" >
             </activity>
         </config-file>
+        <edit-config file="AndroidManifest.xml" target="/manifest/application" mode="merge">
+            <application android:requestLegacyExternalStorage="true" />
+        </edit-config>
+
         <config-file parent="/*" target="AndroidManifest.xml"/>
 
         <source-file src="src/android/com/foxit/cordova/plugin/FoxitPdf.java" target-dir="src/com/foxit/cordova/plugin"/>
