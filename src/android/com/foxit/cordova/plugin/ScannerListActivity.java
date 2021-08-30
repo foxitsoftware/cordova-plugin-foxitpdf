@@ -18,17 +18,18 @@ import android.app.Application;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
-import com.foxit.pdfscan.IPDFScanManagerListener;
-import com.foxit.pdfscan.PDFScanManager;
-import com.foxit.pdfscan.activity.ScannerCameraActivity;
-import com.foxit.uiextensions.utils.AppTheme;
-import com.foxit.uiextensions.utils.UIToast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
+
+import com.foxit.pdfscan.IPDFScanManagerListener;
+import com.foxit.pdfscan.PDFScanManager;
+import com.foxit.pdfscan.activity.ScannerCameraActivity;
+import com.foxit.uiextensions.utils.ActManager;
+import com.foxit.uiextensions.utils.AppTheme;
+import com.foxit.uiextensions.utils.UIToast;
 
 public class ScannerListActivity extends FragmentActivity {
 
@@ -98,6 +99,7 @@ public class ScannerListActivity extends FragmentActivity {
     private final Application.ActivityLifecycleCallbacks mLifecycleCallbacks = new Application.ActivityLifecycleCallbacks() {
         @Override
         public void onActivityCreated(@NonNull Activity activity,  Bundle savedInstanceState) {
+            ActManager.getInstance().setCurrentActivity(activity);
         }
 
         @Override
@@ -106,6 +108,7 @@ public class ScannerListActivity extends FragmentActivity {
 
         @Override
         public void onActivityResumed(@NonNull Activity activity) {
+            ActManager.getInstance().setCurrentActivity(activity);
         }
 
         @Override
