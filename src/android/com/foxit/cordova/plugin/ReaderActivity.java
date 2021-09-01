@@ -27,6 +27,7 @@ import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.config.Config;
 import com.foxit.uiextensions.controls.toolbar.BaseBar;
 import com.foxit.uiextensions.controls.toolbar.IBarsHandler;
+import com.foxit.uiextensions.utils.ActManager;
 import com.foxit.uiextensions.utils.AppTheme;
 import com.foxit.uiextensions.utils.UIToast;
 
@@ -54,6 +55,7 @@ public class ReaderActivity extends FragmentActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppTheme.setThemeFullScreen(this);
+        ActManager.getInstance().setCurrentActivity(this);
 
         Config config = null;
         try {
