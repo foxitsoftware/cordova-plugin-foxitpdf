@@ -69,9 +69,13 @@
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <activity
                 android:name="com.foxit.cordova.plugin.ReaderActivity"
-                android:configChanges="keyboardHidden|orientation|locale|layoutDirection|screenSize"
+                android:configChanges="keyboardHidden|orientation|locale|layoutDirection|screenSize|smallestScreenSize"
                 android:launchMode="singleTask"
                 android:screenOrientation="fullSensor">
+                <layout
+                    android:gravity="center"
+                    android:minWidth="520dp"
+                    android:minHeight="700dp" />
                 <intent-filter tools:ignore="AppLinkUrlError">
                     <action android:name="android.intent.action.VIEW"></action>
                     <action android:name="android.intent.action.MAIN"></action>
