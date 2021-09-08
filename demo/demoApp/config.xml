@@ -21,5 +21,8 @@
     <platform name="ios">
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
+        <config-file parent="UIRequiresFullScreen" platform="ios" target="*-Info.plist">
+                <false/>
+        </config-file>
     </platform>
 </widget>
