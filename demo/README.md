@@ -35,7 +35,7 @@ cordova plugin add cordova-plugin-foxitpdf
 cordova plugin add cordova-plugin-file
 ```
 
-### Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (The latest version is 8.1 )
+### Unzip Foxit PDF SDK for iOS and copy libs folder into the component ios folder. (The latest version is 8.2 )
 
 ### Open demoApp/platforms/ios/demoApp.xcworkspace
 
