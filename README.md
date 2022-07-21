@@ -87,7 +87,7 @@ Now that the preparatory work has been completed，you can use this plugin every
   android.enableJetifier=true
 ```
 
-2. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use the latest version 8.2)
+2. Download `foxitpdfsdk_(version_no)_android.zip` from [https://developers.foxitsoftware.com/pdf-sdk/android/](https://developers.foxitsoftware.com/pdf-sdk/android/) (Please use the latest version 8.3)
 
 3. Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component’s android folder.
 `/xxx/platforms/android/`
@@ -659,6 +659,8 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 
 ## Versions
+>[v8.3.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V8.3.0)
+
 >[v8.2.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V8.2.0)
 
 >[v8.1.0](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/tree/V8.1.0)

@@ -97,7 +97,10 @@
                   "color": "#ff0000", "opacity": 1.0, "thickness": 2
                 },
                 "pencil": {
-                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                  "color": "#ff0000",
+                  "opacity": 1.0,
+                  "thickness": 2,
+                  "showPenOnlySwitch": true
                 },
                 "polygon": {
                   "color": "#ff0000", "opacity": 1.0, "thickness": 2

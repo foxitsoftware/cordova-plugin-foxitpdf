@@ -34,9 +34,14 @@ import com.foxit.uiextensions.utils.UIToast;
 public class ScannerListActivity extends FragmentActivity {
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_CAMERA = 2;
+
     private static final String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    };
+    private static final String[] PERMISSIONS_CAMERA = {
+            Manifest.permission.CAMERA,
     };
 
     @Override
@@ -45,17 +50,33 @@ public class ScannerListActivity extends FragmentActivity {
         AppTheme.setThemeFullScreen(this);
 
         getApplication().registerActivityLifecycleCallbacks(mLifecycleCallbacks);
-        int permission = ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED)
+        int writePermission = ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int cameraPermission = ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.CAMERA);
+        if (writePermission != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
-        else
+        } else if (cameraPermission != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, PERMISSIONS_CAMERA, REQUEST_CAMERA);
+        } else {
             showScannerList();
+        }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_EXTERNAL_STORAGE) {
+            if (verifyPermissions(grantResults)) {
+                int cameraPermission = ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.CAMERA);
+                if (cameraPermission != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, PERMISSIONS_CAMERA, REQUEST_CAMERA);
+                } else {
+                    showScannerList();
+                }
+            } else {
+                UIToast.getInstance(getApplicationContext()).show("Permission Denied");
+                finish();
+            }
+        } else if (requestCode == REQUEST_CAMERA) {
             if (verifyPermissions(grantResults)) {
                 showScannerList();
             } else {
