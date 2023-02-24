@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-foxitpdf" version="8.3.1" xmlns="http://apache.org/cordova/ns/plugins/1.0"
+<plugin id="cordova-plugin-foxitpdf" version="8.4.0" xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android">
     <name>cordova-plugin-foxitpdf</name>
     <description>cordova pdf preview plugin with Foxit Pdf sdk</description>
@@ -89,25 +89,6 @@
                 android:windowSoftInputMode="adjustPan"
                 android:exported="true">
             </activity>
-            <activity android:name="com.microsoft.identity.client.BrowserTabActivity"
-                      android:exported="true">
-                <intent-filter>
-                    <action android:name="android.intent.action.VIEW" />
-
-                    <category android:name="android.intent.category.DEFAULT" />
-                    <category android:name="android.intent.category.BROWSABLE" />
-
-                    <data
-                        android:host="authorize"
-                        android:scheme="com.foxitsoftware.com.mobilepdf-for-android" />
-                </intent-filter>
-            </activity>
-            <receiver android:name="com.foxit.uiextensions.annots.multimedia.PhoneStateBroadCastReceiver" android:exported="false" >
-                <intent-filter>
-                    <action android:name="android.intent.action.PHONE_STATE" />
-                    <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
-                </intent-filter>
-            </receiver>
         </config-file>
         <edit-config file="AndroidManifest.xml" target="/manifest/application" mode="merge">
             <application
