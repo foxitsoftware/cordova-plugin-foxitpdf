@@ -61,6 +61,7 @@
       "highlightLink": true,
       "highlightLinkColor": "#16007fff", //Set the highlight color with alpha
       "fullscreen": true, // Enter the full screen immediately after opening. If the user clicks on the page, the toolbar will be displayed. After 5 seconds, if it is in full screen mode, the toolbar and other auxiliary toolbar buttons will be hidden automatically.
+      "showPenOnlySwitch": true, // Only use for pencil and eraser
       "annotations": {
                "continuouslyAdd": true,
                 "highlight": {
@@ -99,8 +100,7 @@
                 "pencil": {
                   "color": "#ff0000",
                   "opacity": 1.0,
-                  "thickness": 2,
-                  "showPenOnlySwitch": true
+                  "thickness": 2
                 },
                 "polygon": {
                   "color": "#ff0000", "opacity": 1.0, "thickness": 2
@@ -151,8 +151,8 @@
                    "thickness": 2,
                    "scaleFromUnit": "inch",//Unit: pt/inch/ft/yd/p/mm/cm/m
                    "scaleToUnit": "inch",//Unit: pt/inch/ft/yd/p/mm/cm/m
-                   "scaleFromValue": 1,
-                   "scaleToValue": 1
+                   "scaleFromValue": 1.0,
+                   "scaleToValue": 1.0
                 },
                 "redaction": {
                    "fillColor": "#000000",
