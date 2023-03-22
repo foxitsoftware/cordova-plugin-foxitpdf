@@ -602,7 +602,7 @@ Please see our forum for more detailed information:
 
 
 
-## iOS Quirks
+## iOS Quicks
 
 1. The first argument in the preview method currently only supports absolute paths for incoming files.
 
