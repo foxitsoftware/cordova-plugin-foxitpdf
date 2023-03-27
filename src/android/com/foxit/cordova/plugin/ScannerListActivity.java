@@ -15,8 +15,13 @@ package com.foxit.cordova.plugin;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,13 +33,15 @@ import com.foxit.pdfscan.IPDFScanManagerListener;
 import com.foxit.pdfscan.PDFScanManager;
 import com.foxit.pdfscan.activity.ScannerCameraActivity;
 import com.foxit.uiextensions.utils.ActManager;
+import com.foxit.uiextensions.utils.AppDisplay;
 import com.foxit.uiextensions.utils.AppTheme;
 import com.foxit.uiextensions.utils.UIToast;
 
 public class ScannerListActivity extends FragmentActivity {
 
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static final int REQUEST_CAMERA = 2;
+    private static final int REQUEST_EXTERNAL_STORAGE = 111;
+    private static final int REQUEST_CAMERA = 222;
+    private static final int REQUEST_ALL_FILES_ACCESS_PERMISSION = 333;
 
     private static final String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -48,13 +55,28 @@ public class ScannerListActivity extends FragmentActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppTheme.setThemeFullScreen(this);
-
+        AppDisplay.Instance(getApplicationContext());
         getApplication().registerActivityLifecycleCallbacks(mLifecycleCallbacks);
+
+        if (Build.VERSION.SDK_INT >= 30) {
+            if (!Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse("package:" + getApplicationContext().getPackageName()));
+                startActivityForResult(intent, REQUEST_ALL_FILES_ACCESS_PERMISSION);
+            } else {
+                requestPermission();
+            }
+        } else if (Build.VERSION.SDK_INT >= 23) {
+            requestPermission();
+        }
+    }
+
+    private void requestPermission() {
         int writePermission = ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
         int cameraPermission = ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.CAMERA);
         if (writePermission != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
-        } else if (cameraPermission != PackageManager.PERMISSION_GRANTED){
+        } else if (cameraPermission != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, PERMISSIONS_CAMERA, REQUEST_CAMERA);
         } else {
             showScannerList();
@@ -104,12 +126,27 @@ public class ScannerListActivity extends FragmentActivity {
         PDFScanManager.registerManagerListener(scanManagerListener);
     }
 
-    private IPDFScanManagerListener scanManagerListener = new IPDFScanManagerListener() {
+    private final IPDFScanManagerListener scanManagerListener = new IPDFScanManagerListener() {
         @Override
         public void onDocumentAdded(int errorCode, String path) {
             FoxitPdf.onDocumentAdded(errorCode, path);
         }
     };
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_ALL_FILES_ACCESS_PERMISSION) {
+            if (Build.VERSION.SDK_INT >= 30) {
+                if (Environment.isExternalStorageManager()) {
+                    requestPermission();
+                } else {
+                    UIToast.getInstance(getApplicationContext()).show("Permission Denied");
+                    finish();
+                }
+            }
+        }
+    }
 
     @Override
     protected void onDestroy() {
@@ -119,7 +156,7 @@ public class ScannerListActivity extends FragmentActivity {
 
     private final Application.ActivityLifecycleCallbacks mLifecycleCallbacks = new Application.ActivityLifecycleCallbacks() {
         @Override
-        public void onActivityCreated(@NonNull Activity activity,  Bundle savedInstanceState) {
+        public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
             ActManager.getInstance().setCurrentActivity(activity);
         }
 
@@ -150,7 +187,7 @@ public class ScannerListActivity extends FragmentActivity {
 
         @Override
         public void onActivityDestroyed(@NonNull Activity activity) {
-            if (activity instanceof ScannerCameraActivity){
+            if (activity instanceof ScannerCameraActivity) {
                 PDFScanManager.unregisterManagerListener(scanManagerListener);
                 ScannerListActivity.this.finish();
             }
