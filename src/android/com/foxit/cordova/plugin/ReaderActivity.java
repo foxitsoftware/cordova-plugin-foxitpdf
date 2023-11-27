@@ -30,14 +30,25 @@ import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.config.Config;
 import com.foxit.uiextensions.controls.toolbar.BaseBar;
 import com.foxit.uiextensions.controls.toolbar.IBarsHandler;
+import com.foxit.uiextensions.controls.toolbar.ToolItemBean;
+import com.foxit.uiextensions.controls.toolbar.ToolProperty;
+import com.foxit.uiextensions.pdfreader.MainCenterItemBean;
 import com.foxit.uiextensions.utils.ActManager;
 import com.foxit.uiextensions.utils.AppFileUtil;
+import com.foxit.uiextensions.utils.AppSharedPreferences;
 import com.foxit.uiextensions.utils.AppStorageManager;
 import com.foxit.uiextensions.utils.AppTheme;
+import com.foxit.uiextensions.utils.AppUtil;
 import com.foxit.uiextensions.utils.UIToast;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
@@ -46,6 +57,8 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 public class ReaderActivity extends FragmentActivity {
+    private static final String SP_NAME = "Cord_Foxit_Plugin_SP";
+    private static final String KEY_TAB_ITEMS = "Tab_Items";
 
     protected static PDFViewCtrl pdfViewCtrl;
     private UIExtensionsManager uiextensionsManager;
@@ -104,6 +117,8 @@ public class ReaderActivity extends FragmentActivity {
         if (!TextUtils.isEmpty(filePathSaveTo)) {
             uiextensionsManager.setSavePath(filePathSaveTo);
         }
+
+        restoreItems();
 
         if (Build.VERSION.SDK_INT >= 30 && !AppFileUtil.isExternalStorageLegacy()) {
             AppStorageManager storageManager = AppStorageManager.getInstance(this);
@@ -266,6 +281,7 @@ public class ReaderActivity extends FragmentActivity {
 
         @Override
         public void onDocWillClose(PDFDoc pdfDoc) {
+            saveTabItems();
             FoxitPdf.mEnableAnnotations = true;
             FoxitPdf.mBottomBarItemStatus.clear();
             FoxitPdf.mTopBarItemStatus.clear();
@@ -294,5 +310,186 @@ public class ReaderActivity extends FragmentActivity {
         setResult(RESULT_OK, intent);
         pdfViewCtrl.unregisterDocEventListener(docListener);
         finish();
+    }
+
+    private void restoreItems(){
+        String tabItems = AppSharedPreferences.getInstance(getApplicationContext()).getString(SP_NAME, KEY_TAB_ITEMS, "");
+        if (!AppUtil.isEmpty(tabItems)) {
+            try {
+                JSONObject rootObj = new JSONObject(tabItems);
+                JSONArray centerItemsObj = rootObj.getJSONArray("centerItems");
+
+                ArrayList<MainCenterItemBean> items = new ArrayList<>();
+                for (int i = 0; i < centerItemsObj.length(); i ++) {
+                    JSONObject centerObj = centerItemsObj.getJSONObject(i);
+
+                    MainCenterItemBean centerItem = new MainCenterItemBean();
+                    centerItem.type = centerObj.getInt("type");
+                    centerItem.position = centerObj.getInt("position");
+                    if (!centerObj.has("toolItems")){
+                        items.add(centerItem);
+                        continue;
+                    }
+
+                    centerItem.toolItems = new ArrayList<>();
+                    JSONArray toolItemsObj = centerObj.getJSONArray("toolItems");
+                    for (int toolIndex = 0; toolIndex < toolItemsObj.length(); toolIndex ++) {
+                        JSONObject toolObj = toolItemsObj.getJSONObject(toolIndex);
+
+                        ToolItemBean toolItem = new ToolItemBean();
+                        toolItem.itemStyle = toolObj.getInt("itemStyle");
+                        toolItem.type = toolObj.getInt("type");
+                        toolItem.property = new ToolProperty();
+                        {
+                            ToolProperty property = toolItem.property;
+                            JSONObject propObj = toolObj.getJSONObject("property");
+
+                            if (!setToolPropVal(property, propObj)) {
+                                toolItem.property = null;
+                            }
+                        }
+                        centerItem.toolItems.add(toolItem);
+                    }
+                    items.add(centerItem);
+                }
+                uiextensionsManager.getMainFrame().setCenterItems(items);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    boolean setToolPropVal(ToolProperty property, JSONObject propObj) {
+        try {
+            boolean haveProp = false;
+            if (propObj.has("type")) {
+                property.type = propObj.getInt("type");
+                haveProp = true;
+            }
+            if (propObj.has("color")) {
+                property.color = propObj.getInt("color");
+                haveProp = true;
+            }
+            if (propObj.has("fillColor")) {
+                property.fillColor = propObj.getInt("fillColor");
+                haveProp = true;
+            }
+            if (propObj.has("opacity")) {
+                property.opacity = propObj.getInt("opacity");
+                haveProp = true;
+            }
+            if (propObj.has("style")) {
+                property.style = propObj.getInt("style");
+                haveProp = true;
+            }
+            if (propObj.has("rotation")) {
+                property.rotation = propObj.getInt("rotation");
+                haveProp = true;
+            }
+            if (propObj.has("lineWidth")) {
+                property.lineWidth = (float) propObj.getDouble("lineWidth");
+                haveProp = true;
+            }
+            if (propObj.has("fontSize")) {
+                property.fontSize = (float) propObj.getDouble("fontSize");
+                haveProp = true;
+            }
+            if (propObj.has("fontName")) {
+                property.fontName = propObj.getString("fontName");
+                haveProp = true;
+            }
+            if (propObj.has("scaleFromUnitIndex")) {
+                property.scaleFromUnitIndex = propObj.getInt("scaleFromUnitIndex");
+                haveProp = true;
+            }
+            if (propObj.has("scaleToUnitIndex")) {
+                property.scaleToUnitIndex = propObj.getInt("scaleToUnitIndex");
+                haveProp = true;
+            }
+            if (propObj.has("scaleFromValue")) {
+                property.scaleFromValue = BigDecimal.valueOf(propObj.getDouble("scaleFromValue")).floatValue();
+                haveProp = true;
+            }
+            if (propObj.has("scaleToValue")) {
+                property.scaleToValue = BigDecimal.valueOf(propObj.getDouble("scaleToValue")).floatValue();
+                haveProp = true;
+            }
+            if (propObj.has("eraserShape")) {
+                property.eraserShape = propObj.getInt("eraserShape");
+                haveProp = true;
+            }
+            if (propObj.has("tag")) {
+                property.mTag = propObj.get("tag");
+                haveProp = true;
+            }
+            return haveProp;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private void saveTabItems(){
+        List<MainCenterItemBean> items = uiextensionsManager.getMainFrame().getCenterItems();
+
+        try {
+            JSONObject rootObj = new JSONObject();
+            JSONArray centerItemsObj = new JSONArray();
+            rootObj.put("centerItems", centerItemsObj);
+
+            for (MainCenterItemBean centerItem : items) {
+                JSONObject centerObj = new JSONObject();
+                centerObj.put("type", centerItem.type);
+                centerObj.put("position", centerItem.position);
+
+                if (centerItem.toolItems != null) {
+                    JSONArray toolItemsObj = new JSONArray();
+                    centerObj.put("toolItems", toolItemsObj);
+                    for (ToolItemBean toolItem : centerItem.toolItems) {
+                        JSONObject toolObj = new JSONObject();
+                        toolObj.put("itemStyle", toolItem.itemStyle);
+                        toolObj.put("type", toolItem.type);
+                        {
+                            ToolProperty property = toolItem.property;
+                            JSONObject propObj = new JSONObject();
+
+                            if (property != null) {
+                                setToolPropObjVal(propObj, property);
+                            }
+                            toolObj.put("property", propObj);
+                        }
+                        toolItemsObj.put(toolObj);
+                    }
+                }
+                centerItemsObj.put(centerObj);
+            }
+
+            AppSharedPreferences.getInstance(getApplicationContext()).setString(SP_NAME, KEY_TAB_ITEMS, rootObj.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void setToolPropObjVal(JSONObject propObj, ToolProperty property) {
+        try {
+            propObj.put("type", property.type);
+            propObj.put("color", property.color);
+            propObj.put("fillColor", property.fillColor);
+            propObj.put("opacity", property.opacity);
+            propObj.put("style", property.style);
+            propObj.put("rotation", property.rotation);
+            propObj.put("lineWidth", property.lineWidth);
+            propObj.put("fontSize", property.fontSize);
+            propObj.put("fontName", property.fontName);
+            propObj.put("scaleFromUnitIndex", property.scaleFromUnitIndex);
+            propObj.put("scaleToUnitIndex", property.scaleToUnitIndex);
+            propObj.put("scaleFromValue", property.scaleFromValue);
+            propObj.put("scaleToValue", property.scaleToValue);
+            propObj.put("eraserShape", property.eraserShape);
+            if (property.mTag != null)
+                propObj.put("tag", property.mTag);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

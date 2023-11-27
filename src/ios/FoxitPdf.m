@@ -574,58 +574,82 @@ static NSString *initializeKey;
     
 }
 
+- (FSPDFViewCtrl *)pdfViewControl{
+    if (!_pdfViewControl) {
+        _pdfViewControl = [[FSPDFViewCtrl alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+        [_pdfViewControl setRMSAppClientId:@"972b6681-fa03-4b6b-817b-c8c10d38bd20" redirectURI:@"com.foxitsoftware.com.mobilepdf-for-ios://authorize"];
+        [_pdfViewControl registerDocEventListener:self];
+        _pdfViewControl.extensionsManager = self.extensionsMgr;
+    }
+    return _pdfViewControl;
+}
+
+- (UIExtensionsManager *)extensionsMgr{
+    if (!_extensionsMgr) {
+        NSString *configPath = [[NSBundle mainBundle] pathForResource:@"uiextensions_config" ofType:@"json"];
+        UIExtensionsConfig* uiConfig = [[UIExtensionsConfig alloc] initWithJSONData:[NSData dataWithContentsOfFile:configPath]];
+        _extensionsMgr = [[UIExtensionsManager alloc] initWithPDFViewControl:self.pdfViewControl configurationObject:uiConfig];
+        _extensionsMgr.delegate = self;
+        
+        if(self.isEnableAnnotations == NO) {
+            uiConfig.loadAttachment = NO;
+            uiConfig.tools = [[NSMutableSet<NSString *> alloc] initWithObjects:Tool_Select,Tool_Signature, nil];
+        }
+        
+        for (int i = 0; i < self.toolbarItemStatus.count; i++) {
+            NSMutableDictionary* status = self.toolbarItemStatus[i];
+            FS_TOOLBAR_ITEM_TAG itemTag = [status[@"itemTag"] intValue];
+            id obj = [status objectForKey:@"hidden"];
+            BOOL isHidden = obj ? [obj boolValue] : NO;
+            [_extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
+        }
+        for (int i = 0; i < self.bottomBarItemStatus.count; i++) {
+            NSMutableDictionary* status = self.bottomBarItemStatus[i];
+            FS_TOOLBAR_ITEM_TAG itemTag = [status[@"itemTag"] intValue];
+            id obj = [status objectForKey:@"hidden"];
+            BOOL isHidden = obj ? [obj boolValue] : NO;
+            [_extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
+        }
+        
+        for (int i = 0; i < self.topBarItemStatus.count; i++) {
+            NSMutableDictionary* status = self.topBarItemStatus[i];
+            FS_TOOLBAR_ITEM_TAG itemTag = [status[@"itemTag"] intValue];
+            id obj = [status objectForKey:@"hidden"];
+            BOOL isHidden = obj ? [obj boolValue] : NO;
+            [_extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
+        }
+
+    }
+    return _extensionsMgr;
+}
+
+- (PDFViewController *)pdfViewController{
+    if (!_pdfViewController) {
+        _pdfViewController = [[PDFViewController alloc] init];
+        _pdfViewController.extensionsManager = self.extensionsMgr;
+        _pdfViewController.view = self.pdfViewControl;
+    }
+    return _pdfViewController;
+}
+
+- (UINavigationController *)pdfRootViewController{
+    if (!_pdfRootViewController) {
+
+        _pdfRootViewController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
+        _pdfRootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
+        _pdfRootViewController.navigationBarHidden = YES;
+    }
+    return _pdfRootViewController;
+}
+
+
 # pragma mark -- Foxit preview
 -(void)FoxitPdfPreview:(NSString *)filePath {
-    
-    self.pdfViewControl = [[FSPDFViewCtrl alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    [self.pdfViewControl setRMSAppClientId:@"972b6681-fa03-4b6b-817b-c8c10d38bd20" redirectURI:@"com.foxitsoftware.com.mobilepdf-for-ios://authorize"];
-    [self.pdfViewControl registerDocEventListener:self];
-    
-    NSString *configPath = [[NSBundle mainBundle] pathForResource:@"uiextensions_config" ofType:@"json"];
-    UIExtensionsConfig* uiConfig = [[UIExtensionsConfig alloc] initWithJSONData:[NSData dataWithContentsOfFile:configPath]];
-    if(self.isEnableAnnotations == NO) {
-        uiConfig.loadAttachment = NO;
-        uiConfig.tools = [[NSMutableSet<NSString *> alloc] initWithObjects:Tool_Select,Tool_Signature, nil];
-    }
-    self.extensionsMgr = [[UIExtensionsManager alloc] initWithPDFViewControl:self.pdfViewControl configurationObject:uiConfig];
-    self.pdfViewControl.extensionsManager = self.extensionsMgr;
-    self.extensionsMgr.delegate = self;
     
     //load doc
     if (filePath == nil) {
         filePath = [[NSBundle mainBundle] pathForResource:@"getting_started_ios" ofType:@"pdf"];
     }
-    
-    self.pdfViewController = [[PDFViewController alloc] init];
-    self.pdfViewController.extensionsManager = self.extensionsMgr;
-    self.pdfViewController.view = self.pdfViewControl;
-    
-    self.pdfRootViewController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
-    self.pdfRootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
-    self.pdfRootViewController.navigationBarHidden = YES;
-    for (int i = 0; i < self.toolbarItemStatus.count; i++) {
-        NSMutableDictionary* status = self.toolbarItemStatus[i];
-        FS_TOOLBAR_ITEM_TAG itemTag = [status[@"itemTag"] intValue];
-        id obj = [status objectForKey:@"hidden"];
-        BOOL isHidden = obj ? [obj boolValue] : NO;
-        [self.extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
-    }
-    for (int i = 0; i < self.bottomBarItemStatus.count; i++) {
-        NSMutableDictionary* status = self.bottomBarItemStatus[i];
-        FS_TOOLBAR_ITEM_TAG itemTag = [status[@"itemTag"] intValue];
-        id obj = [status objectForKey:@"hidden"];
-        BOOL isHidden = obj ? [obj boolValue] : NO;
-        [self.extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
-    }
-    
-    for (int i = 0; i < self.topBarItemStatus.count; i++) {
-        NSMutableDictionary* status = self.topBarItemStatus[i];
-        FS_TOOLBAR_ITEM_TAG itemTag = [status[@"itemTag"] intValue];
-        id obj = [status objectForKey:@"hidden"];
-        BOOL isHidden = obj ? [obj boolValue] : NO;
-        [self.extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
-    }
-
     
     if(self.filePathSaveTo && self.filePathSaveTo.length >0){
         self.extensionsMgr.preventOverrideFilePath = self.filePathSaveTo;
@@ -657,7 +681,7 @@ static NSString *initializeKey;
                               
                               [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
                           }else{
-                              self.currentDoc = self.pdfViewControl.currentDoc;
+                              weakSelf.currentDoc = weakSelf.pdfViewControl.currentDoc;
                               pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                                            messageAsDictionary:@{@"FSErrorCode":@(FSErrSuccess), @"info":@"Open the document successfully"}];
                               block();
