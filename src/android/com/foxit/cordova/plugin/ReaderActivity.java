@@ -20,6 +20,8 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -30,25 +32,14 @@ import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.config.Config;
 import com.foxit.uiextensions.controls.toolbar.BaseBar;
 import com.foxit.uiextensions.controls.toolbar.IBarsHandler;
-import com.foxit.uiextensions.controls.toolbar.ToolItemBean;
-import com.foxit.uiextensions.controls.toolbar.ToolProperty;
-import com.foxit.uiextensions.pdfreader.MainCenterItemBean;
 import com.foxit.uiextensions.utils.ActManager;
 import com.foxit.uiextensions.utils.AppFileUtil;
-import com.foxit.uiextensions.utils.AppSharedPreferences;
 import com.foxit.uiextensions.utils.AppStorageManager;
 import com.foxit.uiextensions.utils.AppTheme;
-import com.foxit.uiextensions.utils.AppUtil;
 import com.foxit.uiextensions.utils.UIToast;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
@@ -57,17 +48,11 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 public class ReaderActivity extends FragmentActivity {
-    private static final String SP_NAME = "Cord_Foxit_Plugin_SP";
-    private static final String KEY_TAB_ITEMS = "Tab_Items";
+    private static final int REQUEST_ALL_FILES_ACCESS_PERMISSION = 111;
+    private static final int REQUEST_EXTERNAL_STORAGE = 222;
 
     protected static PDFViewCtrl pdfViewCtrl;
     private UIExtensionsManager uiextensionsManager;
-
-    public static final int REQUEST_OPEN_DOCUMENT_TREE = 0xF001;
-    public static final int REQUEST_SELECT_DEFAULT_FOLDER = 0xF002;
-
-    public static final int REQUEST_EXTERNAL_STORAGE_MANAGER = 111;
-    public static final int REQUEST_EXTERNAL_STORAGE = 222;
 
     private static final String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -79,7 +64,6 @@ public class ReaderActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         AppTheme.setThemeFullScreen(this);
         ActManager.getInstance().setCurrentActivity(this);
-        AppStorageManager.setOpenTreeRequestCode(REQUEST_OPEN_DOCUMENT_TREE);
 
         Config config = null;
         try {
@@ -117,49 +101,24 @@ public class ReaderActivity extends FragmentActivity {
         if (!TextUtils.isEmpty(filePathSaveTo)) {
             uiextensionsManager.setSavePath(filePathSaveTo);
         }
-
-        restoreItems();
-
-        if (Build.VERSION.SDK_INT >= 30 && !AppFileUtil.isExternalStorageLegacy()) {
-            AppStorageManager storageManager = AppStorageManager.getInstance(this);
-            boolean needPermission = storageManager.needManageExternalStoragePermission();
-            if (!AppStorageManager.isExternalStorageManager() && needPermission) {
-                storageManager.requestExternalStorageManager(this, REQUEST_EXTERNAL_STORAGE_MANAGER);
-            } else if (!needPermission) {
-                checkStorageState();
-            } else {
-                openDocument();
-            }
-        } else if (Build.VERSION.SDK_INT >= 23) {
-            checkStorageState();
-        } else {
-            openDocument();
-        }
-
         setContentView(uiextensionsManager.getContentView());
-    }
 
-    private void checkStorageState() {
-        int permission = ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
-        } else {
-            selectDefaultFolderOrNot();
-        }
-    }
-
-    private void selectDefaultFolderOrNot() {
-        if (AppFileUtil.needScopedStorageAdaptation()) {
-            if (TextUtils.isEmpty(AppStorageManager.getInstance(this).getDefaultFolder())) {
-                AppFileUtil.checkCallDocumentTreeUriPermission(this, REQUEST_SELECT_DEFAULT_FOLDER,
-                        Uri.parse(AppFileUtil.getExternalRootDocumentTreeUriPath()));
-                UIToast.getInstance(getApplicationContext()).show("Please select the default folder,you can create one when it not exists.");
-            } else {
-                openDocument();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse("package:" + getApplicationContext().getPackageName()));
+                startActivityForResult(intent, REQUEST_ALL_FILES_ACCESS_PERMISSION);
+                return;
             }
-        } else {
-            openDocument();
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int permission = ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
+                return;
+            }
         }
+
+        openDocument();
     }
 
     private void openDocument() {
@@ -174,10 +133,14 @@ public class ReaderActivity extends FragmentActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_EXTERNAL_STORAGE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                selectDefaultFolderOrNot();
+                openDocument();
             } else {
                 UIToast.getInstance(getApplicationContext()).show("Permission Denied");
                 setResult(FoxitPdf.RDK_CANCELED_EVENT);
+            }
+        } else {
+            if (uiextensionsManager != null) {
+                uiextensionsManager.handleRequestPermissionsResult(requestCode, permissions, grantResults);
             }
         }
     }
@@ -226,33 +189,18 @@ public class ReaderActivity extends FragmentActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_EXTERNAL_STORAGE_MANAGER) {
-            AppFileUtil.updateIsExternalStorageManager();
-            if (!AppFileUtil.isExternalStorageManager()) {
-                checkStorageState();
-            } else {
-                openDocument();
-            }
-        } else if (requestCode == AppStorageManager.getOpenTreeRequestCode() || requestCode == REQUEST_SELECT_DEFAULT_FOLDER) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (data == null || data.getData() == null) return;
-                Uri uri = data.getData();
-                int modeFlags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                getContentResolver().takePersistableUriPermission(uri, modeFlags);
-                AppStorageManager storageManager = AppStorageManager.getInstance(getApplicationContext());
-                if (TextUtils.isEmpty(storageManager.getDefaultFolder())) {
-                    String defaultPath = AppFileUtil.toPathFromDocumentTreeUri(uri);
-                    storageManager.setDefaultFolder(defaultPath);
+        if (requestCode == REQUEST_ALL_FILES_ACCESS_PERMISSION) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
                     openDocument();
+                } else {
+                    UIToast.getInstance(getApplicationContext()).show("Permission Denied");
+                    setResult(FoxitPdf.RDK_CANCELED_EVENT);
                 }
-            } else {
-                UIToast.getInstance(getApplicationContext()).show("Permission Denied");
-                finish();
             }
-        }
-
-        if (uiextensionsManager != null)
+        } else if (uiextensionsManager != null) {
             uiextensionsManager.handleActivityResult(this, requestCode, resultCode, data);
+        }
     }
 
     @Override
@@ -270,6 +218,11 @@ public class ReaderActivity extends FragmentActivity {
     }
 
     PDFViewCtrl.IDocEventListener docListener = new PDFViewCtrl.IDocEventListener() {
+
+        @Override
+        public void onDocLoading(PDFDoc doc, int progress) {
+        }
+
         @Override
         public void onDocWillOpen() {
         }
@@ -281,7 +234,6 @@ public class ReaderActivity extends FragmentActivity {
 
         @Override
         public void onDocWillClose(PDFDoc pdfDoc) {
-            saveTabItems();
             FoxitPdf.mEnableAnnotations = true;
             FoxitPdf.mBottomBarItemStatus.clear();
             FoxitPdf.mTopBarItemStatus.clear();
@@ -312,184 +264,4 @@ public class ReaderActivity extends FragmentActivity {
         finish();
     }
 
-    private void restoreItems(){
-        String tabItems = AppSharedPreferences.getInstance(getApplicationContext()).getString(SP_NAME, KEY_TAB_ITEMS, "");
-        if (!AppUtil.isEmpty(tabItems)) {
-            try {
-                JSONObject rootObj = new JSONObject(tabItems);
-                JSONArray centerItemsObj = rootObj.getJSONArray("centerItems");
-
-                ArrayList<MainCenterItemBean> items = new ArrayList<>();
-                for (int i = 0; i < centerItemsObj.length(); i ++) {
-                    JSONObject centerObj = centerItemsObj.getJSONObject(i);
-
-                    MainCenterItemBean centerItem = new MainCenterItemBean();
-                    centerItem.type = centerObj.getInt("type");
-                    centerItem.position = centerObj.getInt("position");
-                    if (!centerObj.has("toolItems")){
-                        items.add(centerItem);
-                        continue;
-                    }
-
-                    centerItem.toolItems = new ArrayList<>();
-                    JSONArray toolItemsObj = centerObj.getJSONArray("toolItems");
-                    for (int toolIndex = 0; toolIndex < toolItemsObj.length(); toolIndex ++) {
-                        JSONObject toolObj = toolItemsObj.getJSONObject(toolIndex);
-
-                        ToolItemBean toolItem = new ToolItemBean();
-                        toolItem.itemStyle = toolObj.getInt("itemStyle");
-                        toolItem.type = toolObj.getInt("type");
-                        toolItem.property = new ToolProperty();
-                        {
-                            ToolProperty property = toolItem.property;
-                            JSONObject propObj = toolObj.getJSONObject("property");
-
-                            if (!setToolPropVal(property, propObj)) {
-                                toolItem.property = null;
-                            }
-                        }
-                        centerItem.toolItems.add(toolItem);
-                    }
-                    items.add(centerItem);
-                }
-                uiextensionsManager.getMainFrame().setCenterItems(items);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    boolean setToolPropVal(ToolProperty property, JSONObject propObj) {
-        try {
-            boolean haveProp = false;
-            if (propObj.has("type")) {
-                property.type = propObj.getInt("type");
-                haveProp = true;
-            }
-            if (propObj.has("color")) {
-                property.color = propObj.getInt("color");
-                haveProp = true;
-            }
-            if (propObj.has("fillColor")) {
-                property.fillColor = propObj.getInt("fillColor");
-                haveProp = true;
-            }
-            if (propObj.has("opacity")) {
-                property.opacity = propObj.getInt("opacity");
-                haveProp = true;
-            }
-            if (propObj.has("style")) {
-                property.style = propObj.getInt("style");
-                haveProp = true;
-            }
-            if (propObj.has("rotation")) {
-                property.rotation = propObj.getInt("rotation");
-                haveProp = true;
-            }
-            if (propObj.has("lineWidth")) {
-                property.lineWidth = (float) propObj.getDouble("lineWidth");
-                haveProp = true;
-            }
-            if (propObj.has("fontSize")) {
-                property.fontSize = (float) propObj.getDouble("fontSize");
-                haveProp = true;
-            }
-            if (propObj.has("fontName")) {
-                property.fontName = propObj.getString("fontName");
-                haveProp = true;
-            }
-            if (propObj.has("scaleFromUnitIndex")) {
-                property.scaleFromUnitIndex = propObj.getInt("scaleFromUnitIndex");
-                haveProp = true;
-            }
-            if (propObj.has("scaleToUnitIndex")) {
-                property.scaleToUnitIndex = propObj.getInt("scaleToUnitIndex");
-                haveProp = true;
-            }
-            if (propObj.has("scaleFromValue")) {
-                property.scaleFromValue = BigDecimal.valueOf(propObj.getDouble("scaleFromValue")).floatValue();
-                haveProp = true;
-            }
-            if (propObj.has("scaleToValue")) {
-                property.scaleToValue = BigDecimal.valueOf(propObj.getDouble("scaleToValue")).floatValue();
-                haveProp = true;
-            }
-            if (propObj.has("eraserShape")) {
-                property.eraserShape = propObj.getInt("eraserShape");
-                haveProp = true;
-            }
-            if (propObj.has("tag")) {
-                property.mTag = propObj.get("tag");
-                haveProp = true;
-            }
-            return haveProp;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private void saveTabItems(){
-        List<MainCenterItemBean> items = uiextensionsManager.getMainFrame().getCenterItems();
-
-        try {
-            JSONObject rootObj = new JSONObject();
-            JSONArray centerItemsObj = new JSONArray();
-            rootObj.put("centerItems", centerItemsObj);
-
-            for (MainCenterItemBean centerItem : items) {
-                JSONObject centerObj = new JSONObject();
-                centerObj.put("type", centerItem.type);
-                centerObj.put("position", centerItem.position);
-
-                if (centerItem.toolItems != null) {
-                    JSONArray toolItemsObj = new JSONArray();
-                    centerObj.put("toolItems", toolItemsObj);
-                    for (ToolItemBean toolItem : centerItem.toolItems) {
-                        JSONObject toolObj = new JSONObject();
-                        toolObj.put("itemStyle", toolItem.itemStyle);
-                        toolObj.put("type", toolItem.type);
-                        {
-                            ToolProperty property = toolItem.property;
-                            JSONObject propObj = new JSONObject();
-
-                            if (property != null) {
-                                setToolPropObjVal(propObj, property);
-                            }
-                            toolObj.put("property", propObj);
-                        }
-                        toolItemsObj.put(toolObj);
-                    }
-                }
-                centerItemsObj.put(centerObj);
-            }
-
-            AppSharedPreferences.getInstance(getApplicationContext()).setString(SP_NAME, KEY_TAB_ITEMS, rootObj.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    void setToolPropObjVal(JSONObject propObj, ToolProperty property) {
-        try {
-            propObj.put("type", property.type);
-            propObj.put("color", property.color);
-            propObj.put("fillColor", property.fillColor);
-            propObj.put("opacity", property.opacity);
-            propObj.put("style", property.style);
-            propObj.put("rotation", property.rotation);
-            propObj.put("lineWidth", property.lineWidth);
-            propObj.put("fontSize", property.fontSize);
-            propObj.put("fontName", property.fontName);
-            propObj.put("scaleFromUnitIndex", property.scaleFromUnitIndex);
-            propObj.put("scaleToUnitIndex", property.scaleToUnitIndex);
-            propObj.put("scaleFromValue", property.scaleFromValue);
-            propObj.put("scaleToValue", property.scaleToValue);
-            propObj.put("eraserShape", property.eraserShape);
-            if (property.mTag != null)
-                propObj.put("tag", property.mTag);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }
