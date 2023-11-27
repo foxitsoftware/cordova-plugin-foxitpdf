@@ -676,7 +676,7 @@ static NSString *initializeKey;
                               
                               dispatch_after(delayTime, dispatch_get_main_queue(), ^{
                                   [weakSelf showAlertViewWithTitle:@"error" message:@"Failed to open the document"];
-                                  [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+                                  [weakSelf.pdfViewController dismissViewControllerAnimated:YES completion:nil];
                               });
                               
                               [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
@@ -697,7 +697,7 @@ static NSString *initializeKey;
     self.topToolbarVerticalConstraints = @[];
     
     self.extensionsMgr.goBack = ^() {
-        [weakSelf.viewController dismissViewControllerAnimated:YES completion:nil];
+        [weakSelf.pdfViewController dismissViewControllerAnimated:YES completion:nil];
         [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
     };
     
@@ -708,8 +708,10 @@ static NSString *initializeKey;
 
 - (void)showAlertViewWithTitle:(NSString *)title message:(NSString *)message{
     dispatch_async(dispatch_get_main_queue(), ^{
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
-        [alert show];
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *action = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+        [alertController addAction:action];
+        [self.topViewController presentViewController:alertController animated:YES completion:nil];
     });
 }
 
@@ -1709,6 +1711,14 @@ static NSString *initializeKey;
         return;
     }
     
+}
+
+- (UIViewController *)topViewController {
+    UIViewController *presentingViewController = self.viewController;
+    while (presentingViewController.presentedViewController != nil) {
+        presentingViewController = presentingViewController.presentedViewController;
+    }
+    return presentingViewController;
 }
 
 @end
