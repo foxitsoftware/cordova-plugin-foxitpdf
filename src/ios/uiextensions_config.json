@@ -59,6 +59,7 @@
         "highlightLinkColor" : "#16007fff",
         "highlightFormColor":"#200066cc",
         "fullscreen" : true,
+        "enableTopbarDraggable" : 2,
         "annotations": {
             "continuouslyAdd" : true,
             "highlight": {
@@ -96,11 +97,13 @@
             },
             "rectangle": {
                 "color" : "#ff0000",
+                "fillColor" : "#00FFFFFF",
                 "opacity" : 1.0,
                 "thickness" : 2
             },
             "oval": {
                 "color" : "#ff0000",
+                "fillColor" : "#00FFFFFF",
                 "opacity" : 1.0,
                 "thickness" : 2
             },
@@ -121,11 +124,13 @@
             },
             "polygon": {
                 "color" : "#ff0000",
+                "fillColor" : "#00FFFFFF",
                 "opacity" : 1.0,
                 "thickness" : 2
             },
             "cloud": {
                 "color" : "#ff0000",
+                "fillColor" : "#00FFFFFF",
                 "opacity" : 1.0,
                 "thickness" : 2
             },
