@@ -62,6 +62,11 @@
       "highlightLinkColor": "#16007fff", //Set the highlight color with alpha
       "fullscreen": true, // Enter the full screen immediately after opening. If the user clicks on the page, the toolbar will be displayed. After 5 seconds, if it is in full screen mode, the toolbar and other auxiliary toolbar buttons will be hidden automatically.
       "showPenOnlySwitch": true, // Only use for pencil and eraser
+      "enableTopbarDraggable": 2,// Is it possible to drag the toolbar to change its position(left, right or top), this value can be 0, 1, 2, 3;
+                                 // 0: Neither the phone nor the tablet can drag the topbar;
+                                 // 1: Only the mobile phone can drag the topbar;
+                                 // 2: Only the tablet can drag the topbar;
+                                 // 3: Both mobile phone and tablet can drag topbar;
       "annotations": {
                "continuouslyAdd": true,
                 "highlight": {
@@ -89,10 +94,10 @@
                   "color": "#ff0000", "opacity": 1.0, "thickness": 2 //thickness: 1 - 12, Use default configuration if out of range.
                 },
                 "rectangle": {
-                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2, "fillColor": null
                 },
                 "oval": {
-                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2, "fillColor": null
                 },
                 "arrow": {
                   "color": "#ff0000", "opacity": 1.0, "thickness": 2
@@ -103,10 +108,10 @@
                   "thickness": 2
                 },
                 "polygon": {
-                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2, "fillColor": null
                 },
                 "cloud": {
-                  "color": "#ff0000", "opacity": 1.0, "thickness": 2
+                  "color": "#ff0000", "opacity": 1.0, "thickness": 2 ,"fillColor": null
                 },
                 "polyline": {
                   "color": "#ff0000", "opacity": 1.0, "thickness": 2
