@@ -48,7 +48,7 @@ cordova plugin add cordova-plugin-file
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo1.png)
 
 ### Put pdf file to document folder
-![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo2.png)
+![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo2.jpg)
 ![](https://raw.githubusercontent.com/foxitsoftware/cordova-plugin-foxitpdf/master/demo/readmeimg/cordovademo3.jpg)
 
 
@@ -88,7 +88,7 @@ cordova plugin add cordova-plugin-file
   android.enableJetifier=true
 ```
 
-### Step3: Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component android folder.  
+### Step3: Unzip `foxitpdfsdk_(version_no)_android.zip` and copy libs folder into the component android folder.
 
 You can download foxitpdfsdk_(version_no)_android.zip from https://developers.foxitsoftware.com/pdf-sdk/android/ (The latest version is 8.4.0)
 
