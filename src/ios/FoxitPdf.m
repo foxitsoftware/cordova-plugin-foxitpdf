@@ -49,20 +49,31 @@
 static FSErrorCode initializeCode = FSErrUnknown;
 static NSString *initializeSN;
 static NSString *initializeKey;
+
+- (void)handleCDVInvokedUrlCommand:(CDVInvokedUrlCommand *)command status:(CDVCommandStatus)status msg:(id)msg{
+    CDVPluginResult *pluginResult;
+    if ([msg isKindOfClass:[NSString class]]){
+        pluginResult = [CDVPluginResult resultWithStatus:status messageAsString:msg];
+    }else if ([msg isKindOfClass:[NSDictionary class]]){
+        pluginResult = [CDVPluginResult resultWithStatus:status messageAsDictionary:msg];
+    }else if ([msg isKindOfClass:[NSArray class]]){
+        pluginResult = [CDVPluginResult resultWithStatus:status messageAsArray:msg];
+    }else if ([msg isKindOfClass:[NSValue class]]){
+        pluginResult = [CDVPluginResult resultWithStatus:status messageAsBool:[msg boolValue]];
+    }
+    
+    if (pluginResult){
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+}
+
 - (void)initialize:(CDVInvokedUrlCommand*)command{
     // init foxit sdk
     
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
     NSDictionary *options = [command argumentAtIndex:0];
     if ([options isKindOfClass:[NSNull class]]) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"Invalid license"];
         return;
     }
     self.isEnableAnnotations = YES;
@@ -73,8 +84,7 @@ static NSString *initializeKey;
         if (initializeCode == FSErrSuccess) [FSLibrary destroy];
         initializeCode = [FSLibrary initialize:sn key:key];
         if (initializeCode != FSErrSuccess) {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
-            block();
+            [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"Invalid license"];
             return;
         }else{
             initializeSN = sn;
@@ -82,12 +92,10 @@ static NSString *initializeKey;
             self.bottomBarItemStatus = @[].mutableCopy;
             self.topBarItemStatus = @[].mutableCopy;
             self.toolbarItemStatus = @[].mutableCopy;
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialize succeeded"];
-            block();
+            [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Initialize succeeded"];
         }
     }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Initialized"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Initialized"];
     }
 }
 
@@ -96,17 +104,9 @@ static NSString *initializeKey;
 }
 
 - (void)setBottomToolbarItemVisible:(CDVInvokedUrlCommand*)command{
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
     if (FSErrSuccess != initializeCode) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
         return;
     }
     
@@ -143,17 +143,10 @@ static NSString *initializeKey;
 }
 
 - (void)setTopToolbarItemVisible:(CDVInvokedUrlCommand*)command{
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
     
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
     if (FSErrSuccess != initializeCode) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
         return;
     }
     
@@ -196,17 +189,9 @@ static NSString *initializeKey;
 }
 
 - (void)setToolbarItemVisible:(CDVInvokedUrlCommand*)command{
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
     if (FSErrSuccess != initializeCode) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
         return;
     }
     
@@ -285,13 +270,10 @@ static NSString *initializeKey;
     [PDFScanManager initializeScanner:serial1 serial2:serial2];
     CDVPluginResult *pluginResult = nil;
     if ([PDFScanManager initializeScanner:serial1 serial2:serial2] != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"Invalid license"];
     }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil];
-
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:nil];
     }
-    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)initializeCompression:(CDVInvokedUrlCommand*)command{
@@ -305,13 +287,10 @@ static NSString *initializeKey;
     [PDFScanManager initializeScanner:serial1 serial2:serial2];
     CDVPluginResult *pluginResult = nil;
     if ([PDFScanManager initializeScanner:serial1 serial2:serial2] != FSErrSuccess) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid license"];
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"Invalid license"];
     }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil];
-
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:nil];
     }
-    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)createScanner:(CDVInvokedUrlCommand*)command{
@@ -352,13 +331,10 @@ static NSString *initializeKey;
     
     CDVPluginResult *pluginResult = nil;
     if (self.filePathSaveTo) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"set savePath succeeded"];
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Set savePath succeeded"];
     }else{
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"set savePath failed"];
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"Set savePath failed"];
     }
-    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
 }
 
 - (void)importFromFDF:(CDVInvokedUrlCommand*)command{
@@ -369,24 +345,15 @@ static NSString *initializeKey;
         options = [NSDictionary dictionary];
     }
     
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
     NSString *fdfPath = [options objectForKey:@"fdfPath"];
     fdfPath = [self correctFilePath:fdfPath];
     if (!fdfPath) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"fdfPath is not found"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"fdfPath is not found"];
         return;
     }
     
     if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"current doc is empty"];
         return;
     }
     
@@ -395,8 +362,7 @@ static NSString *initializeKey;
     
     FSFDFDoc *fdoc = [[FSFDFDoc alloc] initWithPath:fdfPath];
     if ([fdoc isEmpty]) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"fdf doc is is empty"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"fdf doc is empty"];
         return;
     }
     FSPDFDoc *doc = self.currentDoc;
@@ -414,8 +380,7 @@ static NSString *initializeKey;
     @try {
         BOOL flag = [doc importFromFDF:fdoc types:types.intValue page_range:range];
         if (flag) {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Successfully import the fdf doc"];
-            block();
+            [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Successfully import the fdf doc"];
             [self.extensionsMgr.pdfViewCtrl refresh];
             self.extensionsMgr.isDocModified = YES;
         }
@@ -432,24 +397,15 @@ static NSString *initializeKey;
         options = [NSDictionary dictionary];
     }
     
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
     NSString *exportPath = [options objectForKey:@"exportPath"];
     exportPath = [self correctFilePath:exportPath];
     if (!exportPath) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"exportPath is error"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"exportPath is error"];
         return;
     }
     
     if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"current doc is empty"];
         return;
     }
     
@@ -459,8 +415,7 @@ static NSString *initializeKey;
     
     FSFDFDoc *fdoc = [[FSFDFDoc alloc] initWithType:fdfDocType.intValue];
     if ([fdoc isEmpty]) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"fdf doc is is empty"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"fdf doc is empty"];
         return;
     }
     FSPDFDoc *doc = self.currentDoc;
@@ -478,37 +433,27 @@ static NSString *initializeKey;
     @try {
         BOOL flag = [doc exportToFDF:fdoc types:types.intValue page_range:range];
         if (flag) {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Successfully export the fdf doc"];
-            block();
+            [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Successfully export the fdf doc"];
             [self.extensionsMgr.pdfViewCtrl refresh:self.extensionsMgr.pdfViewCtrl.getCurrentPage];
             if ([fdoc saveAs:exportPath]) {
                 NSLog(@"Successfully save the fdf doc");
-                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Successfully save the fdf doc"];
+                [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Successfully save the fdf doc"];
             }
         }else{
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Export the FDF failed"];
-            block();
+            [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"Export the FDF failed"];
         }
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Export the FDF failed"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"Export the FDF failed"];
     }
 }
 
 - (void)Preview:(CDVInvokedUrlCommand*)command
 {
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
     
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
     if (FSErrSuccess != initializeCode) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
         return;
     }
     
@@ -542,25 +487,17 @@ static NSString *initializeKey;
         // preview
         [self FoxitPdfPreview:fileURL.path];
     } else {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR  messageAsString:@"file not found"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"file not found"];
     }
 }
 
 - (void)enableAnnotations:(CDVInvokedUrlCommand*)command
 {
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
     
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
     if (FSErrSuccess != initializeCode) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
         return;
     }
     NSDictionary* options = [command argumentAtIndex:0];
@@ -655,22 +592,12 @@ static NSString *initializeKey;
         self.extensionsMgr.preventOverrideFilePath = self.filePathSaveTo;
     }
     
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
-    };
-    
     __weak FoxitPdf* weakSelf = self;
     [self.pdfViewControl openDoc:filePath
                         password:self.filePassword
                       completion:^(FSErrorCode error) {
                           if (error != FSErrSuccess) {
-                              
-                              pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                                           messageAsDictionary:@{@"FSErrorCode":@(FSErrSuccess), @"info":@"failed open the pdf"}];
-                              block();
+                              [self handleCDVInvokedUrlCommand:self.pluginCommand status:CDVCommandStatus_ERROR msg:@{@"FSErrorCode":@(error), @"info":@"failed open the pdf"}];
                               
                               dispatch_time_t delayTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC));
                               
@@ -682,9 +609,7 @@ static NSString *initializeKey;
                               [[NSNotificationCenter defaultCenter] removeObserver:weakSelf];
                           }else{
                               weakSelf.currentDoc = weakSelf.pdfViewControl.currentDoc;
-                              pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                                           messageAsDictionary:@{@"FSErrorCode":@(FSErrSuccess), @"info":@"Open the document successfully"}];
-                              block();
+                              [self handleCDVInvokedUrlCommand:self.pluginCommand status:CDVCommandStatus_OK msg:@{@"FSErrorCode":@(error), @"info":@"Open the document successfully"}];
                               // Run later to avoid the "took a long time" log message.
                               weakSelf.pdfRootViewController.modalPresentationStyle = UIModalPresentationFullScreen;
                               dispatch_async(dispatch_get_main_queue(), ^{
@@ -727,11 +652,7 @@ static NSString *initializeKey;
     // Called when a document is opened.
     self.currentDoc = document;
     
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                                  messageAsDictionary:@{@"type":@"onDocOpened", @"info":@"info", @"error":@(error)}];
-    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-    
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
+    [self handleCDVInvokedUrlCommand:self.pluginCommand status:CDVCommandStatus_OK msg:@{@"type":@"onDocOpened", @"info":@"info", @"error":@(error)}];
 }
 
 - (void)onDocClosed:(FSPDFDoc *)document error:(int)error {
@@ -746,20 +667,14 @@ static NSString *initializeKey;
 
 - (void)onDocWillSave:(FSPDFDoc *)document {
     self.currentDoc = document;
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                                  messageAsDictionary:@{@"type":@"onDocWillSave", @"info":@"info"}];
-    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
     
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
+    [self handleCDVInvokedUrlCommand:self.pluginCommand status:CDVCommandStatus_OK msg:@{@"type":@"onDocWillSave", @"info":@"info"}];
 }
 
 - (void)onDocSaved:(FSPDFDoc *)document error:(int)error{
     self.currentDoc = document;
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                                  messageAsDictionary:@{@"type":@"onDocSaved", @"info":@"info", @"error":@(error)}];
-    [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
     
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCommand.callbackId];
+    [self handleCDVInvokedUrlCommand:self.pluginCommand status:CDVCommandStatus_OK msg:@{@"type":@"onDocSaved", @"info":@"info", @"error":@(error)}];
 }
 
 # pragma mark -- isExistAtPath
@@ -817,29 +732,20 @@ static NSString *initializeKey;
 }
 
 # pragma mark form
--(BOOL)checkIfCanUsePDFForm:(CDVPluginResult *)pluginResult command:(CDVInvokedUrlCommand *)command{
-    __block CDVPluginResult *cPluginResult = pluginResult;
-    void (^block)(void) = ^{
-        [cPluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:cPluginResult callbackId:command.callbackId];
-    };
-    
+-(BOOL)checkIfCanUsePDFFormCommand:(CDVInvokedUrlCommand *)command{
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
     if (FSErrSuccess != initializeCode) {
-        cPluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
         return NO;
     }
     
     if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
-        cPluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"current doc is empty"];
         return NO;
     }
     
     if (![self.currentDoc hasForm]) {
-        cPluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"The current document does not have interactive form."];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"The current document does not have interactive form."];
         return NO;
     }
     
@@ -848,16 +754,10 @@ static NSString *initializeKey;
 
 - (void)getAllFormFields:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
     
     @try {
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
@@ -875,25 +775,17 @@ static NSString *initializeKey;
         
         NSLog(@"%@",tempArray);
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArray];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:tempArray];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
 }
 
 - (void)getForm:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -914,26 +806,18 @@ static NSString *initializeKey;
         
         NSLog(@"%@",tempFormInfo);
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempFormInfo];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:tempFormInfo];
         
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
 }
 
 - (void)updateForm:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -980,25 +864,17 @@ static NSString *initializeKey;
         
         self.extensionsMgr.isDocModified = isModified;
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update form info success"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Update form info success"];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
 }
 
 - (void)formValidateFieldName:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1014,12 +890,9 @@ static NSString *initializeKey;
         
         BOOL isCanbeUsed = [pForm validateFieldName:fSFieldType field_name:fieldName];
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isCanbeUsed];
-        block();
-        
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isCanbeUsed)];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1027,14 +900,8 @@ static NSString *initializeKey;
 
 - (void)formRenameField:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1057,11 +924,9 @@ static NSString *initializeKey;
             }
         }
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isRenameSuccessed];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isRenameSuccessed)];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1069,14 +934,8 @@ static NSString *initializeKey;
 
 - (void)formRemoveField:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1092,11 +951,9 @@ static NSString *initializeKey;
         
         self.extensionsMgr.isDocModified = YES;
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"remove field success"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Remove field success"];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1104,14 +961,8 @@ static NSString *initializeKey;
 
 - (void)formReset:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1121,11 +972,9 @@ static NSString *initializeKey;
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
         BOOL isReset = [pForm reset];
         self.extensionsMgr.isDocModified = isReset;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isReset)];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1133,14 +982,8 @@ static NSString *initializeKey;
 
 - (void)formExportToXML:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1153,25 +996,17 @@ static NSString *initializeKey;
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
         BOOL isExport = [pForm exportToXML:filePath];
         //        self.extensionsMgr.isDocModified = isExport;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isExport];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isExport)];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
 }
 
 - (void)formImportFromXML:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1185,11 +1020,10 @@ static NSString *initializeKey;
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
         BOOL isImport = [pForm importFromXML:filePath];
         self.extensionsMgr.isDocModified = isImport;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isImport];
-        block();
+
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isImport)];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1197,14 +1031,8 @@ static NSString *initializeKey;
 
 - (void)formGetPageControls:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1233,25 +1061,17 @@ static NSString *initializeKey;
         
         NSLog(@"%@",tempArr);
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArr];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:tempArr];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
 }
 
 - (void)formRemoveControl:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1271,11 +1091,9 @@ static NSString *initializeKey;
         
         self.extensionsMgr.isDocModified = YES;
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"remove control success"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Remove control success"];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1283,23 +1101,15 @@ static NSString *initializeKey;
 
 - (void)formAddControl:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
-    
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
     
     NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
     if (FSErrSuccess != initializeCode) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errMsg];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
         return;
     }
     
     if (!self.pdfViewControl || !self.currentDoc || [self.currentDoc isEmpty]) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"current doc is is empty"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"current doc is empty"];
         return;
     }
     
@@ -1327,12 +1137,10 @@ static NSString *initializeKey;
         
         self.extensionsMgr.isDocModified = YES;
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempDic];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:tempDic];
         
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1340,14 +1148,8 @@ static NSString *initializeKey;
 
 - (void)formUpdateControl:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1384,11 +1186,9 @@ static NSString *initializeKey;
         
         self.extensionsMgr.isDocModified = isModified;
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"update control info success"];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Update control info success"];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1456,14 +1256,8 @@ static NSString *initializeKey;
 
 - (void)getFieldByControl:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1483,11 +1277,9 @@ static NSString *initializeKey;
         NSMutableDictionary *tempField = @{}.mutableCopy;
         tempField = [self getDictionaryOfField:pFormField form:pForm];
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempField];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:tempField];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1496,14 +1288,8 @@ static NSString *initializeKey;
 
 - (void)FieldUpdateField:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1608,13 +1394,10 @@ static NSString *initializeKey;
         tempField = [self getDictionaryOfField:field form:pForm];
         
         self.extensionsMgr.isDocModified = isModified;
-        
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:tempField];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:tempField];
         
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1623,14 +1406,8 @@ static NSString *initializeKey;
 
 - (void)FieldReset:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1650,12 +1427,10 @@ static NSString *initializeKey;
             }
         }
         self.extensionsMgr.isDocModified = isReset;
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isReset];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isReset)];
         
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
@@ -1663,14 +1438,8 @@ static NSString *initializeKey;
 
 - (void)getFieldControls:(CDVInvokedUrlCommand*)command{
     self.pluginCommand = command;
-    __block CDVPluginResult *pluginResult = nil;
     
-    void (^block)(void) = ^{
-        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    };
-    
-    if (![self checkIfCanUsePDFForm:pluginResult command:command]) {
+    if (![self checkIfCanUsePDFFormCommand:command]) {
         return ;
     }
     
@@ -1703,11 +1472,9 @@ static NSString *initializeKey;
         
         NSLog(@"%@",tempArr);
         
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:tempArr];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:tempArr];
     } @catch (NSException *exception) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:exception.reason];
-        block();
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
     }
     
