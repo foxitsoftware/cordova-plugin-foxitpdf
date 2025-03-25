@@ -14,6 +14,118 @@
 #import <uiextensionsDynamic/uiextensionsDynamic.h>
 #import <FoxitPDFScanUI/PDFScanManager.h>
 
+static inline NSUInteger hexStrToInt(NSString *str) {
+    uint32_t result = 0;
+    sscanf([str UTF8String], "%X", &result);
+    return result;
+}
+
+static BOOL hexStrToRGBA(NSString *str,
+                         CGFloat *r, CGFloat *g, CGFloat *b, CGFloat *a) {
+    NSCharacterSet *set = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    str = [[str stringByTrimmingCharactersInSet:set] uppercaseString];
+    if ([str hasPrefix:@"#"]) {
+        str = [str substringFromIndex:1];
+    } else if ([str hasPrefix:@"0X"]) {
+        str = [str substringFromIndex:2];
+    }else if ([str hasPrefix:@"0x"]) {
+        str = [str substringFromIndex:2];
+    }
+    
+    NSUInteger length = [str length];
+    //         RGB            ARGB          RRGGBB        AARRGGBB
+    if (length != 3 && length != 4 && length != 6 && length != 8) {
+        return NO;
+    }
+    
+    //RGB,ARGB,RRGGBB,AARRGGBB
+    if (length < 5) {
+        int i = 0;
+        if (length == 4) i+=1;
+        *r = hexStrToInt([str substringWithRange:NSMakeRange(i, 1)]) / 255.0f;
+        *g = hexStrToInt([str substringWithRange:NSMakeRange(i + 1, 1)]) / 255.0f;
+        *b = hexStrToInt([str substringWithRange:NSMakeRange(i + 2, 1)]) / 255.0f;
+        if (length == 4)  *a = hexStrToInt([str substringWithRange:NSMakeRange(0, 1)]) / 255.0f;
+        else *a = 1;
+    } else {
+        int i = 0;
+        if (length == 8) i+=2;
+        *r = hexStrToInt([str substringWithRange:NSMakeRange(i, 2)]) / 255.0f;
+        *g = hexStrToInt([str substringWithRange:NSMakeRange(i + 2, 2)]) / 255.0f;
+        *b = hexStrToInt([str substringWithRange:NSMakeRange(i + 4, 2)]) / 255.0f;
+        if (length == 8) *a = hexStrToInt([str substringWithRange:NSMakeRange(0, 2)]) / 255.0f;
+        else *a = 1;
+    }
+    return YES;
+}
+
+@interface UIColor (Extensions)
++ (UIColor *)colorWithHexString:(NSString *)hexStr;
++ (UIColor *)colorWithRGB:(uint32_t)rgbValue alpha:(CGFloat)alpha;
++ (UIColor *)fs_colorWithLight:(UIColor *)light dark:(UIColor *)dark;
+@end
+
+@implementation UIColor (Extensions)
+
++ (instancetype)colorWithHexString:(NSString *)hexStr {
+    CGFloat r, g, b, a;
+    if (hexStrToRGBA(hexStr, &r, &g, &b, &a)) {
+        return [UIColor colorWithRed:r green:g blue:b alpha:a];
+    }
+    return nil;
+}
+
++ (UIColor *)colorWithRGB:(uint32_t)rgbValue alpha:(CGFloat)alpha {
+    return [UIColor colorWithRed:((rgbValue & 0xFF0000) >> 16) / 255.0f
+                           green:((rgbValue & 0xFF00) >> 8) / 255.0f
+                            blue:(rgbValue & 0xFF) / 255.0f
+                           alpha:alpha];
+}
+
++ (UIColor *)fs_colorWithLight:(UIColor *)light dark:(UIColor *)dark{
+   return [self fs_colorWithOwner:nil light:light dark:dark];
+}
+
++ (UIColor *)fs_colorWithOwner:(nullable id<UITraitEnvironment>)owner light:(UIColor *)light dark:(UIColor *)dark {
+    if (!light && !dark) return nil;
+    if (!light) light = [self whiteColor];
+    if (!dark) return light;
+   return [UIColor fs_colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull traitCollection) {
+       #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_12_0
+       if (@available(iOS 12.0, *)) {
+           if (owner) {
+               traitCollection = owner.traitCollection;
+           }
+           if (traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
+               return dark;
+           }
+       }
+       #endif
+       return light;
+    }];
+}
+
++ (UIColor *)fs_colorWithDynamicProvider:(UIColor * (^)(UITraitCollection *traitCollection))dynamicProvider{
+    return [[self alloc] fs_initWithDynamicProvider:dynamicProvider];
+}
+
+- (UIColor *)fs_initWithDynamicProvider:(UIColor * (^)(UITraitCollection *traitCollection))dynamicProvider{
+    
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0
+    if (@available(iOS 13.0, *)) {
+        return [[UIColor alloc] initWithDynamicProvider:dynamicProvider];
+    }
+#elif __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_12_0
+    if (@available(iOS 12.0, *)) {
+        return dynamicProvider([UITraitCollection traitCollectionWithUserInterfaceStyle:UIUserInterfaceStyleLight]);
+    }
+#endif
+    return dynamicProvider([UITraitCollection new]);
+}
+
+@end
+
+
 @interface PDFViewController : UIViewController
 @property (nonatomic, weak) UIExtensionsManager *extensionsManager;
 @end
@@ -257,8 +369,6 @@ static NSString *initializeKey;
     [self.toolbarItemStatus addObject:status];
 }
 
-
-
 - (void)initializeScanner:(CDVInvokedUrlCommand*)command{
     NSDictionary* options = [command argumentAtIndex:0];
     
@@ -268,7 +378,7 @@ static NSString *initializeKey;
     unsigned long serial1 = [options[@"serial1"] unsignedLongValue];
     unsigned long serial2 = [options[@"serial2"] unsignedLongValue];
     [PDFScanManager initializeScanner:serial1 serial2:serial2];
-    CDVPluginResult *pluginResult = nil;
+
     if ([PDFScanManager initializeScanner:serial1 serial2:serial2] != FSErrSuccess) {
         [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"Invalid license"];
     }else{
@@ -285,7 +395,7 @@ static NSString *initializeKey;
     unsigned long serial1 = [options[@"serial1"] unsignedLongValue];
     unsigned long serial2 = [options[@"serial2"] unsignedLongValue];
     [PDFScanManager initializeScanner:serial1 serial2:serial2];
-    CDVPluginResult *pluginResult = nil;
+
     if ([PDFScanManager initializeScanner:serial1 serial2:serial2] != FSErrSuccess) {
         [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@"Invalid license"];
     }else{
@@ -301,25 +411,21 @@ static NSString *initializeKey;
             [self.viewController presentViewController:VC animated:YES completion:nil];
         });
         [PDFScanManager setSaveAsCallBack:^(NSError * _Nullable error, NSString * _Nullable savePath) {
-            CDVPluginResult *pluginResult = nil;
               if (savePath) {
                   if (VC.presentingViewController) {
                       [VC.presentingViewController dismissViewControllerAnimated:NO completion:nil];
                   }
                   [VC dismissViewControllerAnimated:NO completion:nil];
-                  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                               messageAsDictionary:@{@"type":@"onDocumentAdded", @"error":@(0), @"info":savePath}];
+                  [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@{@"type":@"onDocumentAdded", @"error":@(0), @"info":savePath}];
               }else{
-                  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                               messageAsDictionary:@{@"type":@"onDocumentAdded", @"error":@(1), @"info":@""}];
+                  [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:@{@"type":@"onDocumentAdded", @"error":@(1), @"info":@""}];
+
               }
-            [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         }];
     }
 }
 
-- (void)setSavePath:(CDVInvokedUrlCommand*)command{
+- (void)setSavePath:(CDVInvokedUrlCommand *)command{
     NSDictionary* options = [command argumentAtIndex:0];
     
     if ([options isKindOfClass:[NSNull class]]) {
@@ -329,7 +435,6 @@ static NSString *initializeKey;
     NSString *savePath = [options objectForKey:@"savePath"];
     self.filePathSaveTo = [self correctFilePath:savePath];
     
-    CDVPluginResult *pluginResult = nil;
     if (self.filePathSaveTo) {
         [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"Set savePath succeeded"];
     }else{
@@ -508,7 +613,82 @@ static NSString *initializeKey;
     id obj = [options objectForKey:@"enable"];
     BOOL val = obj?[obj boolValue]:YES;
     self.isEnableAnnotations = options?val:YES;
+
+}
+
+- (void)setAutoSaveDoc:(CDVInvokedUrlCommand*)command
+{
+    self.pluginCommand = command;
     
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
+        return;
+    }
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = nil;
+    }
+    id obj = [options objectForKey:@"enable"];
+    BOOL val = obj ? [obj boolValue] : YES;
+    self.extensionsMgr.isAutoSaveDoc = options ? val : YES;
+
+}
+
+- (UIColor *)jsvalueToOCColor:(id)jsvalue{
+    UIColor *color = nil;
+    if ([jsvalue isKindOfClass:[NSString class]]) {
+        if ([jsvalue hasPrefix:@"#"] || [jsvalue hasPrefix:@"0x"] || [jsvalue hasPrefix:@"0X"]) {
+            color = [UIColor colorWithHexString:jsvalue];
+        }else if ([jsvalue hasPrefix:@"rgb"] || [jsvalue hasPrefix:@"rgba"]){
+            float r = 0, g = 0, b = 0, a = 0;
+            if (sscanf([jsvalue UTF8String], "rgba(%f,%f,%f,%f)", &r, &g, &b, &a) == 4) {
+                color = [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a];
+            }else if (sscanf([jsvalue UTF8String], "rgb(%f,%f,%f)", &r, &g, &b) == 3){
+                color = [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:1];
+            }
+        }
+    }else if ([jsvalue isKindOfClass:[NSNumber class]]){
+        NSUInteger hex = [jsvalue unsignedIntegerValue];
+        if (hex > 0xFFFFFF) {
+            color = [UIColor colorWithRed:((hex & 0xFF0000) >> 16) / 255.0f
+                                    green:((hex & 0xFF00) >> 8) / 255.0f
+                                     blue:(hex & 0xFF) / 255.0f
+                                    alpha:((hex & 0xFF000000) >> 24) / 255.0f];
+        }else{
+            color = [UIColor colorWithRed:((hex & 0xFF0000) >> 16) / 255.0f
+                                    green:((hex & 0xFF00) >> 8) / 255.0f
+                                     blue:(hex & 0xFF) / 255.0f
+                                    alpha:1];
+        }
+        
+    }
+    return color;
+}
+
+- (void)setPrimaryColor:(CDVInvokedUrlCommand*)command
+{
+    self.pluginCommand = command;
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
+        return;
+    }
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = nil;
+    }
+    id light = [options objectForKey:@"light"];
+    id dark = [options objectForKey:@"dark"];
+    
+    light = [self jsvalueToOCColor:light];
+    dark = [self jsvalueToOCColor:dark];
+    
+    UIColor *color = [UIColor fs_colorWithLight:light dark:dark];
+    [UIExtensionsManager setPrimaryColor:color];
 }
 
 - (FSPDFViewCtrl *)pdfViewControl{
@@ -924,7 +1104,7 @@ static NSString *initializeKey;
             }
         }
         
-        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isRenameSuccessed)];
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"The field was successfully renamed"];
     } @catch (NSException *exception) {
         [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
@@ -972,7 +1152,7 @@ static NSString *initializeKey;
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
         BOOL isReset = [pForm reset];
         self.extensionsMgr.isDocModified = isReset;
-        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isReset)];
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"The form was successfully reset"];
     } @catch (NSException *exception) {
         [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
@@ -996,7 +1176,7 @@ static NSString *initializeKey;
         FSForm *pForm = [[FSForm alloc] initWithDocument:self.currentDoc];
         BOOL isExport = [pForm exportToXML:filePath];
         //        self.extensionsMgr.isDocModified = isExport;
-        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isExport)];
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"The form has been successfully exported."];
     } @catch (NSException *exception) {
         [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
@@ -1021,7 +1201,7 @@ static NSString *initializeKey;
         BOOL isImport = [pForm importFromXML:filePath];
         self.extensionsMgr.isDocModified = isImport;
 
-        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isImport)];
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"The form has been successfully imported."];
     } @catch (NSException *exception) {
         [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
         return;
@@ -1427,7 +1607,7 @@ static NSString *initializeKey;
             }
         }
         self.extensionsMgr.isDocModified = isReset;
-        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@(isReset)];
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_OK msg:@"The field was successfully reset"];
         
     } @catch (NSException *exception) {
         [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:exception.reason];
