@@ -132,6 +132,23 @@ pdf.prototype.setToolbarItemVisible = function(index, visible) {
         }]);
     });
 }
+    
+pdf.prototype.setPrimaryColor = function(light, dark) {
+    return new Promise(function(resolve, reject){
+        exec(resolve, reject, "FoxitPdf", "setPrimaryColor", [{
+            'light': light,
+            'dark': dark,
+        }]);
+    });
+}
+    
+pdf.prototype.setAutoSaveDoc = function(enable) {
+    return new Promise(function(resolve, reject){
+        exec(resolve, reject, "FoxitPdf", "setAutoSaveDoc", [{
+            'enable': enable,
+        }]);
+    });
+}
 
 var pdf = new pdf();
 module.exports = pdf;
