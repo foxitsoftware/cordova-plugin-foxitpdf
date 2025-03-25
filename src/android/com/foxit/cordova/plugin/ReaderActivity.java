@@ -13,34 +13,29 @@ package com.foxit.cordova.plugin;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
-import android.text.TextUtils;
 import android.view.KeyEvent;
-import android.view.View;
 
 import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.pdf.PDFDoc;
 import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.config.Config;
-import com.foxit.uiextensions.controls.toolbar.BaseBar;
-import com.foxit.uiextensions.controls.toolbar.IBarsHandler;
+import com.foxit.uiextensions.theme.ThemeConfig;
 import com.foxit.uiextensions.utils.ActManager;
-import com.foxit.uiextensions.utils.AppFileUtil;
-import com.foxit.uiextensions.utils.AppStorageManager;
 import com.foxit.uiextensions.utils.AppTheme;
+import com.foxit.uiextensions.utils.AppUtil;
 import com.foxit.uiextensions.utils.UIToast;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -51,7 +46,7 @@ public class ReaderActivity extends FragmentActivity {
     private static final int REQUEST_ALL_FILES_ACCESS_PERMISSION = 111;
     private static final int REQUEST_EXTERNAL_STORAGE = 222;
 
-    protected static PDFViewCtrl pdfViewCtrl;
+    private PDFViewCtrl pdfViewCtrl;
     private UIExtensionsManager uiextensionsManager;
 
     private static final String[] PERMISSIONS_STORAGE = {
@@ -70,10 +65,11 @@ public class ReaderActivity extends FragmentActivity {
             String configPath = "www/plugins/cordova-plugin-foxitpdf/uiextensions_config.json";
             InputStream stream = getApplicationContext().getResources().getAssets().open(configPath);
             config = new Config(stream);
-            config.modules.enableAnnotations(FoxitPdf.mEnableAnnotations);
+            config.modules.enableAnnotations(FoxitReader.instance().getEnableAnnotations());
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         pdfViewCtrl = new PDFViewCtrl(getApplicationContext());
         uiextensionsManager = new UIExtensionsManager(this, pdfViewCtrl, config);
         uiextensionsManager.setAttachedActivity(this);
@@ -81,28 +77,11 @@ public class ReaderActivity extends FragmentActivity {
         pdfViewCtrl.setAttachedActivity(this);
         pdfViewCtrl.registerDocEventListener(docListener);
         uiextensionsManager.onCreate(this, pdfViewCtrl, null);
-        for (Map.Entry<Integer, Boolean> entry : FoxitPdf.mBottomBarItemStatus.entrySet()) {
-            int index = entry.getKey();
-            int visible = entry.getValue() ? View.VISIBLE : View.GONE;
-            uiextensionsManager.getBarManager().setItemVisibility(IBarsHandler.BarName.BOTTOM_BAR, BaseBar.TB_Position.Position_CENTER, index, visible);
-        }
 
-        for (Map.Entry<Integer, Boolean> entry : FoxitPdf.mTopBarItemStatus.entrySet()) {
-            int index = entry.getKey();
-            int visible = entry.getValue() ? View.VISIBLE : View.GONE;
-            if (index == 0) {
-                uiextensionsManager.getBarManager().setItemVisibility(IBarsHandler.BarName.TOP_BAR, BaseBar.TB_Position.Position_LT, index, visible);
-            } else {
-                uiextensionsManager.getBarManager().setItemVisibility(IBarsHandler.BarName.TOP_BAR, BaseBar.TB_Position.Position_RB, index - 1, visible);
-            }
-        }
+        FoxitReader.instance().setPDFViewCtrl(pdfViewCtrl);
+        FoxitReader.instance().applySetting();
 
-        String filePathSaveTo = getIntent().getExtras().getString("filePathSaveTo");
-        if (!TextUtils.isEmpty(filePathSaveTo)) {
-            uiextensionsManager.setSavePath(filePathSaveTo);
-        }
         setContentView(uiextensionsManager.getContentView());
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (!Environment.isExternalStorageManager()) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
@@ -182,6 +161,7 @@ public class ReaderActivity extends FragmentActivity {
         if (uiextensionsManager != null)
             uiextensionsManager.onDestroy(this);
         pdfViewCtrl.unregisterDocEventListener(docListener);
+        FoxitReader.instance().release();
         super.onDestroy();
     }
 
@@ -208,6 +188,8 @@ public class ReaderActivity extends FragmentActivity {
         super.onConfigurationChanged(newConfig);
         if (uiextensionsManager != null)
             uiextensionsManager.onConfigurationChanged(this, newConfig);
+
+        FoxitReader.instance().updatePrimaryColor();
     }
 
     @Override
@@ -234,9 +216,6 @@ public class ReaderActivity extends FragmentActivity {
 
         @Override
         public void onDocWillClose(PDFDoc pdfDoc) {
-            FoxitPdf.mEnableAnnotations = true;
-            FoxitPdf.mBottomBarItemStatus.clear();
-            FoxitPdf.mTopBarItemStatus.clear();
         }
 
         @Override

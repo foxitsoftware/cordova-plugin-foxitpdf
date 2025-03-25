@@ -53,8 +53,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This class echoes a string called from JavaScript.
@@ -65,24 +63,19 @@ public class FoxitPdf extends CordovaPlugin {
     private static final String RDK_DOCWILLSAVE_EVENT = "onDocWillSave";
     private static final String RDK_DOCOPENED_EVENT = "onDocOpened";
     static final String RDK_CANCELED_EVENT = "onCanceled";
-
-    private static final int READER_REQUEST_CODE = 100;
-    private static final int SCANNER_REQUEST_CODE = 101;
-
-    private static int errCode = Constants.e_ErrInvalidLicense;
-    private static String mLastSn;
-    private static String mLastKey;
-    private static boolean isLibraryInited = false;
-
-    private String mSavePath = null;
-    protected static boolean mEnableAnnotations = true;
-
+    //
     private static final int CALLBACK_FOR_PREVIEW = 0;
     private static final int CALLBACK_FOR_OPENDOC = 1;
     private static final int CALLBACK_FOR_SCANNER = 2;
+    //
+    private static final int READER_REQUEST_CODE = 100;
+    private static final int SCANNER_REQUEST_CODE = 101;
+    //
+    private static int errCode = Constants.e_ErrInvalidLicense;
+    private static String mLastSn;
+    private static String mLastKey;
+    //
     private static SparseArray<CallbackContext> mCallbackArrays = new SparseArray<>();
-    static Map<Integer, Boolean> mBottomBarItemStatus = new HashMap<>();
-    static Map<Integer, Boolean> mTopBarItemStatus = new HashMap<>();
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -92,9 +85,9 @@ public class FoxitPdf extends CordovaPlugin {
                 String sn = options.getString("foxit_sn");
                 String key = options.getString("foxit_key");
 
-                if (!isLibraryInited) {
+                if (!FoxitReader.instance().isLibraryInitialized()) {
                     errCode = Library.initialize(sn, key);
-                    isLibraryInited = true;
+                    FoxitReader.instance().setLibraryInitialized(true);
                 } else if (!mLastSn.equals(sn) || !mLastKey.equals(key)) {
                     Library.release();
                     errCode = Library.initialize(sn, key);
@@ -124,7 +117,8 @@ public class FoxitPdf extends CordovaPlugin {
                 JSONObject options = args.optJSONObject(0);
                 String filePath = options.getString("filePath");
                 String fileSavePath = options.getString("filePathSaveTo");
-                return openDoc(filePath, null, fileSavePath, callbackContext);
+                FoxitReader.instance().setSavePath(fileSavePath);
+                return openDoc(filePath, null, callbackContext);
             }
             case "openDocument": {
                 mCallbackArrays.put(CALLBACK_FOR_OPENDOC, callbackContext);
@@ -145,7 +139,7 @@ public class FoxitPdf extends CordovaPlugin {
                 if (!TextUtils.isEmpty(pw)) {
                     password = pw.getBytes();
                 }
-                return openDoc(filePath, password, mSavePath, callbackContext);
+                return openDoc(filePath, password, callbackContext);
             }
             case "setSavePath": {
                 JSONObject options = args.optJSONObject(0);
@@ -193,7 +187,7 @@ public class FoxitPdf extends CordovaPlugin {
             }
             case "enableAnnotations": {
                 JSONObject options = args.optJSONObject(0);
-                mEnableAnnotations = options.getBoolean("enable");
+                FoxitReader.instance().setEnableAnnotations(options.getBoolean("enable"));
                 callbackContext.success();
                 return true;
             }
@@ -315,9 +309,7 @@ public class FoxitPdf extends CordovaPlugin {
                 JSONObject options = args.optJSONObject(0);
                 int index = options.getInt("index");
                 boolean visible = options.getBoolean("visible");
-                if (index >= 0 && index < 5) {
-                    mBottomBarItemStatus.put(index, visible);
-                }
+                FoxitReader.instance().setBottomBarItemStatus(index, visible);
                 callbackContext.success();
                 return true;
             }
@@ -325,9 +317,29 @@ public class FoxitPdf extends CordovaPlugin {
                 JSONObject options = args.optJSONObject(0);
                 int index = options.getInt("index");
                 boolean visible = options.getBoolean("visible");
-                if (index >= 0 && index < 4) {
-                    mTopBarItemStatus.put(index, visible);
-                }
+                FoxitReader.instance().setTopBarItemStatus(index, visible);
+                callbackContext.success();
+                return true;
+            }
+            case "setToolbarItemVisible": {
+                JSONObject options = args.optJSONObject(0);
+                int index = options.getInt("index");
+                boolean visible = options.getBoolean("visible");
+                FoxitReader.instance().setToolBarItemStatus(index, visible);
+                callbackContext.success();
+                return true;
+            }
+            case "setAutoSaveDoc": {
+                JSONObject options = args.optJSONObject(0);
+                boolean enable = options.getBoolean("enable");
+                this.setAutoSaveDoc(enable, callbackContext);
+                return true;
+            }
+            case "setPrimaryColor": {
+                JSONObject options = args.optJSONObject(0);
+                String light = options.getString("light");
+                String dark = options.getString("dark");
+                FoxitReader.instance().setPrimaryColor(new String[]{light, dark});
                 callbackContext.success();
                 return true;
             }
@@ -336,24 +348,21 @@ public class FoxitPdf extends CordovaPlugin {
         return false;
     }
 
-    private boolean openDoc(String inputPath, byte[] password, String outPath, CallbackContext callbackContext) {
-        if (inputPath == null || inputPath.trim().length() < 1) {
+    private boolean openDoc(String inputPath, byte[] password, CallbackContext callbackContext) {
+        if (inputPath == null || inputPath.trim().isEmpty()) {
             callbackContext.error("Please input validate path.");
             return false;
         }
 
-        openDocument(inputPath, password, outPath, callbackContext);
-
+        openDocument(inputPath, password, callbackContext);
         return true;
     }
 
-    private void openDocument(String inputPath, byte[] password, String outPath, CallbackContext callbackContext) {
+    private void openDocument(String inputPath, byte[] password, CallbackContext callbackContext) {
         Intent intent = new Intent(this.cordova.getActivity(), ReaderActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("path", inputPath);
         bundle.putByteArray("password", password);
-        bundle.putString("filePathSaveTo", TextUtils.isEmpty(outPath) ? "" : outPath);
-
         intent.putExtras(bundle);
         this.cordova.startActivityForResult(this, intent, READER_REQUEST_CODE);
 
@@ -362,42 +371,49 @@ public class FoxitPdf extends CordovaPlugin {
         callbackContext.sendPluginResult(pluginResult);
     }
 
-    private boolean setSavePath(String savePath, CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getUIExtensionsManager() == null) {
-            mSavePath = savePath;
-            return false;
-        }
-
-        if (!TextUtils.isEmpty(savePath)) {
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).setSavePath(savePath);
+    private void setSavePath(String savePath, CallbackContext callbackContext) {
+        boolean ret = FoxitReader.instance().setSavePath(savePath);
+        if (!ret) {
+            callbackContext.error("Please open document first.");
+            return;
         }
         callbackContext.success();
-        return true;
+    }
+
+    private void setAutoSaveDoc(boolean auto, CallbackContext callbackContext) {
+       boolean ret =  FoxitReader.instance().setAutoSaveDoc(auto);
+        if (!ret) {
+            callbackContext.error("Please open document first.");
+            return;
+        }
+        callbackContext.success();
     }
 
     private boolean importFromFDF(String fdfPath, int type, com.foxit.sdk.common.Range range, CallbackContext callbackContext) {
-        if (fdfPath == null || fdfPath.trim().length() < 1) {
+        if (fdfPath == null || fdfPath.trim().isEmpty()) {
             callbackContext.error("Please input validate path.");
             return false;
         }
 
-        if (ReaderActivity.pdfViewCtrl == null) {
+        if (!isPDFViewCtrlReady()) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
         try {
             PDFViewCtrl.lock();
-            boolean success = false;
-            if (ReaderActivity.pdfViewCtrl.getDoc() != null) {
+            boolean success;
+
+            PDFViewCtrl pdfview = FoxitReader.instance().getPDFViewCtrl();
+            if (pdfview.getDoc() != null) {
                 FDFDoc fdfDoc = new FDFDoc(fdfPath);
-                success = ReaderActivity.pdfViewCtrl.getDoc().importFromFDF(fdfDoc, type, range);
+                success = pdfview.getDoc().importFromFDF(fdfDoc, type, range);
 
                 if (success) {
-                    ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
-                    int pageIndex = ReaderActivity.pdfViewCtrl.getCurrentPage();
-                    Rect rect = new Rect(0, 0, ReaderActivity.pdfViewCtrl.getPageViewWidth(pageIndex), ReaderActivity.pdfViewCtrl.getPageViewHeight(pageIndex));
-                    ReaderActivity.pdfViewCtrl.refresh(pageIndex, rect);
+                    ((UIExtensionsManager) pdfview.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
+                    int pageIndex = pdfview.getCurrentPage();
+                    Rect rect = new Rect(0, 0, pdfview.getPageViewWidth(pageIndex), pdfview.getPageViewHeight(pageIndex));
+                    pdfview.refresh(pageIndex, rect);
 
                     callbackContext.success();
                     return true;
@@ -414,19 +430,21 @@ public class FoxitPdf extends CordovaPlugin {
 
     private boolean exportToFDF(int fdfDocType, int type, com.foxit.sdk.common.Range range, String exportPath, CallbackContext callbackContext) {
         try {
-            if (exportPath == null || exportPath.trim().length() < 1) {
+            if (exportPath == null || exportPath.trim().isEmpty()) {
                 callbackContext.error("Please input validate path.");
                 return false;
             }
-            if (ReaderActivity.pdfViewCtrl == null) {
+
+            PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+            if (viewCtrl == null) {
                 callbackContext.error("Please open document first.");
                 return false;
             }
             boolean success = false;
             PDFViewCtrl.lock();
-            if (ReaderActivity.pdfViewCtrl.getDoc() != null) {
+            if (viewCtrl.getDoc() != null) {
                 FDFDoc fdfDoc = new FDFDoc(fdfDocType);
-                success = ReaderActivity.pdfViewCtrl.getDoc().exportToFDF(fdfDoc, type, range);
+                success = viewCtrl.getDoc().exportToFDF(fdfDoc, type, range);
                 if (success) {
                     success = fdfDoc.saveAs(exportPath);
                 }
@@ -627,12 +645,12 @@ public class FoxitPdf extends CordovaPlugin {
 
     //For Form
     private boolean getFormInfo(CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        if (!isPDFViewCtrlReady()) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = FoxitReader.instance().getPDFViewCtrl().getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -664,12 +682,13 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     private boolean updateFormInfo(JSONObject formInfo, CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        if (!isPDFViewCtrlReady()) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -712,7 +731,7 @@ public class FoxitPdf extends CordovaPlugin {
                 form.setDefaultAppearance(da);
             }
 
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
+            ((UIExtensionsManager) viewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
             callbackContext.success("Succeed to update form information.");
             return true;
         } catch (PDFException e) {
@@ -724,12 +743,13 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     private boolean getAllFormFields(CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        if (!isPDFViewCtrlReady()) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -800,12 +820,13 @@ public class FoxitPdf extends CordovaPlugin {
 
     private boolean validateFieldName(int fieldType, String fieldName, CallbackContext
             callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        if (!isPDFViewCtrlReady()) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -827,12 +848,13 @@ public class FoxitPdf extends CordovaPlugin {
 
     private boolean renameField(int fieldIndex, String fieldName, CallbackContext
             callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -841,7 +863,7 @@ public class FoxitPdf extends CordovaPlugin {
             Form form = new Form(pdfDoc);
             Field field = form.getField(fieldIndex, null);
             boolean ret = form.renameField(field, fieldName);
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
+            ((UIExtensionsManager) viewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to rename field.");
             } else {
@@ -855,12 +877,13 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     private boolean removeField(int fieldIndex, CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -869,7 +892,7 @@ public class FoxitPdf extends CordovaPlugin {
             Form form = new Form(pdfDoc);
             Field field = form.getField(fieldIndex, null);
             form.removeField(field);
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
+            ((UIExtensionsManager) viewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
             callbackContext.success("Succeed to remove field.");
             return true;
         } catch (PDFException e) {
@@ -879,12 +902,13 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     private boolean resetForm(CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -892,7 +916,7 @@ public class FoxitPdf extends CordovaPlugin {
             }
             Form form = new Form(pdfDoc);
             boolean ret = form.reset();
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
+            ((UIExtensionsManager) viewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to reset form.");
             } else {
@@ -911,12 +935,13 @@ public class FoxitPdf extends CordovaPlugin {
             return false;
         }
 
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -942,12 +967,13 @@ public class FoxitPdf extends CordovaPlugin {
             return false;
         }
 
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -955,7 +981,7 @@ public class FoxitPdf extends CordovaPlugin {
             }
             Form form = new Form(pdfDoc);
             boolean ret = form.importFromXML(filePath);
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
+            ((UIExtensionsManager) viewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to import form from xml.");
             } else {
@@ -969,12 +995,13 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     private boolean getPageControls(int pageIndex, CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -1015,12 +1042,13 @@ public class FoxitPdf extends CordovaPlugin {
 
     private boolean removeControl(int pageIndex, int controlIndex, CallbackContext
             callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -1033,7 +1061,7 @@ public class FoxitPdf extends CordovaPlugin {
             }
 
             form.removeControl(form.getControl(page, controlIndex));
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
+            ((UIExtensionsManager) viewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
             callbackContext.success("Succeed to remove the specified control.");
             return true;
         } catch (PDFException e) {
@@ -1044,12 +1072,13 @@ public class FoxitPdf extends CordovaPlugin {
 
     private boolean addControl(int pageIndex, String fieldName, int fieldType, com.
             foxit.sdk.common.fxcrt.RectF rectF, CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             Form form = new Form(pdfDoc);
             PDFPage page = pdfDoc.getPage(pageIndex);
@@ -1064,7 +1093,7 @@ public class FoxitPdf extends CordovaPlugin {
             obj.put("isChecked", control.isChecked());
             obj.put("isDefaultChecked", control.isDefaultChecked());
 
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
+            ((UIExtensionsManager) viewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(true);
             PluginResult result = new PluginResult(PluginResult.Status.OK, obj);
             result.setKeepCallback(true);
             callbackContext.sendPluginResult(result);
@@ -1079,12 +1108,13 @@ public class FoxitPdf extends CordovaPlugin {
 
     private boolean updateControl(int pageIndex, int controlIndex, JSONObject
             controlInfo, CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -1113,7 +1143,7 @@ public class FoxitPdf extends CordovaPlugin {
                 isModified = true;
             }
 
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
+            ((UIExtensionsManager) viewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
             callbackContext.success("Succeed to update the specified control information.");
             return true;
         } catch (PDFException e) {
@@ -1126,12 +1156,13 @@ public class FoxitPdf extends CordovaPlugin {
 
     private boolean getFieldByControl(int pageIndex, int controlIndex, CallbackContext
             callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -1204,12 +1235,13 @@ public class FoxitPdf extends CordovaPlugin {
 
     private boolean updateField(int fieldIndex, JSONObject fieldInfo, CallbackContext
             callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -1313,7 +1345,7 @@ public class FoxitPdf extends CordovaPlugin {
                 }
             }
 
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
+            ((UIExtensionsManager) viewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(isModified);
             callbackContext.success("Succeed to update the specified field information.");
             return true;
         } catch (PDFException e) {
@@ -1325,12 +1357,13 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     private boolean resetField(int fieldIndex, CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -1339,7 +1372,7 @@ public class FoxitPdf extends CordovaPlugin {
             Form form = new Form(pdfDoc);
             Field field = form.getField(fieldIndex, null);
             boolean ret = field.reset();
-            ((UIExtensionsManager) ReaderActivity.pdfViewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
+            ((UIExtensionsManager) viewCtrl.getUIExtensionsManager()).getDocumentManager().setDocModified(ret);
             if (ret) {
                 callbackContext.success("Succeed to reset the specified form field.");
             } else {
@@ -1353,12 +1386,13 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     private boolean getFieldControls(int fieldIndex, CallbackContext callbackContext) {
-        if (ReaderActivity.pdfViewCtrl == null || ReaderActivity.pdfViewCtrl.getDoc() == null) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = ReaderActivity.pdfViewCtrl.getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -1393,4 +1427,10 @@ public class FoxitPdf extends CordovaPlugin {
         }
         return false;
     }
+
+    public boolean isPDFViewCtrlReady() {
+        FoxitReader foxitReader = FoxitReader.instance();
+        return foxitReader.getPDFViewCtrl() != null && foxitReader.getPDFViewCtrl().getUIExtensionsManager() != null;
+    }
+
 }
