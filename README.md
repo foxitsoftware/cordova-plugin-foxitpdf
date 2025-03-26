@@ -278,7 +278,15 @@ Set top toolbar item hide/show, and it only works for the default top toolbat it
 
 NOTE：It should be called before opening document.
 
-- __`index`__: the item index of the top toolbar. Valid range: from 0 to (<b>count</b> -1), now, there are 4 items in the top toolbar, 0 for <b>Back</b> item,  1 for <b>Bookmark</b> item, 2 for <b>Search</b> Item, 3 for <b>More</b> item.
+- __`index`__:  the item index of the top toolbar. Valid range: from 0 to (<b>count</b> -1), now,  the top bar can have a maximum of 6 items, and it may differ between phone and tablet    
+  `0` - **Back**  
+  `1` - **Panel**  
+  `2` - **Thumbnail**  
+  `3` - **Bookmark**  
+  `4` - **Search**  
+  `5` - **More**
+
+
 - __`visible`__: <b>true</b> means to show the specified item, <b>false</b> means to hide the specified item.
 
 
@@ -297,7 +305,13 @@ Set bottom toolbar item hide/show, and it only works for the default bottom tool
 
 NOTE：It should be called before opening document.
 
-- __`index`__: the item index of the bottom toolbar. Valid range: from 0 to (<b>count</b> -1), now, there are 5 items in the bottom toolbar, 0 for <b>List</b> item,  1 for <b>View</b> item, 2 for <b>Comment</b> Item, 3 for <b>Signature</b> item, 4 for <b>Fill</b> item.
+- __`index`__:  the item index of the bottom toolbar.Valid range: from 0 to (<b>count</b> -1),now, the bottom bar can have a maximum of 4 items, and it may differ between phone and tablet  
+  `0` - **Panel**  
+  `1` - **View**  
+  `2` - **Thumbnail**  
+  `3` - **Bookmark**
+
+
 - __`visible`__: <b>true</b> means to show the specified item, <b>false</b> means to hide the specified item.
 
 
@@ -307,6 +321,81 @@ window.FoxitPdf.setBottomToolbarItemVisible(0, false);
 
 ```
 
+### window.FoxitPdf.setToolbarItemVisible
+
+> window.FoxitPdf.setToolbarItemVisible(index, visible);
+
+Set show/hide tool items on the top/bottom, including the tabs.
+
+NOTE：It should be called before opening document.
+
+- __`index`__:  the item index of the toolbar.   
+  `0` - **Back**  
+  `1` - **More**  
+  `2` - **Search**  
+  `3` - **Panel**  
+  `4` - **View**  
+  `5` - **Thumbnail**  
+  `6` - **Bookmark**  
+  `7` - **Home Tab**  
+  `8` - **Edit Tab**  
+  `9` - **Comment Tab**  
+  `10` - **Drawing Tab**  
+  `11` - **View Tab**  
+  `12` - **Form Tab**  
+  `13` - **Fill & Sign Tab**
+
+
+- __`visible`__: <b>true</b> means to show the specified item, <b>false</b> means to hide the specified item.
+
+
+Remove Home Tab
+```js
+
+window.FoxitPdf.setToolbarItemVisible(7, false);
+
+```
+
+### window.FoxitPdf.setPrimaryColor
+
+> window.FoxitPdf.setPrimaryColor(light, dark);
+
+Sets the primary color.
+
+NOTE：It should be called before opening document.
+
+- __`light`__:  The primary color for the light theme.
+- __`dark`__: The primary color for the dark theme.
+
+__`Supported formats are`__:
+- __`0xAARRGGBB`__:
+- __`0xRRGGBB`__:
+- __`#AARRGGBB`__:
+- __`#RRGGBB`__:
+- __`rgb()`__:
+- __`rgba()`__:
+
+```js
+
+window.FoxitPdf.setPrimaryColor("#ff0000", "#ff0000");
+
+```
+
+### window.FoxitPdf.setAutoSaveDoc
+
+> window.FoxitPdf.setAutoSaveDoc(enable);
+
+Set to automatically save the document to the original file.
+
+NOTE：It should be called before opening document.
+
+- __`enable`__:  True auto save document, false otherwise.
+
+```js
+
+window.FoxitPdf.setAutoSaveDoc(true);
+
+```
 
 ### Form.getAllFormFields
 
