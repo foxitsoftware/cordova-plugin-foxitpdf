@@ -17,6 +17,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -53,6 +54,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class echoes a string called from JavaScript.
@@ -337,9 +340,9 @@ public class FoxitPdf extends CordovaPlugin {
             }
             case "setPrimaryColor": {
                 JSONObject options = args.optJSONObject(0);
-                String light = options.getString("light");
-                String dark = options.getString("dark");
-                FoxitReader.instance().setPrimaryColor(new String[]{light, dark});
+                int light = this.parseColor(options.optString("light"));
+                int dark = this.parseColor(options.optString("dark"));
+                FoxitReader.instance().setPrimaryColor(new int[]{light, dark});
                 callbackContext.success();
                 return true;
             }
@@ -381,7 +384,7 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     private void setAutoSaveDoc(boolean auto, CallbackContext callbackContext) {
-       boolean ret =  FoxitReader.instance().setAutoSaveDoc(auto);
+        boolean ret = FoxitReader.instance().setAutoSaveDoc(auto);
         if (!ret) {
             callbackContext.error("Please open document first.");
             return;
@@ -395,7 +398,8 @@ public class FoxitPdf extends CordovaPlugin {
             return false;
         }
 
-        if (!isPDFViewCtrlReady()) {
+        PDFViewCtrl pdfview = FoxitReader.instance().getPDFViewCtrl();
+        if (pdfview == null || pdfview.getUIExtensionsManager() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
@@ -404,7 +408,6 @@ public class FoxitPdf extends CordovaPlugin {
             PDFViewCtrl.lock();
             boolean success;
 
-            PDFViewCtrl pdfview = FoxitReader.instance().getPDFViewCtrl();
             if (pdfview.getDoc() != null) {
                 FDFDoc fdfDoc = new FDFDoc(fdfPath);
                 success = pdfview.getDoc().importFromFDF(fdfDoc, type, range);
@@ -645,12 +648,13 @@ public class FoxitPdf extends CordovaPlugin {
 
     //For Form
     private boolean getFormInfo(CallbackContext callbackContext) {
-        if (!isPDFViewCtrlReady()) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFDoc pdfDoc = FoxitReader.instance().getPDFViewCtrl().getDoc();
+        PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
                 callbackContext.error("The current document does not have interactive form.");
@@ -682,12 +686,12 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     private boolean updateFormInfo(JSONObject formInfo, CallbackContext callbackContext) {
-        if (!isPDFViewCtrlReady()) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
         PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
@@ -743,12 +747,12 @@ public class FoxitPdf extends CordovaPlugin {
     }
 
     private boolean getAllFormFields(CallbackContext callbackContext) {
-        if (!isPDFViewCtrlReady()) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
         PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
@@ -820,12 +824,12 @@ public class FoxitPdf extends CordovaPlugin {
 
     private boolean validateFieldName(int fieldType, String fieldName, CallbackContext
             callbackContext) {
-        if (!isPDFViewCtrlReady()) {
+        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
+        if (viewCtrl == null || viewCtrl.getDoc() == null) {
             callbackContext.error("Please open document first.");
             return false;
         }
 
-        PDFViewCtrl viewCtrl = FoxitReader.instance().getPDFViewCtrl();
         PDFDoc pdfDoc = viewCtrl.getDoc();
         try {
             if (!pdfDoc.hasForm()) {
@@ -1428,9 +1432,42 @@ public class FoxitPdf extends CordovaPlugin {
         return false;
     }
 
-    public boolean isPDFViewCtrlReady() {
-        FoxitReader foxitReader = FoxitReader.instance();
-        return foxitReader.getPDFViewCtrl() != null && foxitReader.getPDFViewCtrl().getUIExtensionsManager() != null;
-    }
 
+    private int parseColor(String color) {
+        try {
+            if (TextUtils.isEmpty(color)) {
+                return -1;
+            }
+
+            if (color.startsWith("#")) {
+                return Color.parseColor(color);
+            }
+
+            if (color.startsWith("0x") || color.startsWith("0X")) {
+                color = color.replace("0x", "#").replace("0X", "#");
+                return Color.parseColor(color);
+            }
+
+            Pattern rgbPattern = Pattern.compile("rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)(?:,\\s*(\\d*\\.?\\d+))?\\)");
+            Matcher matcher = rgbPattern.matcher(color);
+            if (matcher.matches() && matcher.groupCount() >= 3) {
+                String red = matcher.group(1);
+                String green = matcher.group(2);
+                String blue = matcher.group(3);
+                if (red != null && green != null && blue != null) {
+                    String alphaStr = matcher.group(4);
+                    int alpha = alphaStr != null ? (int) (Float.parseFloat(alphaStr) * 255) : 255;
+                    return Color.argb(alpha, Integer.parseInt(red), Integer.parseInt(green), Integer.parseInt(blue));
+                }
+            }
+
+            int decimalColor = Integer.parseInt(color);
+            if ((decimalColor & 0xFF000000) == 0) {
+                decimalColor |= 0xFF000000;
+            }
+            return decimalColor;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
 }

@@ -1,7 +1,6 @@
 package com.foxit.cordova.plugin;
 
 
-import android.graphics.Color;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -29,7 +28,7 @@ final class FoxitReader {
     }
 
     private String savePath = null;
-    private String[] primaryColor;
+    private int[] primaryColor;
     private boolean enableAnnotations = true;
     private boolean isAutoSaveDoc = false;
     private boolean isLibraryInitialized = false;
@@ -151,11 +150,11 @@ final class FoxitReader {
         return false;
     }
 
-    public String[] getPrimaryColor() {
+    public int[] getPrimaryColor() {
         return primaryColor;
     }
 
-    public void setPrimaryColor(String[] primaryColor) {
+    public void setPrimaryColor(int[] primaryColor) {
         this.primaryColor = primaryColor;
         this.updatePrimaryColor();
     }
@@ -165,7 +164,7 @@ final class FoxitReader {
             return;
         }
 
-        String[] customColors = FoxitReader.instance().getPrimaryColor();
+        int[] customColors = FoxitReader.instance().getPrimaryColor();
         if (customColors == null || customColors.length == 0) {
             return;
         }
@@ -177,11 +176,14 @@ final class FoxitReader {
 
         int color;
         if (AppUtil.isDarkMode(uiExt.getAttachedActivity())) {
-            color = customColors.length > 1 ? Color.parseColor(customColors[1]) : Color.parseColor(customColors[0]);
+            color = customColors.length > 1 ? customColors[1] : customColors[0];
         } else {
-            color = Color.parseColor(customColors[0]);
+            color = customColors[0];
         }
-        ThemeConfig.getInstance(uiExt.getAttachedActivity().getApplicationContext()).primaryColor(color);
+
+        if (color != -1) {
+            ThemeConfig.getInstance(uiExt.getAttachedActivity().getApplicationContext()).primaryColor(color);
+        }
     }
 
     public boolean isPDFViewCtrlReady() {
