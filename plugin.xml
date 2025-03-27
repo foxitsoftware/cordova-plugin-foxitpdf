@@ -101,6 +101,7 @@
 
         <config-file parent="/*" target="AndroidManifest.xml"/>
 
+        <source-file src="src/android/com/foxit/cordova/plugin/FoxitReader.java" target-dir="src/com/foxit/cordova/plugin"/>
         <source-file src="src/android/com/foxit/cordova/plugin/FoxitPdf.java" target-dir="src/com/foxit/cordova/plugin"/>
         <source-file src="src/android/com/foxit/cordova/plugin/ReaderActivity.java" target-dir="src/com/foxit/cordova/plugin"/>
         <source-file src="src/android/com/foxit/cordova/plugin/ScannerListActivity.java" target-dir="src/com/foxit/cordova/plugin"/>
