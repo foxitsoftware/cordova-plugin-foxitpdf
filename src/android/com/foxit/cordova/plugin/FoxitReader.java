@@ -240,7 +240,7 @@ final class FoxitReader {
         }
 
         UIExtensionsManager uiextensionsManager = (UIExtensionsManager) getPDFViewCtrl().getUIExtensionsManager();
-        Map<Integer, Boolean> map = this.getToolBarItemStatus();
+        Map<Integer, Boolean> map = this.getBottomBarItemStatus();
         for (Map.Entry<Integer, Boolean> entry : map.entrySet()) {
             int tag = entry.getKey();
             int visibility = entry.getValue() ? View.VISIBLE : View.GONE;
