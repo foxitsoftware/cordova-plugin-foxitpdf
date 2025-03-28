@@ -385,11 +385,11 @@ window.FoxitPdf.setPrimaryColor("#ff0000", "#ff0000");
 
 > window.FoxitPdf.setAutoSaveDoc(enable);
 
-Set to automatically save the document to the original file.
+Sets whether the document should be automatically saved.
 
 NOTE：It should be called before opening document.
 
-- __`enable`__:  True auto save document, false otherwise.
+- __`enable`__:  `true` to enable auto-save, `false` to disable it.
 
 ```js
 
