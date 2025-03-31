@@ -354,6 +354,11 @@ final class FoxitReader {
                         uiextensionsManager.getMainFrame().removeTab(ToolbarItemConfig.ITEM_FILLSIGN_TAB);
                     }
                     break;
+                case 14: //protect
+                    if (!visible) {
+                        uiextensionsManager.getMainFrame().removeTab(ToolbarItemConfig.ITEM_PROTECT_TAB);
+                    }
+                    break;
                 default:
                     break;
             }

@@ -343,7 +343,9 @@ NOTE：It should be called before opening document.
   `10` - **Drawing Tab**  
   `11` - **View Tab**  
   `12` - **Form Tab**  
-  `13` - **Fill & Sign Tab**
+  `13` - **Fill & Sign Tab**  
+  `14` - **Protect Tab**  
+
 
 
 - __`visible`__: <b>true</b> means to show the specified item, <b>false</b> means to hide the specified item.
