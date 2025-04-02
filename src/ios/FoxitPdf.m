@@ -722,6 +722,11 @@ static NSString *initializeKey;
             id obj = [status objectForKey:@"hidden"];
             BOOL isHidden = obj ? [obj boolValue] : NO;
             [_extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
+            if (itemTag == FS_TOOLBAR_ITEM_TAG_MORE){
+                UIView *more = [self.extensionsMgr valueForKeyPath:@"smallTopToolbar.moreBtn"];
+                more.hidden = isHidden;
+            }
+
         }
         for (int i = 0; i < self.bottomBarItemStatus.count; i++) {
             NSMutableDictionary* status = self.bottomBarItemStatus[i];
