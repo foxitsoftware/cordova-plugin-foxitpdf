@@ -3,12 +3,15 @@ package com.foxit.cordova.plugin;
 
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.foxit.sdk.PDFViewCtrl;
+import com.foxit.uiextensions.Module;
 import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.controls.toolbar.BaseBar;
 import com.foxit.uiextensions.controls.toolbar.IBarsHandler;
 import com.foxit.uiextensions.controls.toolbar.ToolbarItemConfig;
+import com.foxit.uiextensions.modules.panel.bookmark.ReadingBookmarkModule;
 import com.foxit.uiextensions.theme.ThemeConfig;
 import com.foxit.uiextensions.utils.AppDisplay;
 import com.foxit.uiextensions.utils.AppUtil;
@@ -217,12 +220,14 @@ final class FoxitReader {
                     break;
                 case 3: //bookmark
                     uiextensionsManager.getBarManager().setVisibility(IBarsHandler.BarName.TOP_BAR, BaseBar.TB_Position.Position_RB, ToolbarItemConfig.ITEM_TOPBAR_BOOKMARK, visibility);
+                    this.updateFullScreenBookmarkItemVisible(entry.getValue(), uiextensionsManager);
                     break;
                 case 4: //search
                     uiextensionsManager.getBarManager().setVisibility(IBarsHandler.BarName.TOP_BAR, BaseBar.TB_Position.Position_RB, ToolbarItemConfig.ITEM_TOPBAR_SEARCH, visibility);
                     break;
                 case 5: //more
                     barManager.setVisibility(IBarsHandler.BarName.TOP_BAR, BaseBar.TB_Position.Position_RB, ToolbarItemConfig.ITEM_TOPBAR_MORE, visibility);
+                    this.updateFullScreenMoreItemVisible(entry.getValue(), uiextensionsManager);
                     break;
                 default:
                     break;
@@ -257,6 +262,7 @@ final class FoxitReader {
                     break;
                 case 3: //bookmark
                     uiextensionsManager.getBarManager().setVisibility(IBarsHandler.BarName.BOTTOM_BAR, BaseBar.TB_Position.Position_CENTER, ToolbarItemConfig.ITEM_BOTTOMBAR_BOOKMARK, visibility);
+                    this.updateFullScreenBookmarkItemVisible(entry.getValue(), uiextensionsManager);
                     break;
                 default:
                     break;
@@ -285,6 +291,7 @@ final class FoxitReader {
                     break;
                 case 1: //more
                     uiextensionsManager.getBarManager().setVisibility(IBarsHandler.BarName.TOP_BAR, BaseBar.TB_Position.Position_RB, ToolbarItemConfig.ITEM_TOPBAR_MORE, visible ? View.VISIBLE : View.GONE);
+                    this.updateFullScreenMoreItemVisible(visible, uiextensionsManager);
                     break;
                 case 2: //search
                     uiextensionsManager.getBarManager().setVisibility(IBarsHandler.BarName.TOP_BAR, BaseBar.TB_Position.Position_RB, ToolbarItemConfig.ITEM_TOPBAR_SEARCH, visible ? View.VISIBLE : View.GONE);
@@ -318,6 +325,7 @@ final class FoxitReader {
                     } else {
                         uiextensionsManager.getBarManager().setVisibility(IBarsHandler.BarName.BOTTOM_BAR, BaseBar.TB_Position.Position_CENTER, ToolbarItemConfig.ITEM_BOTTOMBAR_BOOKMARK, visible ? View.VISIBLE : View.GONE);
                     }
+                    this.updateFullScreenBookmarkItemVisible(visible, uiextensionsManager);
                     break;
                 case 7: //home
                     if (!visible) {
@@ -376,5 +384,51 @@ final class FoxitReader {
         updateBottomToolbarItemVisible();
         updateToolbarItemVisible();
         updatePrimaryColor();
+    }
+
+
+    private void updateFullScreenMoreItemVisible(boolean visible, UIExtensionsManager uiExtensionsManager) {
+        this.updateFullScreenToolItemVisible("read_fullscreen_top_bar", "read_fullscreen_more", visible, uiExtensionsManager);
+    }
+
+    private ReadingBookmarkModule readingBookmarkModule = null;
+
+    private void updateFullScreenBookmarkItemVisible(boolean visible, UIExtensionsManager uiExtensionsManager){
+        Module bookMarkModule = uiExtensionsManager.getModuleByName(Module.MODULE_NAME_BOOKMARK);
+        if (visible) {
+            if (bookMarkModule == null && readingBookmarkModule != null) {
+                uiExtensionsManager.registerModule(readingBookmarkModule);
+                uiExtensionsManager.changeState(uiExtensionsManager.getState());
+            }
+        } else {
+            if (bookMarkModule != null) {
+                readingBookmarkModule = (ReadingBookmarkModule) bookMarkModule;
+                uiExtensionsManager.unregisterModule(bookMarkModule);
+                uiExtensionsManager.changeState(uiExtensionsManager.getState());
+            }
+        }
+    }
+
+    private void updateFullScreenToolItemVisible(String parentId, String childId, boolean visible, UIExtensionsManager uiExtensionsManager){
+        ViewGroup rootView = uiExtensionsManager.getMainFrame().getContentView();
+        for (int i = 0; i < rootView.getChildCount(); i++) {
+            View view = rootView.getChildAt(i);
+            try {
+                String viewIdName = rootView.getResources().getResourceEntryName(view.getId());
+                if (viewIdName.equals(parentId)) {
+                    ViewGroup toolBar = (ViewGroup) view;
+                    for (int j = 0; j < toolBar.getChildCount(); j++) {
+                        View childView = toolBar.getChildAt(j);
+                        String childViewIdName = toolBar.getResources().getResourceEntryName(childView.getId());
+                        if (childViewIdName.equals(childId)) {
+                            childView.setVisibility(visible ? View.VISIBLE : View.GONE);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            } catch (Exception ignored) {
+            }
+        }
     }
 }
