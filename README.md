@@ -334,14 +334,14 @@ NOTE：It should be called before opening document.
   `1` - **More**  
   `2` - **Search**  
   `3` - **Panel**  
-  `4` - **View**  
+  `4` - **View**  `It has the same effect as setting 11 because the view behaves differently on phones and tablets. If this is set, it will hide the view item on the bottom bar on phones and the view tab on tablets. `    
   `5` - **Thumbnail**  
   `6` - **Bookmark**  
   `7` - **Home Tab**  
   `8` - **Edit Tab**  
   `9` - **Comment Tab**  
   `10` - **Drawing Tab**  
-  `11` - **View Tab**  
+  `11` - **View Tab**  `Reference index 4`  
   `12` - **Form Tab**  
   `13` - **Fill & Sign Tab**  
   `14` - **Protect Tab**  
