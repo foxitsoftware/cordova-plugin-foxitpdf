@@ -125,6 +125,21 @@ static BOOL hexStrToRGBA(NSString *str,
 
 @end
 
+@interface FSPDFPermissionProvider : FSPermissionProvider
+@property (nonatomic, assign) BOOL hiddenBookmakr;
+@end
+
+@implementation FSPDFPermissionProvider
+
+- (FSPermissionState) checkPermission:(FSFunction)function{
+    if (function == FSFunctionPDFBookMark){
+        return self.hiddenBookmakr ?  FSPermissionStateHide :  FSPermissionStateShow;
+    }
+    return [super checkPermission:function];
+}
+
+@end
+
 
 @interface PDFViewController : UIViewController
 @property (nonatomic, weak) UIExtensionsManager *extensionsManager;
@@ -133,6 +148,7 @@ static BOOL hexStrToRGBA(NSString *str,
 @interface FoxitPdf : CDVPlugin <IDocEventListener,UIExtensionsManagerDelegate>{
     // Member variables go here.
 }
+@property (nonatomic, strong) FSPDFPermissionProvider *pdfPermissionProvider;
 @property (nonatomic, strong) NSArray *topToolbarVerticalConstraints;
 @property (nonatomic, strong) UIExtensionsManager *extensionsMgr;
 @property (nonatomic, strong) FSPDFViewCtrl *pdfViewControl;
@@ -704,12 +720,20 @@ static NSString *initializeKey;
     return _pdfViewControl;
 }
 
+- (FSPDFPermissionProvider *)pdfPermissionProvider{
+    if (!_pdfPermissionProvider) {
+        _pdfPermissionProvider = [[FSPDFPermissionProvider alloc] init];
+    }
+    return _pdfPermissionProvider;
+}
+
 - (UIExtensionsManager *)extensionsMgr{
     if (!_extensionsMgr) {
         NSString *configPath = [[NSBundle mainBundle] pathForResource:@"uiextensions_config" ofType:@"json"];
         UIExtensionsConfig* uiConfig = [[UIExtensionsConfig alloc] initWithJSONData:[NSData dataWithContentsOfFile:configPath]];
         _extensionsMgr = [[UIExtensionsManager alloc] initWithPDFViewControl:self.pdfViewControl configurationObject:uiConfig];
         _extensionsMgr.delegate = self;
+        _extensionsMgr.permissionProvider = self.pdfPermissionProvider;
         
         if(self.isEnableAnnotations == NO) {
             uiConfig.loadAttachment = NO;
@@ -723,8 +747,11 @@ static NSString *initializeKey;
             BOOL isHidden = obj ? [obj boolValue] : NO;
             [_extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
             if (itemTag == FS_TOOLBAR_ITEM_TAG_MORE){
-                UIView *more = [self.extensionsMgr valueForKeyPath:@"smallTopToolbar.moreBtn"];
+                UIView *more = [_extensionsMgr valueForKeyPath:@"smallTopToolbar.moreBtn"];
                 more.hidden = isHidden;
+            }
+            if (itemTag == FS_TOOLBAR_ITEM_TAG_READING_BOOKMARK){
+                self.pdfPermissionProvider.hiddenBookmakr = isHidden;
             }
 
         }
@@ -734,6 +761,9 @@ static NSString *initializeKey;
             id obj = [status objectForKey:@"hidden"];
             BOOL isHidden = obj ? [obj boolValue] : NO;
             [_extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
+            if (itemTag == FS_TOOLBAR_ITEM_TAG_READING_BOOKMARK){
+                self.pdfPermissionProvider.hiddenBookmakr = isHidden;
+            }
         }
         
         for (int i = 0; i < self.topBarItemStatus.count; i++) {
@@ -742,6 +772,10 @@ static NSString *initializeKey;
             id obj = [status objectForKey:@"hidden"];
             BOOL isHidden = obj ? [obj boolValue] : NO;
             [_extensionsMgr setToolbarItemHiddenWithTag:itemTag hidden:isHidden];
+            if (itemTag == FS_TOOLBAR_ITEM_TAG_MORE){
+                UIView *more = [_extensionsMgr valueForKeyPath:@"smallTopToolbar.moreBtn"];
+                more.hidden = isHidden;
+            }
         }
 
     }
