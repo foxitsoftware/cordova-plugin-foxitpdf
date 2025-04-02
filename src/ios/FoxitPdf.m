@@ -357,6 +357,9 @@ static NSString *initializeKey;
         case 13:
             itemTag = FS_TOOLBAR_ITEM_TAG_SIGN; // sign
             break;
+        case 14:
+            itemTag = FS_TOOLBAR_ITEM_TAG_PROTECT; // protect
+            break;
         default:
             break;
     }
