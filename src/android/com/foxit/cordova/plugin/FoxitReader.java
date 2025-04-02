@@ -304,6 +304,7 @@ final class FoxitReader {
                     }
                     break;
                 case 4: //view
+                case 11:
                     if (AppDisplay.isPad()) {
                         if (!visible) {
                             uiextensionsManager.getMainFrame().removeTab(ToolbarItemConfig.ITEM_VIEW_TAB);
@@ -345,11 +346,6 @@ final class FoxitReader {
                 case 10: //drawing
                     if (!visible) {
                         uiextensionsManager.getMainFrame().removeTab(ToolbarItemConfig.ITEM_DRAWING_TAB);
-                    }
-                    break;
-                case 11: //view
-                    if (!visible) {
-                        uiextensionsManager.getMainFrame().removeTab(ToolbarItemConfig.ITEM_VIEW_TAB);
                     }
                     break;
                 case 12: //form
