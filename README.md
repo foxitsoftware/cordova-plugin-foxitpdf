@@ -417,14 +417,14 @@ Return: An array of dictionaries will be returned, which contains all the form f
 - __name__: Get field name.
 - __topVisibleIndex__: Get top index of option for scrollable list boxes.
 - __choiceOptions__: Get the options array of list box or combo box. Return an array of dictionaries, which key/value pairs for the dictionary are:
-	- __defaultSelected__:Used to indicate whether the option would be selected by default or not.
-	- __optionLabel__ : The displayed string value for the option.
-	- __optionValue__ : The option string value. 
-	- __selected__ : Used to indicate whether the option is selected or not.
+  - __defaultSelected__:Used to indicate whether the option would be selected by default or not.
+  - __optionLabel__ : The displayed string value for the option.
+  - __optionValue__ : The option string value. 
+  - __selected__ : Used to indicate whether the option is selected or not.
 - __defaultAppearance__: An dictionary will be returned, The following are the key/value pairs for the dictionary.
-	- __flags__:Flags to indicate which properties of default appearance are meaningful.Please refer to values starting from @link DefaultAppearance::e_FlagFont @endlink and this can be one or a combination of these values.
-	- __textColor__:Text color for default appearance. Format: 0xRRGGBB.
-	- __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
+  - __flags__:Flags to indicate which properties of default appearance are meaningful.Please refer to values starting from @link DefaultAppearance::e_FlagFont @endlink and this can be one or a combination of these values.
+  - __textColor__:Text color for default appearance. Format: 0xRRGGBB.
+  - __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
 
 ### Form.getForm
 
@@ -435,9 +435,9 @@ Return: An dictionary will be returned, which contains the form related info. Th
 - __alignment__:  Get the alignment value which is used as document-wide default value. Left alignment:0, Center alignment:1, Right alignment:2
 - __needConstructAppearances__: Check whether to construct appearance when loading form controls.
 - __defaultAppearance__: Return an dictionary, which key/value pairs for the dictionary are the following: (Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html for more details.)
-	- __flags__: Flags to indicate which properties of default appearance are meaningful.
-	- __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
-	- __textColor__: Text color for default appearance. Format: 0xRRGGBB.
+  - __flags__: Flags to indicate which properties of default appearance are meaningful.
+  - __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
+  - __textColor__: Text color for default appearance. Format: 0xRRGGBB.
 
 
 
@@ -450,9 +450,9 @@ Parameters:The parameter for this API is a dictionary, and following are the key
 - __alignment__:  Get the alignment value which is used as document-wide default value, it's only valid for text field and list box. Left alignment:0, Center alignment:1, Right alignment:2
 - __needConstructAppearances__: Check whether to construct appearance when loading form controls.
 - __defaultAppearance__: Return an dictionary, which key/value pairs for the dictionary are the following: (Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html for more details.)
-	- __flags__: Flags to indicate which properties of default appearance are meaningful.
-	- __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
-	- __textColor__: Text color for default appearance. Format: 0xRRGGBB.
+  - __flags__: Flags to indicate which properties of default appearance are meaningful.
+  - __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
+  - __textColor__: Text color for default appearance. Format: 0xRRGGBB.
 
 ### Form.validateFieldName
 
@@ -566,9 +566,9 @@ Parameters:
 - __pageIndex__: The page index, which start from 0 for the first page.
 - __controlIndex__: The index of current form control among all the controls of the specified page.
 - __control__: An dictionary contains the control info. The following are the key/value pairs for the dictionary.
-	- __exportValue__: export mapping name when related form field is check box or radio button.
-	- __isChecked__: Check if the current form control is checked when related form field is check box or radio button.
-	- __isDefaultChecked__: Check if the current form control is checked by default when related form field is check box or radio button.
+  - __exportValue__: export mapping name when related form field is check box or radio button.
+  - __isChecked__: Check if the current form control is checked when related form field is check box or radio button.
+  - __isDefaultChecked__: Check if the current form control is checked by default when related form field is check box or radio button.
 
 
 ### Form.getFieldByControl
