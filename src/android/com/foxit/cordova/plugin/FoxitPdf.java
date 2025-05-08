@@ -338,17 +338,50 @@ public class FoxitPdf extends CordovaPlugin {
                 this.setAutoSaveDoc(enable, callbackContext);
                 return true;
             }
-            case "setPrimaryColor": {
+            case "setToolbarBackgroundColor":{
                 JSONObject options = args.optJSONObject(0);
-                int light = this.parseColor(options.optString("light"));
-                int dark = this.parseColor(options.optString("dark"));
-                FoxitReader.instance().setPrimaryColor(new int[]{light, dark});
-                callbackContext.success();
+                int position = options.getInt("position");
+                int light = parseColor(options.optString("light"));
+                int dark  = parseColor(options.optString("dark"));
+                FoxitReader.instance().setToolbarBackgroundColor(position, light, dark);
                 return true;
             }
+            case "setTabItemSelectedColor":{
+                JSONObject options = args.optJSONObject(0);
+                int light = parseColor(options.optString("light"));
+                int dark  = parseColor(options.optString("dark"));
+                FoxitReader.instance().setTabItemSelectedColor(light, dark);
+                return true;
+            }
+            case "setPrimaryColor":
+            case "setSecondaryColor":
+                return handleSetColor(action, args, callbackContext);
         }
 
         return false;
+    }
+
+    private boolean handleSetColor(String action, JSONArray args, CallbackContext callbackContext) {
+        JSONObject options = args.optJSONObject(0);
+        if (options == null) {
+            callbackContext.error("Please input validate color.");
+            return false;
+        }
+        int light = parseColor(options.optString("light"));
+        int dark  = parseColor(options.optString("dark"));
+        int[] colors = new int[]{ light, dark };
+
+        FoxitReader reader = FoxitReader.instance();
+        switch (action) {
+            case "setPrimaryColor":
+                reader.setPrimaryColor(colors);
+                break;
+            case "setSecondaryColor":
+                reader.setSecondaryColor(colors);
+                break;
+        }
+        callbackContext.success();
+        return true;
     }
 
     private boolean openDoc(String inputPath, byte[] password, CallbackContext callbackContext) {

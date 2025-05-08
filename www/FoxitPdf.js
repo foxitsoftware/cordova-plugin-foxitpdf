@@ -141,6 +141,25 @@ pdf.prototype.setPrimaryColor = function(light, dark) {
         }]);
     });
 }
+
+pdf.prototype.setToolbarBackgroundColor = function(position, light, dark) {
+    return new Promise(function(resolve, reject){
+        exec(resolve, reject, "FoxitPdf", "setToolbarBackgroundColor", [{
+            'position': position,
+            'light': light,
+            'dark': dark,
+        }]);
+    });
+}
+
+pdf.prototype.setTabItemSelectedColor = function(light, dark) {
+    return new Promise(function(resolve, reject){
+        exec(resolve, reject, "FoxitPdf", "setTabItemSelectedColor", [{
+            'light': light,
+            'dark': dark,
+        }]);
+    });
+}
     
 pdf.prototype.setAutoSaveDoc = function(enable) {
     return new Promise(function(resolve, reject){

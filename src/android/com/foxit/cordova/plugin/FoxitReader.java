@@ -1,6 +1,7 @@
 package com.foxit.cordova.plugin;
 
 
+import android.app.Activity;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import com.foxit.uiextensions.controls.toolbar.BaseBar;
 import com.foxit.uiextensions.controls.toolbar.IBarsHandler;
 import com.foxit.uiextensions.controls.toolbar.ToolbarItemConfig;
 import com.foxit.uiextensions.modules.panel.bookmark.ReadingBookmarkModule;
+import com.foxit.uiextensions.theme.DynamicColorProvider;
 import com.foxit.uiextensions.theme.ThemeConfig;
 import com.foxit.uiextensions.utils.AppDisplay;
 import com.foxit.uiextensions.utils.AppUtil;
@@ -19,6 +21,10 @@ import com.foxit.uiextensions.utils.AppUtil;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
+
+interface IntConsumer {
+    void accept(int value);
+}
 
 final class FoxitReader {
     private FoxitReader() {
@@ -32,12 +38,15 @@ final class FoxitReader {
 
     private String savePath = null;
     private int[] primaryColor;
+    private int[] secondaryColor;
+    private int[] tabItemSelectedColors;
     private boolean enableAnnotations = true;
     private boolean isAutoSaveDoc = false;
     private boolean isLibraryInitialized = false;
     private final Map<Integer, Boolean> bottomBarItemStatus = new HashMap<>();
     private final Map<Integer, Boolean> topBarItemStatus = new HashMap<>();
     private final Map<Integer, Boolean> toolBarItemStatus = new HashMap<>();
+    private final Map<Integer, int[]> toolbarBackgroundColors = new HashMap<>();
     //
     private WeakReference<PDFViewCtrl> pdfview;
 
@@ -57,14 +66,12 @@ final class FoxitReader {
         return this.savePath;
     }
 
-    public boolean setEnableAnnotations(boolean enable) {
+    public void setEnableAnnotations(boolean enable) {
         this.enableAnnotations = enable;
         if (isPDFViewCtrlReady()) {
             UIExtensionsManager uiExt = (UIExtensionsManager) getPDFViewCtrl().getUIExtensionsManager();
             uiExt.getConfig().modules.enableAnnotations(enable);
-            return true;
         }
-        return false;
     }
 
     public boolean getEnableAnnotations() {
@@ -153,40 +160,142 @@ final class FoxitReader {
         return false;
     }
 
+    private void applyCustomColor(int[] customColors, IntConsumer applyColor) {
+        if (!isPDFViewCtrlReady() || customColors == null || customColors.length == 0) {
+            return;
+        }
+        UIExtensionsManager uiExt = (UIExtensionsManager) getPDFViewCtrl().getUIExtensionsManager();
+        Activity activity = uiExt.getAttachedActivity();
+        if (activity == null) {
+            return;
+        }
+
+        boolean isDark = AppUtil.isDarkMode(activity);
+        int color = (isDark && customColors.length > 1) ? customColors[1] : customColors[0];
+        if (color != -1) {
+            applyColor.accept(color);
+        }
+    }
+
     public int[] getPrimaryColor() {
         return primaryColor;
     }
+
 
     public void setPrimaryColor(int[] primaryColor) {
         this.primaryColor = primaryColor;
         this.updatePrimaryColor();
     }
 
+    public void updateThemeColor() {
+        updatePrimaryColor();
+        updateSecondaryColor();
+        updateTabSelectedColors();
+        updateToolbarsBackgroundColor();
+    }
+
     public void updatePrimaryColor() {
+        int[] colors = FoxitReader.instance().getPrimaryColor();
+        applyCustomColor(colors, new IntConsumer() {
+            @Override
+            public void accept(int value) {
+                if (getPDFViewCtrl() == null) {
+                    return;
+                }
+                ThemeConfig.getInstance(getPDFViewCtrl().getContext()).primaryColor(value);
+            }
+        });
+    }
+
+    public int[] getSecondaryColor() {
+        return secondaryColor;
+    }
+
+    // Secondary
+    public void setSecondaryColor(int[] secondaryColor) {
+        this.secondaryColor = secondaryColor;
+        updateSecondaryColor();
+    }
+
+    public void updateSecondaryColor() {
+        int[] colors = FoxitReader.instance().getSecondaryColor();
+        applyCustomColor(colors, new IntConsumer() {
+            @Override
+            public void accept(int value) {
+                if (getPDFViewCtrl() == null) {
+                    return;
+                }
+                ThemeConfig.getInstance(getPDFViewCtrl().getContext()).b2(value);
+            }
+        });
+    }
+
+    public void setToolbarBackgroundColor(int position, int lightColor, int darkColor) {
+        this.toolbarBackgroundColors.put(position, new int[]{lightColor, darkColor});
+        this.updateToolBackgroundColor(position, lightColor, darkColor);
+    }
+
+    public void updateToolBackgroundColor(int position, int lightColor, int darkColor) {
         if (!isPDFViewCtrlReady()) {
             return;
         }
 
-        int[] customColors = FoxitReader.instance().getPrimaryColor();
-        if (customColors == null || customColors.length == 0) {
-            return;
-        }
-
         UIExtensionsManager uiExt = (UIExtensionsManager) getPDFViewCtrl().getUIExtensionsManager();
-        if (uiExt.getAttachedActivity() == null) {
+        switch (position) {
+            case 0: //top bar
+                uiExt.getBarManager().setBackgroundColor(IBarsHandler.BarName.TOP_BAR, lightColor, darkColor);
+                break;
+            case 1:// tab tool bar
+                uiExt.getBarManager().getTabActionToolbar().setBackgroundColor(lightColor, darkColor);
+                break;
+            case 2: // bottom bar
+                uiExt.getBarManager().setBackgroundColor(IBarsHandler.BarName.BOTTOM_BAR, lightColor, darkColor);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void updateToolbarsBackgroundColor() {
+        if (!isPDFViewCtrlReady()) {
             return;
         }
 
-        int color;
-        if (AppUtil.isDarkMode(uiExt.getAttachedActivity())) {
-            color = customColors.length > 1 ? customColors[1] : customColors[0];
-        } else {
-            color = customColors[0];
+        for (Map.Entry<Integer, int[]> entry : toolbarBackgroundColors.entrySet()) {
+            int position = entry.getKey();
+            int[] colors = entry.getValue();
+            if (colors == null || colors.length == 0) {
+                continue;
+            }
+            int lightColor = colors[0];
+            int darkColor = colors.length > 1 ? colors[1] : lightColor;
+            this.updateToolBackgroundColor(position, lightColor, darkColor);
+        }
+    }
+
+    public void setTabItemSelectedColor(int lightColor, int darkColor) {
+        this.tabItemSelectedColors = new int[]{lightColor, darkColor};
+        this.updateTabSelectedColors();
+    }
+
+    public int[] getTabItemSelectedColors() {
+        return tabItemSelectedColors;
+    }
+
+    public void updateTabSelectedColors() {
+        final int[] colors = FoxitReader.instance().getTabItemSelectedColors();
+        if (!isPDFViewCtrlReady() || colors == null || colors.length == 0) {
+            return;
         }
 
-        if (color != -1) {
-            ThemeConfig.getInstance(uiExt.getAttachedActivity().getApplicationContext()).primaryColor(color);
-        }
+        ThemeConfig.getInstance(getPDFViewCtrl().getContext()).setAccentColorProvider(new DynamicColorProvider() {
+            @Override
+            public int getColor(boolean isDark) {
+                int lightColor = colors[0];
+                int darkColor = colors.length > 1 ? colors[1] : lightColor;
+                return isDark ? darkColor : lightColor;
+            }
+        });
     }
 
     public boolean isPDFViewCtrlReady() {
@@ -379,7 +488,7 @@ final class FoxitReader {
         updateTopToolbarItemVisible();
         updateBottomToolbarItemVisible();
         updateToolbarItemVisible();
-        updatePrimaryColor();
+        updateThemeColor();
     }
 
 
@@ -389,7 +498,7 @@ final class FoxitReader {
 
     private ReadingBookmarkModule readingBookmarkModule = null;
 
-    private void updateFullScreenBookmarkItemVisible(boolean visible, UIExtensionsManager uiExtensionsManager){
+    private void updateFullScreenBookmarkItemVisible(boolean visible, UIExtensionsManager uiExtensionsManager) {
         Module bookMarkModule = uiExtensionsManager.getModuleByName(Module.MODULE_NAME_BOOKMARK);
         if (visible) {
             if (bookMarkModule == null && readingBookmarkModule != null) {
@@ -405,7 +514,7 @@ final class FoxitReader {
         }
     }
 
-    private void updateFullScreenToolItemVisible(String parentId, String childId, boolean visible, UIExtensionsManager uiExtensionsManager){
+    private void updateFullScreenToolItemVisible(String parentId, String childId, boolean visible, UIExtensionsManager uiExtensionsManager) {
         ViewGroup rootView = uiExtensionsManager.getMainFrame().getContentView();
         for (int i = 0; i < rootView.getChildCount(); i++) {
             View view = rootView.getChildAt(i);

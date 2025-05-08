@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.Settings;
 import android.view.KeyEvent;
 
@@ -189,7 +190,7 @@ public class ReaderActivity extends FragmentActivity {
         if (uiextensionsManager != null)
             uiextensionsManager.onConfigurationChanged(this, newConfig);
 
-        FoxitReader.instance().updatePrimaryColor();
+        FoxitReader.instance().updateThemeColor();
     }
 
     @Override
