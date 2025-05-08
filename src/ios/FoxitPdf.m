@@ -710,6 +710,68 @@ static NSString *initializeKey;
     [UIExtensionsManager setPrimaryColor:color];
 }
 
+- (void)setToolbarBackgroundColor:(CDVInvokedUrlCommand *)command{
+    self.pluginCommand = command;
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
+        return;
+    }
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = nil;
+    }
+    
+    int position = [[options objectForKey:@"position"] intValue];
+    id light = [options objectForKey:@"light"];
+    id dark = [options objectForKey:@"dark"];
+    
+    light = [self jsvalueToOCColor:light];
+    dark = [self jsvalueToOCColor:dark];
+    UIColor *color = [UIColor fs_colorWithLight:light dark:dark];
+    
+    switch (position) {
+        case 0:
+            [self.extensionsMgr.topToolbar setBackgroundColor:color];
+            break;
+        case 1:
+            [self.extensionsMgr.topToolbar setStateBarColor:color];
+            break;
+        case 2:
+            [self.extensionsMgr.bottomToolbar setBackgroundColor:color];
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)setTabItemSelectedColor:(CDVInvokedUrlCommand *)command{
+    self.pluginCommand = command;
+    
+    NSString *errMsg = [NSString stringWithFormat:@"Invalid license"];
+    if (FSErrSuccess != initializeCode) {
+        [self handleCDVInvokedUrlCommand:command status:CDVCommandStatus_ERROR msg:errMsg];
+        return;
+    }
+    NSDictionary* options = [command argumentAtIndex:0];
+    
+    if ([options isKindOfClass:[NSNull class]]) {
+        options = nil;
+    }
+    
+    id light = [options objectForKey:@"light"];
+    id dark = [options objectForKey:@"dark"];
+    
+    light = [self jsvalueToOCColor:light];
+    dark = [self jsvalueToOCColor:dark];
+    UIColor *color = [UIColor fs_colorWithLight:light dark:dark];
+    
+    [self.extensionsMgr.topToolbar setTagItemBackgroudColor:color];
+}
+
+
 - (FSPDFViewCtrl *)pdfViewControl{
     if (!_pdfViewControl) {
         _pdfViewControl = [[FSPDFViewCtrl alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
