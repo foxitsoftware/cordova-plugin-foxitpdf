@@ -383,6 +383,60 @@ window.FoxitPdf.setPrimaryColor("#ff0000", "#ff0000");
 
 ```
 
+### window.FoxitPdf.setToolbarBackgroundColor
+
+> window.FoxitPdf.setToolbarBackgroundColor(position, light, dark);
+
+Sets the background color of a toolbar based on its position.
+
+NOTE：It should be called before opening document.
+
+- __`position`__:  The toolbar position.  
+  `0` - **Top bar**  
+  `1` - **Tab action bar**  
+  `2` - **Bottom bar**  
+- __`light`__:  The background color to be used in light mode.
+- __`dark`__: The background color to be used in dark mode.
+
+__`Supported formats are`__:
+- __`0xAARRGGBB`__:
+- __`0xRRGGBB`__:
+- __`#AARRGGBB`__:
+- __`#RRGGBB`__:
+- __`rgb()`__:
+- __`rgba()`__:
+
+```js
+
+window.FoxitPdf.setToolbarBackgroundColor(0, "#ff0000", "#00ff00");
+
+```
+
+### window.FoxitPdf.setTabItemSelectedColor
+
+> window.FoxitPdf.setTabItemSelectedColor(light, dark);
+
+Sets the selected tab item color for the tab action bar, supporting both light and dark modes.
+
+NOTE：It should be called before opening document.
+
+- __`light`__:  The background color to be used in light mode.
+- __`dark`__: The background color to be used in dark mode.
+
+__`Supported formats are`__:
+- __`0xAARRGGBB`__:
+- __`0xRRGGBB`__:
+- __`#AARRGGBB`__:
+- __`#RRGGBB`__:
+- __`rgb()`__:
+- __`rgba()`__:
+
+```js
+
+window.FoxitPdf.setTabItemSelectedColor("#ff0000", "#00ff00");
+
+```
+
 ### window.FoxitPdf.setAutoSaveDoc
 
 > window.FoxitPdf.setAutoSaveDoc(enable);
