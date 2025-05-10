@@ -727,10 +727,10 @@ static NSString *initializeKey;
     
     switch (position) {
         case 0:
-            [self.extensionsMgr.topToolbar setBackgroundColor:color];
+            [self.extensionsMgr.topToolbar setStateBarColor:color];
             break;
         case 1:
-            [self.extensionsMgr.topToolbar setStateBarColor:color];
+            [self.extensionsMgr.topToolbar setBackgroundColor:color];
             break;
         case 2:
             [self.extensionsMgr.bottomToolbar setBackgroundColor:color];
