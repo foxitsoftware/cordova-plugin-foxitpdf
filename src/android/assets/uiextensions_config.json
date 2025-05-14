@@ -62,6 +62,7 @@
       "highlightLinkColor": "#16007fff", //Set the highlight color with alpha
       "fullscreen": true, // Enter the full screen immediately after opening. If the user clicks on the page, the toolbar will be displayed. After 5 seconds, if it is in full screen mode, the toolbar and other auxiliary toolbar buttons will be hidden automatically.
       "showPenOnlySwitch": true, // Only use for pencil and eraser
+      "enableHandwritingRecognition": false,
       "enableTopbarDraggable": 2,// Is it possible to drag the toolbar to change its position(left, right or top), this value can be 0, 1, 2, 3;
                                  // 0: Neither the phone nor the tablet can drag the topbar;
                                  // 1: Only the mobile phone can drag the topbar;
@@ -105,7 +106,8 @@
                 "pencil": {
                   "color": "#ff0000",
                   "opacity": 1.0,
-                  "thickness": 2
+                  "thickness": 2,
+                  "addHistoricalPoints": true
                 },
                 "polygon": {
                   "color": "#ff0000", "opacity": 1.0, "thickness": 2, "fillColor": null
@@ -194,5 +196,8 @@
       "signature": {
             "color": "#000000", "thickness": 8
       }
+    },
+    "optimizations": {
+      "optimizeEmbeddedFontsForAnnots": false // When this field is enabled, the font information from the existing document will be reused when adding annotations, allowing fonts to be shared and reducing the final document size to some extent. Currently, this option only takes effect for FreeText annotations.
     }
 }
