@@ -60,6 +60,7 @@
         "highlightFormColor":"#200066cc",
         "fullscreen" : true,
         "enableTopbarDraggable" : 2,
+        "enableHandwritingRecognition": false,
         "annotations": {
             "continuouslyAdd" : true,
             "highlight": {
