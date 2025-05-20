@@ -457,7 +457,7 @@ window.FoxitPdf.setAutoSaveDoc(true);
 
 > Form.getAllFormFields();
 
-Return: An array of dictionaries will be returned, which contains all the form fields in the document, each field is represented as a dictionary, the following are the key/value pairs for the dictionary. Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html  for more detail information about parameters such as fieldType, fieldFlag.... (Use keyword "Field" to search)
+Return: An array of dictionaries will be returned, which contains all the form fields in the document, each field is represented as a dictionary, the following are the key/value pairs for the dictionary. Please refer to [Foxit PDF SDK for iOS](https://developers.foxit.com/resources/mobile-pdf-sdk/api_reference_ios/index.html) / [Foxit PDF SDK for Android](https://developers.foxit.com/resources/mobile-pdf-sdk/api_reference_android/index.html)  for more detail information about parameters such as fieldType, fieldFlag.... (Use keyword "Field" to search)
 
 - __alignment__:  Alignment is a property for variable text and it is only useful for text field and list box,which may contain variable text as their content.
 - __alternateName__: An alternate field name to be used in place of the actual field name wherever the field must be identified in the user interface (such as in error or status messages referring to the field).
@@ -488,7 +488,7 @@ Return: An dictionary will be returned, which contains the form related info. Th
 
 - __alignment__:  Get the alignment value which is used as document-wide default value. Left alignment:0, Center alignment:1, Right alignment:2
 - __needConstructAppearances__: Check whether to construct appearance when loading form controls.
-- __defaultAppearance__: Return an dictionary, which key/value pairs for the dictionary are the following: (Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html for more details.)
+- __defaultAppearance__: Return an dictionary, which key/value pairs for the dictionary are the following: (Please refer to [Foxit PDF SDK for iOS](https://developers.foxit.com/resources/mobile-pdf-sdk/api_reference_ios/index.html) / [Foxit PDF SDK for Android](https://developers.foxit.com/resources/mobile-pdf-sdk/api_reference_android/index.html) for more details.)
   - __flags__: Flags to indicate which properties of default appearance are meaningful.
   - __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
   - __textColor__: Text color for default appearance. Format: 0xRRGGBB.
@@ -503,7 +503,7 @@ Parameters:The parameter for this API is a dictionary, and following are the key
 
 - __alignment__:  Get the alignment value which is used as document-wide default value, it's only valid for text field and list box. Left alignment:0, Center alignment:1, Right alignment:2
 - __needConstructAppearances__: Check whether to construct appearance when loading form controls.
-- __defaultAppearance__: Return an dictionary, which key/value pairs for the dictionary are the following: (Please refer to https://developers.foxitsoftware.com/resources/pdf-sdk/cplusplus_api_reference/index.html for more details.)
+- __defaultAppearance__: Return an dictionary, which key/value pairs for the dictionary are the following: (Please refer to [Foxit PDF SDK for iOS](https://developers.foxit.com/resources/mobile-pdf-sdk/api_reference_ios/index.html) / [Foxit PDF SDK for Android](https://developers.foxit.com/resources/mobile-pdf-sdk/api_reference_android/index.html) for more details.)
   - __flags__: Flags to indicate which properties of default appearance are meaningful.
   - __textSize__: Font size for default appearance. Please ensure this is above 0 when parameter <i>flags</i> includes @link DefaultAppearance::e_FlagFontSize @endlink.
   - __textColor__: Text color for default appearance. Format: 0xRRGGBB.
@@ -633,7 +633,7 @@ Parameters:
 - __pageIndex__: The page index, which start from 0 for the first page.
 - __controlIndex__: The index of current form control among all the controls of the specified page.
 
-Return: Please refer to the return info of [Form.getAllFormFields](#form.getallformfields)
+Return: Please refer to the return info of [Form.getAllFormFields](#formgetallformfields)
 
 ### Field.updateField
 
@@ -641,7 +641,7 @@ Return: Please refer to the return info of [Form.getAllFormFields](#form.getallf
 
 Parameters:
 - __fieldIndex__: The index of form field in the document.
-- __field__: Please refer to the return info of [Form.getAllFormFields](#form.getallformfields)
+- __field__: Please refer to the return info of [Form.getAllFormFields](#formgetallformfields)
 
 
 ### Field.reset
