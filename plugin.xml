@@ -73,7 +73,7 @@
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <activity
                 android:name="com.foxit.cordova.plugin.ReaderActivity"
-                android:configChanges="keyboardHidden|orientation|locale|layoutDirection|screenSize|smallestScreenSize"
+                android:configChanges="keyboardHidden|orientation|screenSize|locale|layoutDirection|screenLayout|uiMode|smallestScreenSize"
                 android:launchMode="singleTask"
                 android:screenOrientation="fullSensor"
                 android:exported="true">
