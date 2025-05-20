@@ -33,6 +33,7 @@ import com.foxit.uiextensions.theme.ThemeConfig;
 import com.foxit.uiextensions.utils.ActManager;
 import com.foxit.uiextensions.utils.AppTheme;
 import com.foxit.uiextensions.utils.AppUtil;
+import com.foxit.uiextensions.utils.SystemUiHelper;
 import com.foxit.uiextensions.utils.UIToast;
 
 import java.io.IOException;
@@ -58,8 +59,8 @@ public class ReaderActivity extends FragmentActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        AppTheme.setThemeFullScreen(this);
         ActManager.getInstance().setCurrentActivity(this);
+        SystemUiHelper.getInstance().setStatusBarColor(getWindow(), getResources().getColor(com.foxit.uiextensions.R.color.ui_color_top_bar_main, null));
 
         Config config = null;
         try {
