@@ -65,6 +65,11 @@
            <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
                             tools:ignore="ScopedStorage" />
         </config-file>
+        <config-file target="AndroidManifest.xml" parent="/manifest/queries">
+            <intent>
+                <action android:name="android.intent.action.TTS_SERVICE" />
+            </intent>
+        </config-file>
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <activity
                 android:name="com.foxit.cordova.plugin.ReaderActivity"
