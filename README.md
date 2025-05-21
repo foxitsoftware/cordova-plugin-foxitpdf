@@ -721,11 +721,6 @@ console.log('onDocumentAdded callback ',data);
 &nbsp;&nbsp;
 
 
-## PPT
-Please see our forum for more detailed information:
-
-[PPTX - How to use cordova-plugin-foxitpdf](http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf/162972-ppt-how-to-use-cordova-plugin-foxitpdf)
-
 ## YOUTUBE
 [![How to use cordova-plugin-foxitpdf](http://img.youtube.com/vi/3stdbwcm68k/maxresdefault.jpg)](https://youtu.be/3stdbwcm68k)
 
@@ -842,17 +837,14 @@ This may affect plugin.xml files and config.xml files that use edit-config, and 
 
 You can ask us questions or report bugs in [here](https://github.com/foxitsoftware/cordova-plugin-foxitpdf/issues).
 
-You can also send email **huang_niu@foxitsoftware.com** to explain your problem.
-
 If you have a better code implementation, please fork this project and launch your Pull-Request, we will promptly deal with. Thanks!
 
 
 ## Request a Quote
 If you encounter “Invalid license” tips, please go to the following URL for official trial license key:
 
-https://developers.foxitsoftware.com/support
+https://developers.foxit.com/pdf-sdk/free-trial/
 
 ## More Support
 
-http://forums.foxitsoftware.com/forum/portable-document-format-pdf-tools/foxit-cloud/cordova-plugin-foxitpdf
-
+https://developers.foxit.com/plugins/cordova/
