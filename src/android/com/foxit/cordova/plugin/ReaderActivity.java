@@ -16,12 +16,10 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.provider.Settings;
 import android.view.KeyEvent;
 
@@ -29,10 +27,7 @@ import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.sdk.pdf.PDFDoc;
 import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.config.Config;
-import com.foxit.uiextensions.theme.ThemeConfig;
 import com.foxit.uiextensions.utils.ActManager;
-import com.foxit.uiextensions.utils.AppTheme;
-import com.foxit.uiextensions.utils.AppUtil;
 import com.foxit.uiextensions.utils.SystemUiHelper;
 import com.foxit.uiextensions.utils.UIToast;
 
@@ -50,6 +45,7 @@ public class ReaderActivity extends FragmentActivity {
 
     private PDFViewCtrl pdfViewCtrl;
     private UIExtensionsManager uiextensionsManager;
+    private int curNightMode;
 
     private static final String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -80,6 +76,7 @@ public class ReaderActivity extends FragmentActivity {
         pdfViewCtrl.registerDocEventListener(docListener);
         uiextensionsManager.onCreate(this, pdfViewCtrl, null);
 
+        curNightMode = this.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         FoxitReader.instance().setPDFViewCtrl(pdfViewCtrl);
         FoxitReader.instance().applySetting();
 
@@ -188,10 +185,15 @@ public class ReaderActivity extends FragmentActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+
+        int newNightMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        if (newNightMode != this.curNightMode) {
+            this.curNightMode = newNightMode;
+            FoxitReader.instance().updateThemeColor();
+        }
+
         if (uiextensionsManager != null)
             uiextensionsManager.onConfigurationChanged(this, newConfig);
-
-        FoxitReader.instance().updateThemeColor();
     }
 
     @Override
