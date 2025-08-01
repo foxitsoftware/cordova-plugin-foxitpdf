@@ -28,7 +28,6 @@ import com.foxit.sdk.pdf.PDFDoc;
 import com.foxit.uiextensions.UIExtensionsManager;
 import com.foxit.uiextensions.config.Config;
 import com.foxit.uiextensions.utils.ActManager;
-import com.foxit.uiextensions.utils.SystemUiHelper;
 import com.foxit.uiextensions.utils.UIToast;
 
 import java.io.IOException;
@@ -56,7 +55,6 @@ public class ReaderActivity extends FragmentActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActManager.getInstance().setCurrentActivity(this);
-        SystemUiHelper.getInstance().setStatusBarColor(getWindow(), getResources().getColor(com.foxit.uiextensions.R.color.ui_color_top_bar_main, null));
 
         Config config = null;
         try {

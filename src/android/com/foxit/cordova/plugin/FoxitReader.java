@@ -15,6 +15,7 @@ package com.foxit.cordova.plugin;
 import android.app.Activity;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.Window;
 
 import com.foxit.sdk.PDFViewCtrl;
 import com.foxit.uiextensions.UIExtensionsManager;
@@ -25,6 +26,7 @@ import com.foxit.uiextensions.theme.DynamicColorProvider;
 import com.foxit.uiextensions.theme.ThemeConfig;
 import com.foxit.uiextensions.utils.AppDisplay;
 import com.foxit.uiextensions.utils.AppUtil;
+import com.foxit.uiextensions.utils.SystemUiHelper;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -199,6 +201,7 @@ final class FoxitReader {
         updateSecondaryColor();
         updateTabSelectedColors();
         updateToolbarsBackgroundColor();
+        updateStatusBarColor();
     }
 
     public void updatePrimaryColor() {
@@ -242,6 +245,10 @@ final class FoxitReader {
         this.updateToolBackgroundColor(position, lightColor, darkColor);
     }
 
+    public int[] getToolbarBackgroundColor(int position) {
+        return this.toolbarBackgroundColors.get(position);
+    }
+
     public void updateToolBackgroundColor(int position, int lightColor, int darkColor) {
         if (!isPDFViewCtrlReady()) {
             return;
@@ -278,6 +285,32 @@ final class FoxitReader {
             int darkColor = colors.length > 1 ? colors[1] : lightColor;
             this.updateToolBackgroundColor(position, lightColor, darkColor);
         }
+    }
+
+    public void updateStatusBarColor(){
+        if (!isPDFViewCtrlReady()) {
+            return;
+        }
+        UIExtensionsManager uiExt = (UIExtensionsManager) getPDFViewCtrl().getUIExtensionsManager();
+        Activity activity = uiExt.getAttachedActivity();
+        if (activity == null) {
+            return;
+        }
+
+        int[] topBarBackgroundColor = this.getToolbarBackgroundColor(0);
+        boolean isDark = AppUtil.isDarkMode(activity);
+        Window window = activity.getWindow();
+        int statusBarColor;
+        if (topBarBackgroundColor != null && topBarBackgroundColor.length > 0) {
+            statusBarColor = (topBarBackgroundColor.length > 1 && isDark)
+                    ? topBarBackgroundColor[1]
+                    : topBarBackgroundColor[0];
+        } else {
+            statusBarColor = isDark
+                    ? activity.getResources().getColor(com.foxit.uiextensions.R.color.ui_color_top_bar_main, null)
+                    : ThemeConfig.getInstance(activity).getPrimaryColor();
+        }
+        SystemUiHelper.getInstance().setStatusBarColor(window, statusBarColor);
     }
 
     public void setTabItemSelectedColor(int lightColor, int darkColor) {
