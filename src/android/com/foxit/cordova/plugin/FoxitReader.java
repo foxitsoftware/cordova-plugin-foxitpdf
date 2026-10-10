@@ -32,6 +32,8 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import androidx.core.content.ContextCompat;
+
 interface IntConsumer {
     void accept(int value);
 }
@@ -297,20 +299,22 @@ final class FoxitReader {
             return;
         }
 
-        int[] topBarBackgroundColor = this.getToolbarBackgroundColor(0);
+
         boolean isDark = AppUtil.isDarkMode(activity);
-        Window window = activity.getWindow();
         int statusBarColor;
-        if (topBarBackgroundColor != null && topBarBackgroundColor.length > 0) {
-            statusBarColor = (topBarBackgroundColor.length > 1 && isDark)
-                    ? topBarBackgroundColor[1]
-                    : topBarBackgroundColor[0];
-        } else {
-            statusBarColor = isDark
-                    ? activity.getResources().getColor(com.foxit.uiextensions.R.color.ui_color_top_bar_main, null)
-                    : ThemeConfig.getInstance(activity).getPrimaryColor();
+        int[] colors = this.getToolbarBackgroundColor(0);
+        if (colors == null || colors.length == 0) {
+            colors = FoxitReader.instance().getPrimaryColor();
         }
-        SystemUiHelper.getInstance().setStatusBarColor(window, statusBarColor);
+
+        if (colors == null || colors.length == 0) {
+            statusBarColor = isDark
+                    ? ContextCompat.getColor(activity, com.foxit.uiextensions.R.color.ui_color_top_bar_main)
+                    : ThemeConfig.getInstance(activity).getPrimaryColor();
+        } else {
+            statusBarColor = (colors.length > 1 && isDark) ? colors[1] : colors[0];
+        }
+        uiExt.setStatusBarColor(statusBarColor);
     }
 
     public void setTabItemSelectedColor(int lightColor, int darkColor) {
